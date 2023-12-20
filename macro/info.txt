@@ -1,0 +1,11 @@
+Rebin(n) command in root, merges the the n number of bins in the total bins. For Example, If a histogram has 20 bins, then Rebin(4) merges 4 bins i.e. there will be total 20/4 bins in the resulting histogram.
+
+chi square fit is done to check that which function gives the best fit to the data points.
+
+All the variables in the common.h file are started from k, just to make the macro easier to read.
+
+Only the mixed events are normalized because in mixed events, 5-10 events are taken, so they add up to a bigger value which needs to be scaled for subtraction with the signal. In like sign background the background is almost on the sawe scale as the signal.
+
+In the signal without peak histogram, the histogram is first cloned from the (signal - background) histogram and then bins are set to 0 for the range in which there is a peak, so we get signal without peak.
+
+

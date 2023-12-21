@@ -1,0 +1,22 @@
+LUMINOSITY: It is rate of particle collision. It quantifies the number of potential collisions between particles (events) per unit of time and unit of cross-sectional area. 
+
+MULTIPLICITY: Multiplicity refers to the total number of particles (usually charged particles, like protons, pions, kaons, etc.) produced in a collision event.
+
+YIELD: Yield refers to the number of particles produced in a specific kinematic range or with certain characteristics, such as transverse momentum (pT) or rapidity.
+
+Acceptence and efficiency: Acceptance is defined as the fraction of events that pass pT and η requirements. Efficiency accounts for reconstruction and identification losses. Acceptance X Efficiency = Number of reconstructed K(892) decays to π+K using analysis acceptance and cut / Number of generated K(892) in |y|<0.5.
+ -- acceptance -- "is the fraction of the events that you are interested in that pass the trigger system, and efficiency is the fraction passing your cuts in the analysis."
+ 
+ EXPERIMENTAL SIGNATURES OF QGP
+ 
+1.
+What are Jets in high energy collision: Jets are the hadrons with very high momentum which are emitted almost parallel to each other in a collimated beam. Now to conserve momentum there should be some heavy paritcle moving in opposite direction to them. Now suppose a jet is made in vacuum (not realistic), then energy conservaiton within the jet should be followed. But now suppose there is a medium, then the energy conservation will not be followed, because some of the energy will be lost in the collision of the jets. Therefore with the jet suppression we can get the experimental signature of QGP medium which is determined experimentally by suppression in the yield of high pT hadrons, by measuring the nuclear modification factor (RAA).
+The study of jet physics is interesting because it is produced in early stages of collisions well before the formation of the QGP. It carries information on the entire space-time evolution of collisions, thus helping to probe the hot and dense medium of the QGP. Another way to see J/psi suppresion is via azimuthal correlation between two high-momentum hadrons, known as di-hardons azimuthal correlation. To understand this, suppose tu gold nucleus collide. now consider the collision as a collision between 2 sticks. the length of both sticks is 1fm. Now suppose the jet is formed at at 0.8 fm. Then one side of the jet will travel 0.2 fm and the other side will travel 0.8 fm. Then the side which travels 0.8 fm will be more suppressed due to the prolonged stay of particle in the medium. Now in actual the system is spherical and the jet which is produced near the edge of the system called near side (phi = 0) and does not travel inside the system, but the other is travels in opposite direction inside the medium (phi = 180) which is quenched.
+
+2.
+J/psi suppression: J/psi meson is made up c c_bar quarks. In the presence of QGP medium, the quarks will be deconfined and there will be many quarks (high quark density) due to which the probability of making c c_bar pair will reduce since c or c_bar can make bound state with other quarks due to high multipliciy in the QGP. therefore in the presence of QGP, the yield of J/psi will be suppresed in comparison to pp collision where no QGP is formed.
+
+3. 
+Elliptic flow: When a heavy ion collision happens, the particles are not emitted in circe, but the are emitted in a shape of ellipse due to which the pressure due to particles is not same in every direction. It is not clear. I will read about it.
+
+

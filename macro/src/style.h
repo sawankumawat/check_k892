@@ -12,13 +12,13 @@ void SetHistoStyle(TH1 *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
 }
 
 void SetHistoQA(TH1 *h){
-    h->SetMarkerStyle(2);
+    h->SetMarkerStyle(8);
     h->SetMarkerColor(1);
     h->SetLineColor(1);
     h->SetMarkerSize(1.4);
     h->SetLineWidth(2);
-    h->GetXaxis()->SetNdivisions(506);
-    h->GetYaxis()->SetNdivisions(505);
+    // h->GetXaxis()->SetNdivisions(506);
+    // h->GetYaxis()->SetNdivisions(505);
     h->GetXaxis()->SetLabelOffset(0.015);
     h->GetXaxis()->SetLabelFont(42);
     h->GetXaxis()->SetTitleFont(42);
@@ -29,7 +29,6 @@ void SetHistoQA(TH1 *h){
     h->GetYaxis()->SetTitleOffset(1.7);
     h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.013);
-    h->GetYaxis()->SetTitleOffset(0.8);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.04);
     h->GetYaxis()->SetTickLength(0.04);
@@ -112,15 +111,10 @@ void SetCanvasStyle2(TCanvas *c, float leftmargin, float rightmargin, float topm
     c->SetTicks(1, 1);
 }
 
-void SetLegendStyle(TLegend *l, float textsize, int linecolor)
+void SetLegendStyle(TLegend *l)
 {
     l->SetBorderSize(0);
-    l->SetTextFont(2);
-    l->SetTextSize(0.04);
-    l->SetLineColor(1);
-    l->SetLineStyle(1);
-    l->SetLineWidth(1);
-    l->SetFillColor(0);
+    l->SetTextFont(42);
     l->SetFillStyle(0);
 }
 

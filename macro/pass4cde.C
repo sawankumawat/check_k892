@@ -119,21 +119,10 @@ void pass4cde()
 
     double highfitrangels[Npt] = {1.239, 1.2, 1.2, 1.18, 1.2, 1.19, 1.12, 1.2, 1.1, 1.2, 1.3, 1.18, 1.1};
 
-    if (ResBkg.CompareTo("MIX") == 0)
+   for (int i = 0; i < Npt; i++)
     {
-        for (int i = 0; i < Npt + 1; i++)
-        {
-            lowfitrange[i] = lowfitrangeme[i];
-            highfitrange[i] = highfitrangeme[i];
-        }
-    }
-    else if (ResBkg.CompareTo("LIKE") == 0)
-    {
-        for (int i = 0; i < Npt + 1; i++)
-        {
-            lowfitrange[i] = lowfitrangels[i];
-            highfitrange[i] = highfitrangels[i];
-        }
+        lowfitrange[i] = (ResBkg.CompareTo("MIX") == 0) ? lowfitrangeme[i] : lowfitrangels[i];
+        highfitrange[i] = (ResBkg.CompareTo("MIX") == 0) ? highfitrangeme[i] : highfitrangels[i];
     }
 
     //************************************************************************************************************************
@@ -305,7 +294,8 @@ void pass4cde()
     //**To calculate total number of events for which histograms were filled*************************************************************
     // TH1F* hEVent = (TH1F *) fInputList->FindObject("hAEventsVsMulti");
     // Double_t Event=hEVent->Integral(lc,hc);
-    Double_t Event = 7.168634e7; // events
+     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
+    double entries = hentries->GetEntries();
 
     //*************************************************************************************************************************
 

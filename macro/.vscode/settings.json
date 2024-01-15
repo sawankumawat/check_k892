@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "pass4cde.C": "cpp",
-        "Signal.C": "cpp"
+        "Signal.C": "cpp",
+        "c1.C": "cpp",
+        "cmath": "cpp",
+        "new": "cpp",
+        "Spectra.C": "cpp"
     }
 }

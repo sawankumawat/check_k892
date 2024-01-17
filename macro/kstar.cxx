@@ -4,15 +4,16 @@
 #include "TArrow.h"
 #include "src/style.h"
 #include "src/fitfunc.h"
-#include "src/common.h"
+#include "src/initializations.h"
 using namespace std;
-
-//*************************************************************************************
 
 void kstar()
 
 {
     const string kResBkg = "MIX";
+    const string kbkg = "pol2";
+
+    //Folder name inside the Analysis.root file *****************************************
 
     // const string kfoldername = "lf-k892analysis";
     // const string kfoldername = "lf-k892analysis_PID_TPC_30";
@@ -22,158 +23,19 @@ void kstar()
     const int kRebin = 3;
     const float txtsize = 0.045;
 
-    const Int_t Npt = 21; // 12 for pbpb and 18 and 21 for pp
+    //some initializations ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
-    //** For projection of required signals in different pt bins used as array elements**************************
-    // for pp data low and high IR
-    // double pT_bins[Npt + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 8.0};
-    double pT_bins[Npt + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 8.0, 10, 12, 15};
-    // for pbpb data LHC23zzh_pass1
-    // double pT_bins[Npt + 1] = {0.4, 0.8, 1.2, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0};
-
-    //*************************************************************************************************************
-
-    //**For normalisation **************************************************************************************
-
-    // dataset LHC23_pass1_lowB_highIR_sampling
-    double lownorm[Npt + 15] = {1.1, 0.68, 0.68, 0.68, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2};
-    double highnorm[Npt + 15] = {1.15, 0.73, 0.73, 0.73, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3};
-
-    // dataset LHC23_pass1_lowB_lowIR
-    // double lownorm[Npt + 15] = {0.68, 0.68, 0.68, 0.68, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2};
-    // double highnorm[Npt + 15] = {0.73, 0.73, 0.73, 0.73, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3};
-
-    // dataset LHC23zzh_pass1
-    // double lownorm[Npt + 15] = {0.7, 0.7, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2, 1.2};
-    // double highnorm[Npt + 15] = {0.745, 0.745, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3, 1.3};
-
-    //**********************************************************************************************************
-
-    //**For fitting ranges in different pt bins******************************************************************************
-
-    //*************************MIXED EVENTS****************************************
-    // // dataset LHC23_pass1_lowB_highIR_sampling
-     double lowfitrangeme[Npt + 15]   =  {0.72, 0.67, 0.7, 0.8, 0.72, 0.72, 0.77, 0.74, 0.77, 0.78, 0.78, 0.7, 0.75, 0.7, 0.7, 0.72, 0.73, 0.7, 0.7, 0.73, 0.7, 0.7};
-    double highfitrangeme[Npt + 15] = {1.1, 1.06, 1.1, 1.08, 1.06, 1.04, 1.06, 1.04, 1.04, 1.04, 1.02, 1.05, 1.1, 1.08, 1.1, 1.1, 1.1, 1.04, 1.06, 1.1, 1.1, 1.1, 1.1};
-
-    // dataset LHC23_pass1_lowB_lowIR
-    //   double lowfitrangeme[Npt + 15] = {0.75, 0.65, 0.78, 0.78, 0.72, 0.72, 0.73, 0.73, 0.75, 0.76, 0.76, 0.7, 0.75, 0.75, 0.73, 0.73, 0.73, 0.68, 0.8, 0.75, 0.75, 0.75};
-    // double highfitrangeme[Npt + 15] = {1.1, 1.06, 1.1, 1.06, 1.04, 1.04, 1.04, 1.04, 1.04, 1.05, 1.05, 1.1, 1.1, 1.1, 1.1, 1.15, 1.12, 1.05, 1.0, 1.1, 1.1, 1.1, 1.1};
-
-    // dataset LHC23zzh_pass1
-    // double lowfitrangeme[Npt + 15] = {0.85, 0.85, 0.85, 0.8, 0.85, 0.85, 0.85, 0.82, 0.82, 0.73, 0.73, 0.7, 0.75, 0.75, 0.75, 0.73, 0.7, 0.67, 0.75, 0.75, 0.75, 0.75};
-    // double highfitrangeme[Npt + 15] = {0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 1.05, 1.05, 1.1, 1.1, 1.1, 1.1, 1.15, 1.12, 1.13, 1.1, 1.1, 1.1, 1.1, 1.1};
-
-    // ***************************LIKE SIGN************************************
-
-    // For LS default (pol2)
-    double lowfitrangels[Npt + 15] = {0.72, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.78, 0.75, 0.78, 0.74, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75, 0.75};
-    double highfitrangels[Npt + 15] = {1.1, 1.04, 1.1, 1.1, 1.04, 1.04, 1.04, 1.04, 1.04, 1.04, 1.04, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1};
-
-    double lowfitrange[Npt + 15];
-    double highfitrange[Npt + 15];
+    double lowfitrange[Npt + 20];
+    double highfitrange[Npt + 20];
     for (int i = 0; i < Npt; i++)
     {
         lowfitrange[i] = (kResBkg == "MIX") ? lowfitrangeme[i] : lowfitrangels[i];
         highfitrange[i] = (kResBkg == "MIX") ? highfitrangeme[i] : highfitrangels[i];
     }
 
-    //************************************************************************************************************************
-
-    //**For different centrality in different pt bins *********************************************************************
-
-    double Low_Centr[Npt + 15] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    double High_Centr[Npt + 15] = {100, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
-
-    //**PDG Mass and Width of required signal for significance calculation ******************************************
-
-    float masspdg = 0.895;  // in GeV/c^2
-    float widthpdg = 0.047; // in 1 sigma GeV/c^2
-
-    //**************************************************************************
-
-    // Histograms initialization
-
-    TH1F *hYieldpar = new TH1F("hYieldpar", "hYieldpar", Npt, pT_bins);                   // for ptspectra from fitting parameter directly
-    TH1F *hintegral_yield = new TH1F("hintegral_yield", "hintegral_yield", Npt, pT_bins); // pt spectra from function integration
-    TH1F *hChiSquare = new TH1F("hChiSquare", "hChiSquare", Npt, pT_bins);                // for chisquare
-    TH1F *hsignificance = new TH1F("hsignificance", "hsignificance", Npt, pT_bins);       // for significance of signal
-    TH1F *hmass = new TH1F("hmass", "hmass", Npt, pT_bins);                               // for mass from fit
-    TH1F *hwidth = new TH1F("hwidth", "hwidth", Npt, pT_bins);                            // for width from fit
-    TH1F *hYbincount = new TH1F("hYbincount", "hYbincount", Npt, pT_bins);                // Yield calculation using bin counting method
-    TH1F *hFrac_stat_error = new TH1F("hFrac_stat_error", "hFrac_stat_error", Npt, pT_bins);
-    TH1F *herrormass = new TH1F("herrormass", "", Npt, 0.5, 16);   // for error band in mass
-    TH1F *herrorwidth = new TH1F("herrorwidth", "", Npt, 0.5, 16); // for error band in width
-
-    TLatex *t2 = new TLatex();
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.06);
     t2->SetTextFont(42);
-
-    ////Setting bin content for mass and width error/////////////////////////////////////////////////
-    for (int i = 1; i <= Npt; i++)
-    {
-        herrormass->SetBinContent(i, masspdg);
-        herrormass->SetBinError(i, 0.0015);
-        herrorwidth->SetBinContent(i, widthpdg);
-        herrorwidth->SetBinError(i, 0.005);
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //**Variables and arrays needed *******************************************************************************************
-
-    Double_t integralsignalfunc[Npt];                         // for calculation of area under signal only (after fitting and extraction BW signal)
-    Double_t ptcenter[Npt];                                   // stores mean pt for each pt bin
-    Double_t ptbinwidth[Npt];                                 // stores pt binwidth
-    Double_t interror[100];                                   // stores error while area calculation of signal for yield
-    const int N = 1;                                          // for centrality loop below used
-    Double_t dy = 1.0;                                        // for rapidity difference
-    TFitResultPtr r;                                          // for fitting using TFitter
-    TH1D *fHistTotal[Npt];                                    // for sig+bg
-    TH1D *fHistBkg[Npt];                                      // for mixedbg
-    TH1D *fHistbkgLS[Npt];                                    // for like sign
-    TH1D *fHistlike[Npt];                                     // for resultant like bg
-    TH1D *histPP[Npt];                                        // for like pp bg
-    TH1D *histMM[Npt];                                        // for like mm bg
-    TH1D *hfbkg;                                              // for normalised mixed bkg
-    char name[100];                                           // for giving name to canvases and histograms
-    Double_t lowpt, highpt;                                   // for extracting pt from the above defined pt array
-    int lbin, hbin;                                           // corresponding bin for a given pt
-    int lownormbin1, lownormbin2, highnormbin1, highnormbin2; // normalisation bins when using mixed background
-    Double_t sigbkg_integral, bkg_integral, normfactor;       // integrals and normalisation factor(scaling factor) using above normalisation bins
-
-    // details of input root file////////////////////
-    ///////////////////////////////////////////////
-    // fiiting parameters array///////////////////////
-    Double_t Yield[Npt];
-    Double_t Mass[Npt];
-    Double_t Width[Npt];
-    Double_t poly0[Npt];
-    Double_t poly1[Npt];
-    Double_t poly2[Npt];
-    Double_t poly3[Npt];
-    Double_t ErrorMass[Npt];
-    Double_t ErrorWidth[Npt];
-    Double_t ErrorYield[Npt];
-    Double_t Chi2Ndf[Npt];
-    /////////////////////////////////////////////////
-
-    Double_t yieldcalc, yielderror; // calculation of raw yield from function integration
-    Double_t yieldcalc1[Npt], yielderror1[Npt];
-    Double_t Yield_value_par, Yield_error_par; // calculation of raw yield from fitting parameter
-    Double_t BR = 0.66;                        // branching ratio
-
-    Double_t significance_den, significance_num, ratio, ratio2; // calculate signal+bkg and only signal integral respectively and then significance(ratio)
-    int bmin, bmax;
-    Double_t hBCError_1, bkgvalue, Integral_BW_withsigma, fYield_BinCount, YieldIntegral_BW, Yfraction_cBW, sum_tail_correction, Total_Ybincounting, Tail_correction_plusm, Tail_correction_minusm, Error_2, Final_pro_error;
-    Double_t nlow, nhigh;
-    Double_t Yield_bincount_hist;
-    float al = 0.65;
-    float bh = 1.4;
-
-    //***************************************************************************************************************************
-
-    //**Canvas definitions and initialisations********************************************************************************
 
     TCanvas *cinv[Npt]; // for output canvases on screen containing fitted signal after subtraction
 
@@ -192,7 +54,26 @@ void kstar()
         cSigbkg[ip] = new TCanvas(Form("cSigbkg%d", ip), cNam.Data(), 10, 10, 1200, 1100);
         SetCanvasStyle2(cSigbkg[ip], 0.15, 0.05, 0.08, 0.13);
     }
-    //**For accessing the histograms stored within root file******************************
+
+    ////Setting bin content for mass and width error/////////////////////////////////////////////////
+    for (int i = 1; i <= Npt; i++)
+    {
+        herrormass->SetBinContent(i, masspdg);
+        herrormass->SetBinError(i, 0.0015);
+        herrorwidth->SetBinContent(i, widthpdg);
+        herrorwidth->SetBinError(i, 0.005);
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    cgrid1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
+    cgrid2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
+    cgrid_bkg1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
+    cgrid_bkg2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
+    Double_t significance_den, significance_num, ratio, ratio2; 
+
+     //********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+
+
+    //Input file
 
     // TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pbpb/23zzk_pass1_relval/AnalysisResults.root", "Read");
     TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
@@ -221,19 +102,8 @@ void kstar()
     // cout << " THE NUMBER OF BINS IN THE HISTOGRAM IS " << fHistNum->GetNbinsZ()<<endl;
 
     gstyle(); // this is not gStyle, it is defined in the header file style.h
-    gStyle->SetOptFit(0);
-    //***************************************************************************************************
-    TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-    TCanvas *cgrid2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-    TCanvas *cgrid_bkg1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-    TCanvas *cgrid_bkg2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-    cgrid1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-    cgrid2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-    cgrid_bkg1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-    cgrid_bkg2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
 
-    for (Int_t ip = 0; ip < Npt; ip++) // start pt bin loop
-    // for (Int_t ip = 10; ip < Npt; ip++) // start pt bin loop
+    for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
         lowpt = pT_bins[ip];
         highpt = pT_bins[ip + 1];
@@ -285,9 +155,9 @@ void kstar()
 
         //*****************************************************************************************************
 
-        TF1 *fitFcn = new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6); // sig+bkg fit function
-        TF1 *fitFcn1 = new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3);    // only residualbkg
-        TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange[ip], highfitrange[ip], 3);              // only signal
+        TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6) : new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
+        TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3) : new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+        TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange[ip], highfitrange[ip], 3); // only signal
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
         fitFcn->SetParameter(2, 30000);      // yield
@@ -297,7 +167,7 @@ void kstar()
         // fitFcn->SetParLimits(1, 0, 0.120); // width
 
         // fitFcn->SetParNames("Mass","Width","Yield","A","B","C","D");
-        fitFcn->SetParNames("Mass", "Width", "Yield", "C", "B", "A");
+        fitFcn->SetParNames("Mass", "Width", "Yield");
         r = hfsig->Fit(fitFcn, "REBMS0+"); // signal after bkg subtraction
 
         //****************************************************************************************************************
@@ -312,7 +182,8 @@ void kstar()
         poly2[ip] = fitFcn->GetParameter(3);
         poly1[ip] = fitFcn->GetParameter(4);
         poly0[ip] = fitFcn->GetParameter(5);
-        // poly3[ip] = fitFcn->GetParameter(6);
+        if (kbkg == "pol3")
+            poly3[ip] = fitFcn->GetParameter(6);
 
         fitFcn2->SetParameters(&par[0]);
         fitFcn1->SetParameters(&par[3]);
@@ -466,7 +337,7 @@ void kstar()
         pag->SetTextFont(42);
         pag->SetTextSize(0.04);
         pag->SetFillStyle(0);
-         pag2->SetBorderSize(0);
+        pag2->SetBorderSize(0);
         pag2->SetTextFont(42);
         pag2->SetTextSize(0.04);
         pag2->SetFillStyle(0);
@@ -480,7 +351,7 @@ void kstar()
         //     hfsig->SetMaximum(hfsig->GetMaximum() * 0.9);
 
         // else
-            hfsig->SetMaximum(hfsig->GetMaximum() * 1.5);
+        hfsig->SetMaximum(hfsig->GetMaximum() * 1.5);
         hfsig->SetMarkerSize(0.5);
         fitFcn->SetLineWidth(2);
         fitFcn1->SetLineWidth(2);
@@ -493,12 +364,14 @@ void kstar()
         pag2->AddEntry(fitFcn, "BW+pol2");
         pag2->AddEntry(fitFcn1, "BW");
         pag2->AddEntry(fitFcn2, "pol2");
+        double fitprob = fitFcn->GetProb();
+        // gStyle->SetOptFit(0);
         pag->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f", Mass[ip], ErrorMass[ip]), "");
         pag->AddEntry((TObject *)0, Form("Width: %.3f #pm %.3f", Width[ip], ErrorWidth[ip]), "");
         pag->AddEntry((TObject *)0, Form("Yield: %.1e #pm %.1e", yieldcalc * Event, yielderror * Event), "");
-        pag->AddEntry((TObject *)0, Form("Probability: %f ", fitFcn->GetProb()), "");
+        // pag->AddEntry((TObject *)0, Form("Probability: %f ", fitprob), "");
         pag->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f ", chibyndf), "");
-        pag->Draw();
+        // pag->Draw();
         pag2->Draw();
         // t2->DrawLatex(0.26, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
         t2->DrawLatex(0.27, 0.95,
@@ -561,7 +434,7 @@ void kstar()
         cgrid_bkg2->SaveAs((kSignalOutput + "/grid_bkg2.png").c_str());
     }
 
-    TFile *filecmp = new TFile((kSignalOutput + "/pp_lowIR.root").c_str(), "RECREATE");
+    TFile *filecmp = new TFile((kSignalOutput + "/" + kDataset + ".root").c_str(), "RECREATE");
 
     TCanvas *csig = new TCanvas("", "", 1200, 1000);
     SetCanvasStyle2(csig, 0.18, 0.05, 0.08, 0.15);

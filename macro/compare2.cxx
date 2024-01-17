@@ -19,8 +19,8 @@ void compare2()
     TH1F *hwidth[3];
     TH1F *hyield[3];
 
-    file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_lowIR/free_width/pp_lowIR.root", "READ");
-    file[1] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_highIR_sampling/free_width/pp_highIR.root", "READ");
+    file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_lowIR/LHC23_pass1_lowB_lowIR.root", "READ");
+    file[1] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_highIR_sampling/LHC23_pass1_lowB_highIR_sampling.root", "READ");
     file[2] = new TFile("/home/sawan/check_k892/output/pbpb/kstar/LHC23zzh_pass1/fixed_width/pbpb.root", "READ");
 
     if (file[0]->IsZombie() || file[1]->IsZombie() || file[2]->IsZombie())

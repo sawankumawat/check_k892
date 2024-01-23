@@ -73,13 +73,13 @@ Double_t polynomial3(Double_t *x, Double_t *par)
 Double_t BWExpo(Double_t *x, Double_t *par)
 {
     double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]);
-    double expo = (pow((x[0] - 0.63718), par[3])) * exp(par[4] + x[0] * par[5] + x[0] * x[0] * par[6]);
+    double expo = (pow((x[0] - 0.63718), par[3])) * exp(-par[4] - x[0] * par[5] - x[0] * x[0] * par[6]);
     return (BW+expo);
 }
 
 Double_t Expo(Double_t *x, Double_t *par)
 {
     // return ((x[0]- 0.63718)**par[3])*exp(par[0] + x[0]*par[1] + x[0]*x[0]*par[2]);
-    return (pow((x[0] - 0.63718), par[0])) * exp(par[1] + x[0] * par[2] + x[0] * x[0] * par[3]);
-    // return TMath::Power((x[0]-(0.13957+0.49367)),par[3])*exp(par[2] + par[1]*x[0]+par[0]*x[0]*x[0]);
+    double expo = (pow((x[0] - 0.63267), par[0])) * exp(-par[3] - x[0] * par[2] - x[0] * x[0] * par[1]);
+    return (expo);
 }

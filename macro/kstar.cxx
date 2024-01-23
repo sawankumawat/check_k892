@@ -11,9 +11,9 @@ void kstar()
 
 {
     const string kResBkg = "MIX";
-    const string kbkg = "pol2";
+    const string kbkg = "pol3";
 
-    //Folder name inside the Analysis.root file *****************************************
+    // Folder name inside the Analysis.root file *****************************************
 
     // const string kfoldername = "lf-k892analysis";
     // const string kfoldername = "lf-k892analysis_PID_TPC_30";
@@ -23,7 +23,7 @@ void kstar()
     const int kRebin = 3;
     const float txtsize = 0.045;
 
-    //some initializations ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+    // some initializations ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
     double lowfitrange[Npt + 20];
     double highfitrange[Npt + 20];
@@ -55,25 +55,15 @@ void kstar()
         SetCanvasStyle2(cSigbkg[ip], 0.15, 0.05, 0.08, 0.13);
     }
 
-    ////Setting bin content for mass and width error/////////////////////////////////////////////////
-    for (int i = 1; i <= Npt; i++)
-    {
-        herrormass->SetBinContent(i, masspdg);
-        herrormass->SetBinError(i, 0.0015);
-        herrorwidth->SetBinContent(i, widthpdg);
-        herrorwidth->SetBinError(i, 0.005);
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     cgrid1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
     cgrid2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
     cgrid_bkg1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
     cgrid_bkg2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-    Double_t significance_den, significance_num, ratio, ratio2; 
+    Double_t significance_den, significance_num, ratio, ratio2;
 
-     //********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
+    //********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
-
-    //Input file
+    // Input file
 
     // TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pbpb/23zzk_pass1_relval/AnalysisResults.root", "Read");
     TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
@@ -155,15 +145,34 @@ void kstar()
 
         //*****************************************************************************************************
 
-        TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6) : new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
-        TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3) : new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+        // TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6) : new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
+        // TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3) : new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+
+        TF1 *fitFcn, *fitFcn1;
+
+        if (kbkg == "pol2")
+        {
+            fitFcn = new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6);
+            fitFcn1  = new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3);
+        }
+        else if (kbkg == "pol3")
+        {
+            fitFcn = new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
+            fitFcn1 = new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+        }
+        else if (kbkg == "expol")
+        {
+            fitFcn = new TF1("fitfunc", BWExpo, lowfitrange[ip], highfitrange[ip], 7);
+            fitFcn1 = new TF1("fitfunc1", Expo, lowfitrange[ip], highfitrange[ip], 4);
+        }
+
         TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange[ip], highfitrange[ip], 3); // only signal
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
         fitFcn->SetParameter(2, 30000);      // yield
         fitFcn->SetParLimits(2, 0, 10e9);    // Yield
         fitFcn->SetParameter(1, 0.047);      // width
-        // fitFcn->FixParameter(1, 0.047);      // width
+        fitFcn->FixParameter(1, 0.047);      // width
         // fitFcn->SetParLimits(1, 0, 0.120); // width
 
         // fitFcn->SetParNames("Mass","Width","Yield","A","B","C","D");
@@ -182,7 +191,7 @@ void kstar()
         poly2[ip] = fitFcn->GetParameter(3);
         poly1[ip] = fitFcn->GetParameter(4);
         poly0[ip] = fitFcn->GetParameter(5);
-        if (kbkg == "pol3")
+        if (kbkg == "pol3" || kbkg == "expol")
             poly3[ip] = fitFcn->GetParameter(6);
 
         fitFcn2->SetParameters(&par[0]);

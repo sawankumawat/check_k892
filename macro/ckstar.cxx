@@ -15,10 +15,7 @@ void kstar()
 
     // Folder name inside the Analysis.root file *****************************************
 
-    const string kfoldername = "lf-k892analysis";
-    // const string kfoldername = "lf-k892analysis_PID_TPC_30";
-    // const string kfoldername = "lf-k892analysis_PID_combined_20";
-    // const string kfoldername = "lf-k892analysis_mix_10";
+    const string kfoldername = "chargedkstaranalysis";
 
     const int kRebin = 5;
     const float txtsize = 0.045;

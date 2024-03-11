@@ -16,19 +16,20 @@ void systematics()
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.04);
 
-
     // Default
     TFile *file1 = new TFile("/home/sawan/Documents/default/default_ME_pol2.root", "READ");
-     if (!file1 || file1->IsZombie()) {
+    if (!file1 || file1->IsZombie())
+    {
         std::cout << "Error: Failed to open the default ROOT file!" << std::endl;
         // return 1;
     }
 
-    //Group1 DCA
+    // Group1 DCA
     TFile *file2 = new TFile("/home/sawan/Documents/DCA_variations/DCAz_ME_pol2.root", "READ");
     TFile *file3 = new TFile("/home/sawan/Documents/DCA_variations/DCAxy_ME_pol2.root", "READ");
     TFile *file4 = new TFile("/home/sawan/Documents/DCA_variations/DCAall_ME_pol2.root", "READ");
-     if (!file2 || file2->IsZombie()) {
+    if (!file2 || file2->IsZombie())
+    {
         std::cout << "Error: Failed to open the group 1 DCA files!" << std::endl;
         // return 1;
     }
@@ -39,51 +40,54 @@ void systematics()
     TFile *file7 = new TFile("/home/sawan/Documents/PID_variations/PID3.5_ME_pol2.root", "READ");
     TFile *file8 = new TFile("/home/sawan/Documents/PID_variations/PID4_ME_pol2.root", "READ");
 
-     if (!file5 || file5->IsZombie()) {
+    if (!file5 || file5->IsZombie())
+    {
         std::cout << "Error: Failed to open the group 2 PID file!" << std::endl;
         // return 1;
     }
 
-    //Group3 signal extraction range variations
-    // fit range variations
+    // Group3 signal extraction range variations
+    //  fit range variations
     TFile *file9 = new TFile("/home/sawan/Documents/signal_extraction/Fit_range_variations/fit_var_m20MeV_ME_pol2.root", "READ");
     TFile *file10 = new TFile("/home/sawan/Documents/signal_extraction/Fit_range_variations/fit_var_mp20MeV_ME_pol2.root", "READ");
     TFile *file11 = new TFile("/home/sawan/Documents/signal_extraction/Fit_range_variations/fit_var_pm20MeV_ME_pol2.root", "READ");
     TFile *file12 = new TFile("/home/sawan/Documents/signal_extraction/Fit_range_variations/fit_var_p20MeV_ME_pol2.root", "READ");
 
-    if (!file9 || file9->IsZombie()) {
-        std::cout << "Error: failed to open the group 3 fit range variation file"<<endl;
+    if (!file9 || file9->IsZombie())
+    {
+        std::cout << "Error: failed to open the group 3 fit range variation file" << endl;
         // return 1;
     }
 
-    //normalization range variations
+    // normalization range variations
     TFile *file13 = new TFile("/home/sawan/Documents/signal_extraction/normalization_range_variations/fit_var_m20MeV_ME_pol2.root", "READ");
     TFile *file14 = new TFile("/home/sawan/Documents/signal_extraction/normalization_range_variations/fit_var_mp20MeV_ME_pol2.root", "READ");
     TFile *file15 = new TFile("/home/sawan/Documents/signal_extraction/normalization_range_variations/fit_var_mp30MeV_ME_pol2.root", "READ");
 
-    if (!file13 || file13->IsZombie()) {
-        std::cout << "Error: failed to open the group 3 normalization range variation file"<<endl;
+    if (!file13 || file13->IsZombie())
+    {
+        std::cout << "Error: failed to open the group 3 normalization range variation file" << endl;
         // return 1;
     }
 
     // Group4 track selections
     TFile *file17 = new TFile("/home/sawan/Documents/track_selections/PVTrk/PVtrk_ME_pol2.root", "READ");
 
-    if (!file17 || file17->IsZombie()) {
-        std::cout << "Error: failed to open the group 4 normalization range variation file"<<endl;
+    if (!file17 || file17->IsZombie())
+    {
+        std::cout << "Error: failed to open the group 4 normalization range variation file" << endl;
         // return 1;
     }
 
     // Group5 signal extraction method variation
-    //free width
+    // free width
     TFile *file18 = new TFile("/home/sawan/Documents/combinatorial_background/free_width/free_width_ME_pol2.root", "READ");
 
-    //like sign
+    // like sign
     TFile *file19 = new TFile("/home/sawan/Documents/combinatorial_background/like_sign/default_LS_pol2.root", "READ");
 
-    //pol3
+    // pol3
     TFile *file16 = new TFile("/home/sawan/Documents/signal_extraction/pol3/default_ME_pol3.root", "READ");
-
 
     const int npt = 13;
     int nvar;
@@ -101,11 +105,10 @@ void systematics()
     }
     TLegend *leg = new TLegend(0.7, 0.7, 0.9, 0.9);
 
-
     TGraphErrors *denominator = (TGraphErrors *)file1->Get("yieldls");
     // denominator->Draw("ap");
 
-    //Group 1 DCA
+    // Group 1 DCA
     TGraphErrors *numerator2 = (TGraphErrors *)file2->Get("yieldls");
     TGraphErrors *numerator3 = (TGraphErrors *)file3->Get("yieldls");
     TGraphErrors *numerator4 = (TGraphErrors *)file4->Get("yieldls");
@@ -116,31 +119,27 @@ void systematics()
     TGraphErrors *numerator7 = (TGraphErrors *)file7->Get("yieldls");
     TGraphErrors *numerator8 = (TGraphErrors *)file8->Get("yieldls");
 
-    //Group 3 signal extraction range variations
-    //fitrange
+    // Group 3 signal extraction range variations
+    // fitrange
     TGraphErrors *numerator9 = (TGraphErrors *)file9->Get("yieldls");
     TGraphErrors *numerator10 = (TGraphErrors *)file10->Get("yieldls");
     TGraphErrors *numerator11 = (TGraphErrors *)file11->Get("yieldls");
     TGraphErrors *numerator12 = (TGraphErrors *)file12->Get("yieldls");
-    //normalization range
+    // normalization range
     TGraphErrors *numerator13 = (TGraphErrors *)file13->Get("yieldls");
     TGraphErrors *numerator14 = (TGraphErrors *)file14->Get("yieldls");
     TGraphErrors *numerator15 = (TGraphErrors *)file15->Get("yieldls");
-   
-    //Group 4 track selections
+
+    // Group 4 track selections
     TGraphErrors *numerator17 = (TGraphErrors *)file17->Get("yieldls");
 
-    //Group5 signal extraction method variation
-    //free width
+    // Group5 signal extraction method variation
+    // free width
     TGraphErrors *numerator18 = (TGraphErrors *)file18->Get("yieldls");
-    //like sign
+    // like sign
     TGraphErrors *numerator19 = (TGraphErrors *)file19->Get("yieldls");
-     //pol3
+    // pol3
     TGraphErrors *numerator16 = (TGraphErrors *)file16->Get("yieldls");
-
-
-
-
 
     TGraphErrors *numeratorGraphs1[3] = {numerator2, numerator3, numerator4};
     TGraphErrors *numeratorGraphs2[4] = {numerator5, numerator6, numerator7, numerator8};
@@ -150,7 +149,7 @@ void systematics()
     // TGraphErrors *numeratorGraphs5[1] = {numerator18};
     //  TGraphErrors *grratio[nvar];
 
-    int anvar[5] = {3,4,7,1,3};  //no. of variations in a group
+    int anvar[5] = {3, 4, 7, 1, 3}; // no. of variations in a group
 
     // gPad->SetLogy(0);
     // gStyle->SetOptTitle(0);
@@ -164,28 +163,33 @@ void systematics()
     // for (int set = 0; set < 5; set++)  // changed here
     for (int set = 0; set < 4; set++)
     {
-       double variance[npt] = {0.0};
+        double variance[npt] = {0.0};
         nvar = anvar[set];
 
         for (int j = 0; j < nvar; j++)
         {
             for (int i = 0; i < npt; i++)
             {
-                if(set == 0){
-                Yvariation[i] = numeratorGraphs1[j]->GetY()[i];
+                if (set == 0)
+                {
+                    Yvariation[i] = numeratorGraphs1[j]->GetY()[i];
                 }
-                if(set == 1){
-                Yvariation[i] = numeratorGraphs2[j]->GetY()[i];
+                if (set == 1)
+                {
+                    Yvariation[i] = numeratorGraphs2[j]->GetY()[i];
                 }
-                if(set == 2){
-                Yvariation[i] = numeratorGraphs3[j]->GetY()[i];
-                // continue;
+                if (set == 2)
+                {
+                    Yvariation[i] = numeratorGraphs3[j]->GetY()[i];
+                    // continue;
                 }
-                if(set == 3){
-                Yvariation[i] = numeratorGraphs4[j]->GetY()[i];
+                if (set == 3)
+                {
+                    Yvariation[i] = numeratorGraphs4[j]->GetY()[i];
                 }
-                if(set == 4){
-                Yvariation[i] = numeratorGraphs5[j]->GetY()[i];
+                if (set == 4)
+                {
+                    Yvariation[i] = numeratorGraphs5[j]->GetY()[i];
                 }
 
                 Ydefault[i] = denominator->GetY()[i];
@@ -193,14 +197,13 @@ void systematics()
                 Ydefaulterr[i] = denominator->GetErrorY(i);
 
                 variance[i] += ((Ydefault[i] - Yvariation[i]) / Ydefault[i]) * ((Ydefault[i] - Yvariation[i]) / Ydefault[i]);
-
             }
         }
 
         for (int ipt = 0; ipt < npt; ipt++)
         {
             relative_error[set][ipt] = TMath::Sqrt(variance[ipt] / nvar);
-            hfrac[set]->SetBinContent(ipt+1, relative_error[set][ipt]);
+            hfrac[set]->SetBinContent(ipt + 1, relative_error[set][ipt]);
             // cout << "The relative uncertainity for set"<<set<<" is "<<relative_error[set][ipt] << endl;
         }
         // cout<<"\n\n\n";
@@ -211,16 +214,16 @@ void systematics()
     double frac_uncertainity[npt] = {0};
     for (int ipt = 0; ipt < npt; ipt++)
     {
-        for(int set = 0; set < 4; set++){    //changed here
+        for (int set = 0; set < 4; set++)
+        { // changed here
             // if(set != 2)
-        systematics_square[ipt] += relative_error[set][ipt]*relative_error[set][ipt];
+            systematics_square[ipt] += relative_error[set][ipt] * relative_error[set][ipt];
         }
 
-        systematics[ipt] = (TMath::Sqrt(systematics_square[ipt]))*Ydefault[ipt];
+        systematics[ipt] = (TMath::Sqrt(systematics_square[ipt])) * Ydefault[ipt];
         frac_uncertainity[ipt] = TMath::Sqrt(systematics_square[ipt]);
-        hfrac_total->SetBinContent(ipt+1, frac_uncertainity[ipt]);
-        cout<<frac_uncertainity[ipt]<<endl;
-
+        hfrac_total->SetBinContent(ipt + 1, frac_uncertainity[ipt]);
+        cout << frac_uncertainity[ipt] << endl;
     }
 
     TGraphErrors *gsys = new TGraphErrors(npt, x, Ydefault, xerr, systematics);
@@ -238,7 +241,7 @@ void systematics()
     gyield->Draw("psame");
     // gyield->Draw("ap");
     c->SaveAs("/home/sawan/Documents/systematics.png");
-    
+
     // plotting the fractional uncertainities.
 
     gPad->SetLogy(0);
@@ -248,17 +251,14 @@ void systematics()
     hfrac_total->GetYaxis()->SetRangeUser(0, 0.3);
     hfrac_total->Draw();
     leg->AddEntry(hfrac_total, "total systematic uncertainity");
-    for (int i = 0; i < 4; i++)  //changed here
+    for (int i = 0; i < 4; i++) // changed here
     {
-        hfrac[i]->SetLineColor(i+2);
+        hfrac[i]->SetLineColor(i + 2);
         hfrac[i]->SetLineWidth(2);
         hfrac[i]->Draw("same");
         leg->AddEntry(hfrac[i], var_names[i].c_str());
     }
     leg->Draw();
-    
-    c->SaveAs("/home/sawan/Documents/fraction_uncertainity.png");
-    
 
-    
+    c->SaveAs("/home/sawan/Documents/fraction_uncertainity.png");
 }

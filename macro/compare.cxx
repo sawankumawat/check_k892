@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include "src/style.h"
-#include "src/fitfunc.h"
+// #include "src/fitfunc.h"
 
 using namespace std;
 
@@ -19,13 +19,6 @@ void compare()
     TH1F *hmass[5];
     TH1F *hwidth[5];
     TH1F *hyield[5];
-
-    // file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_lowIR/LHC23_pass1_lowB_lowIR.root", "READ");
-    // file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23zf/LHC23zf.root", "READ"); // low IR (~10 kHz)
-    // file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23zm/LHC23zm.root", "READ"); // low IR (~50 kHz)
-    // file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23zk/LHC23zk.root", "READ"); // low IR (~10 kHz)
-    // file[1] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23_pass1_lowB_highIR_sampling/LHC23_pass1_lowB_highIR_sampling.root", "READ");
-    // file[2] = new TFile("/home/sawan/check_k892/output/pbpb/kstar/LHC23zzh_pass1/fixed_width/pbpb.root", "READ"); //pbpb data
 
     file[0] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23f/LHC23f.root", "READ");     // low IR (~10 kHz)
     file[1] = new TFile("/home/sawan/check_k892/output/pp/kstar/LHC23h/LHC23h.root", "READ");     // low IR (~10 kHz)
@@ -108,7 +101,7 @@ void compare()
     // massleg->AddEntry(hmass[1], "pp 13.6 TeV high IR", "lep");
     // massleg->AddEntry(hmass[2], "Pb-Pb 5.36 TeV", "lep");
     massleg->Draw("l");
-    cmass->SaveAs("/home/sawan/check_k892/output/compare/mass.png");
+    // cmass->SaveAs("/home/sawan/check_k892/output/compare/mass.png");
 
     // TCanvas *cwidth = new TCanvas("", "", 1200, 1000);
     // SetCanvasStyle2(cwidth, 0.15, 0.05, 0.05, 0.15);
@@ -180,7 +173,7 @@ void compare()
     // yieldleg->AddEntry(hmass[1], "pp 13.6 TeV high IR", "lep");
     // yieldleg->AddEntry(hmass[2], "Pb-Pb 5.36 TeV", "lep");
     yieldleg->Draw("l");
-    cyield->SaveAs("/home/sawan/check_k892/output/compare/yield.png");
+    // cyield->SaveAs("/home/sawan/check_k892/output/compare/yield.png");
 
     // ratio of yields
     TCanvas *cyield_ratio = new TCanvas("", "", 1200, 1000);
@@ -229,5 +222,5 @@ void compare()
     // lat.SetTextSize(0.06);
     // lat.SetTextFont(42);
     // lat.DrawLatex(0.5, 0.88, "pp 13.6 TeV");
-    cyield_ratio->SaveAs("/home/sawan/check_k892/output/compare/yield_ratio.png");
+    // cyield_ratio->SaveAs("/home/sawan/check_k892/output/compare/yield_ratio.png");
 }

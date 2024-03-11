@@ -9,6 +9,8 @@ void SetHistoStyle(TH1 *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
     h->GetYaxis()->SetLabelSize(Lsizey);
     h->GetXaxis()->SetTitleOffset(Offsetx);
     h->GetYaxis()->SetTitleOffset(Offsety);
+    h->GetXaxis()->CenterTitle(true);
+    h->GetYaxis()->CenterTitle(true);
 }
 
 void SetHistoQA(TH1 *h){
@@ -17,6 +19,7 @@ void SetHistoQA(TH1 *h){
     h->SetLineColor(1);
     h->SetMarkerSize(1.4);
     h->SetLineWidth(2);
+    h->SetTitle(0);
     // h->GetXaxis()->SetNdivisions(506);
     // h->GetYaxis()->SetNdivisions(505);
     h->GetXaxis()->SetLabelOffset(0.015);
@@ -26,9 +29,11 @@ void SetHistoQA(TH1 *h){
     h->GetXaxis()->SetTitleSize(0.05);
     h->GetXaxis()->SetTickLength(0.04);
     h->GetXaxis()->SetTitleOffset(1.2);
+    h->GetXaxis()->CenterTitle(true);
+    h->GetYaxis()->CenterTitle(true);
     h->GetYaxis()->SetTitleOffset(1.7);
     h->GetYaxis()->SetDecimals(false);
-    h->GetYaxis()->SetLabelOffset(0.013);
+    h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.04);
     h->GetYaxis()->SetTickLength(0.04);

@@ -5,6 +5,8 @@
         "c1.C": "cpp",
         "cmath": "cpp",
         "new": "cpp",
-        "Spectra.C": "cpp"
+        "Spectra.C": "cpp",
+        "pass4cde_corrected.C": "cpp",
+        "c1_n2.C": "cpp"
     }
 }

@@ -174,7 +174,6 @@ void kstar()
         TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange[ip], highfitrange[ip], 3); // only signal
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
-        fitFcn->SetParameter(2, 30000);      // yield
         fitFcn->SetParLimits(2, 0, 10e9);    // Yield
         fitFcn->SetParameter(1, 0.047);      // width
         fitFcn->FixParameter(1, 0.047);      // width
@@ -182,15 +181,15 @@ void kstar()
 
         fitFcn->SetParNames("Mass","Width","Yield","A","B","C","D");
         // Redirect standard output to /dev/null
-        int old_stdout = dup(1);
-        freopen("/dev/null", "w", stdout);
+        // int old_stdout = dup(1);
+        // freopen("/dev/null", "w", stdout);
 
-        r = hfsig->Fit(fitFcn, "REBMSQ0+"); // signal after bkg subtraction
+        r = hfsig->Fit(fitFcn, "REBMS+"); // signal after bkg subtraction
 
         // Restore standard output
-        fflush(stdout);
-        dup2(old_stdout, 1);
-        close(old_stdout);
+        // fflush(stdout);
+        // dup2(old_stdout, 1);
+        // close(old_stdout);
 
         //****************************************************************************************************************
 

@@ -25,7 +25,7 @@ void SetHistoQA(TH1 *h){
     h->GetXaxis()->SetLabelOffset(0.015);
     h->GetXaxis()->SetLabelFont(42);
     h->GetXaxis()->SetTitleFont(42);
-    h->GetXaxis()->SetLabelSize(0.04);
+    h->GetXaxis()->SetLabelSize(0.045);
     h->GetXaxis()->SetTitleSize(0.05);
     h->GetXaxis()->SetTickLength(0.04);
     h->GetXaxis()->SetTitleOffset(1.2);
@@ -35,7 +35,7 @@ void SetHistoQA(TH1 *h){
     h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
-    h->GetYaxis()->SetLabelSize(0.04);
+    h->GetYaxis()->SetLabelSize(0.045);
     h->GetYaxis()->SetTickLength(0.04);
     h->GetYaxis()->SetTitleSize(0.05);
     h->GetYaxis()->SetTitleFont(42);
@@ -54,18 +54,18 @@ void SetGrapherrorStyle(TGraphErrors *gr, int markercolor, int linecolor)
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);
-    gr->GetXaxis()->SetLabelSize(0.04);
-    gr->GetXaxis()->SetTitleSize(0.04);
+    gr->GetXaxis()->SetLabelSize(0.045);
+    gr->GetXaxis()->SetTitleSize(0.05);
     gr->GetXaxis()->SetTickLength(0.04);
     gr->GetXaxis()->SetTitleOffset(1.2);
-    gr->GetYaxis()->SetTitleOffset(1.7);
+    gr->GetYaxis()->SetTitleOffset(1.2);
     gr->GetYaxis()->CenterTitle(true);
     gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
-    gr->GetYaxis()->SetLabelSize(0.04);
+    gr->GetYaxis()->SetLabelSize(0.045);
     gr->GetYaxis()->SetTickLength(0.04);
-    gr->GetYaxis()->SetTitleSize(0.04);
+    gr->GetYaxis()->SetTitleSize(0.05);
     gr->GetYaxis()->SetTitleFont(42);
 }
 
@@ -82,8 +82,8 @@ void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);
-    gr->GetXaxis()->SetLabelSize(0.04);
-    gr->GetXaxis()->SetTitleSize(0.04);
+    gr->GetXaxis()->SetLabelSize(0.045);
+    gr->GetXaxis()->SetTitleSize(0.05);
     gr->GetXaxis()->SetTickLength(0.04);
     gr->GetXaxis()->SetTitleOffset(1.2);
     gr->GetYaxis()->SetTitleOffset(1.7);
@@ -91,20 +91,20 @@ void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
     gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
-    gr->GetYaxis()->SetLabelSize(0.04);
+    gr->GetYaxis()->SetLabelSize(0.045);
     gr->GetYaxis()->SetTickLength(0.04);
-    gr->GetYaxis()->SetTitleSize(0.04);
+    gr->GetYaxis()->SetTitleSize(0.05);
     gr->GetYaxis()->SetTitleFont(42);
 }
 
 void SetCanvasStyle2(TCanvas *c, float leftmargin, float rightmargin, float topmargin, float bottommargin)
 {
     c->Range(0, 0, 1, 1);
-    c->SetBorderSize(2);
+    // c->SetBorderSize(2);
     c->SetBorderMode(0);
     c->SetFillColor(10);
     c->SetFrameFillColor(10);
-    c->SetFrameLineWidth(2);
+    // c->SetFrameLineWidth(2);
     // c->SetLeftMargin(0.2);
     // c->SetRightMargin(0.05);
     // c->SetTopMargin(0.08);

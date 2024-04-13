@@ -8,6 +8,7 @@ const string kcoll = "pp/";
 const bool multipanel_plots = 0;
 const bool save_plots = 1;
 
+
 // pbpb datasets
 //  const string kDataset = "23zzk_pass1_relval";
 //  const string kDataset = "LHC23zzh_cpass8";
@@ -34,10 +35,15 @@ const bool save_plots = 1;
 // const string kDataset = "LHC23h";  // IR (~130 kHz)
 // const string kDataset = "LHC23t";  // IR (1.3 MHz)
 //  const string kDataset = "LHC22o_apass4";
- const string kDataset = "900GeV";
+//  const string kDataset = "900GeV";
+// const string kDataset = "LHC220_pass6_small/188648";
+// const string kDataset = "LHC220_pass6_small/190048";
+// const string kDataset = "LHC220_pass6_small/190185";
+const string kDataset = "LHC220_pass6_small/190325";
 
 const string kDataFilename = "../data/" + kcoll + kParticle + kDataset + "/AnalysisResults.root"; // data file
-const string kSignalOutput = "../output/" + kcoll + kParticle + kDataset;                         // output directory
+// const string kSignalOutput = "../output/" + kcoll + kParticle + kDataset;                         // output directory
+const string kSignalOutput = "/home/sawan/check_k892/mc";                       // output directory
 
 const int klowerpad = 2;
 const int kupperpad = 2;

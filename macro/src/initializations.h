@@ -15,8 +15,6 @@ TH1F *herrorwidth = new TH1F("herrorwidth", "", Npt, 0.5, 16); // for error band
 
 TLatex *t2 = new TLatex();
 
-
-
 //**Variables and arrays needed *******************************************************************************************
 
 Double_t integralsignalfunc[Npt];                         // for calculation of area under signal only (after fitting and extraction BW signal)
@@ -29,6 +27,7 @@ TFitResultPtr r;                                          // for fitting using T
 TH1D *fHistTotal[Npt];                                    // for sig+bg
 TH1D *fHistBkg[Npt];                                      // for mixedbg
 TH1D *fHistbkgLS[Npt];                                    // for like sign
+TH1D *fHistbkgLS_anti[Npt];                               // for like sign_anti
 TH1D *fHistlike[Npt];                                     // for resultant like bg
 TH1D *histPP[Npt];                                        // for like pp bg
 TH1D *histMM[Npt];                                        // for like mm bg
@@ -60,7 +59,6 @@ Double_t yieldcalc1[Npt], yielderror1[Npt];
 Double_t Yield_value_par, Yield_error_par; // calculation of raw yield from fitting parameter
 Double_t BR = 0.66;                        // branching ratio
 
-
 int bmin, bmax;
 Double_t hBCError_1, bkgvalue, Integral_BW_withsigma, fYield_BinCount, YieldIntegral_BW, Yfraction_cBW, sum_tail_correction, Total_Ybincounting, Tail_correction_plusm, Tail_correction_minusm, Error_2, Final_pro_error;
 Double_t nlow, nhigh;
@@ -70,10 +68,5 @@ Double_t Yield_bincount_hist;
 
 //**Canvas definitions and initialisations********************************************************************************
 
-
-
 //***************************************************************************************************
-TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-TCanvas *cgrid2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-TCanvas *cgrid_bkg1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
-TCanvas *cgrid_bkg2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
+

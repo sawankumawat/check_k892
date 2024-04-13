@@ -5,23 +5,65 @@
 #include "src/style.h"
 #include "src/fitfunc.h"
 #include "src/initializations.h"
+#include <TSystem.h>
 using namespace std;
+
+// void createFolderIfNotExists(const char *folderPath)
+// {
+//     // Check if the folder exists
+//     if (!gSystem->AccessPathName(folderPath))
+//     {
+//         // Folder exists
+//         printf("Folder '%s' already exists.\n", folderPath);
+//     }
+//     else
+//     {
+//         // Folder doesn't exist, create it
+//         if (gSystem->MakeDirectory(folderPath) == 0)
+//         {
+//             printf("Folder '%s' created successfully.\n", folderPath);
+//         }
+//         else
+//         {
+//             printf("Error: Failed to create folder '%s'.\n", folderPath);
+//         }
+//     }
+// }
 
 void kstar()
 
 {
+    // const char *folderPath = kSignalOutput.c_str();
+    // createFolderIfNotExists(folderPath);
+
+    // const string kResBkg = "MIX";
     const string kResBkg = "LIKE";
-    const string kbkg = "pol2";
+    const string kbkg = "pol3";
 
     // Folder name inside the Analysis.root file *****************************************
 
     const string kfoldername = "lf-k892analysis";
+    // const string kfoldername = "lf-k892analysis_all_manual_cuts";
+    // const string kfoldername = "lf-k892analysis_manual_trk_sel";
+    // const string kfoldername = "lf-k892analysis_mult_calib";
+    // const string kfoldername = "lf-k892analysis_tof_high_pt";
+    // const string kfoldername = "lf-k892analysis_variable_vtz_bins";
+    // const string kfoldername = "lf-k892analysis_mult_bins_variable";
+    // const string kfoldername = "lf-k892analysis_mult_vz_variable";
+    // const string kfoldername = "lf-k892analysis_high_inv_bins";
+    // const string kfoldername = "lf-k892analysis_DCAxy_verytight";
+    // const string kfoldername = "lf-k892analysis_no_pvcontributor";
     // const string kfoldername = "lf-k892analysis_PID_TPC_30";
     // const string kfoldername = "lf-k892analysis_PID_combined_20";
     // const string kfoldername = "lf-k892analysis_mix_10";
 
-    const int kRebin = 5;
+    const int kRebin = 1;
     const float txtsize = 0.045;
+
+    TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
+    TCanvas *cgrid2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
+    TCanvas *cgrid_bkg1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
+    TCanvas *cgrid_bkg2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
 
     // some initializations ********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
@@ -29,8 +71,8 @@ void kstar()
     double highfitrange[Npt + 20];
     for (int i = 0; i < Npt; i++)
     {
-        lowfitrange[i] = (kResBkg == "MIX") ? lowfitrangeme[i] : lowfitrangels[i];
-        highfitrange[i] = (kResBkg == "MIX") ? highfitrangeme[i] : highfitrangels[i];
+        lowfitrange[i] = lowfitrangeme[i];
+        highfitrange[i] = highfitrangeme[i];
     }
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
@@ -65,8 +107,8 @@ void kstar()
 
     // Input file
 
-    // TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pbpb/23zzk_pass1_relval/AnalysisResults.root", "Read");
-    TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
+    TFile *fInputFile = new TFile("/home/sawan/check_k892/mc/192370.root", "Read");
+    // TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
     if (!fInputFile)
     {
         cerr << "File not found " << endl;
@@ -74,6 +116,11 @@ void kstar()
     }
 
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
+    if (hentries == nullptr)
+    {
+        cerr << "Histogram not found" << endl;
+        return;
+    }
     double Event = hentries->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
@@ -81,20 +128,27 @@ void kstar()
 
     TH3F *fHistNum = (TH3F *)fInputFile->Get(Form("%s/h3k892invmassDS", kfoldername.c_str()));
     TH3F *fHistNum_anti = (TH3F *)fInputFile->Get(Form("%s/h3k892invmassDSAnti", kfoldername.c_str()));
-    fHistNum->Add(fHistNum_anti, 1);
-    fHistNum->Scale(0.5);
+
     TH3F *fHistDen = (TH3F *)fInputFile->Get(Form("%s/h3k892invmassME", kfoldername.c_str()));
     TH3F *fHistLS = (TH3F *)fInputFile->Get(Form("%s/h3k892invmassLS", kfoldername.c_str()));
     TH3F *fHistLS_anti = (TH3F *)fInputFile->Get(Form("%s/h3k892invmassLSAnti", kfoldername.c_str()));
+
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistLS == nullptr)
+    {
+        cerr << "Invariant mass histograms not found!!!!!!!!!!!!" << endl;
+        return;
+    }
+
+    fHistNum->Add(fHistNum_anti, 1);
+    // fHistNum->Scale(0.5);
     fHistLS->Add(fHistLS_anti, 1);
-    fHistLS->Scale(0.5);
+    // fHistLS->Scale(0.5);
 
     // cout << " THE NUMBER OF BINS IN THE HISTOGRAM IS " << fHistNum->GetNbinsZ()<<endl;
 
     gstyle(); // this is not gStyle, it is defined in the header file style.h
     // gStyle->SetOptStat(0);
     // gStyle->SetOptFit(0);
-
 
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
@@ -104,6 +158,14 @@ void kstar()
         fHistTotal[ip] = fHistNum->ProjectionZ(Form("hSig_%d", ip), -1, -1, fHistNum->GetYaxis()->FindBin(lowpt + 0.001), fHistNum->GetYaxis()->FindBin(highpt - 0.001), "E"); // ProjectionZ("title", xrangelow, xrangehigh, yrangelow, yrangehigh). range -1, -1 is used to take full range in the x axis. In the 3D histogram, x axis is centrality (V0M), y axis is pT, z axis is invariant mass
         fHistBkg[ip] = fHistDen->ProjectionZ(Form("hbkg_%d", ip), -1, -1, fHistDen->GetYaxis()->FindBin(lowpt + 0.001), fHistDen->GetYaxis()->FindBin(highpt - 0.001), "E");
         fHistbkgLS[ip] = fHistLS->ProjectionZ(Form("hbkgLS_%d", ip), -1, -1, fHistLS->GetYaxis()->FindBin(lowpt + 0.001), fHistLS->GetYaxis()->FindBin(highpt - 0.001), "E");
+        fHistbkgLS_anti[ip] = fHistLS_anti->ProjectionZ(Form("hbkgLS_anti_%d", ip), -1, -1, fHistLS_anti->GetYaxis()->FindBin(lowpt + 0.001), fHistLS_anti->GetYaxis()->FindBin(highpt - 0.001), "E");
+        for (int i = 0; i < fHistbkgLS[ip]->GetNbinsX(); i++)
+        {
+            double binls = fHistbkgLS[ip]->GetBinContent(i);
+            double binlsanti = fHistbkgLS_anti[ip]->GetBinContent(i);
+            double binlsds = sqrt(binls * binlsanti);
+            fHistbkgLS[ip]->SetBinContent(i, binlsds);
+        }
 
         auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin / fHistTotal[ip]->GetXaxis()->GetNbins();
         // cout << "no. of bins " << fHistTotal[ip]->GetXaxis()->GetNbins() << " xmin value " << fHistTotal[ip]->GetXaxis()->GetXmin() << " xmax value " << fHistTotal[ip]->GetXaxis()->GetXmax() << endl;
@@ -113,8 +175,8 @@ void kstar()
         TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
         //*****************************************************************************************************************************
 
-        // if (kResBkg == "MIX")
-        // {
+        if (kResBkg == "MIX")
+        {
             sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistTotal[ip]->GetXaxis()->FindBin(highnorm[ip])));
             bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistBkg[ip]->GetXaxis()->FindBin(highnorm[ip])));
             normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
@@ -126,20 +188,20 @@ void kstar()
             hfsig->Rebin(kRebin);
 
             hfsig->Add(hfbkg, -1);
-        // }
-        // else
-        // {
-        //     // sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistTotal[ip]->GetXaxis()->FindBin(highnorm[ip])));
-        //     // bkg_integral = (fHistbkgLS[ip]->Integral(fHistbkgLS[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistbkgLS[ip]->GetXaxis()->FindBin(highnorm[ip])));
-        //     // normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
-        //     // hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
-        //     // hfbkg->Scale(normfactor);
+        }
+        else
+        {
+            // sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistTotal[ip]->GetXaxis()->FindBin(highnorm[ip])));
+            // bkg_integral = (fHistbkgLS[ip]->Integral(fHistbkgLS[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistbkgLS[ip]->GetXaxis()->FindBin(highnorm[ip])));
+            // normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
+            // hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
+            // hfbkg->Scale(normfactor);
 
-        //     hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
-        //     hfbkg->Rebin(kRebin);
-        //     hfsig->Rebin(kRebin);
-        //     hfsig->Add(hfbkg, -1);
-        // }
+            hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
+            hfbkg->Rebin(kRebin);
+            hfsig->Rebin(kRebin);
+            hfsig->Add(hfbkg, -1);
+        }
 
         fHistTotal[ip]->Rebin(kRebin);
 
@@ -179,7 +241,7 @@ void kstar()
         fitFcn->FixParameter(1, 0.047);      // width
                                              // fitFcn->SetParLimits(1, 0, 0.120); // width
 
-        fitFcn->SetParNames("Mass","Width","Yield","A","B","C","D");
+        fitFcn->SetParNames("Mass", "Width", "Yield", "A", "B", "C", "D");
         // Redirect standard output to /dev/null
         // int old_stdout = dup(1);
         // freopen("/dev/null", "w", stdout);
@@ -327,12 +389,13 @@ void kstar()
 
         hfsig->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
         hfsig->GetYaxis()->SetMaxDigits(2);
-        hfsig->GetYaxis()->SetTitle("Counts");
+        hfsig->GetYaxis()->CenterTitle(1);
+        hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f", binwidth_file));
 
         SetHistoStyle(hfbkg, kRed, 24, 1.5, 0.05, 0.05, 0.05, 0.05, 1.13, 1.4);
         hfbkg->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
         // hfsig->GetYaxis()->SetMaxDigits(2);
-        hfbkg->GetYaxis()->SetTitle("Counts");
+        hfbkg->GetYaxis()->SetTitle(Form("Counts/%.3f", binwidth_file));
 
         fitFcn1->SetLineColor(4);
         fitFcn1->SetLineStyle(2);
@@ -348,7 +411,7 @@ void kstar()
         auto chibyndf = fitFcn->GetChisquare() / fitFcn->GetNDF();
 
         // inv mass histograms after the background subraction
-        (multipanel_plots == 1) ? (ip < kupperpad * klowerpad ) ? cgrid1->cd(ip + 1) : cgrid2->cd(ip + 1 - kupperpad * klowerpad) : cinv[ip]->cd();
+        (multipanel_plots == 1) ? (ip < kupperpad * klowerpad) ? cgrid1->cd(ip + 1) : cgrid2->cd(ip + 1 - kupperpad * klowerpad) : cinv[ip]->cd();
         gPad->SetRightMargin(0.015);
         gPad->SetLeftMargin(0.15);
         gPad->SetBottomMargin(0.15);
@@ -399,7 +462,8 @@ void kstar()
                            pT_bins[ip + 1]));
         if (multipanel_plots == 0 && save_plots == 1)
             cinv[ip]->SaveAs(Form((kSignalOutput + "/hfitsig_pt%d.png").c_str(), ip + 1));
-        if (multipanel_plots == 1 ) cinv[ip]->Close();
+        if (multipanel_plots == 1)
+            cinv[ip]->Close();
 
         // inv distribution before the background subtraction
         (multipanel_plots == 1) ? (ip < klowerpad * kupperpad) ? cgrid_bkg1->cd(ip + 1) : cgrid_bkg2->cd(ip + 1 - klowerpad * kupperpad) : cSigbkg[ip]->cd();
@@ -422,7 +486,7 @@ void kstar()
         fHistTotal[ip]->SetMarkerSize(1.1);
         hfbkg->SetMarkerSize(1.1);
         fHistTotal[ip]->Draw("E");
-        fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
+        fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f", binwidth_file));
         TLegend *leg112 = new TLegend(0.60554, 0.7812735, 0.852902, 0.8938954, NULL, "brNDC");
         leg112->AddEntry(fHistTotal[ip], "Sig+bkg", "p");
         SetLegendStyle(leg112);
@@ -435,7 +499,7 @@ void kstar()
         hfbkg->Draw("E same");
         if (kResBkg == "MIX")
             // hbkg_nopeak->Draw("BAR same");
-        (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
+            (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
         // leg112->Draw();
         ltx->Draw();
         if (multipanel_plots == 0 && save_plots == 1)
@@ -460,27 +524,27 @@ void kstar()
         cgrid_bkg2->Close();
     }
 
-    TFile *filecmp = new TFile((kSignalOutput + "/" + kDataset + ".root").c_str(), "RECREATE");
+    // TFile *filecmp = new TFile((kSignalOutput + "/" + kDataset + ".root").c_str(), "RECREATE");
 
-    TCanvas *csig = new TCanvas("", "", 1200, 1000);
+    TCanvas *csig = new TCanvas("", "", 720, 720);
     SetCanvasStyle2(csig, 0.18, 0.05, 0.08, 0.15);
-    // SetHistoStyle(hsignificance, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
-    // hsignificance->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    // hsignificance->Draw();
+    SetHistoStyle(hsignificance, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
+    hsignificance->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hsignificance->Draw();
     // hsignificance->Write("significance");
-    // csig->SaveAs((kSignalOutput + "/significance.png").c_str());
-    // csig->Clear();
+    csig->SaveAs((kSignalOutput + "/significance.png").c_str());
+    csig->Clear();
 
     // // // chisquare_NDF vs pt
 
-    // hChiSquare->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    // hChiSquare->GetYaxis()->SetTitle("#chi^{2}/NDF ");
-    // SetHistoQA(hChiSquare);
-    // hChiSquare->Draw("Pe");
-    // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-    // csig->SaveAs((kSignalOutput + "/chi.png").c_str());
-    // // hChiSquare->Write("chils");
-    // csig->Clear();
+    hChiSquare->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    hChiSquare->GetYaxis()->SetTitle("#chi^{2}/NDF ");
+    SetHistoQA(hChiSquare);
+    hChiSquare->Draw("Pe");
+    t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
+    csig->SaveAs((kSignalOutput + "/chi.png").c_str());
+    // hChiSquare->Write("chils");
+    csig->Clear();
 
     // // mass vs pt
     hmass->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -489,7 +553,7 @@ void kstar()
     SetHistoStyle(hmass, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
     hmass->SetMaximum(0.91);
     hmass->Draw("pe");
-    hmass->Write("mass");
+    // hmass->Write("mass");
     TLegend *massleg = new TLegend(0.65, 0.2, 0.9, 0.3);
     SetLegendStyle(massleg);
     massleg->SetTextSize(txtsize);
@@ -512,7 +576,7 @@ void kstar()
     hwidth->SetMaximum(hwidth->GetMaximum() * 2);
     hwidth->SetMinimum(0);
     hwidth->Draw("pe");
-    hwidth->Write("width");
+    // hwidth->Write("width");
     TLegend *widthleg = new TLegend(0.2, 0.75, 0.4, 0.85);
     SetLegendStyle(widthleg);
     widthleg->SetTextSize(txtsize);
@@ -527,7 +591,7 @@ void kstar()
     widthleg->Draw();
     csig->SaveAs((kSignalOutput + "/width_pt.png").c_str());
     csig->Clear();
-
+    TFile *fyield = new TFile((kSignalOutput + "/yield.root").c_str(), "RECREATE");
     // // // Yield vs pT
     SetHistoStyle(hintegral_yield, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -535,7 +599,8 @@ void kstar()
     gPad->SetLogy();
     hintegral_yield->GetXaxis()->SetRangeUser(-0.1, 15.2);
     hintegral_yield->Draw("pe");
-    hintegral_yield->Write("yield");
+    hintegral_yield->Write();
+    // hintegral_yield->Write("yield");
     TLegend *legyield = new TLegend(0.8, 0.8, 0.91, 0.9);
     SetLegendStyle(legyield);
     legyield->SetTextSize(txtsize);

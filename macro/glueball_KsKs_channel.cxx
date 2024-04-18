@@ -14,7 +14,7 @@ float parameter0(float mass, float width)
     return norm;
 }
 
-void glueball()
+void glueball_KsKs_channel()
 
 {
     const string kResBkg = "MIX";

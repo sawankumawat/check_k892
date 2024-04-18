@@ -107,8 +107,8 @@ void kstar()
 
     // Input file
 
-    TFile *fInputFile = new TFile("/home/sawan/check_k892/mc/192370.root", "Read");
-    // TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
+    // TFile *fInputFile = new TFile("/home/sawan/check_k892/mc/192370.root", "Read");
+    TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
     if (!fInputFile)
     {
         cerr << "File not found " << endl;
@@ -164,7 +164,7 @@ void kstar()
             double binls = fHistbkgLS[ip]->GetBinContent(i);
             double binlsanti = fHistbkgLS_anti[ip]->GetBinContent(i);
             double binlsds = sqrt(binls * binlsanti);
-            fHistbkgLS[ip]->SetBinContent(i, binlsds);
+            fHistbkgLS[ip]->SetBinContent(i, 2*binlsds);
         }
 
         auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin / fHistTotal[ip]->GetXaxis()->GetNbins();

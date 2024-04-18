@@ -39,11 +39,12 @@ const bool save_plots = 1;
 // const string kDataset = "LHC220_pass6_small/188648";
 // const string kDataset = "LHC220_pass6_small/190048";
 // const string kDataset = "LHC220_pass6_small/190185";
-const string kDataset = "LHC220_pass6_small/190325";
+// const string kDataset = "LHC220_pass6_small/190325";
+const string kDataset = "LHC220_pass6_small/197586";
 
 const string kDataFilename = "../data/" + kcoll + kParticle + kDataset + "/AnalysisResults.root"; // data file
-// const string kSignalOutput = "../output/" + kcoll + kParticle + kDataset;                         // output directory
-const string kSignalOutput = "/home/sawan/check_k892/mc";                       // output directory
+const string kSignalOutput = "../output/" + kcoll + kParticle + kDataset;                         // output directory
+// const string kSignalOutput = "/home/sawan/check_k892/mc";                       // output directory for mc
 
 const int klowerpad = 2;
 const int kupperpad = 2;

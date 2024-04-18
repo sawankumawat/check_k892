@@ -104,8 +104,8 @@ void glueball_KK_channel()
     //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
     TH1D *hfsig = (TH1D *)fHistTotal->Clone();
     //*****************************************************************************************************************************
-    float normalisationlow = 1.1;
-    float normalisationhigh = 1.15;
+    float normalisationlow = 2.1;
+    float normalisationhigh = 2.2;
     if (kResBkg == "MIX" || kResBkg == "ROTATED")
     {
         sigbkg_integral = (fHistTotal->Integral(fHistTotal->GetXaxis()->FindBin(normalisationlow), fHistTotal->GetXaxis()->FindBin(normalisationhigh)));
@@ -135,7 +135,8 @@ void glueball_KK_channel()
     SetCanvasStyle2(c1, 0.13, 0.03, 0.05, 0.13);
     SetHistoQA(hfsig);
     hfsig->SetTitle(0);
-    hfsig->SetMarkerStyle(8);
+    hfsig->SetMarkerStyle(20);
+    hfsig->SetMarkerSize(0.5);
     hfsig->SetMarkerColor(kBlack);
     hfsig->SetLineColor(kBlack);
     hfsig->GetXaxis()->SetTitle("m_{K^{#pm}K^{#mp}} (GeV/c^{2})");
@@ -156,8 +157,8 @@ void glueball_KK_channel()
     // gPad->Modified(); // Necessary to update the canvas with the new text size
     // gPad->Update();
 
-    // TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1, 2.3, 9);
-    TF1 *fitBW = new TF1("fitBW", gluefit3bW, 1, 2.4, 12);
+    TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1, 2.3, 9);
+    // TF1 *fitBW = new TF1("fitBW", gluefit3bW, 1, 2.4, 12);
     fitBW->SetParNames("Norm1", "mass1", "width1", "Norm2", "mass2", "width2", "norm3", "mass3", "width3", "p1", "p2");
     fitBW->SetParName(11, "p3");
     float f1270norm = parameter0(f1270Mass, f1270Width);
@@ -171,54 +172,54 @@ void glueball_KK_channel()
     fitBW->SetParameter(3, 1.2 * f1525norm);
     fitBW->SetParameter(4, f1525Mass);
     fitBW->SetParameter(5, f1525Width);
-    fitBW->SetParameter(6, 1.2 * f1710norm);
-    fitBW->SetParameter(7, f1710Mass);
-    fitBW->SetParameter(8, f1710Width);
+    // fitBW->SetParameter(6, 1.2 * f1710norm);
+    // fitBW->SetParameter(7, f1710Mass);
+    // fitBW->SetParameter(8, f1710Width);
 
     // fitBW->FixParameter(0, f1270norm);
     // fitBW->FixParameter(1, f1270Mass);
-    fitBW->FixParameter(2, f1270Width);
+    // fitBW->FixParameter(2, f1270Width);
     // fitBW->FixParameter(3, f1525norm);
     // fitBW->FixParameter(4, f1525Mass);
-    fitBW->FixParameter(5, f1525Width);
+    // fitBW->FixParameter(5, f1525Width);
     // fitBW->SetParLimits(4, f1525Mass - f1525Width * 3, f1525Mass + f1525Width * 3);
-    fitBW->FixParameter(7, f1710Mass);
+    // fitBW->FixParameter(7, f1710Mass);
     // fitBW->FixParameter(8, f1710Width);
     // fitBW->SetParLimits(7, f1710Mass - f1710Width * 3, f1710Mass + f1525Width * 3);
 
-    // hfsig->Fit("fitBW", "REBMS");
-    // double *par = fitBW->GetParameters();
-    // TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
-    // TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
-    // TF1 *Bw3 = new TF1("Bw3", RelativisticBW, 1, 2.3, 3);
-    // TF1 *expo = new TF1("expo", exponential_bkg, 1, 2.3, 3);
-    // // fitBW->Draw("same");
-    // Bw1->SetParameters(&par[0]);
-    // Bw2->SetParameters(&par[3]);
-    // Bw3->SetParameters(&par[6]);
-    // expo->SetParameters(&par[9]);
-    // Bw1->SetLineColor(28);
-    // Bw2->SetLineColor(6);
-    // Bw3->SetLineColor(7);
-    // expo->SetLineColor(4);
-    // Bw1->Draw("same");
-    // Bw2->Draw("same");
+    hfsig->Fit("fitBW", "REBMS");
+    double *par = fitBW->GetParameters();
+    TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
+    TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
+    TF1 *Bw3 = new TF1("Bw3", RelativisticBW, 1, 2.3, 3);
+    TF1 *expo = new TF1("expo", exponential_bkg, 1, 2.3, 3);
+    // fitBW->Draw("same");
+    Bw1->SetParameters(&par[0]);
+    Bw2->SetParameters(&par[3]);
+    Bw3->SetParameters(&par[6]);
+    expo->SetParameters(&par[9]);
+    Bw1->SetLineColor(28);
+    Bw2->SetLineColor(6);
+    Bw3->SetLineColor(7);
+    expo->SetLineColor(4);
+    Bw1->Draw("same");
+    Bw2->Draw("same");
     // Bw3->Draw("same");
-    // expo->Draw("same");
+    expo->Draw("same");
 
-    // TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
-    // lfit->SetFillColor(0);
-    // // lfit->SetBorderSize(0);
-    // lfit->SetFillStyle(0);
-    // lfit->SetTextFont(42);
-    // lfit->SetTextSize(0.04);
-    // lfit->AddEntry(hfsig, "Data", "lpe");
-    // lfit->AddEntry(fitBW, "3rBW+expol", "l");
-    // lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
-    // lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
+    TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
+    lfit->SetFillColor(0);
+    // lfit->SetBorderSize(0);
+    lfit->SetFillStyle(0);
+    lfit->SetTextFont(42);
+    lfit->SetTextSize(0.04);
+    lfit->AddEntry(hfsig, "Data", "lpe");
+    lfit->AddEntry(fitBW, "3rBW+expol", "l");
+    lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
+    lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
     // lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
-    // lfit->AddEntry(expo, "Expol", "l");
-    // lfit->Draw();
+    lfit->AddEntry(expo, "Expol", "l");
+    lfit->Draw();
 
     c1->SaveAs("/home/sawan/check_k892/output/pp/glueball/LHC22o_pass6/glueball_inv_sub.pdf");
 
@@ -232,6 +233,8 @@ void glueball_KK_channel()
     hbkg_nopeak->SetMarkerColor(kRed);
     hbkg_nopeak->SetFillColor(kRed);
     hbkg_nopeak->SetFillStyle(3001);
+    hbkg_nopeak->SetMarkerStyle(20);
+    hbkg_nopeak->SetMarkerSize(0.5);
     for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
     {
         if (hbkg_nopeak->GetBinCenter(i + 1) < normalisationlow || hbkg_nopeak->GetBinCenter(i + 1) > normalisationhigh)
@@ -240,9 +243,11 @@ void glueball_KK_channel()
         }
     }
 
-    fHistTotal->SetMarkerStyle(8);
+    fHistTotal->SetMarkerStyle(20);
+    fHistTotal->SetMarkerSize(0.5);
     fHistTotal->SetMarkerColor(kBlack);
-    hfbkg->SetMarkerStyle(8);
+    hfbkg->SetMarkerStyle(20);
+    hfbkg->SetMarkerSize(0.5);
     hfbkg->SetMarkerColor(kRed);
     fHistTotal->Draw("E");
     fHistTotal->GetYaxis()->SetTitle("Counts");
@@ -254,9 +259,11 @@ void glueball_KK_channel()
         SetHistoQA(fHistBkg_pp);
         SetHistoQA(fHistBkg_mm);
         fHistBkg_pp->SetMarkerStyle(20);
+        fHistBkg_pp->SetMarkerSize(0.5);
         fHistBkg_pp->SetMarkerColor(kBlue);
         fHistBkg_pp->Draw("E same");
         fHistBkg_mm->SetMarkerStyle(20);
+        fHistBkg_mm->SetMarkerSize(0.5);
         fHistBkg_mm->SetMarkerColor(kGreen);
         fHistBkg_mm->Draw("E same");
     }

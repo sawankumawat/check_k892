@@ -7,6 +7,8 @@
         "new": "cpp",
         "Spectra.C": "cpp",
         "pass4cde_corrected.C": "cpp",
-        "c1_n2.C": "cpp"
+        "c1_n2.C": "cpp",
+        "iostream": "cpp",
+        "string": "cpp"
     }
 }

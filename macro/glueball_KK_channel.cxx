@@ -104,13 +104,8 @@ void glueball_KK_channel()
     //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
     TH1D *hfsig = (TH1D *)fHistTotal->Clone();
     //*****************************************************************************************************************************
-<<<<<<< HEAD
-    float normalisationlow = 2.1;
-    float normalisationhigh = 2.2;
-=======
     float normalisationlow = 2.2;
     float normalisationhigh = 2.5;
->>>>>>> c84d947f7cee7eb289df7edc965e63e4377f306f
     if (kResBkg == "MIX" || kResBkg == "ROTATED")
     {
         sigbkg_integral = (fHistTotal->Integral(fHistTotal->GetXaxis()->FindBin(normalisationlow), fHistTotal->GetXaxis()->FindBin(normalisationhigh)));
@@ -194,38 +189,6 @@ void glueball_KK_channel()
     // fitBW->FixParameter(8, f1710Width);
     // fitBW->SetParLimits(7, f1710Mass - f1710Width * 3, f1710Mass + f1525Width * 3);
 
-<<<<<<< HEAD
-    hfsig->Fit("fitBW", "REBMS");
-    double *par = fitBW->GetParameters();
-    TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
-    TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
-    TF1 *Bw3 = new TF1("Bw3", RelativisticBW, 1, 2.3, 3);
-    TF1 *expo = new TF1("expo", exponential_bkg, 1, 2.3, 3);
-    // fitBW->Draw("same");
-    Bw1->SetParameters(&par[0]);
-    Bw2->SetParameters(&par[3]);
-    Bw3->SetParameters(&par[6]);
-    expo->SetParameters(&par[9]);
-    Bw1->SetLineColor(28);
-    Bw2->SetLineColor(6);
-    Bw3->SetLineColor(7);
-    expo->SetLineColor(4);
-    Bw1->Draw("same");
-    Bw2->Draw("same");
-    // Bw3->Draw("same");
-    expo->Draw("same");
-
-    TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
-    lfit->SetFillColor(0);
-    // lfit->SetBorderSize(0);
-    lfit->SetFillStyle(0);
-    lfit->SetTextFont(42);
-    lfit->SetTextSize(0.04);
-    lfit->AddEntry(hfsig, "Data", "lpe");
-    lfit->AddEntry(fitBW, "3rBW+expol", "l");
-    lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
-    lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
-=======
     // hfsig->Fit("fitBW", "REBMS");
     // double *par = fitBW->GetParameters();
     // TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
@@ -256,7 +219,6 @@ void glueball_KK_channel()
     // lfit->AddEntry(fitBW, "3rBW+expol", "l");
     // lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
     // lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
->>>>>>> c84d947f7cee7eb289df7edc965e63e4377f306f
     // lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
     lfit->AddEntry(expo, "Expol", "l");
     lfit->Draw();

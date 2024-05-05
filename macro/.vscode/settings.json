@@ -9,6 +9,7 @@
         "pass4cde_corrected.C": "cpp",
         "c1_n2.C": "cpp",
         "iostream": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "ratios.C": "cpp"
     }
 }

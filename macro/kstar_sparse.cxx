@@ -12,13 +12,13 @@ void kstar_sparse()
 
 {
 
-    // const string kResBkg = "MIX";
-    const string kResBkg = "LIKE";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "LIKE";
     const string kbkg = "pol3";
 
     // Folder name inside the Analysis.root file *****************************************
 
-    const string kfoldername = "kstarqa_all_event_sel";
+    const string kfoldername = "kstarqa";
 
     const int kRebin = 1;
     const float txtsize = 0.045;
@@ -112,6 +112,8 @@ void kstar_sparse()
     {
         lowpt = pT_bins[ip];
         highpt = pT_bins[ip + 1];
+        int multlow = 20;
+        int multhigh = 80;
 
         int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-7);
         int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-7);
@@ -119,16 +121,25 @@ void kstar_sparse()
         fHistDen->GetAxis(1)->SetRange(lbin, hbin);
         fHistLS->GetAxis(1)->SetRange(lbin, hbin);
 
+        int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-7);
+        int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-7);
+        // fHistNum->GetAxis(0)->SetRange(multlow, multhigh);
+        // fHistDen->GetAxis(0)->SetRange(multlow, multhigh);
+        // fHistLS->GetAxis(0)->SetRange(multlow, multhigh);
+
         fHistTotal[ip] = fHistNum->Projection(2, "E");
         fHistBkg[ip] = fHistDen->Projection(2, "E");
         fHistbkgLS[ip] = fHistLS->Projection(2, "E");
-
-        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin / fHistTotal[ip]->GetXaxis()->GetNbins();
+        fHistNum->SetName(Form("fHistNum_%d", ip));
+        fHistDen->SetName(Form("fHistDen_%d", ip));
+        fHistLS->SetName(Form("fHistLS_%d", ip));
 
         // fHistTotal[ip]->GetXaxis()->SetRangeUser(0.59, 1.49);
 
         //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
         TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
+        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin / fHistTotal[ip]->GetXaxis()->GetNbins();
+        cout << "The value of binwidth_file is: " << binwidth_file << endl;
         //*****************************************************************************************************************************
 
         if (kResBkg == "MIX")
@@ -138,11 +149,9 @@ void kstar_sparse()
             normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
             cout << "\n\n normalization factor " << 1 / normfactor << "\n\n";
             hfbkg = (TH1D *)fHistBkg[ip]->Clone();
-
             hfbkg->Scale(normfactor);
             hfbkg->Rebin(kRebin);
             hfsig->Rebin(kRebin);
-
             hfsig->Add(hfbkg, -1);
         }
         else
@@ -193,8 +202,8 @@ void kstar_sparse()
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
         fitFcn->SetParLimits(2, 0, 10e9);    // Yield
-        fitFcn->SetParameter(1, 0.0473);      // width
-        fitFcn->FixParameter(1, 0.0473);      // width
+        fitFcn->SetParameter(1, 0.0473);     // width
+        fitFcn->FixParameter(1, 0.0473);     // width
                                              // fitFcn->SetParLimits(1, 0, 0.120); // width
 
         fitFcn->SetParNames("Mass", "Width", "Yield", "A", "B", "C", "D");
@@ -323,7 +332,7 @@ void kstar_sparse()
         interror[ip] = fitFcn2->IntegralError((masspdg - 5 * widthpdg), (masspdg + 5 * widthpdg), &para[0], b);
 
         yieldcalc = integralsignalfunc[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file); // raw yield calculation
-        yielderror = interror[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file);          // raw yield error
+        yielderror = interror[ip]          / (Event * ptbinwidth[ip] * dy * BR * binwidth_file);          // raw yield error
 
         hintegral_yield->SetBinContent(ip + 1, yieldcalc);
         hintegral_yield->SetBinError(ip + 1, yielderror); // filling histogram including error
@@ -548,6 +557,7 @@ void kstar_sparse()
     csig->SaveAs((kSignalOutput + "/width_pt.png").c_str());
     csig->Clear();
     TFile *fyield = new TFile((kSignalOutput + "/yield.root").c_str(), "RECREATE");
+    
     // // // Yield vs pT
     SetHistoStyle(hintegral_yield, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");

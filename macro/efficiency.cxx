@@ -7,9 +7,9 @@ using namespace std;
 void efficiency()
 {
     // TFile *fileeff = new TFile("/home/sawan/check_k892/data/pp/kstar/199692.root", "READ");
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/200962.root", "READ");
+    TFile *fileeff = new TFile("/home/sawan/check_k892/200962.root", "READ");
     // TFile *fileeff = new TFile("/home/sawan/check_k892/phi_mc.root", "READ");
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/199692.root", "READ");
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/199692.root", "READ");
     // TFile *fileeff = new TFile("/home/sawan/check_k892/data/AnalysisResults.root", "READ");
 
     TFile *fileraw = new TFile((kSignalOutput + "/yield.root").c_str(), "READ");
@@ -32,8 +32,9 @@ void efficiency()
     // TH1D *h1rec = h2rec->ProjectionX("h1rec");
     // TH1D *h1recanti = h2recanti->ProjectionX("h1recanti");
 
-    TH1F *h1gen = (TH1F *)fileeff->Get("kstarqa_all_event_sel/histos/k892Gen");
-    TH1F *h1rec = (TH1F *)fileeff->Get("kstarqa_all_event_sel/histos/h1recpt");
+    TH1F *h1gen = (TH1F *)fileeff->Get("kstarqa/histos/k892Gen");
+    TH1F *h1rec = (TH1F *)fileeff->Get("kstarqa/histos/h3KstarRec");
+    // TH1F *h1rec = (TH1F *)fileeff->Get("kstarqa_all_event_sel/histos/h1recpt");
     //   TH1F *h1gen = (TH1F *)fileeff->Get("phianalysisrun3_id10133/h1PhiGen");
     // TH1F *h1rec = (TH1F *)fileeff->Get("phianalysisrun3_id10133/h1PhiRecsplit");
     // if (h1gen == nullptr || h1genanti == nullptr || h1rec == nullptr || h1recanti == nullptr)

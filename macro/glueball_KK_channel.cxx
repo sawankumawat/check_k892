@@ -23,7 +23,7 @@ void glueball_KK_channel()
     // Folder name inside the Analysis.root file *****************************************
     const string kfoldername = "phianalysisrun3";
 
-    const int kRebin = 2;
+    const int kRebin = 1;
     const float txtsize = 0.045;
     gStyle->SetOptFit(1111);
     gStyle->SetOptStat(110);
@@ -41,8 +41,9 @@ void glueball_KK_channel()
 
     // Input file
 
-    TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pp/glueball/LHC22o_pass6/kk_channel/195807/AnalysisResults.root", "Read");
-    if (fInputFile == nullptr)
+    // TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pp/glueball/LHC22o_pass6/kk_channel/195807/AnalysisResults.root", "Read");
+    TFile *fInputFile = new TFile("/home/sawan/check_k892/data/pp/glueball/LHC22o_pass6/198798.root", "Read");
+    if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
         return;
@@ -54,11 +55,11 @@ void glueball_KK_channel()
 
     //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
 
-    TH3F *fHistNum = (TH3F *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
-    TH3F *fHistDen = (TH3F *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
-    TH3F *fHistLS_pp = (TH3F *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
-    TH3F *fHistLS_mm = (TH3F *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
-    TH3F *fHist_rotated = (TH3F *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
+    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
+    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
+    THnSparseF *fHistLS_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
+    THnSparseF *fHistLS_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
+    THnSparseF *fHist_rotated = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
     if (fHistNum == nullptr || fHistDen == nullptr || fHistLS_pp == nullptr || fHistLS_mm == nullptr || fHist_rotated == nullptr)
     {
         cout << "One of the histograms is NULL" << endl;
@@ -71,26 +72,49 @@ void glueball_KK_channel()
     TH1D *fHistTotal;
     TH1D *fHistBkg;
 
-    int ptbinlow = fHistNum->GetYaxis()->FindBin(2 + 0.001);
-    int ptbinhigh = fHistNum->GetYaxis()->FindBin(10 - 0.001);
-    int multbinlow = fHistNum->GetXaxis()->FindBin(2 + 0.001);
-    int multbinhigh = fHistNum->GetXaxis()->FindBin(100 - 0.001);
+    int ptbinlow = 0;
+    int ptbinhigh = 10;
+    int multbinlow = 0;
+    int multbinhigh = 100;
 
-    fHistTotal = fHistNum->ProjectionZ("hSig", -1, -1, ptbinlow, ptbinhigh, "E"); // multiplicity, pT, inv mass
-    TH1D *fHistBkg_ME = fHistDen->ProjectionZ("hbkg", -1, -1, ptbinlow, ptbinhigh, "E");
-    TH1D *fHistBkg_pp = fHistLS_pp->ProjectionZ("hbkg_pp", -1, -1, ptbinlow, ptbinhigh, "E");
-    TH1D *fHistBkg_mm = fHistLS_mm->ProjectionZ("hbkg_mm", -1, -1, ptbinlow, ptbinhigh, "E");
-    TH1D *fHistBkg_rotated = fHist_rotated->ProjectionZ("hbkg_rotated", -1, -1, ptbinlow, ptbinhigh, "E");
+    int lbin = fHistNum->GetAxis(1)->FindBin(ptbinlow + 1e-7);
+    int hbin = fHistNum->GetAxis(1)->FindBin(ptbinhigh - 1e-7);
+    int lbinmult = fHistNum->GetAxis(0)->FindBin(multbinlow + 1e-7);
+    int hbinmult = fHistNum->GetAxis(0)->FindBin(multbinhigh - 1e-7);
+
+    fHistNum->GetAxis(1)->SetRange(lbin, hbin);
+    fHistDen->GetAxis(1)->SetRange(lbin, hbin);
+    fHistLS_pp->GetAxis(1)->SetRange(lbin, hbin);
+    fHistLS_mm->GetAxis(1)->SetRange(lbin, hbin);
+    fHist_rotated->GetAxis(1)->SetRange(lbin, hbin);
+
+    // fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
+    // fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
+    // fHistLS_pp->GetAxis(0)->SetRange(lbinmult, hbinmult);
+    // fHistLS_mm->GetAxis(0)->SetRange(lbinmult, hbinmult);
+    // fHist_rotated->GetAxis(0)->SetRange(lbinmult, hbinmult);
+
+    fHistTotal = fHistNum->Projection(2, "E"); // multiplicity, pT, inv mass
+    TH1D *fHistBkg_ME = fHistDen->Projection(2, "E");
+    TH1D *fHistBkg_pp = fHistLS_pp->Projection(2, "E");
+    TH1D *fHistBkg_mm = fHistLS_mm->Projection(2, "E");
+    TH1D *fHistBkg_rotated = fHist_rotated->Projection(2, "E");
+
+    if (fHistTotal == nullptr || fHistBkg_ME == nullptr || fHistBkg_pp == nullptr || fHistBkg_mm == nullptr || fHistBkg_rotated == nullptr)
+    {
+        cout << "One of the histogram projections is NULL" << endl;
+        return;
+    }
     if (kResBkg == "MIX")
     {
         fHistBkg = fHistBkg_ME;
     }
     else if (kResBkg == "LIKE")
     {
-        fHistBkg = fHistBkg_pp;
+        fHistBkg = (TH1D *)fHistBkg_pp->Clone();
         for (int ibkg = 0; ibkg < fHistBkg_pp->GetNbinsX(); ibkg++)
         {
-            fHistBkg->SetBinContent(ibkg + 1, 2 * sqrt(fHistBkg_pp->GetBinContent(ibkg + 1) * fHistBkg_mm->GetBinContent(ibkg + 1)));
+            fHistBkg->SetBinContent(ibkg + 1, 2.0 * sqrt(fHistBkg_pp->GetBinContent(ibkg + 1) * fHistBkg_mm->GetBinContent(ibkg + 1)));
         }
     }
     else
@@ -159,7 +183,7 @@ void glueball_KK_channel()
     // gPad->Modified(); // Necessary to update the canvas with the new text size
     // gPad->Update();
 
-    TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1, 2.3, 9);
+    TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1.15, 2.3, 9);
     // TF1 *fitBW = new TF1("fitBW", gluefit3bW, 1, 2.4, 12);
     fitBW->SetParNames("Norm1", "mass1", "width1", "Norm2", "mass2", "width2", "norm3", "mass3", "width3", "p1", "p2");
     fitBW->SetParName(11, "p3");
@@ -168,12 +192,12 @@ void glueball_KK_channel()
     float f1525norm = parameter0(f1525Mass, f1525Width);
     float f1710norm = parameter0(f1710Mass, f1710Width);
 
-    fitBW->SetParameter(0, 1.5 * f1270norm);
-    fitBW->SetParameter(1, f1270Mass);
+    fitBW->SetParameter(0, 1 * f1270norm);
+    fitBW->SetParameter(1, 1.2);
     fitBW->SetParameter(2, f1270Width);
-    fitBW->SetParameter(3, 1.2 * f1525norm);
-    fitBW->SetParameter(4, f1525Mass);
-    fitBW->SetParameter(5, f1525Width);
+    fitBW->SetParameter(3, 1 * f1710norm);
+    fitBW->SetParameter(4, 1.37);
+    // fitBW->SetParameter(5, f1710Width);
     // fitBW->SetParameter(6, 1.2 * f1710norm);
     // fitBW->SetParameter(7, f1710Mass);
     // fitBW->SetParameter(8, f1710Width);
@@ -189,7 +213,7 @@ void glueball_KK_channel()
     // fitBW->FixParameter(8, f1710Width);
     // fitBW->SetParLimits(7, f1710Mass - f1710Width * 3, f1710Mass + f1525Width * 3);
 
-    // hfsig->Fit("fitBW", "REBMS");
+    hfsig->Fit("fitBW", "REBMS");
     // double *par = fitBW->GetParameters();
     // TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
     // TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
@@ -209,21 +233,21 @@ void glueball_KK_channel()
     // // Bw3->Draw("same");
     // expo->Draw("same");
 
-    // TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
-    // lfit->SetFillColor(0);
-    // // lfit->SetBorderSize(0);
-    // lfit->SetFillStyle(0);
-    // lfit->SetTextFont(42);
-    // lfit->SetTextSize(0.04);
-    // lfit->AddEntry(hfsig, "Data", "lpe");
+    TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
+    lfit->SetFillColor(0);
+    // lfit->SetBorderSize(0);
+    lfit->SetFillStyle(0);
+    lfit->SetTextFont(42);
+    lfit->SetTextSize(0.04);
+    lfit->AddEntry(hfsig, "Data", "lpe");
     // lfit->AddEntry(fitBW, "3rBW+expol", "l");
     // lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
     // lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
     // lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
-    lfit->AddEntry(expo, "Expol", "l");
-    lfit->Draw();
+    // lfit->AddEntry(expo, "Expol", "l");
+    // lfit->Draw();
 
-    c1->SaveAs("/home/sawan/check_k892/output/pp/glueball/LHC22o_pass6/glueball_inv_sub.pdf");
+    // c1->SaveAs("/home/sawan/check_k892/output/pp/glueball/LHC22o_pass6/glueball_inv_sub.pdf");
 
     TCanvas *c2 = new TCanvas("", "", 720, 720);
     SetCanvasStyle2(c2, 0.15, 0.03, 0.05, 0.13);
@@ -248,9 +272,11 @@ void glueball_KK_channel()
     fHistTotal->SetMarkerStyle(20);
     fHistTotal->SetMarkerSize(0.5);
     fHistTotal->SetMarkerColor(kBlack);
+    fHistTotal->SetLineColor(kBlack);
     hfbkg->SetMarkerStyle(20);
     hfbkg->SetMarkerSize(0.5);
     hfbkg->SetMarkerColor(kRed);
+    hfbkg->SetLineColor(kRed);
     fHistTotal->Draw("E");
     fHistTotal->GetYaxis()->SetTitle("Counts");
     fHistTotal->GetXaxis()->SetTitle("m_{K^{#pm}K^{#mp}} (GeV/c^{2})");
@@ -263,10 +289,12 @@ void glueball_KK_channel()
         fHistBkg_pp->SetMarkerStyle(20);
         fHistBkg_pp->SetMarkerSize(0.5);
         fHistBkg_pp->SetMarkerColor(kBlue);
+        fHistBkg_pp->SetLineColor(kBlue);
         fHistBkg_pp->Draw("E same");
         fHistBkg_mm->SetMarkerStyle(20);
         fHistBkg_mm->SetMarkerSize(0.5);
         fHistBkg_mm->SetMarkerColor(kGreen);
+        fHistBkg_mm->SetLineColor(kGreen);
         fHistBkg_mm->Draw("E same");
     }
     if (kResBkg == "MIX" || kResBkg == "ROTATED")
@@ -293,7 +321,7 @@ void glueball_KK_channel()
     l->Draw();
     c2->Write("before_bkg_subtraction");
 
-    c2->SaveAs("/home/sawan/check_k892/output/pp/glueball/LHC22o_pass6/glueball_inv.pdf");
+    // c2->SaveAs("/home/sawan/check_k892/output/pp/glueball/LHC22o_pass6/glueball_inv.pdf");
 
     ////////////////////////////////////////////////////////////////////////
 

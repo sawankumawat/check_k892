@@ -31,7 +31,7 @@ void SetHistoQA(TH1 *h){
     h->GetXaxis()->SetTitleOffset(1.2);
     h->GetXaxis()->CenterTitle(true);
     h->GetYaxis()->CenterTitle(true);
-    h->GetYaxis()->SetTitleOffset(1.7);
+    h->GetYaxis()->SetTitleOffset(1.4);
     h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
@@ -97,7 +97,7 @@ void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
     gr->GetYaxis()->SetTitleFont(42);
 }
 
-void SetCanvasStyle2(TCanvas *c, float leftmargin, float rightmargin, float topmargin, float bottommargin)
+void SetCanvasStyle(TCanvas *c, float leftmargin, float rightmargin, float topmargin, float bottommargin)
 {
     c->Range(0, 0, 1, 1);
     // c->SetBorderSize(2);

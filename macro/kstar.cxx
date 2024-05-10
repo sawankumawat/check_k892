@@ -8,28 +8,6 @@
 #include <TSystem.h>
 using namespace std;
 
-// void createFolderIfNotExists(const char *folderPath)
-// {
-//     // Check if the folder exists
-//     if (!gSystem->AccessPathName(folderPath))
-//     {
-//         // Folder exists
-//         printf("Folder '%s' already exists.\n", folderPath);
-//     }
-//     else
-//     {
-//         // Folder doesn't exist, create it
-//         if (gSystem->MakeDirectory(folderPath) == 0)
-//         {
-//             printf("Folder '%s' created successfully.\n", folderPath);
-//         }
-//         else
-//         {
-//             printf("Error: Failed to create folder '%s'.\n", folderPath);
-//         }
-//     }
-// }
-
 void kstar()
 
 {

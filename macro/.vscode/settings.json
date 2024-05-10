@@ -10,6 +10,7 @@
         "c1_n2.C": "cpp",
         "iostream": "cpp",
         "string": "cpp",
-        "ratios.C": "cpp"
+        "ratios.C": "cpp",
+        "array": "cpp"
     }
 }

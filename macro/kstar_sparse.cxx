@@ -6,21 +6,36 @@
 #include "src/fitfunc.h"
 #include "src/initializations.h"
 #include <TSystem.h>
+#include <TString.h>
+
 using namespace std;
 
 void kstar_sparse()
 
 {
 
-    const string kResBkg = "MIX";
+    // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
+    const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
+
+    const string outputtype = "png"; // pdf, eps
+
+    TString outputfolder = kSignalOutput;
+    // Create the folder using TSystem::mkdir()
+    if (gSystem->mkdir(outputfolder, kTRUE))
+    {
+        std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
+    }
+    else
+    {
+        std::cerr << "Error creating folder " << outputfolder << std::endl;
+    }
 
     // Folder name inside the Analysis.root file *****************************************
 
     const string kfoldername = "kstarqa";
 
-    const int kRebin = 1;
     const float txtsize = 0.045;
 
     TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
@@ -34,8 +49,8 @@ void kstar_sparse()
     double highfitrange[Npt + 20];
     for (int i = 0; i < Npt; i++)
     {
-        lowfitrange[i] = lowfitrangeme[i];
-        highfitrange[i] = highfitrangeme[i];
+        lowfitrange[i] = kFitRange[i][0];
+        highfitrange[i] = kFitRange[i][1];
     }
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
@@ -48,7 +63,7 @@ void kstar_sparse()
     {
         TString cName = TString::Format("cinv_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
         cinv[ip] = new TCanvas(Form("cinv%d", ip), cName.Data(), 10, 10, 720, 720);
-        SetCanvasStyle2(cinv[ip], 0.15, 0.05, 0.08, 0.13);
+        SetCanvasStyle(cinv[ip], 0.15, 0.05, 0.08, 0.13);
     }
 
     TCanvas *cSigbkg[Npt]; // for output canvases on screen containing signal with bkg(after norm in case of mix)
@@ -57,7 +72,7 @@ void kstar_sparse()
     {
         TString cNam = TString::Format("cSigbkg_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
         cSigbkg[ip] = new TCanvas(Form("cSigbkg%d", ip), cNam.Data(), 720, 720);
-        SetCanvasStyle2(cSigbkg[ip], 0.15, 0.05, 0.08, 0.13);
+        SetCanvasStyle(cSigbkg[ip], 0.15, 0.05, 0.08, 0.13);
     }
 
     if (multipanel_plots)
@@ -72,10 +87,8 @@ void kstar_sparse()
     //********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************
 
     // Input file
-
-    // TFile *fInputFile = new TFile("/home/sawan/check_k892/mc/192370.root", "Read");
     TFile *fInputFile = new TFile(kDataFilename.c_str(), "Read");
-    if (!fInputFile)
+    if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
         return;
@@ -95,8 +108,9 @@ void kstar_sparse()
     THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassUnlikeSign", kfoldername.c_str()));
     THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassMixed", kfoldername.c_str()));
     THnSparseF *fHistLS = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMasslikeSign", kfoldername.c_str()));
+    THnSparseF *fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassRotated", kfoldername.c_str()));
 
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistLS == nullptr)
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistLS == nullptr || fHistRotated == nullptr)
     {
         cerr << "Invariant mass histograms not found!!!!!!!!!!!!" << endl;
         return;
@@ -105,100 +119,117 @@ void kstar_sparse()
     // cout << " THE NUMBER OF BINS IN THE HISTOGRAM IS " << fHistNum->GetNbinsZ()<<endl;
 
     gstyle(); // this is not gStyle, it is defined in the header file style.h
-    // gStyle->SetOptStat(0);
-    // gStyle->SetOptFit(0);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
 
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
         lowpt = pT_bins[ip];
         highpt = pT_bins[ip + 1];
-        int multlow = 20;
-        int multhigh = 80;
+        // int multlow = 0;
+        // int multhigh = 110;
+        int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
+        int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
-        int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-7);
-        int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-7);
         fHistNum->GetAxis(1)->SetRange(lbin, hbin);
         fHistDen->GetAxis(1)->SetRange(lbin, hbin);
         fHistLS->GetAxis(1)->SetRange(lbin, hbin);
+        fHistRotated->GetAxis(1)->SetRange(lbin, hbin);
 
-        int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-7);
-        int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-7);
+        // int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
+        // int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
         // fHistNum->GetAxis(0)->SetRange(multlow, multhigh);
         // fHistDen->GetAxis(0)->SetRange(multlow, multhigh);
         // fHistLS->GetAxis(0)->SetRange(multlow, multhigh);
+        // fHistRotated->GetAxis(0)->SetRange(multlow, multhigh);
 
         fHistTotal[ip] = fHistNum->Projection(2, "E");
         fHistBkg[ip] = fHistDen->Projection(2, "E");
         fHistbkgLS[ip] = fHistLS->Projection(2, "E");
+        fHistRotated1D[ip] = fHistRotated->Projection(2, "E");
         fHistNum->SetName(Form("fHistNum_%d", ip));
         fHistDen->SetName(Form("fHistDen_%d", ip));
         fHistLS->SetName(Form("fHistLS_%d", ip));
+        fHistRotated->SetName(Form("fHistRotated_%d", ip));
 
-        // fHistTotal[ip]->GetXaxis()->SetRangeUser(0.59, 1.49);
+        auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
+        auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
+
+        // cout<<"energy low value is "<<energylow<<endl;
+        // cout<<"energy high value is "<<energyhigh<<endl;
 
         //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
         TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
-        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin / fHistTotal[ip]->GetXaxis()->GetNbins();
+        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
         cout << "The value of binwidth_file is: " << binwidth_file << endl;
         //*****************************************************************************************************************************
 
-        if (kResBkg == "MIX")
+        if (kResBkg == "MIX" || kResBkg == "ROTATED")
         {
-            sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistTotal[ip]->GetXaxis()->FindBin(highnorm[ip])));
-            bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistBkg[ip]->GetXaxis()->FindBin(highnorm[ip])));
+            TH1D *bkgclonetemp;
+            if (kResBkg == "MIX")
+            {
+                bkgclonetemp = (TH1D *)fHistBkg[ip]->Clone();
+            }
+            else if (kResBkg == "ROTATED")
+            {
+                bkgclonetemp = (TH1D *)fHistRotated1D[ip]->Clone();
+            }
+
+            sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+            bkg_integral = (bkgclonetemp->Integral(bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][0]), bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][1])));
             normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
             cout << "\n\n normalization factor " << 1 / normfactor << "\n\n";
-            hfbkg = (TH1D *)fHistBkg[ip]->Clone();
+            hfbkg = (TH1D *)bkgclonetemp->Clone();
             hfbkg->Scale(normfactor);
-            hfbkg->Rebin(kRebin);
-            hfsig->Rebin(kRebin);
+            hfbkg->Rebin(kRebin[ip]);
+            hfsig->Rebin(kRebin[ip]);
             hfsig->Add(hfbkg, -1);
         }
-        else
+        else if (kResBkg == "LIKE")
         {
-            // sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistTotal[ip]->GetXaxis()->FindBin(highnorm[ip])));
-            // bkg_integral = (fHistbkgLS[ip]->Integral(fHistbkgLS[ip]->GetXaxis()->FindBin(lownorm[ip]), fHistbkgLS[ip]->GetXaxis()->FindBin(highnorm[ip])));
+            // sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+            // bkg_integral = (fHistbkgLS[ip]->Integral(fHistbkgLS[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistbkgLS[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
             // normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
             // hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
             // hfbkg->Scale(normfactor);
 
             hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
-            hfbkg->Rebin(kRebin);
-            hfsig->Rebin(kRebin);
+            hfbkg->Rebin(kRebin[ip]);
+            hfsig->Rebin(kRebin[ip]);
             hfsig->Add(hfbkg, -1);
         }
 
-        fHistTotal[ip]->Rebin(kRebin);
+        fHistTotal[ip]->Rebin(kRebin[ip]);
 
-        //****pt bincenter and pt binwidth**********************************************************************
-
-        ptcenter[ip] = (pT_bins[ip] + pT_bins[ip + 1]) / 2;
+        //**** pt binwidth************x*****************************
         ptbinwidth[ip] = pT_bins[ip + 1] - pT_bins[ip];
+        // cout<<"the value of pt bin width is "<<ptbinwidth[ip]<<endl;
 
         //*****************************************************************************************************
 
-        // TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6) : new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
-        // TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3) : new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+        // TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, kFitRange[ip][0], kFitRange[ip][1], 6) : new TF1("fitfunc", BreitWignerpoly3, kFitRange[ip][0], kFitRange[ip][1], 7);
+        // TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, kFitRange[ip][0], kFitRange[ip][1], 3) : new TF1("fitfunc1", polynomial3, kFitRange[ip][0], kFitRange[ip][1], 4);
 
         TF1 *fitFcn, *fitFcn1;
 
         if (kbkg == "pol2")
         {
-            fitFcn = new TF1("fitfunc", BreitWignerpoly2, lowfitrange[ip], highfitrange[ip], 6);
-            fitFcn1 = new TF1("fitfunc1", polynomial2, lowfitrange[ip], highfitrange[ip], 3);
+            fitFcn = new TF1("fitfunc", BreitWignerpoly2, kFitRange[ip][0], kFitRange[ip][1], 6);
+            fitFcn1 = new TF1("fitfunc1", polynomial2, kFitRange[ip][0], kFitRange[ip][1], 3);
         }
         else if (kbkg == "pol3")
         {
-            fitFcn = new TF1("fitfunc", BreitWignerpoly3, lowfitrange[ip], highfitrange[ip], 7);
-            fitFcn1 = new TF1("fitfunc1", polynomial3, lowfitrange[ip], highfitrange[ip], 4);
+            fitFcn = new TF1("fitfunc", BreitWignerpoly3, kFitRange[ip][0], kFitRange[ip][1], 7);
+            fitFcn1 = new TF1("fitfunc1", polynomial3, kFitRange[ip][0], kFitRange[ip][1], 4);
         }
         else if (kbkg == "expol")
         {
-            fitFcn = new TF1("fitfunc", BWExpo, lowfitrange[ip], highfitrange[ip], 7);
-            fitFcn1 = new TF1("fitfunc1", Expo, lowfitrange[ip], highfitrange[ip], 4);
+            fitFcn = new TF1("fitfunc", BWExpo, kFitRange[ip][0], kFitRange[ip][1], 7);
+            fitFcn1 = new TF1("fitfunc1", Expo, kFitRange[ip][0], kFitRange[ip][1], 4);
         }
 
-        TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange[ip], highfitrange[ip], 3); // only signal
+        TF1 *fitFcn2 = new TF1("fitFcn2", BW, kFitRange[ip][0], kFitRange[ip][1], 3); // only signal
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
         fitFcn->SetParLimits(2, 0, 10e9);    // Yield
@@ -211,7 +242,7 @@ void kstar_sparse()
         // int old_stdout = dup(1);
         // freopen("/dev/null", "w", stdout);
 
-        r = hfsig->Fit(fitFcn, "REBMS+"); // signal after bkg subtraction
+        r = hfsig->Fit(fitFcn, "REBMSQ+"); // signal after bkg subtraction
 
         // Restore standard output
         // fflush(stdout);
@@ -278,17 +309,17 @@ void kstar_sparse()
         bkgvalue = fitFcn1->Integral(hfsig->GetBinLowEdge(bmin), hfsig->GetBinLowEdge(bmax + 1));
         Integral_BW_withsigma = fitFcn2->Integral(hfsig->GetBinLowEdge(bmin), hfsig->GetBinLowEdge(bmax + 1));
         fYield_BinCount = Yield_bincount_hist - (bkgvalue / binwidth_file);
-        YieldIntegral_BW = fitFcn2->Integral(0.635, 5) / binwidth_file;
+        YieldIntegral_BW = fitFcn2->Integral(energylow, energyhigh) / binwidth_file;
         Yfraction_cBW = (Integral_BW_withsigma / YieldIntegral_BW);
 
-        sum_tail_correction = (fitFcn2->Integral(0.635, hfsig->GetBinLowEdge(bmin)) + fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), 5)) / binwidth_file;
+        sum_tail_correction = (fitFcn2->Integral(energylow, hfsig->GetBinLowEdge(bmin)) + fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), energyhigh)) / binwidth_file;
 
-        nlow = (fitFcn2->Integral(0.635, hfsig->GetBinLowEdge(bmin))) / binwidth_file;
-        nhigh = (fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), 5)) / binwidth_file;
-        nlow = nlow / (Event * ptbinwidth[ip] * dy * BR * 2 * ptcenter[ip]);
-        nhigh = nhigh / (Event * ptbinwidth[ip] * dy * BR * 2 * ptcenter[ip]);
+        nlow = (fitFcn2->Integral(energylow, hfsig->GetBinLowEdge(bmin))) / binwidth_file;
+        nhigh = (fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), energyhigh)) / binwidth_file;
+        nlow = nlow / (Event * ptbinwidth[ip] * dy * BR);
+        nhigh = nhigh / (Event * ptbinwidth[ip] * dy * BR);
 
-        Total_Ybincounting = (sum_tail_correction + fYield_BinCount) / (Event * ptbinwidth[ip] * dy * BR * 2 * ptcenter[ip]);
+        Total_Ybincounting = (sum_tail_correction + fYield_BinCount) / (Event * ptbinwidth[ip] * dy * BR);
 
         // cout << "***************************************************************" << endl;
         // cout << "****fraction of nlow for bin***********:"
@@ -299,7 +330,7 @@ void kstar_sparse()
         Tail_correction_plusm = (fitFcn2_plusm->Integral(0.635, hfsig->GetBinLowEdge(bmin)) + (fitFcn2_plusm->Integral(hfsig->GetBinLowEdge(bmax + 1), 5))) / binwidth_file;
         Tail_correction_minusm = ((fitFcn2_minusm->Integral(0.635, hfsig->GetBinLowEdge(bmin)) + fitFcn2_minusm->Integral(hfsig->GetBinLowEdge(bmax + 1), 5)) / binwidth_file);
         Error_2 = sum_tail_correction - Tail_correction_plusm;
-        Final_pro_error = TMath::Sqrt(Error_2 * Error_2 + hBCError_1 * hBCError_1) / (Event * ptbinwidth[ip] * dy * BR * 2 * ptcenter[ip]);
+        Final_pro_error = TMath::Sqrt(Error_2 * Error_2 + hBCError_1 * hBCError_1) / (Event * ptbinwidth[ip] * dy * BR);
 
         ////Uncorrected Yield/////////////////////////////////////////////////////////////////////////////////
 
@@ -325,14 +356,14 @@ void kstar_sparse()
         TMatrixDSym cov1;
         TMatrixDSym cov2;
         cov.GetSub(0, 2, 0, 2, cov1);
-        cov.GetSub(3, 5, 3, 5, cov2);
+        cov.GetSub(3, 6, 3, 6, cov2);
         Double_t *b = cov1.GetMatrixArray();
         Double_t *a = cov2.GetMatrixArray();
         Double_t *para = fitFcn->GetParameters();
         interror[ip] = fitFcn2->IntegralError((masspdg - 5 * widthpdg), (masspdg + 5 * widthpdg), &para[0], b);
 
         yieldcalc = integralsignalfunc[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file); // raw yield calculation
-        yielderror = interror[ip]          / (Event * ptbinwidth[ip] * dy * BR * binwidth_file);          // raw yield error
+        yielderror = interror[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file);          // raw yield error
 
         hintegral_yield->SetBinContent(ip + 1, yieldcalc);
         hintegral_yield->SetBinError(ip + 1, yielderror); // filling histogram including error
@@ -400,12 +431,12 @@ void kstar_sparse()
         //     hfsig->SetMaximum(hfsig->GetMaximum() * 0.9);
 
         // else
-        hfsig->SetMaximum(hfsig->GetMaximum() * 1.5);
+        hfsig->SetMaximum(hfsig->GetMaximum() * 1.1);
         fitFcn->SetLineWidth(2);
         fitFcn1->SetLineWidth(2);
         fitFcn2->SetLineWidth(2);
         hfsig->GetXaxis()->SetRangeUser(0.70, 1.083);
-        hfsig->SetMarkerSize(1.1);
+        hfsig->SetMarkerSize(0.5);
         hfsig->Draw("e");
         fitFcn->Draw("same");
         fitFcn1->Draw("same");
@@ -426,7 +457,7 @@ void kstar_sparse()
                       Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip],
                            pT_bins[ip + 1]));
         if (multipanel_plots == 0 && save_plots == 1)
-            cinv[ip]->SaveAs(Form((kSignalOutput + "/hfitsig_pt%d.png").c_str(), ip + 1));
+            cinv[ip]->SaveAs(Form((kSignalOutput + "/hfitsig_pt%d." + outputtype).c_str(), ip + 1));
         if (multipanel_plots == 1)
             cinv[ip]->Close();
 
@@ -439,7 +470,7 @@ void kstar_sparse()
         hbkg_nopeak->SetFillStyle(3001);
         for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
         {
-            if (hbkg_nopeak->GetBinCenter(i + 1) < lownorm[ip] || hbkg_nopeak->GetBinCenter(i + 1) > highnorm[ip])
+            if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
             {
                 hbkg_nopeak->SetBinContent(i + 1, -999);
             }
@@ -448,8 +479,8 @@ void kstar_sparse()
         gPad->SetLeftMargin(0.15);
         gPad->SetBottomMargin(0.15);
         fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.3);
-        fHistTotal[ip]->SetMarkerSize(1.1);
-        hfbkg->SetMarkerSize(1.1);
+        fHistTotal[ip]->SetMarkerSize(0.5);
+        hfbkg->SetMarkerSize(0.5);
         fHistTotal[ip]->Draw("E");
         fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f", binwidth_file));
         TLegend *leg112 = new TLegend(0.60554, 0.7812735, 0.852902, 0.8938954, NULL, "brNDC");
@@ -463,12 +494,12 @@ void kstar_sparse()
         ltx->SetTextSize(0.06);
         hfbkg->Draw("E same");
         if (kResBkg == "MIX")
-            // hbkg_nopeak->Draw("BAR same");
-            (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
+            hbkg_nopeak->Draw("BAR same");
+        (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
         // leg112->Draw();
         ltx->Draw();
         if (multipanel_plots == 0 && save_plots == 1)
-            cSigbkg[ip]->SaveAs(Form((kSignalOutput + "/hsigbkg_pt%d.png").c_str(), ip + 1));
+            cSigbkg[ip]->SaveAs(Form((kSignalOutput + "/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
         cSigbkg[ip]->Close();
 
         ////////////////////////////////////////////////////////////////////////
@@ -476,10 +507,10 @@ void kstar_sparse()
     } // pt loop ends
     if (multipanel_plots == 1 && save_plots == 1)
     {
-        cgrid1->SaveAs((kSignalOutput + "/grid1.png").c_str());
-        cgrid2->SaveAs((kSignalOutput + "/grid2.png").c_str());
-        cgrid_bkg1->SaveAs((kSignalOutput + "/grid_bkg1.png").c_str());
-        cgrid_bkg2->SaveAs((kSignalOutput + "/grid_bkg2.png").c_str());
+        cgrid1->SaveAs((kSignalOutput + "/grid1." + outputtype).c_str());
+        cgrid2->SaveAs((kSignalOutput + "/grid2." + outputtype).c_str());
+        cgrid_bkg1->SaveAs((kSignalOutput + "/grid_bkg1." + outputtype).c_str());
+        cgrid_bkg2->SaveAs((kSignalOutput + "/grid_bkg2." + outputtype).c_str());
     }
     if (multipanel_plots == 0)
     {
@@ -492,12 +523,12 @@ void kstar_sparse()
     // TFile *filecmp = new TFile((kSignalOutput + "/" + kDataset + ".root").c_str(), "RECREATE");
 
     TCanvas *csig = new TCanvas("", "", 720, 720);
-    SetCanvasStyle2(csig, 0.18, 0.05, 0.08, 0.15);
-    SetHistoStyle(hsignificance, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
+    SetCanvasStyle(csig, 0.18, 0.05, 0.08, 0.15);
+    SetHistoQA(hsignificance);
     hsignificance->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hsignificance->Draw();
     // hsignificance->Write("significance");
-    csig->SaveAs((kSignalOutput + "/significance.png").c_str());
+    csig->SaveAs((kSignalOutput + "/significance." + outputtype).c_str());
     csig->Clear();
 
     // // // chisquare_NDF vs pt
@@ -507,15 +538,14 @@ void kstar_sparse()
     SetHistoQA(hChiSquare);
     hChiSquare->Draw("Pe");
     t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-    csig->SaveAs((kSignalOutput + "/chi.png").c_str());
+    csig->SaveAs((kSignalOutput + "/chi." + outputtype).c_str());
     // hChiSquare->Write("chils");
     csig->Clear();
 
     // // mass vs pt
     hmass->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hmass->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
-    // SetHistoQA(hmass);
-    SetHistoStyle(hmass, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
+    SetHistoQA(hmass);
     hmass->SetMaximum(0.91);
     hmass->Draw("pe");
     // hmass->Write("mass");
@@ -530,14 +560,13 @@ void kstar_sparse()
     line->Draw();
     massleg->AddEntry(line, "PDG Mass", "l");
     massleg->Draw("l");
-    csig->SaveAs((kSignalOutput + "/mass.png").c_str());
+    csig->SaveAs((kSignalOutput + "/mass." + outputtype).c_str());
     csig->Clear();
 
     // // // Width vs pT
     hwidth->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hwidth->GetYaxis()->SetTitle("Width (GeV)");
-    // SetHistoQA(hwidth);
-    SetHistoStyle(hwidth, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
+    SetHistoQA(hwidth);
     hwidth->SetMaximum(hwidth->GetMaximum() * 2);
     hwidth->SetMinimum(0);
     hwidth->Draw("pe");
@@ -554,18 +583,18 @@ void kstar_sparse()
     widthleg->AddEntry(line, "PDG Width", "l");
     widthleg->SetFillStyle(0);
     widthleg->Draw();
-    csig->SaveAs((kSignalOutput + "/width_pt.png").c_str());
+    csig->SaveAs((kSignalOutput + "/width_pt." + outputtype).c_str());
     csig->Clear();
+
+    // // // Yield vs pT (integral method)
     TFile *fyield = new TFile((kSignalOutput + "/yield.root").c_str(), "RECREATE");
-    
-    // // // Yield vs pT
-    SetHistoStyle(hintegral_yield, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
+    SetHistoQA(hintegral_yield);
     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hintegral_yield->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     gPad->SetLogy(1);
     hintegral_yield->GetXaxis()->SetRangeUser(-0.1, 15.2);
     hintegral_yield->Draw("pe");
-    hintegral_yield->Write();
+    hintegral_yield->Write("yield_integral");
     // hintegral_yield->Write("yield");
     TLegend *legyield = new TLegend(0.8, 0.8, 0.91, 0.9);
     SetLegendStyle(legyield);
@@ -573,6 +602,15 @@ void kstar_sparse()
     // legyield->AddEntry(hYieldpar, "pbpb 5.36 TeV");
     // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
     legyield->Draw();
-    csig->SaveAs((kSignalOutput + "/yield.png").c_str());
+    csig->SaveAs((kSignalOutput + "/yield_integral." + outputtype).c_str());
+    csig->Clear();
+
+    // Yield vs pT (bin counting method)
+    hYbincount->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hYbincount->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    SetHistoQA(hYbincount);
+    hYbincount->Draw("pe");
+    hYbincount->Write("yield_bincount");
+    csig->SaveAs((kSignalOutput + "/yield_bincount." + outputtype).c_str());
     csig->Close();
 }

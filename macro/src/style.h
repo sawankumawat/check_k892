@@ -13,11 +13,26 @@ void SetHistoStyle(TH1 *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
     h->GetYaxis()->CenterTitle(true);
 }
 
+void SetgrStyle(TGraph *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Tsizex, Float_t Tsizey, Float_t Lsizex, Float_t Lsizey, Float_t Offsetx, Float_t Offsety)
+{
+    h->SetMarkerColor(mcolor);
+    h->SetMarkerStyle(mstyle);
+    h->SetMarkerSize(msize);
+    h->GetXaxis()->SetTitleSize(Tsizex);
+    h->GetYaxis()->SetTitleSize(Tsizey);
+    h->GetXaxis()->SetLabelSize(Lsizex);
+    h->GetYaxis()->SetLabelSize(Lsizey);
+    h->GetXaxis()->SetTitleOffset(Offsetx);
+    h->GetYaxis()->SetTitleOffset(Offsety);
+    h->GetXaxis()->CenterTitle(true);
+    h->GetYaxis()->CenterTitle(true);
+}
+
 void SetHistoQA(TH1 *h){
     h->SetMarkerStyle(8);
+    h->SetMarkerSize(0.5);
     h->SetMarkerColor(1);
     h->SetLineColor(1);
-    h->SetMarkerSize(1.4);
     h->SetLineWidth(2);
     h->SetTitle(0);
     // h->GetXaxis()->SetNdivisions(506);

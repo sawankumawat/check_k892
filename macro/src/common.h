@@ -1,8 +1,12 @@
+
+// The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
 // const string kParticle = "glueball/";
-
 const bool multipanel_plots = 0;
 const bool save_plots = 1;
+const string kfoldername_temp = "kstarqa";
+const string kvariation = "_tpc2"; // change the variation here
+////********************************************************************************************
 
 // define datasets here
 #define DATASET_LHC220_pass6_small
@@ -21,8 +25,12 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // define datasets train output run number here
 #ifdef DATASET_LHC220_pass6_small
 // const string kDataFilename_temp2 = "208396.root"; // data file
-const string kDataFilename_temp2 = "210677.root"; // data file
-const string kMCFilename_temp = "210563.root";    // only mc process (b1b)
+// const string kDataFilename_temp2 = "210677.root"; // data file
+// const string kDataFilename_temp2 = "211075.root"; // tpc cluster 120
+const string kDataFilename_temp2 = "211557.root"; // global tracks w/o dca on
+// const string kMCFilename_temp = "210563.root";    // only mc process (b1b)
+// const string kMCFilename_temp = "211233.root";    // tpc cluster 120 + mass pi fix
+const string kMCFilename_temp = "211346.root"; // split tracks
 #endif
 
 // final dataset name
@@ -30,6 +38,8 @@ const string kDataset = kDataFilename_temp1 + kDataset_temp;
 const string kSignalOutput = kSignalOutput_temp + kDataset_temp + kDataFilename_temp2.substr(0, kDataFilename_temp2.rfind("."));
 const string kDataFilename = kDataset + kDataFilename_temp2;
 const string kMCFilename = kMCDataset + kMCFilename_temp;
+const string kfoldername = kfoldername_temp + kvariation;
+const string koutputfolder = kSignalOutput + "/" + kfoldername;
 
 // Canvas dimensions
 const int klowerpad = 2;

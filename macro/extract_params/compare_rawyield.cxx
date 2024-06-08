@@ -105,8 +105,8 @@ void compare_rawyield()
 
     TLegend *leg = new TLegend(0.5, 0.5, 0.8, 0.8);
     SetLegendStyle(leg);
-    leg->AddEntry(gr, "raw yield (Prottay code)", "lpe");
-    leg->AddEntry(h1, "raw yield (Bong code)", "lpe");
+    leg->AddEntry(gr, "raw yield (kstarqa code)", "lpe");
+    leg->AddEntry(h1, "raw yield (k892analysis code)", "lpe");
     leg->SetTextSize(0.05);
     leg->Draw();
 
@@ -119,7 +119,7 @@ void compare_rawyield()
     hratio->SetMarkerSize(1.0);
     hratio->SetMarkerColor(kRed);
     hratio->SetLineColor(kRed);
-    hratio->GetYaxis()->SetTitle("#frac{Prottay}{Bong}");
+    hratio->GetYaxis()->SetTitle("#frac{kstarqa}{k892analysis}");
     hratio->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hratio->GetXaxis()->CenterTitle(1);
     hratio->GetYaxis()->SetTitleOffset(0.45);

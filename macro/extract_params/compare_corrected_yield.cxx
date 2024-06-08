@@ -32,56 +32,52 @@ void compare_corrected_yield()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     TFile *fpub = new TFile("pp13TeV.root", "READ");
-    TGraph *gr = (TGraph *)fpub->Get("Table 4/Graph1D_y1");
-    if (!gr)
+    TGraph *published_spectra = (TGraph *)fpub->Get("Table 4/Graph1D_y1");
+    if (!published_spectra)
     {
         cout << "Graph not found" << endl;
         return;
     }
     int spectrano = 0;
+
     //*********Root files*************
-    TFile *fspectra = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass6_small_INEL/common/spectra_1_LSBkg_0.root", "READ");
-    TFile *fspectraqa = new TFile(("../" + kSignalOutput + "/yield.root").c_str(), "READ");
-    TFile *fefficiency = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass6_small_INEL/common/efficiency_1.root", "READ");
-    if (fspectra->IsZombie() || fspectraqa->IsZombie() || fefficiency->IsZombie())
+    // TFile *fspectra = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass6_small_INEL/common/spectra_1_LSBkg_0.root", "READ");
+    TFile *fspectraqa = new TFile(("../" + koutputfolder + "/yield.root").c_str(), "READ"); // for raw yield
+    // TFile *fefficiency = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass6_small_INEL/common/efficiency_1.root", "READ"); // efficiency
+    TFile *correc_spectra = new TFile(("../" + koutputfolder + "/efficiency/corrected_spectra.root").c_str(), "READ"); //corrected spectra
+    if (fspectraqa->IsZombie() || correc_spectra->IsZombie())
     {
         cout << "File not found" << endl;
         return;
     }
 
 
-    TH1D *h1 = (TH1D *)fspectra->Get("lf-k892analysis/K892/0/hraw1Yields");
-    TH1D *hqa = (TH1D *)fspectraqa->Get("yield_integral");
-    TH1D *heff = (TH1D *)fefficiency->Get("lf-k892analysis/hEfficiency_cen0");
+    // TH1D *hrawbong = (TH1D *)fspectra->Get("lf-k892analysis/K892/0/hraw1Yields"); //raw yields from bong code
+    // TH1D *hcorrectedbong = (TH1D *)fspectra->Get("lf-k892analysis/K892/0/hCorrectedYieldsWithoutLossFactors"); //corrected yields from bong code (without the correction factors)
+    TH1D *hqa = (TH1D *)fspectraqa->Get("yield_integral");  //raw yields from this analysis
+    // TH1D *heff = (TH1D *)fefficiency->Get("lf-k892analysis/hEfficiency_cen0"); //efficiency from Bong code
+    TH1D *hcorrspec = (TH1D *)correc_spectra->Get("corrected_spectra"); //corrected spectra for this analysis
 
-    if (h1 == nullptr || hqa == nullptr || heff == nullptr)
+    if (hqa == nullptr || hcorrspec == nullptr)
     {
         cout << "Histogram not found" << endl;
         return;
     }
 
-    // TCanvas *csimple = new TCanvas();
-    // h1->Draw();
-    // TCanvas *csimple1 = new TCanvas();
-    // hqa->Draw();
-    // TCanvas *csimple2 = new TCanvas();
-    // heff->Draw();
-    // TCanvas *csimple3 = new TCanvas();
-    // gr->Draw("ap");
 
     // TH1F *hcorrectedspectra = (TH1F *)hqa->Clone();
-    TH1F *hcorrectedspectra = (TH1F *)h1->Clone();
     // hcorrectedspectra->Divide(heff);
+    TH1F *hcorrectedspectra = (TH1F *)hcorrspec->Clone();
 
      TGraphErrors *gratio = new TGraphErrors();
-    for (int i = 0; i < gr->GetN(); i++)
+    for (int i = 0; i < published_spectra->GetN(); i++)
     {
         double x, y;
-        gr->GetPoint(i, x, y);
+        published_spectra->GetPoint(i, x, y);
         // cout << "The value of x of published is " << x << endl;
         double published = y;
         double thisanalysis = hcorrectedspectra->GetBinContent(i + 1);
-        double published_error = gr->GetErrorY(i);
+        double published_error = published_spectra->GetErrorY(i);
         double thisanalysis_error = hcorrectedspectra->GetBinError(i + 1);
         // cout << "The value of x axis of this analysis is " << hcorrectedspectra->GetBinCenter(i + 1) << endl;
         double yieldratio = thisanalysis / published;
@@ -113,21 +109,26 @@ void compare_corrected_yield()
     hcorrectedspectra->SetLineColor(kRed);
     hcorrectedspectra->GetXaxis()->SetRangeUser(0, 15);
     hcorrectedspectra->Draw("pe");
-    SetgrStyle(gr, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    gr->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    gr->SetMaximum(gr->GetMaximum() * 2);
-    gr->GetYaxis()->SetTitleOffset(1.15);
-    gr->GetXaxis()->SetTitleOffset(1.02);
-    gr->SetMarkerStyle(22);
-    gr->SetMarkerSize(1);
-    gr->SetLineColor(1);
-    gr->SetMarkerColor(1);
-    gr->Draw("pe same");
+    SetgrStyle(published_spectra, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+    published_spectra->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    published_spectra->SetMaximum(published_spectra->GetMaximum() * 2);
+    published_spectra->GetYaxis()->SetTitleOffset(1.15);
+    published_spectra->GetXaxis()->SetTitleOffset(1.02);
+    published_spectra->SetMarkerStyle(22);
+    published_spectra->SetMarkerSize(1);
+    published_spectra->SetLineColor(1);
+    published_spectra->SetMarkerColor(1);
+    published_spectra->Draw("pe same");
+    // hcorrectedbong->SetMarkerStyle(20);
+    // hcorrectedbong->SetMarkerSize(1);
+    // hcorrectedbong->SetMarkerColor(kBlue);
+    // hcorrectedbong->SetLineColor(kBlue);
+    // hcorrectedbong->Draw("pe same");
   
 
     TLegend *leg = new TLegend(0.5, 0.5, 0.8, 0.8);
     SetLegendStyle(leg);
-    leg->AddEntry(gr, " (published)", "lpe");
+    leg->AddEntry(published_spectra, " (published)", "lpe");
     leg->AddEntry(hcorrectedspectra, "(this analysis)", "lpe");
     leg->SetTextSize(0.05);
     leg->Draw();
@@ -141,11 +142,18 @@ void compare_corrected_yield()
     gratio->SetMarkerSize(1.0);
     gratio->SetMarkerColor(kRed);
     gratio->SetLineColor(kRed);
-    gratio->GetYaxis()->SetTitle("#frac{Raw yield}{Published}");
+    gratio->GetYaxis()->SetTitle("#frac{Corrected yield}{Published}");
     gratio->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     gratio->GetXaxis()->CenterTitle(1);
     gratio->GetYaxis()->SetTitleOffset(0.45);
     gratio->GetYaxis()->SetNdivisions(505);
     gratio->GetXaxis()->SetRangeUser(0, 15);
     gratio->Draw("ap");
+
+    // TCanvas *cpub = new TCanvas("cpub", "cpub", 720, 720);
+    // gPad->SetLogy(1);
+    // published_spectra->SetMarkerStyle(20);
+    // published_spectra->SetMinimum(1e-6);
+    // published_spectra->SetMaximum(1);
+    // published_spectra->Draw("ape");
 }

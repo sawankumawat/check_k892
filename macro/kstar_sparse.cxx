@@ -13,15 +13,16 @@ using namespace std;
 void kstar_sparse()
 
 {
-
-    // const string kResBkg = "MIX";
+    // change here ***********************************************************
+    const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    const string kResBkg = "ROTATED";
+    // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-
     const string outputtype = "png"; // pdf, eps
+    const bool save_bkg_plots = 0;
+    // change here ***********************************************************
 
-    TString outputfolder = kSignalOutput;
+    TString outputfolder = kSignalOutput + "/" + kfoldername;
     // Create the folder using TSystem::mkdir()
     if (gSystem->mkdir(outputfolder, kTRUE))
     {
@@ -33,8 +34,6 @@ void kstar_sparse()
     }
 
     // Folder name inside the Analysis.root file *****************************************
-
-    const string kfoldername = "kstarqa";
 
     const float txtsize = 0.045;
 
@@ -94,13 +93,13 @@ void kstar_sparse()
         return;
     }
 
-    TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
-    if (hentries == nullptr)
+    TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hmult", kfoldername.c_str()));
+    if (hmult == nullptr)
     {
         cerr << "Histogram not found" << endl;
         return;
     }
-    double Event = hentries->GetEntries();
+    double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
     //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
@@ -119,15 +118,15 @@ void kstar_sparse()
     // cout << " THE NUMBER OF BINS IN THE HISTOGRAM IS " << fHistNum->GetNbinsZ()<<endl;
 
     gstyle(); // this is not gStyle, it is defined in the header file style.h
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(0);
+    // gStyle->SetOptStat(0);
+    // gStyle->SetOptFit(0);
 
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
         lowpt = pT_bins[ip];
         highpt = pT_bins[ip + 1];
-        // int multlow = 0;
-        // int multhigh = 110;
+        int multlow = 0;
+        int multhigh = 110;
         int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
         int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
@@ -136,12 +135,12 @@ void kstar_sparse()
         fHistLS->GetAxis(1)->SetRange(lbin, hbin);
         fHistRotated->GetAxis(1)->SetRange(lbin, hbin);
 
-        // int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
-        // int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
-        // fHistNum->GetAxis(0)->SetRange(multlow, multhigh);
-        // fHistDen->GetAxis(0)->SetRange(multlow, multhigh);
-        // fHistLS->GetAxis(0)->SetRange(multlow, multhigh);
-        // fHistRotated->GetAxis(0)->SetRange(multlow, multhigh);
+        int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
+        int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
+        fHistNum->GetAxis(0)->SetRange(multlow, multhigh);
+        fHistDen->GetAxis(0)->SetRange(multlow, multhigh);
+        fHistLS->GetAxis(0)->SetRange(multlow, multhigh);
+        fHistRotated->GetAxis(0)->SetRange(multlow, multhigh);
 
         fHistTotal[ip] = fHistNum->Projection(2, "E");
         fHistBkg[ip] = fHistDen->Projection(2, "E");
@@ -232,10 +231,9 @@ void kstar_sparse()
         TF1 *fitFcn2 = new TF1("fitFcn2", BW, kFitRange[ip][0], kFitRange[ip][1], 3); // only signal
 
         fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
-        fitFcn->SetParLimits(2, 0, 10e9);    // Yield
-        fitFcn->SetParameter(1, 0.0473);     // width
-        fitFcn->FixParameter(1, 0.0473);     // width
-                                             // fitFcn->SetParLimits(1, 0, 0.120); // width
+        fitFcn->SetParameter(0, 0.895);
+        fitFcn->SetParLimits(2, 0, 10e9); // Yield
+        fitFcn->FixParameter(1, 0.047);   // width
 
         fitFcn->SetParNames("Mass", "Width", "Yield", "A", "B", "C", "D");
         // Redirect standard output to /dev/null
@@ -435,7 +433,7 @@ void kstar_sparse()
         fitFcn->SetLineWidth(2);
         fitFcn1->SetLineWidth(2);
         fitFcn2->SetLineWidth(2);
-        hfsig->GetXaxis()->SetRangeUser(0.70, 1.083);
+        hfsig->GetXaxis()->SetRangeUser(0.75, 1.04);
         hfsig->SetMarkerSize(0.5);
         hfsig->Draw("e");
         fitFcn->Draw("same");
@@ -457,7 +455,7 @@ void kstar_sparse()
                       Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip],
                            pT_bins[ip + 1]));
         if (multipanel_plots == 0 && save_plots == 1)
-            cinv[ip]->SaveAs(Form((kSignalOutput + "/hfitsig_pt%d." + outputtype).c_str(), ip + 1));
+            cinv[ip]->SaveAs(Form((koutputfolder + "/hfitsig_pt%d." + outputtype).c_str(), ip + 1));
         if (multipanel_plots == 1)
             cinv[ip]->Close();
 
@@ -498,8 +496,8 @@ void kstar_sparse()
         (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
         // leg112->Draw();
         ltx->Draw();
-        if (multipanel_plots == 0 && save_plots == 1)
-            cSigbkg[ip]->SaveAs(Form((kSignalOutput + "/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
+        if (multipanel_plots == 0 && save_plots == 1 && save_bkg_plots == 1)
+            cSigbkg[ip]->SaveAs(Form((koutputfolder + "/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
         cSigbkg[ip]->Close();
 
         ////////////////////////////////////////////////////////////////////////
@@ -507,10 +505,10 @@ void kstar_sparse()
     } // pt loop ends
     if (multipanel_plots == 1 && save_plots == 1)
     {
-        cgrid1->SaveAs((kSignalOutput + "/grid1." + outputtype).c_str());
-        cgrid2->SaveAs((kSignalOutput + "/grid2." + outputtype).c_str());
-        cgrid_bkg1->SaveAs((kSignalOutput + "/grid_bkg1." + outputtype).c_str());
-        cgrid_bkg2->SaveAs((kSignalOutput + "/grid_bkg2." + outputtype).c_str());
+        cgrid1->SaveAs((koutputfolder + "/grid1." + outputtype).c_str());
+        cgrid2->SaveAs((koutputfolder + "/grid2." + outputtype).c_str());
+        cgrid_bkg1->SaveAs((koutputfolder + "/grid_bkg1." + outputtype).c_str());
+        cgrid_bkg2->SaveAs((koutputfolder + "/grid_bkg2." + outputtype).c_str());
     }
     if (multipanel_plots == 0)
     {
@@ -520,7 +518,7 @@ void kstar_sparse()
         cgrid_bkg2->Close();
     }
 
-    // TFile *filecmp = new TFile((kSignalOutput + "/" + kDataset + ".root").c_str(), "RECREATE");
+    // TFile *filecmp = new TFile((koutputfolder + "/" + kDataset + ".root").c_str(), "RECREATE");
 
     TCanvas *csig = new TCanvas("", "", 720, 720);
     SetCanvasStyle(csig, 0.18, 0.05, 0.08, 0.15);
@@ -528,7 +526,7 @@ void kstar_sparse()
     hsignificance->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hsignificance->Draw();
     // hsignificance->Write("significance");
-    csig->SaveAs((kSignalOutput + "/significance." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/significance." + outputtype).c_str());
     csig->Clear();
 
     // // // chisquare_NDF vs pt
@@ -538,7 +536,7 @@ void kstar_sparse()
     SetHistoQA(hChiSquare);
     hChiSquare->Draw("Pe");
     t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-    csig->SaveAs((kSignalOutput + "/chi." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/chi." + outputtype).c_str());
     // hChiSquare->Write("chils");
     csig->Clear();
 
@@ -560,7 +558,7 @@ void kstar_sparse()
     line->Draw();
     massleg->AddEntry(line, "PDG Mass", "l");
     massleg->Draw("l");
-    csig->SaveAs((kSignalOutput + "/mass." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/mass." + outputtype).c_str());
     csig->Clear();
 
     // // // Width vs pT
@@ -583,11 +581,11 @@ void kstar_sparse()
     widthleg->AddEntry(line, "PDG Width", "l");
     widthleg->SetFillStyle(0);
     widthleg->Draw();
-    csig->SaveAs((kSignalOutput + "/width_pt." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/width_pt." + outputtype).c_str());
     csig->Clear();
 
     // // // Yield vs pT (integral method)
-    TFile *fyield = new TFile((kSignalOutput + "/yield.root").c_str(), "RECREATE");
+    TFile *fyield = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
     SetHistoQA(hintegral_yield);
     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hintegral_yield->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
@@ -602,7 +600,7 @@ void kstar_sparse()
     // legyield->AddEntry(hYieldpar, "pbpb 5.36 TeV");
     // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
     legyield->Draw();
-    csig->SaveAs((kSignalOutput + "/yield_integral." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/yield_integral." + outputtype).c_str());
     csig->Clear();
 
     // Yield vs pT (bin counting method)
@@ -611,6 +609,6 @@ void kstar_sparse()
     SetHistoQA(hYbincount);
     hYbincount->Draw("pe");
     hYbincount->Write("yield_bincount");
-    csig->SaveAs((kSignalOutput + "/yield_bincount." + outputtype).c_str());
+    csig->SaveAs((koutputfolder + "/yield_bincount." + outputtype).c_str());
     csig->Close();
 }

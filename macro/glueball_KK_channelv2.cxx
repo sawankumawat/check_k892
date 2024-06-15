@@ -16,12 +16,12 @@ float parameter0(float mass, float width)
     return norm;
 }
 
-void glueball_KsKs_channel()
-
+void glueball_KK_channelv2()
 {
     // change here ***********************************************************
     const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
+    // const string kResBkg = "LIKE";
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -55,26 +55,23 @@ void glueball_KsKs_channel()
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
     cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
-    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
-    if (hmult == nullptr)
-    {
-        cout << "Multiplicity histogram not found" << endl;
-        return;
-    }
-    double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0), hmult->GetXaxis()->FindBin(100.0));
-    cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
     //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
 
-    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassDS", kfoldername.c_str()));
-    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassME", kfoldername.c_str()));
-    THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassRot", kfoldername.c_str()));
+    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
+    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
+    THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
+    THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
+    THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
+
     cout << " The number of entries in histograms: \n"
          << "same event: " << fHistNum->GetEntries() << "\n"
          << "mixed event: " << fHistDen->GetEntries() << "\n"
-         << "rotated bkg/2: " << fHistRot->GetEntries()/2 << endl;
+         << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << "\n"
+         << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
+         << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
 
-    if (fHistNum == nullptr || fHistDen == nullptr)
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
     {
         cout << "Invariant mass histograms not found" << endl;
         return;
@@ -83,20 +80,33 @@ void glueball_KsKs_channel()
     TH1D *fHistTotal[Npt];
     TH1D *fHistBkg[Npt];
     TH1D *fHistRotated[Npt];
+    TH1D *fHistLikepp[Npt];
+    TH1D *fHistLikemm[Npt];
+    TH1D *fHistLike[Npt];
+    int multlow = 0;
+    int multhigh = 100;
+    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hCentrality").c_str());
+    if (hmult == nullptr)
+    {
+        cout << "Multiplicity histogram not found" << endl;
+        return;
+    }
+    double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0), hmult->GetXaxis()->FindBin(100.0));
+    cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
 
         int lowpt = pT_bins[ip];
         int highpt = pT_bins[ip + 1];
-        int multlow = 0;
-        int multhigh = 100;
         int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
         int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
         fHistNum->GetAxis(1)->SetRange(lbin, hbin);
         fHistDen->GetAxis(1)->SetRange(lbin, hbin);
         fHistRot->GetAxis(1)->SetRange(lbin, hbin);
+        fHistLike_pp->GetAxis(1)->SetRange(lbin, hbin);
+        fHistLike_mm->GetAxis(1)->SetRange(lbin, hbin);
 
         int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
         int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
@@ -104,13 +114,23 @@ void glueball_KsKs_channel()
         fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
         fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
         fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
+        fHistLike_pp->GetAxis(0)->SetRange(lbinmult, hbinmult);
+        fHistLike_mm->GetAxis(0)->SetRange(lbinmult, hbinmult);
 
         fHistTotal[ip] = fHistNum->Projection(2, "E");
         fHistBkg[ip] = fHistDen->Projection(2, "E");
         fHistRotated[ip] = fHistRot->Projection(2, "E");
+        fHistLikepp[ip] = fHistLike_pp->Projection(2, "E");
+        fHistLikemm[ip] = fHistLike_mm->Projection(2, "E");
         fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
         fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
         fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
+        fHistLikepp[ip]->SetName(Form("fHistLikepp_%d", ip));
+        fHistLikemm[ip]->SetName(Form("fHistLikemm_%d", ip));
+        fHistLike[ip] = (TH1D *)fHistLikepp[ip]->Clone();
+        fHistLike[ip]->Add(fHistLikemm[ip]);
+        fHistLike[ip]->Scale(0.5);
+        fHistLike[ip]->SetName(Form("fHistLike_%d", ip));
 
         auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
         auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
@@ -141,9 +161,9 @@ void glueball_KsKs_channel()
 
             hfsig->Add(hfbkg, -1);
         }
-        else if (kResBkg == "ROTATED")
+        else if (kResBkg == "ROTATED" || kResBkg == "LIKE")
         {
-            hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+            hfbkg = (kResBkg == "ROTATED") ? (TH1D *)fHistRotated[ip]->Clone() : (TH1D *)fHistLike[ip]->Clone();
             hfbkg->Scale(0.5);
             hfbkg->Rebin(kRebin[ip]);
             hfsig->Rebin(kRebin[ip]);
@@ -269,14 +289,14 @@ void glueball_KsKs_channel()
         if (kResBkg == "MIX")
             hbkg_nopeak->Draw("BAR same");
 
-        
         TLegend *leg = new TLegend(0.2451253,0.2054598,0.5445682,0.3908046);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
         leg->SetTextFont(42);
         leg->SetTextSize(0.04);
         leg->AddEntry(fHistTotal[ip], "Signal", "lpe");
-        string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Rotated bkg";
+        string bkgname = (kResBkg == "MIX") ? "Mixed event" : (kResBkg == "ROTATED") ? "Rotated bkg"
+                                                                                     : "Like sign bkg";
         leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
         if (kResBkg == "MIX")
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");

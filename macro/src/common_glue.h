@@ -1,11 +1,24 @@
 // The variables that can be chaged are here ****************************************************
+// #define KKchannel   // for Kaon Kaon channel
+#define KsKschannel  //for Kshort Kshort channel
+
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
 const string koutputtype = "png"; // pdf, eps
+////********************************************************************************************
+#ifdef KsKschannel
+const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
 // const string kvariation = ""; // change the variation here
 const string kvariation = "_other_ev_sel"; // change the variation here
+#endif
 ////********************************************************************************************
+#ifdef KKchannel
+const string kchannel = "KK_Channel";
+const string kfoldername_temp = "phianalysisrun3";
+const string kvariation = ""; // change the variation here
+// const string kvariation = "_other_ev_sel"; // change the variation here
+#endif
 
 ////******some fixed variables******************************************************
 TLatex *t2 = new TLatex();

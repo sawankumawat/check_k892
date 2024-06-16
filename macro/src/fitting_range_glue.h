@@ -4,7 +4,7 @@
 
 #ifdef DATASET_LHC220_pass6_small
 const Int_t Npt = 1;
-double pT_bins[Npt + 1] = {0.0, 15.0};
+double pT_bins[Npt + 1] = {0.0, 30.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif

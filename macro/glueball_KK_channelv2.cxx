@@ -19,9 +19,9 @@ float parameter0(float mass, float width)
 void glueball_KK_channelv2()
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
+    // const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    // const string kResBkg = "LIKE";
+    const string kResBkg = "LIKE";
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -67,7 +67,7 @@ void glueball_KK_channelv2()
     cout << " The number of entries in histograms: \n"
          << "same event: " << fHistNum->GetEntries() << "\n"
          << "mixed event: " << fHistDen->GetEntries() << "\n"
-         << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << "\n"
+         << "rotated bkg: " << fHistRot->GetEntries() << "\n"
          << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
          << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
 
@@ -128,8 +128,11 @@ void glueball_KK_channelv2()
         fHistLikepp[ip]->SetName(Form("fHistLikepp_%d", ip));
         fHistLikemm[ip]->SetName(Form("fHistLikemm_%d", ip));
         fHistLike[ip] = (TH1D *)fHistLikepp[ip]->Clone();
-        fHistLike[ip]->Add(fHistLikemm[ip]);
-        fHistLike[ip]->Scale(0.5);
+        for (int ibin = 0; ibin < fHistLikepp[ip]->GetNbinsX(); ibin++)
+        {
+            fHistLike[ip]->SetBinContent(ibin + 1, 2 * TMath::Sqrt(fHistLikepp[ip]->GetBinContent(ibin + 1) * fHistLikemm[ip]->GetBinContent(ibin + 1))); // direct sum of like sign pairs
+        }
+
         fHistLike[ip]->SetName(Form("fHistLike_%d", ip));
 
         auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
@@ -164,7 +167,7 @@ void glueball_KK_channelv2()
         else if (kResBkg == "ROTATED" || kResBkg == "LIKE")
         {
             hfbkg = (kResBkg == "ROTATED") ? (TH1D *)fHistRotated[ip]->Clone() : (TH1D *)fHistLike[ip]->Clone();
-            hfbkg->Scale(0.5);
+            // hfbkg->Scale(0.5);
             hfbkg->Rebin(kRebin[ip]);
             hfsig->Rebin(kRebin[ip]);
             hfsig->Add(hfbkg, -1);
@@ -268,6 +271,7 @@ void glueball_KK_channelv2()
         hbkg_nopeak->SetLineColor(kRed);
         hbkg_nopeak->SetMarkerColor(kRed);
         hbkg_nopeak->SetFillColor(kRed);
+        hbkg_nopeak->SetLineColor(kRed);
         hbkg_nopeak->SetFillStyle(3001);
         for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
         {
@@ -281,6 +285,7 @@ void glueball_KK_channelv2()
         fHistTotal[ip]->SetMarkerColor(kBlack);
         hfbkg->SetMarkerStyle(8);
         hfbkg->SetMarkerColor(kRed);
+        hfbkg->SetLineColor(kRed);
         fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
         fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
         fHistTotal[ip]->Draw("E");
@@ -289,7 +294,7 @@ void glueball_KK_channelv2()
         if (kResBkg == "MIX")
             hbkg_nopeak->Draw("BAR same");
 
-        TLegend *leg = new TLegend(0.2451253,0.2054598,0.5445682,0.3908046);
+        TLegend *leg = new TLegend(0.2451253, 0.2054598, 0.5445682, 0.3908046);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
         leg->SetTextFont(42);

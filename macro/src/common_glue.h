@@ -9,8 +9,8 @@ const string koutputtype = "png"; // pdf, eps
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
-// const string kvariation = ""; // change the variation here
-const string kvariation = "_other_ev_sel"; // change the variation here
+const string kvariation = ""; // change the variation here
+// const string kvariation = "_other_ev_sel"; // change the variation here
 #endif
 ////********************************************************************************************
 #ifdef KKchannel
@@ -41,7 +41,8 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // define datasets train output run number here
 #ifdef DATASET_LHC220_pass6_small
 // const string kDataFilename_temp2 = "215554.root"; // data file
-const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
+// const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
+const string kDataFilename_temp2 = "222487.root"; // data file (with larger pT range upto 30 GeV/c)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

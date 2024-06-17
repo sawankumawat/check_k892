@@ -243,7 +243,7 @@ void glueball_KsKs_channel()
         lfit->AddEntry(expo, "Expol", "l");
         // lfit->Draw();
 
-        c1->SaveAs((outputfolder_str + "/hglueball_signal_." + kResBkg + "." + koutputtype).c_str());
+        c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + "." + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -610,7 +610,7 @@ void glueball_KsKs_channel()
         hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
         hPosDaughterPt->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
-        
+
 
 
         

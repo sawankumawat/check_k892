@@ -22,23 +22,29 @@ void glueball_KK_channelv2()
     // const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
     const string kResBkg = "LIKE";
+    const bool makeQAplots = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
+    TString outputQAfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA";
     const string outputfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername;
+    const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA";
+
     // Create the folder using TSystem::mkdir()
-    if (gSystem->mkdir(outputfolder, kTRUE))
+    if (gSystem->mkdir(outputfolder, kTRUE) || gSystem->mkdir(outputQAfolder, kTRUE))
     {
         std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
+        std::cout << "Folder " << outputQAfolder << " created successfully." << std::endl;
     }
     else
     {
-        std::cerr << "Creating folder " << outputfolder << std::endl;
+        std::cout << "Creating folder " << outputfolder << std::endl;
+        std::cout << "Creating folder " << outputQAfolder << std::endl;
     }
     // Folder name inside the Analysis.root file *****************************************
 
-    gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(110);
+    // gStyle->SetOptFit(1111);
+    gStyle->SetOptStat(1110);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.06);
@@ -187,20 +193,21 @@ void glueball_KK_channelv2()
         hfsig->SetLineColor(kBlack);
         hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
         hfsig->GetYaxis()->SetTitle("Counts");
+        hfsig->GetXaxis()->SetRangeUser(1.1, 3);
         hfsig->Draw("e");
-        gPad->Update();
-        TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
-        if (ps)
-        {
-            ps->SetTextSize(0.04);
-            ps->SetTextFont(42);
-            ps->SetX1NDC(0.6);
-            ps->SetX2NDC(0.95);
-            ps->SetY1NDC(0.35);
-            ps->SetY2NDC(0.95);
-        }
-        gPad->Modified(); // Necessary to update the canvas with the new text size
-        gPad->Update();
+        // gPad->Update();
+        // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
+        // if (ps)
+        // {
+        //     ps->SetTextSize(0.04);
+        //     ps->SetTextFont(42);
+        //     ps->SetX1NDC(0.6);
+        //     ps->SetX2NDC(0.95);
+        //     ps->SetY1NDC(0.35);
+        //     ps->SetY2NDC(0.95);
+        // }
+        // gPad->Modified(); // Necessary to update the canvas with the new text size
+        // gPad->Update();
 
         // TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1, 2.3, 9);
         TF1 *fitBW = new TF1("fitBW", gluefit3bW, 1.1, 2.3, 12);
@@ -226,7 +233,7 @@ void glueball_KK_channelv2()
         fitBW->SetParLimits(7, f1710Mass - 1 * f1710Width, f1710Mass + 1 * f1710Width);
         fitBW->FixParameter(1, f1270Mass);
 
-        hfsig->Fit("fitBW", "REBMS");
+        hfsig->Fit("fitBW", "REBMSQ0");
         double *par = fitBW->GetParameters();
         TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
         TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
@@ -241,10 +248,10 @@ void glueball_KK_channelv2()
         Bw2->SetLineColor(6);
         Bw3->SetLineColor(7);
         expo->SetLineColor(4);
-        Bw1->Draw("same");
-        Bw2->Draw("same");
-        Bw3->Draw("same");
-        expo->Draw("same");
+        // Bw1->Draw("same");
+        // Bw2->Draw("same");
+        // Bw3->Draw("same");
+        // expo->Draw("same");
 
         TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
         lfit->SetFillColor(0);
@@ -258,9 +265,9 @@ void glueball_KK_channelv2()
         lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
         lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
         lfit->AddEntry(expo, "Expol", "l");
-        lfit->Draw();
+        // lfit->Draw();
 
-        c1->SaveAs((outputfolder_str + "/hglueball_bkg." + koutputtype).c_str());
+        c1->SaveAs((outputfolder_str + "/hglueball_bkg_" + kResBkg + "." + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -290,6 +297,7 @@ void glueball_KK_channelv2()
         fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
         fHistTotal[ip]->Draw("E");
         fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
+        fHistTotal[ip]->GetXaxis()->SetTitle("m_{KK} (GeV/c^{2})");
         hfbkg->Draw("E same");
         if (kResBkg == "MIX")
             hbkg_nopeak->Draw("BAR same");
@@ -307,8 +315,118 @@ void glueball_KK_channelv2()
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
         leg->Draw();
 
-        c2->SaveAs((outputfolder_str + "/hglueball_invmass." + koutputtype).c_str());
+        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + "." + koutputtype).c_str());
     } // pt bin loop end here
 
     ////////////////////////////////////////////////////////////////////////
+    // QA plots
+    // multiplicity percentile plot
+    if (!makeQAplots)
+    {
+        cout << "QA plots are not made; quitting \n";
+        return;
+    }
+    TCanvas *c3 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hmult);
+    hmult->GetXaxis()->SetTitle("Multiplicity percentile");
+    hmult->GetYaxis()->SetTitle("Counts");
+    hmult->GetXaxis()->SetRangeUser(0, 150);
+    hmult->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_mult." + koutputtype).c_str());
+
+    // vertex z position plot
+    TH1F *hvertexz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hVtxZ").c_str());
+    if (hvertexz == nullptr)
+    {
+        cout << "Vertex z position histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hvertexz);
+    hvertexz->GetXaxis()->SetTitle("Vertex z position (cm)");
+    hvertexz->GetYaxis()->SetTitle("Counts");
+    hvertexz->GetXaxis()->SetRangeUser(-15, 15);
+    hvertexz->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_vertexz." + koutputtype).c_str());
+
+    // eta distribution
+    TH1F *heta = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hEta").c_str());
+    if (heta == nullptr)
+    {
+        cout << "Eta distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(heta);
+    heta->GetXaxis()->SetTitle("#eta");
+    heta->GetYaxis()->SetTitle("Counts");
+    heta->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_eta." + koutputtype).c_str());
+
+    // DCAxy distribution
+    TH1F *hdcaxy = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hDcaxy").c_str());
+    if (hdcaxy == nullptr)
+    {
+        cout << "DCAxy distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hdcaxy);
+    hdcaxy->GetXaxis()->SetTitle("DCA_{xy} (cm)");
+    hdcaxy->GetYaxis()->SetTitle("Counts");
+    hdcaxy->GetXaxis()->SetRangeUser(-0.2, 0.2);
+    hdcaxy->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_dca." + koutputtype).c_str());
+
+    // DCAz distribution
+    TH1F *hdcasz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hDcaz").c_str());
+    if (hdcasz == nullptr)
+    {
+        cout << "DCAz distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hdcasz);
+    hdcasz->GetXaxis()->SetTitle("DCA_{z} (cm)");
+    hdcasz->GetYaxis()->SetTitle("Counts");
+    hdcasz->GetXaxis()->SetRangeUser(-0.2, 0.2);
+    hdcasz->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_dcaz." + koutputtype).c_str());
+
+    // nsigma TPC distribution
+    TH1F *hnsigmaTPC = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTPC").c_str());
+    if (hnsigmaTPC == nullptr)
+    {
+        cout << "Nsigma TPC distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hnsigmaTPC);
+    hnsigmaTPC->GetXaxis()->SetTitle("N#sigma_{TPC}");
+    hnsigmaTPC->GetYaxis()->SetTitle("Counts");
+    hnsigmaTPC->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPC." + koutputtype).c_str());
+
+    // nsigma TOF distribution
+    TH1F *hnsigmaTOF = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF").c_str());
+    if (hnsigmaTOF == nullptr)
+    {
+        cout << "Nsigma TOF distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hnsigmaTOF);
+    hnsigmaTOF->GetXaxis()->SetTitle("N#sigma_{TOF}");
+    hnsigmaTOF->GetYaxis()->SetTitle("Counts");
+    hnsigmaTOF->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTOF." + koutputtype).c_str());
+
+    //
 }

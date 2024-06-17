@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
-// #define KKchannel   // for Kaon Kaon channel
-#define KsKschannel  //for Kshort Kshort channel
+#define KKchannel   // for Kaon Kaon channel
+// #define KsKschannel  //for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;

@@ -20,9 +20,9 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -46,7 +46,7 @@ void glueball_KsKs_channel()
     gStyle->SetOptStat(1110);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
-    t2->SetTextSize(0.06);
+    t2->SetTextSize(0.045);
     t2->SetTextFont(42);
 
     // Input file
@@ -66,16 +66,16 @@ void glueball_KsKs_channel()
     THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassDS", kfoldername.c_str()));
     THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassME", kfoldername.c_str()));
     THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassRot", kfoldername.c_str()));
-    cout << " The number of entries in histograms: \n"
-         << "same event: " << fHistNum->GetEntries() << "\n"
-         << "mixed event: " << fHistDen->GetEntries() << "\n"
-         << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << endl;
 
-    if (fHistNum == nullptr || fHistDen == nullptr)
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr)
     {
         cout << "Invariant mass histograms not found" << endl;
         return;
     }
+    cout << " The number of entries in histograms: \n"
+         << "same event: " << fHistNum->GetEntries() << "\n"
+         << "mixed event: " << fHistDen->GetEntries() << "\n"
+         << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << endl;
 
     TH1D *fHistTotal[Npt];
     TH1D *fHistBkg[Npt];
@@ -94,8 +94,9 @@ void glueball_KsKs_channel()
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
 
-        int lowpt = pT_bins[ip];
-        int highpt = pT_bins[ip + 1];
+        float lowpt = pT_bins[ip];
+        float highpt = pT_bins[ip + 1];
+        cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
         int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
         int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
@@ -130,12 +131,11 @@ void glueball_KsKs_channel()
         TH1D *hfbkg;
 
         //*****************************************************************************************************************************
-        float normalisationlow = 2.0;
-        float normalisationhigh = 2.1;
+
         if (kResBkg == "MIX")
         {
-            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normalisationlow), fHistTotal[ip]->GetXaxis()->FindBin(normalisationhigh)));
-            auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(normalisationlow), fHistBkg[ip]->GetXaxis()->FindBin(normalisationhigh)));
+            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+            auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
             auto normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
             cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
             hfbkg = (TH1D *)fHistBkg[ip]->Clone();
@@ -241,9 +241,10 @@ void glueball_KsKs_channel()
         lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
         lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
         lfit->AddEntry(expo, "Expol", "l");
+        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
         // lfit->Draw();
 
-        c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + "." + koutputtype).c_str());
+        c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -257,7 +258,7 @@ void glueball_KsKs_channel()
         hbkg_nopeak->SetFillStyle(3001);
         for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
         {
-            if (hbkg_nopeak->GetBinCenter(i + 1) < normalisationlow || hbkg_nopeak->GetBinCenter(i + 1) > normalisationhigh)
+            if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
             {
                 hbkg_nopeak->SetBinContent(i + 1, -999);
             }
@@ -287,8 +288,9 @@ void glueball_KsKs_channel()
         if (kResBkg == "MIX")
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
         leg->Draw();
+        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
 
-        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + "." + koutputtype).c_str());
+        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
     } // pt bin loop end here
     ////////////////////////////////////////////////////////////////////////
     // QA plots here
@@ -303,9 +305,9 @@ void glueball_KsKs_channel()
         hmult->Draw();
         c3->SaveAs((outputQAfolder_str + "/hglueball_multiplicity." + koutputtype).c_str());
 
-        //vtz distribution plot
+        // vtz distribution plot
         TH1F *hvtz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hVertexZRec").c_str());
-        if(hvtz == nullptr)
+        if (hvtz == nullptr)
         {
             cout << "Vertex Z distribution not found" << endl;
             return;
@@ -318,9 +320,9 @@ void glueball_KsKs_channel()
         hvtz->Draw();
         c3->SaveAs((outputQAfolder_str + "/hglueball_vtz." + koutputtype).c_str());
 
-        //mass correlation plot
+        // mass correlation plot
         TH2F *hmasscorr = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/hmasscorrelation").c_str());
-        if(hmasscorr == nullptr)
+        if (hmasscorr == nullptr)
         {
             cout << "Mass correlation plot not found" << endl;
             return;
@@ -339,10 +341,10 @@ void glueball_KsKs_channel()
         hmasscorr->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/hglueball_masscorrelation." + koutputtype).c_str());
 
-        //kshort selection plots
-        //Armenteros alpha plot
+        // kshort selection plots
+        // Armenteros alpha plot
         TH1F *hArmenteros = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/halpha").c_str());
-        if(hArmenteros == nullptr)
+        if (hArmenteros == nullptr)
         {
             cout << "Armenteros alpha plot not found" << endl;
             return;
@@ -355,9 +357,9 @@ void glueball_KsKs_channel()
         hArmenteros->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_alpha." + koutputtype).c_str());
 
-        //DCA negative daughter to PV
+        // DCA negative daughter to PV
         TH1F *hDCAneg = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCAnegtopv").c_str());
-        if(hDCAneg == nullptr)
+        if (hDCAneg == nullptr)
         {
             cout << "DCA negative daughter to PV plot not found" << endl;
             return;
@@ -370,9 +372,9 @@ void glueball_KsKs_channel()
         hDCAneg->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_DCAnegtopv." + koutputtype).c_str());
 
-        //DCA positive daughter to PV
+        // DCA positive daughter to PV
         TH1F *hDCApos = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCApostopv").c_str());
-        if(hDCApos == nullptr)
+        if (hDCApos == nullptr)
         {
             cout << "DCA positive daughter to PV plot not found" << endl;
             return;
@@ -385,9 +387,9 @@ void glueball_KsKs_channel()
         hDCApos->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_DCApostopv." + koutputtype).c_str());
 
-        //DCA daughters
+        // DCA daughters
         TH1F *hDCAdaughters = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCAV0Daughters").c_str());
-        if(hDCAdaughters == nullptr)
+        if (hDCAdaughters == nullptr)
         {
             cout << "DCA daughters plot not found" << endl;
             return;
@@ -400,9 +402,9 @@ void glueball_KsKs_channel()
         hDCAdaughters->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_DCAV0Daughters." + koutputtype).c_str());
 
-        //Kshort lifetime
+        // Kshort lifetime
         TH1F *hKshortLifetime = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hLT").c_str());
-        if(hKshortLifetime == nullptr)
+        if (hKshortLifetime == nullptr)
         {
             cout << "Kshort lifetime plot not found" << endl;
             return;
@@ -415,9 +417,9 @@ void glueball_KsKs_channel()
         hKshortLifetime->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_lifetime." + koutputtype).c_str());
 
-        //n sigma neg pion daugter before
+        // n sigma neg pion daugter before
         TH2F *hNSigmaNegPion_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaNegPionK0s_before").c_str());
-        if(hNSigmaNegPion_before == nullptr)
+        if (hNSigmaNegPion_before == nullptr)
         {
             cout << "n sigma neg pion daughter plot not found" << endl;
             return;
@@ -430,9 +432,9 @@ void glueball_KsKs_channel()
         hNSigmaNegPion_before->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion." + koutputtype).c_str());
 
-        //n sigma pos pion daugter before
+        // n sigma pos pion daugter before
         TH2F *hNSigmaPosPion_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaPosPionK0s_before").c_str());
-        if(hNSigmaPosPion_before == nullptr)
+        if (hNSigmaPosPion_before == nullptr)
         {
             cout << "n sigma pos pion daughter plot not found" << endl;
             return;
@@ -445,9 +447,9 @@ void glueball_KsKs_channel()
         hNSigmaPosPion_before->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaPosPion." + koutputtype).c_str());
 
-        //n sigma neg pion daugter after
+        // n sigma neg pion daugter after
         TH2F *hNSigmaNegPion_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaNegPionK0s_after").c_str());
-        if(hNSigmaNegPion_after == nullptr)
+        if (hNSigmaNegPion_after == nullptr)
         {
             cout << "n sigma neg pion daughter plot not found" << endl;
             return;
@@ -460,9 +462,9 @@ void glueball_KsKs_channel()
         hNSigmaNegPion_after->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion_after." + koutputtype).c_str());
 
-        //n sigma pos pion daugter after
+        // n sigma pos pion daugter after
         TH2F *hNSigmaPosPion_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaPosPionK0s_after").c_str());
-        if(hNSigmaPosPion_after == nullptr)
+        if (hNSigmaPosPion_after == nullptr)
         {
             cout << "n sigma pos pion daughter plot not found" << endl;
             return;
@@ -475,9 +477,9 @@ void glueball_KsKs_channel()
         hNSigmaPosPion_after->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaPosPion_after." + koutputtype).c_str());
 
-        //psi pair angle plot
+        // psi pair angle plot
         TH1F *hPsiPair = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hpsipair").c_str());
-        if(hPsiPair == nullptr)
+        if (hPsiPair == nullptr)
         {
             cout << "Psi pair angle plot not found" << endl;
             return;
@@ -490,9 +492,9 @@ void glueball_KsKs_channel()
         hPsiPair->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_psiPair." + koutputtype).c_str());
 
-        //v0 cos PA
+        // v0 cos PA
         TH1F *hV0CosPA = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hV0CosPA").c_str());
-        if(hV0CosPA == nullptr)
+        if (hV0CosPA == nullptr)
         {
             cout << "V0 cos PA plot not found" << endl;
             return;
@@ -505,9 +507,9 @@ void glueball_KsKs_channel()
         hV0CosPA->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_v0CosPA." + koutputtype).c_str());
 
-        //v0 radius
+        // v0 radius
         TH1F *hV0Radius = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hv0radius").c_str());
-        if(hV0Radius == nullptr)
+        if (hV0Radius == nullptr)
         {
             cout << "V0 radius plot not found" << endl;
             return;
@@ -521,9 +523,9 @@ void glueball_KsKs_channel()
         hV0Radius->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_v0Radius." + koutputtype).c_str());
 
-        //negative daughter eta
+        // negative daughter eta
         TH1F *hNegDaughterEta = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_eta").c_str());
-        if(hNegDaughterEta == nullptr)
+        if (hNegDaughterEta == nullptr)
         {
             cout << "Negative daughter eta plot not found" << endl;
             return;
@@ -536,9 +538,9 @@ void glueball_KsKs_channel()
         hNegDaughterEta->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterEta." + koutputtype).c_str());
 
-        //positive daughter eta
+        // positive daughter eta
         TH1F *hPosDaughterEta = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_eta").c_str());
-        if(hPosDaughterEta == nullptr)
+        if (hPosDaughterEta == nullptr)
         {
             cout << "Positive daughter eta plot not found" << endl;
             return;
@@ -551,9 +553,9 @@ void glueball_KsKs_channel()
         hPosDaughterEta->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterEta." + koutputtype).c_str());
 
-        //negative daughter phi
+        // negative daughter phi
         TH1F *hNegDaughterPhi = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_phi").c_str());
-        if(hNegDaughterPhi == nullptr)
+        if (hNegDaughterPhi == nullptr)
         {
             cout << "Negative daughter phi plot not found" << endl;
             return;
@@ -566,9 +568,9 @@ void glueball_KsKs_channel()
         hNegDaughterPhi->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPhi." + koutputtype).c_str());
 
-        //positive daughter phi
+        // positive daughter phi
         TH1F *hPosDaughterPhi = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_phi").c_str());
-        if(hPosDaughterPhi == nullptr)
+        if (hPosDaughterPhi == nullptr)
         {
             cout << "Positive daughter phi plot not found" << endl;
             return;
@@ -581,9 +583,9 @@ void glueball_KsKs_channel()
         hPosDaughterPhi->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPhi." + koutputtype).c_str());
 
-        //negative daughter pT
+        // negative daughter pT
         TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
-        if(hNegDaughterPt == nullptr)
+        if (hNegDaughterPt == nullptr)
         {
             cout << "Negative daughter pT plot not found" << endl;
             return;
@@ -596,9 +598,9 @@ void glueball_KsKs_channel()
         hNegDaughterPt->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPt." + koutputtype).c_str());
 
-        //positive daughter pT
+        // positive daughter pT
         TH1F *hPosDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_pt").c_str());
-        if(hPosDaughterPt == nullptr)
+        if (hPosDaughterPt == nullptr)
         {
             cout << "Positive daughter pT plot not found" << endl;
             return;
@@ -610,25 +612,5 @@ void glueball_KsKs_channel()
         hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
         hPosDaughterPt->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

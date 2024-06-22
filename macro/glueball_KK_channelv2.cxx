@@ -20,8 +20,8 @@ void glueball_KK_channelv2()
 {
     // change here ***********************************************************
     // const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
-    const string kResBkg = "LIKE";
+    const string kResBkg = "ROTATED";
+    // const string kResBkg = "LIKE";
     const bool makeQAplots = false;
     // change here ***********************************************************
 
@@ -47,7 +47,7 @@ void glueball_KK_channelv2()
     gStyle->SetOptStat(1110);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
-    t2->SetTextSize(0.06);
+    t2->SetTextSize(0.045);
     t2->SetTextFont(42);
 
     // Input file
@@ -70,6 +70,12 @@ void glueball_KK_channelv2()
     THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
     THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
 
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
+    {
+        cout << "Invariant mass histograms not found" << endl;
+        return;
+    }
+
     cout << " The number of entries in histograms: \n"
          << "same event: " << fHistNum->GetEntries() << "\n"
          << "mixed event: " << fHistDen->GetEntries() << "\n"
@@ -77,14 +83,8 @@ void glueball_KK_channelv2()
          << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
          << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
 
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
-    {
-        cout << "Invariant mass histograms not found" << endl;
-        return;
-    }
-
     TH1D *fHistTotal[Npt];
-    TH1D *fHistBkg[Npt];
+    TH1D *fHistME[Npt];
     TH1D *fHistRotated[Npt];
     TH1D *fHistLikepp[Npt];
     TH1D *fHistLikemm[Npt];
@@ -103,8 +103,8 @@ void glueball_KK_channelv2()
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
     {
 
-        int lowpt = pT_bins[ip];
-        int highpt = pT_bins[ip + 1];
+        float lowpt = pT_bins[ip];
+        float highpt = pT_bins[ip + 1];
         int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
         int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
@@ -124,12 +124,12 @@ void glueball_KK_channelv2()
         fHistLike_mm->GetAxis(0)->SetRange(lbinmult, hbinmult);
 
         fHistTotal[ip] = fHistNum->Projection(2, "E");
-        fHistBkg[ip] = fHistDen->Projection(2, "E");
+        fHistME[ip] = fHistDen->Projection(2, "E");
         fHistRotated[ip] = fHistRot->Projection(2, "E");
         fHistLikepp[ip] = fHistLike_pp->Projection(2, "E");
         fHistLikemm[ip] = fHistLike_mm->Projection(2, "E");
         fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
-        fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
+        fHistME[ip]->SetName(Form("fHistME_%d", ip));
         fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
         fHistLikepp[ip]->SetName(Form("fHistLikepp_%d", ip));
         fHistLikemm[ip]->SetName(Form("fHistLikemm_%d", ip));
@@ -140,7 +140,6 @@ void glueball_KK_channelv2()
         }
 
         fHistLike[ip]->SetName(Form("fHistLike_%d", ip));
-
         auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
         auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
         cout << "energy low value is " << energylow << endl;
@@ -154,15 +153,13 @@ void glueball_KK_channelv2()
         TH1D *hfbkg;
 
         //*****************************************************************************************************************************
-        float normalisationlow = 2.0;
-        float normalisationhigh = 2.1;
         if (kResBkg == "MIX")
         {
-            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normalisationlow), fHistTotal[ip]->GetXaxis()->FindBin(normalisationhigh)));
-            auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(normalisationlow), fHistBkg[ip]->GetXaxis()->FindBin(normalisationhigh)));
+            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+            auto bkg_integral = (fHistME[ip]->Integral(fHistME[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistME[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
             auto normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
             cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
-            hfbkg = (TH1D *)fHistBkg[ip]->Clone();
+            hfbkg = (TH1D *)fHistME[ip]->Clone();
 
             hfbkg->Scale(normfactor);
             hfbkg->Rebin(kRebin[ip]);
@@ -266,8 +263,9 @@ void glueball_KK_channelv2()
         lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
         lfit->AddEntry(expo, "Expol", "l");
         // lfit->Draw();
+        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
 
-        c1->SaveAs((outputfolder_str + "/hglueball_bkg_" + kResBkg + "." + koutputtype).c_str());
+        c1->SaveAs((outputfolder_str + "/hglueball_bkg_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -282,7 +280,7 @@ void glueball_KK_channelv2()
         hbkg_nopeak->SetFillStyle(3001);
         for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
         {
-            if (hbkg_nopeak->GetBinCenter(i + 1) < normalisationlow || hbkg_nopeak->GetBinCenter(i + 1) > normalisationhigh)
+            if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
             {
                 hbkg_nopeak->SetBinContent(i + 1, -999);
             }
@@ -314,8 +312,9 @@ void glueball_KK_channelv2()
         if (kResBkg == "MIX")
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
         leg->Draw();
+        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
 
-        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + "." + koutputtype).c_str());
+        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
     } // pt bin loop end here
 
     ////////////////////////////////////////////////////////////////////////

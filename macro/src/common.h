@@ -5,7 +5,7 @@ const string kParticle = "kstar/";
 const bool multipanel_plots = 0;
 const bool save_plots = 1;
 const string kfoldername_temp = "kstarqa";
-const string kvariation = "_tpc2"; // change the variation here
+const string kvariation = ""; // change the variation here
 ////********************************************************************************************
 
 // define datasets here
@@ -27,7 +27,8 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // const string kDataFilename_temp2 = "208396.root"; // data file
 // const string kDataFilename_temp2 = "210677.root"; // data file
 // const string kDataFilename_temp2 = "211075.root"; // tpc cluster 120
-const string kDataFilename_temp2 = "211557.root"; // global tracks w/o dca on
+// const string kDataFilename_temp2 = "211557.root"; // global tracks w/o dca on
+const string kDataFilename_temp2 = "227978.root"; // large invariant mass range upto 3 GeV/c^2
 // const string kMCFilename_temp = "210563.root";    // only mc process (b1b)
 // const string kMCFilename_temp = "211233.root";    // tpc cluster 120 + mass pi fix
 const string kMCFilename_temp = "211346.root"; // split tracks

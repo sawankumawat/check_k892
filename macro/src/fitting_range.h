@@ -15,8 +15,10 @@ const int pt_end = 8;
 // Projection of signal in different pT bins *************************************
 
 #ifdef DATASET_LHC220_pass6_small
-const Int_t Npt = 27;
-double pT_bins[Npt + 1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
+const Int_t Npt = 30;
+// const Int_t Npt = 1;
+double pT_bins[Npt + 1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0};
+// double pT_bins[Npt + 1] = {0.0, 30.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif

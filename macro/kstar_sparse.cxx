@@ -19,7 +19,7 @@ void kstar_sparse()
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
     const string outputtype = "png"; // pdf, eps
-    const bool save_bkg_plots = 0;
+    const bool save_bkg_plots = 1;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kfoldername;
@@ -163,17 +163,9 @@ void kstar_sparse()
         cout << "The value of binwidth_file is: " << binwidth_file << endl;
         //*****************************************************************************************************************************
 
-        if (kResBkg == "MIX" || kResBkg == "ROTATED")
+        if (kResBkg == "MIX")
         {
-            TH1D *bkgclonetemp;
-            if (kResBkg == "MIX")
-            {
-                bkgclonetemp = (TH1D *)fHistBkg[ip]->Clone();
-            }
-            else if (kResBkg == "ROTATED")
-            {
-                bkgclonetemp = (TH1D *)fHistRotated1D[ip]->Clone();
-            }
+            TH1D *bkgclonetemp = (TH1D *)fHistBkg[ip]->Clone();
 
             sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
             bkg_integral = (bkgclonetemp->Integral(bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][0]), bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][1])));
@@ -194,6 +186,14 @@ void kstar_sparse()
             // hfbkg->Scale(normfactor);
 
             hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
+            hfbkg->Rebin(kRebin[ip]);
+            hfsig->Rebin(kRebin[ip]);
+            hfsig->Add(hfbkg, -1);
+        }
+        else if (kResBkg == "ROTATED")
+        {
+            hfbkg = (TH1D *)fHistRotated1D[ip]->Clone();
+            hfbkg->Scale(0.5);
             hfbkg->Rebin(kRebin[ip]);
             hfsig->Rebin(kRebin[ip]);
             hfsig->Add(hfbkg, -1);
@@ -476,9 +476,10 @@ void kstar_sparse()
         gPad->SetRightMargin(0.01);
         gPad->SetLeftMargin(0.15);
         gPad->SetBottomMargin(0.15);
-        fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.3);
+        fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.15);
         fHistTotal[ip]->SetMarkerSize(0.5);
         hfbkg->SetMarkerSize(0.5);
+        // fHistTotal[ip]->GetXaxis()->SetRangeUser(0.6, 3.0);
         fHistTotal[ip]->Draw("E");
         fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f", binwidth_file));
         TLegend *leg112 = new TLegend(0.60554, 0.7812735, 0.852902, 0.8938954, NULL, "brNDC");
@@ -491,6 +492,8 @@ void kstar_sparse()
         ltx->SetTextFont(22);
         ltx->SetTextSize(0.06);
         hfbkg->Draw("E same");
+        fHistTotal[ip]->SetMarkerSize(0.3);
+        hfbkg->SetMarkerSize(0.3);
         if (kResBkg == "MIX")
             hbkg_nopeak->Draw("BAR same");
         (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");

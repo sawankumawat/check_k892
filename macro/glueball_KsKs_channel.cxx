@@ -22,7 +22,8 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
+    const bool makeQAplots = true;
+    const bool make_invmass_distributions = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -41,8 +42,8 @@ void glueball_KsKs_channel()
         std::cout << "Creating folder " << outputQAfolder << std::endl;
     }
     // Folder name inside the Analysis.root file *****************************************
-
-    // gStyle->SetOptFit(1111);
+    if (!make_invmass_distributions)
+        gStyle->SetOptFit(1111);
     gStyle->SetOptStat(1110);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
@@ -243,8 +244,8 @@ void glueball_KsKs_channel()
         lfit->AddEntry(expo, "Expol", "l");
         t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
         // lfit->Draw();
-
-        c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+        if (make_invmass_distributions)
+            c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -289,16 +290,68 @@ void glueball_KsKs_channel()
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
         leg->Draw();
         t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-
-        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+        if (make_invmass_distributions)
+            c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
     } // pt bin loop end here
     ////////////////////////////////////////////////////////////////////////
     // QA plots here
-    // Mulitplicity plot
     if (makeQAplots)
     {
         TCanvas *c3 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+
+        // Kshort pT and invariant mass distribution before the selections
+        THnSparseF *hKshortPt = (THnSparseF *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hMassK0Shortbefore").c_str());
+        if (hKshortPt == nullptr)
+        {
+            cout << "Kshort pT distribution not found" << endl;
+            return;
+        }
+        TH1F *kshortpt_before = (TH1F *)hKshortPt->Projection(1, "E");
+        TH1F *kshortmass_before = (TH1F *)hKshortPt->Projection(0, "E");
+        SetHistoQA(kshortpt_before);
+        SetHistoQA(kshortmass_before);
+        kshortpt_before->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        kshortpt_before->GetYaxis()->SetTitle("Counts");
+        kshortmass_before->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        kshortmass_before->GetYaxis()->SetTitle("Counts");
+        kshortmass_before->GetXaxis()->SetRangeUser(0.2, 0.8);
+        kshortpt_before->Draw("HIST");
+        c3->SaveAs((outputQAfolder_str + "/kshort_pt_before." + koutputtype).c_str());
+        c3->Clear();
+        kshortmass_before->Draw("HIST");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_before." + koutputtype).c_str());
+
+        // Kshort pT and invariant mass distribution after the selections
+        THnSparseF *hKshortPt_after = (THnSparseF *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hMassK0ShortSelected").c_str());
+        if (hKshortPt_after == nullptr)
+        {
+            cout << "Kshort pT distribution after the selections not found" << endl;
+            return;
+        }
+        TH1F *kshortpt_after = (TH1F *)hKshortPt_after->Projection(1, "E");
+        TH1F *kshortmass_after = (TH1F *)hKshortPt_after->Projection(0, "E");
+        SetHistoQA(kshortpt_after);
+        SetHistoQA(kshortmass_after);
+        kshortpt_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        kshortpt_after->GetYaxis()->SetTitle("Counts");
+        kshortmass_after->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        kshortmass_after->GetYaxis()->SetTitle("Counts");
+        kshortmass_after->GetXaxis()->SetRangeUser(0.2, 0.8);
+        kshortpt_after->Draw("HIST");
+        c3->SaveAs((outputQAfolder_str + "/kshort_pt_after." + koutputtype).c_str());
+        c3->Clear();
+        kshortmass_after->Draw("HIST");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_after." + koutputtype).c_str());
+
+        TF1 *fitKshort = new TF1("fitKshort", "gaus", 0.45, 0.55);
+        kshortmass_after->Fit("fitKshort", "RM");
+        kshortmass_after->GetXaxis()->SetRangeUser(0.4, 0.6);
+        kshortmass_after->Draw("HIST");
+        fitKshort->Draw("same");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_after_fit." + koutputtype).c_str());
+
+        // Mulitplicity plot
         SetHistoQA(hmult);
         hmult->GetYaxis()->SetTitle("Counts");
         hmult->GetXaxis()->SetTitle("Multiplicity percentile");

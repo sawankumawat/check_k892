@@ -7,7 +7,7 @@
 // const Int_t Npt = 1;
 const Int_t Npt = 7;
 // double pT_bins[Npt + 1] = {0.0, 30.0};
-double pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0};
+float pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif
@@ -15,7 +15,7 @@ const int pt_end = Npt;
 // const Int_t Npt = 1;
 const Int_t Npt = 8;
 // double pT_bins[Npt + 1] = {0.0, 30.0};
-double pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0, 30.0};
+float pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0, 30.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif
@@ -25,7 +25,7 @@ const int pt_end = Npt;
 
 #ifdef DATASET_LHC220_pass6_small
 #ifdef KsKschannel
-const std::vector<vector<double>> kNormRangepT = {
+const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV
     // {1.00, 1.15}, // 0.0-15.0 GeV/c
     {1.05, 1.10}, // 0.0-1.0 GeV/c
@@ -36,7 +36,7 @@ const std::vector<vector<double>> kNormRangepT = {
     {2.00, 2.10}, // 6.0-10.0 GeV/c
     {2.00, 2.10}, // 10.0-20.0 GeV/c
 };
-const std::vector<vector<double>> kFitRange = {
+const std::vector<vector<float>> kFitRange = {
     // 13.6 TeV
     {0.79, 1.02}, // 0.0-1.0 GeV/c
     {0.79, 1.02}, // 1.0-2.0 GeV/c

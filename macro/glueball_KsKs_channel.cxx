@@ -58,6 +58,15 @@ void glueball_KsKs_channel()
         return;
     }
 
+    //showing all folders in the root file using keys
+    TIter next(fInputFile->GetListOfKeys());
+    TKey *key;
+    cout<<"The folders in the root file are: \n";
+    while ((key = (TKey *)next()))
+    {
+        cout << key->GetName() << endl;
+    }
+
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
     cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
@@ -297,6 +306,7 @@ void glueball_KsKs_channel()
     // QA plots here
     if (makeQAplots)
     {
+        TFile *KsInvMass = new TFile((outputQAfolder_str + "/KsInvMass.root").c_str(), "RECREATE");
         TCanvas *c3 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
 
@@ -329,6 +339,7 @@ void glueball_KsKs_channel()
             cout << "Kshort pT distribution after the selections not found" << endl;
             return;
         }
+        hKshortPt_after->Write("kshort_2dsparse");
         TH1F *kshortpt_after = (TH1F *)hKshortPt_after->Projection(1, "E");
         TH1F *kshortmass_after = (TH1F *)hKshortPt_after->Projection(0, "E");
         SetHistoQA(kshortpt_after);
@@ -339,6 +350,9 @@ void glueball_KsKs_channel()
         kshortmass_after->GetYaxis()->SetTitle("Counts");
         kshortmass_after->GetXaxis()->SetRangeUser(0.2, 0.8);
         kshortpt_after->Draw("HIST");
+        kshortpt_after->Write("kspt");
+        kshortmass_after->Write("ksmass");
+        // KsInvMass->Close();
         c3->SaveAs((outputQAfolder_str + "/kshort_pt_after." + koutputtype).c_str());
         c3->Clear();
         kshortmass_after->Draw("HIST");

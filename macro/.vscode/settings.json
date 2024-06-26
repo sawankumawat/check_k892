@@ -12,6 +12,9 @@
         "string": "cpp",
         "ratios.C": "cpp",
         "array": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "MakeInvQMPlot1_K0s_preliminiary.C": "cpp",
+        "Ks_gaussian_fit.C": "cpp",
+        "DCB.C": "cpp"
     }
 }

@@ -106,3 +106,44 @@ double gluefit3bW(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + exponential_bkg(x, &par[9]));
 }
+
+Double_t gauspol2(double *x, double *par)
+{
+    double gaus = par[0] * TMath::Gaus(x[0], par[1], par[2]);
+    double pol2 = par[5] + par[4] * x[0] + par[3] * x[0] * x[0];
+    return (gaus + pol2);
+}
+
+Double_t CrystalBall(double *x, double *par)
+{
+    // par[0] normalization
+    // par[1] mean of gaussian
+    // par[2] sigma of gaussian
+    // par[3] alpha
+    // par[4] n
+
+    double t = (x[0] - par[1]) / par[2];
+    double absAlpha_L = fabs((double)par[3]);
+    double n = par[4];
+    double y1 = 0;
+
+    if (t >= -absAlpha_L)
+    {
+        y1 = par[0] * exp(-0.5 * t * t);
+    }
+    else if (t < -absAlpha_L)
+    {
+        // double  a = TMath::Power(n/absAlpha_L, n)exp(-0.5absAlpha_LabsAlpha_L);
+        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n / absAlpha_L, n);
+        double b = (n / absAlpha_L) - absAlpha_L;
+        y1 = par[0] * (a / TMath::Power(b - t, n));
+    }
+    return y1;
+}
+
+Double_t CrystalBallpol2(double *x, double *par)
+{
+    double CB = CrystalBall(x, &par[0]);
+    double pol2 = par[7] + par[6] * x[0] + par[5] * x[0] * x[0];
+    return (CB + pol2);
+}

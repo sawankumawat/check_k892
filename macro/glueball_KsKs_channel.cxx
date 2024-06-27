@@ -20,10 +20,10 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
-    const bool make_invmass_distributions = false;
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -42,7 +42,7 @@ void glueball_KsKs_channel()
         std::cout << "Creating folder " << outputQAfolder << std::endl;
     }
     // Folder name inside the Analysis.root file *****************************************
-    if (!make_invmass_distributions)
+    if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
     gStyle->SetOptStat(1110);
 
@@ -58,10 +58,10 @@ void glueball_KsKs_channel()
         return;
     }
 
-    //showing all folders in the root file using keys
+    // showing all folders in the root file using keys
     TIter next(fInputFile->GetListOfKeys());
     TKey *key;
-    cout<<"The folders in the root file are: \n";
+    cout << "The folders in the root file are: \n";
     while ((key = (TKey *)next()))
     {
         cout << key->GetName() << endl;
@@ -168,6 +168,7 @@ void glueball_KsKs_channel()
         fHistTotal[ip]->Rebin(kRebin[ip]);
 
         //*****************************************************************************************************
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_KsKs_" + kResBkg + Form("_%f_%f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "RECREATE");
         TCanvas *c1 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
         SetHistoQA(hfsig);
@@ -178,9 +179,10 @@ void glueball_KsKs_channel()
         hfsig->SetMarkerColor(kBlack);
         hfsig->SetLineColor(kBlack);
         hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
-        hfsig->GetYaxis()->SetTitle("Counts");
+        hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
         hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
         hfsig->Draw("e");
+        hfsig->Write("ksks_invmass");
         // gPad->Update();
         // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
         // if (ps)
@@ -253,7 +255,7 @@ void glueball_KsKs_channel()
         lfit->AddEntry(expo, "Expol", "l");
         t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
         // lfit->Draw();
-        if (make_invmass_distributions)
+        if (save_invmass_distributions)
             c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);
@@ -282,7 +284,7 @@ void glueball_KsKs_channel()
         fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
         fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
         fHistTotal[ip]->Draw("E");
-        fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
+        fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
         hfbkg->Draw("E same");
         if (kResBkg == "MIX")
             hbkg_nopeak->Draw("BAR same");
@@ -299,7 +301,7 @@ void glueball_KsKs_channel()
             leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
         leg->Draw();
         t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-        if (make_invmass_distributions)
+        if (save_invmass_distributions)
             c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
     } // pt bin loop end here
     ////////////////////////////////////////////////////////////////////////

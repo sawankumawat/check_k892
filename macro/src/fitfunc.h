@@ -123,21 +123,57 @@ Double_t CrystalBall(double *x, double *par)
     // par[4] n
 
     double t = (x[0] - par[1]) / par[2];
-    double absAlpha_L = fabs((double)par[3]);
+    double absAlpha_L = fabs(par[3]);
     double n = par[4];
     double y1 = 0;
 
-    if (t >= -absAlpha_L)
+    if (t < -absAlpha_L)
+    {
+        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n / absAlpha_L, n);
+        double b = (n / absAlpha_L) - absAlpha_L;
+        y1 = par[0] * (a / TMath::Power(b - t, n));
+    }
+    else if (t >= -absAlpha_L)
+    {
+        y1 = par[0] * exp(-0.5 * t * t);
+    }
+    return y1;
+}
+
+Double_t DoubleCrystalBall(Double_t *x, Double_t *par)
+{
+    // par[0] normalization
+    // par[1] mean of gaussian
+    // par[2] sigma of gaussian
+    // par[3] alpha left
+    // par[4] n1
+    // par[5] alpha right
+    // par[6] n2
+
+    double t = (x[0] - par[1]) / par[2];
+    double absAlpha_L = fabs(par[3]);
+    double n1 = par[4];
+    double absAlpha_R = fabs(par[5]);
+    double n2 = par[6];
+    double y1 = 0;
+
+    if ((t >= -absAlpha_L) && (t < absAlpha_R))
     {
         y1 = par[0] * exp(-0.5 * t * t);
     }
     else if (t < -absAlpha_L)
     {
-        // double  a = TMath::Power(n/absAlpha_L, n)exp(-0.5absAlpha_LabsAlpha_L);
-        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n / absAlpha_L, n);
-        double b = (n / absAlpha_L) - absAlpha_L;
-        y1 = par[0] * (a / TMath::Power(b - t, n));
+        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n1 / absAlpha_L, n1);
+        double b = n1 / absAlpha_L - absAlpha_L;
+        y1 = par[0] * (a / TMath::Power(b - t, n1));
     }
+    else if (t >= absAlpha_R)
+    {
+        double a = exp(-0.5 * absAlpha_R * absAlpha_R) * TMath::Power(n2 / absAlpha_R, n2);
+        double b = n2 / absAlpha_R - absAlpha_R;
+        y1 = par[0] * (a / TMath::Power(b + t, n2));
+    }
+
     return y1;
 }
 
@@ -146,4 +182,11 @@ Double_t CrystalBallpol2(double *x, double *par)
     double CB = CrystalBall(x, &par[0]);
     double pol2 = par[7] + par[6] * x[0] + par[5] * x[0] * x[0];
     return (CB + pol2);
+}
+
+Double_t DoubleCrystalBallpol2(double *x, double *par)
+{
+    double DCB = DoubleCrystalBall(x, &par[0]);
+    double pol2 = par[9] + par[8] * x[0] + par[7] * x[0] * x[0];
+    return (DCB + pol2);
 }

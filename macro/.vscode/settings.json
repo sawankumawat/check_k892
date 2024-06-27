@@ -15,6 +15,7 @@
         "ostream": "cpp",
         "MakeInvQMPlot1_K0s_preliminiary.C": "cpp",
         "Ks_gaussian_fit.C": "cpp",
-        "DCB.C": "cpp"
+        "DCB.C": "cpp",
+        "MakeInvQMPlot1_1to10_4BW_interference_additional_paramter.C": "cpp"
     }
 }

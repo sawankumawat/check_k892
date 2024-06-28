@@ -16,6 +16,15 @@
         "MakeInvQMPlot1_K0s_preliminiary.C": "cpp",
         "Ks_gaussian_fit.C": "cpp",
         "DCB.C": "cpp",
-        "MakeInvQMPlot1_1to10_4BW_interference_additional_paramter.C": "cpp"
+        "MakeInvQMPlot1_1to10_4BW_interference_additional_paramter.C": "cpp",
+        "rel_bw.C": "cpp",
+        "SIGNIFICANCE_3rBW_1to10_set1_boltzman.C": "cpp",
+        "MakeInvQMPlot1_1to10_4BW_interference_final.C": "cpp",
+        "MakeInvQMPlot1_1to10_4BW_interference_signal_preliminary.C": "cpp",
+        "sigbkg_mixedevent.C": "cpp",
+        "Signal_4rBW_1to10_Default_free.C": "cpp",
+        "SIGNIFICANCE_3rBW_1to10_set1_fixed_width_default.C": "cpp",
+        "SIGNIFICANCE_3rBW_1to10_set1_fixed_width_expol.C": "cpp",
+        "SIGNIFICANCE_3rBW_1to10_set1_new.C": "cpp"
     }
 }

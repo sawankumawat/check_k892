@@ -89,22 +89,42 @@ Double_t Expo(Double_t *x, Double_t *par)
 
 Double_t RelativisticBW(double *x, double *par)
 {
-    return (par[0] / (pow((x[0] * x[0] - par[1] * par[1]), 2) + pow((par[1] * par[2]), 2))); // par[0] is the normalization constant, par[1] is the mass, par[2] is the width
+    return (x[0] * par[0] / (pow((x[0] * x[0] - par[1] * par[1]), 2) + pow((par[1] * par[2]), 2))); // par[0] is the normalization constant, par[1] is the mass, par[2] is the width
 }
 
-double exponential_bkg(double *x, double *par)
+Double_t exponential_bkg(double *x, double *par)
 {
     return (par[0] * pow((x[0] - 2 * 0.497), par[1]) * TMath::Exp(-par[2] * (x[0] - 2 * 0.497)));
 }
 
-double gluefit2bW(double *x, double *par)
+Double_t expo2bW(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + exponential_bkg(x, &par[6]));
 }
 
-double gluefit3bW(double *x, double *par)
+Double_t expo3bW(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + exponential_bkg(x, &par[9]));
+}
+
+Double_t pol2bW3(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + polynomial2(x, &par[9]));
+}
+
+Double_t pol3bW3(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + polynomial3(x, &par[9]));
+}
+
+Double_t pol2bW2(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + polynomial2(x, &par[6]));
+}
+
+Double_t pol3bW2(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + polynomial3(x, &par[6]));
 }
 
 Double_t gauspol2(double *x, double *par)
@@ -189,4 +209,13 @@ Double_t DoubleCrystalBallpol2(double *x, double *par)
     double DCB = DoubleCrystalBall(x, &par[0]);
     double pol2 = par[9] + par[8] * x[0] + par[7] * x[0] * x[0];
     return (DCB + pol2);
+}
+
+Double_t Boltzman(double *x, double *par)
+{
+    double norm = par[0];
+    double massks = 0.497;
+    double n = par[1];
+    double C = par[2];
+    return (par[0] * exp(-par[1] * x[0]));
 }

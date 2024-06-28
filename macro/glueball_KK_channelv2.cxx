@@ -206,65 +206,6 @@ void glueball_KK_channelv2()
         // gPad->Modified(); // Necessary to update the canvas with the new text size
         // gPad->Update();
 
-        // TF1 *fitBW = new TF1("fitBW", gluefit2bW, 1, 2.3, 9);
-        TF1 *fitBW = new TF1("fitBW", gluefit3bW, 1.1, 2.3, 12);
-        // fitBW->SetParNames("Norm1", "mass1", "width1", "Norm2", "mass2", "width2", "norm3", "mass3", "width3", "p1", "p2");
-        // fitBW->SetParName(11, "p3");
-        float f1270norm = parameter0(f1270Mass, f1270Width);
-        float a1320norm = parameter0(a1320Mass, a1320Width);
-        float f1525norm = parameter0(f1525Mass, f1525Width);
-        float f1710norm = parameter0(f1710Mass, f1710Width);
-
-        fitBW->SetParameter(0, f1270norm);
-        fitBW->SetParameter(1, f1270Mass);
-        fitBW->SetParameter(2, f1270Width);
-        fitBW->SetParameter(3, f1525norm);
-        fitBW->SetParameter(4, f1525Mass);
-        fitBW->SetParameter(5, f1525Width);
-        fitBW->SetParameter(6, f1710norm);
-        fitBW->SetParameter(7, f1710Mass);
-        fitBW->SetParameter(8, f1710Width);
-
-        fitBW->SetParLimits(1, f1270Mass - 1 * f1270Width, f1270Mass + 1 * f1270Width);
-        fitBW->SetParLimits(4, f1525Mass - 2 * f1525Width, f1525Mass + 2 * f1525Width);
-        fitBW->SetParLimits(7, f1710Mass - 1 * f1710Width, f1710Mass + 1 * f1710Width);
-        fitBW->FixParameter(1, f1270Mass);
-
-        hfsig->Fit("fitBW", "REBMSQ0");
-        double *par = fitBW->GetParameters();
-        TF1 *Bw1 = new TF1("Bw1", RelativisticBW, 1, 2.3, 3);
-        TF1 *Bw2 = new TF1("Bw2", RelativisticBW, 1, 2.3, 3);
-        TF1 *Bw3 = new TF1("Bw3", RelativisticBW, 1, 2.3, 3);
-        TF1 *expo = new TF1("expo", exponential_bkg, 1, 2.3, 3);
-        // fitBW->Draw("same");
-        Bw1->SetParameters(&par[0]);
-        Bw2->SetParameters(&par[3]);
-        Bw3->SetParameters(&par[6]);
-        expo->SetParameters(&par[9]);
-        Bw1->SetLineColor(28);
-        Bw2->SetLineColor(6);
-        Bw3->SetLineColor(7);
-        expo->SetLineColor(4);
-        // Bw1->Draw("same");
-        // Bw2->Draw("same");
-        // Bw3->Draw("same");
-        // expo->Draw("same");
-
-        TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
-        lfit->SetFillColor(0);
-        // lfit->SetBorderSize(0);
-        lfit->SetFillStyle(0);
-        lfit->SetTextFont(42);
-        lfit->SetTextSize(0.04);
-        lfit->AddEntry(hfsig, "Data", "lpe");
-        lfit->AddEntry(fitBW, "3rBW+expol", "l");
-        lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
-        lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
-        lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
-        lfit->AddEntry(expo, "Expol", "l");
-        // lfit->Draw();
-        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-
         c1->SaveAs((outputfolder_str + "/hglueball_bkg_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
 
         TCanvas *c2 = new TCanvas("", "", 720, 720);

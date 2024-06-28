@@ -895,6 +895,10 @@ Double_t rBreitWigner(Double_t *x, Double_t *par)
   //  double rBW3 = par[6]*par[8]/(2*3.14159)/((x[0]-par[7])**2+par[9]**2/4.);
   //  double rBW4 = par[9]*par[11]/(2*3.14159)/((x[0]-par[10])**2+par[11]**2/4.);
 
+  //par[1] = mass
+  //par[2] = gamma (width)
+  //par[0] = yield
+
   double npart1 = x[0] * x[0] - 4 * (0.4976 * 0.4976);
   double dpart1 = par[1] * par[1] - 4 * (0.4976 * 0.4976);
   double dpart2 = par[4] * par[4] - 4 * (0.4976 * 0.4976);

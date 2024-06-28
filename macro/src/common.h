@@ -52,14 +52,6 @@ const int kcanvasdivide[2] = {klowerpad, kupperpad};
 float masspdg = 0.895;  // in GeV/c^2
 float widthpdg = 0.047; // in 1 sigma GeV/c^2
 
-float f1270Mass = 1.275;
-float f1270Width = 0.187;
-float a1320Mass = 1.318;
-float a1320Width = 0.105;
-float f1525Mass = 1.518;
-float f1525Width = 0.082;
-float f1710Mass = 1.710;
-float f1710Width = 0.150;
 
 // old
 // pbpb datasets

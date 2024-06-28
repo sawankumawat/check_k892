@@ -9,9 +9,9 @@ const string koutputtype = "png"; // pdf, eps
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
-const string kvariation = ""; // change the variation here
+// const string kvariation = ""; // change the variation here
 // const string kvariation = "_full_ks_distribution"; // change the variation here
-// const string kvariation = "_old_cuts"; // change the variation here
+const string kvariation = "_old_cuts"; // change the variation here
 #endif
 ////********************************************************************************************
 #ifdef KKchannel
@@ -70,6 +70,8 @@ float f1270Mass = 1.275;
 float f1270Width = 0.187;
 float a1320Mass = 1.318;
 float a1320Width = 0.105;
+float f1500Mass = 1.522;
+float f1500Width = 0.108;
 float f1525Mass = 1.518;
 float f1525Width = 0.082;
 float f1710Mass = 1.710;

@@ -314,7 +314,7 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters)
     }
     fit->SetLineColor(2);
     fit->SetLineWidth(2);
-    h->Fit(fit, "REBMS+");
+    h->Fit(fit, "REBMS");
     fit->SetNpx(1e6);
     fit->Draw("SAME");
     return fit;

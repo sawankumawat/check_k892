@@ -28,7 +28,8 @@ void SetgrStyle(TGraph *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
     h->GetYaxis()->CenterTitle(true);
 }
 
-void SetHistoQA(TH1 *h){
+void SetHistoQA(TH1 *h)
+{
     h->SetMarkerStyle(8);
     h->SetMarkerSize(0.5);
     h->SetMarkerColor(1);
@@ -54,6 +55,47 @@ void SetHistoQA(TH1 *h){
     h->GetYaxis()->SetTickLength(0.04);
     h->GetYaxis()->SetTitleSize(0.05);
     h->GetYaxis()->SetTitleFont(42);
+}
+
+void SetHistoQA2D(TH2 *h)
+{
+    h->SetMarkerStyle(8);
+    h->SetMarkerSize(0.5);
+    h->SetMarkerColor(1);
+    h->SetLineColor(1);
+    h->SetLineWidth(2);
+    h->SetTitle(0);
+    // h->GetXaxis()->SetNdivisions(506);
+    // h->GetYaxis()->SetNdivisions(505);
+    h->GetXaxis()->SetLabelOffset(0.015);
+    h->GetXaxis()->SetLabelFont(42);
+    h->GetXaxis()->SetTitleFont(42);
+    h->GetXaxis()->SetLabelSize(0.045);
+    h->GetXaxis()->SetTitleSize(0.05);
+    h->GetXaxis()->SetTickLength(0.04);
+    h->GetXaxis()->SetTitleOffset(1.2);
+    h->GetXaxis()->CenterTitle(true);
+
+    h->GetYaxis()->CenterTitle(true);
+    h->GetYaxis()->SetTitleOffset(1.4);
+    h->GetYaxis()->SetDecimals(false);
+    h->GetYaxis()->SetLabelOffset(0.015);
+    h->GetYaxis()->SetLabelFont(42);
+    h->GetYaxis()->SetLabelSize(0.045);
+    h->GetYaxis()->SetTickLength(0.04);
+    h->GetYaxis()->SetTitleSize(0.05);
+    h->GetYaxis()->SetTitleFont(42);
+
+    h->GetZaxis()->CenterTitle(true);
+    h->GetZaxis()->SetTitleOffset(1.4);
+    h->GetZaxis()->SetDecimals(false);
+    h->GetZaxis()->SetLabelOffset(0.015);
+    h->GetZaxis()->SetLabelFont(42);
+    h->GetZaxis()->SetLabelSize(0.045);
+    h->GetZaxis()->SetTickLength(0.04);
+    h->GetZaxis()->SetTitleSize(0.05);
+    h->GetZaxis()->SetTitleFont(42);
+    h->GetZaxis()->SetMaxDigits(3);
 }
 
 void SetGrapherrorStyle(TGraphErrors *gr, int markercolor, int linecolor)
@@ -159,7 +201,8 @@ TLegend *DrawLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2)
     return legend;
 }
 
-void gstyle(){
+void gstyle()
+{
     gStyle->SetOptTitle(0);
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1110);
@@ -174,4 +217,4 @@ void gstyle(){
     gStyle->SetTitleTextColor(1);
     gStyle->SetTitleColor(1);
     // gStyle->SetErrorX(0);
-} 
+}

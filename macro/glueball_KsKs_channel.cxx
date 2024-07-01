@@ -22,7 +22,8 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
+    const bool makeQAplots = true;
+    const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
@@ -101,150 +102,153 @@ void glueball_KsKs_channel()
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
-    for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
+    if (calculate_inv_mass)
     {
-
-        float lowpt = pT_bins[ip];
-        float highpt = pT_bins[ip + 1];
-        cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
-        int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
-        int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
-
-        fHistNum->GetAxis(1)->SetRange(lbin, hbin);
-        fHistDen->GetAxis(1)->SetRange(lbin, hbin);
-        fHistRot->GetAxis(1)->SetRange(lbin, hbin);
-
-        int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
-        int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
-
-        fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
-        fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
-        fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
-
-        fHistTotal[ip] = fHistNum->Projection(2, "E");
-        fHistBkg[ip] = fHistDen->Projection(2, "E");
-        fHistRotated[ip] = fHistRot->Projection(2, "E");
-        fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
-        fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
-        fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
-
-        auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
-        auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
-        cout << "energy low value is " << energylow << endl;
-        cout << "energy high value is " << energyhigh << endl;
-
-        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
-        cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
-
-        //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
-        TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
-        TH1D *hfbkg;
-
-        //*****************************************************************************************************************************
-
-        if (kResBkg == "MIX")
+        for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
-            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
-            auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
-            auto normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
-            cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
-            hfbkg = (TH1D *)fHistBkg[ip]->Clone();
 
-            hfbkg->Scale(normfactor);
-            hfbkg->Rebin(kRebin[ip]);
-            hfsig->Rebin(kRebin[ip]);
+            float lowpt = pT_bins[ip];
+            float highpt = pT_bins[ip + 1];
+            cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
+            int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
+            int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
 
-            hfsig->Add(hfbkg, -1);
-        }
-        else if (kResBkg == "ROTATED")
-        {
-            hfbkg = (TH1D *)fHistRotated[ip]->Clone();
-            hfbkg->Scale(0.5);
-            hfbkg->Rebin(kRebin[ip]);
-            hfsig->Rebin(kRebin[ip]);
-            hfsig->Add(hfbkg, -1);
-        }
+            fHistNum->GetAxis(1)->SetRange(lbin, hbin);
+            fHistDen->GetAxis(1)->SetRange(lbin, hbin);
+            fHistRot->GetAxis(1)->SetRange(lbin, hbin);
 
-        fHistTotal[ip]->Rebin(kRebin[ip]);
+            int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
+            int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
 
-        //*****************************************************************************************************
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_KsKs_" + kResBkg + Form("_%f_%f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "RECREATE");
-        TCanvas *c1 = new TCanvas("", "", 720, 720);
-        SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hfsig);
-        hfsig->SetTitle(0);
-        hfsig->SetMarkerStyle(8);
-        hfsig->GetYaxis()->SetMaxDigits(3);
-        hfsig->GetYaxis()->SetTitleOffset(1.4);
-        hfsig->SetMarkerColor(kBlack);
-        hfsig->SetLineColor(kBlack);
-        hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
-        hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
-        hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
-        hfsig->Draw("e");
-        hfsig->Write("ksks_invmass");
-        // gPad->Update();
-        // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
-        // if (ps)
-        // {
-        //     ps->SetTextSize(0.04);
-        //     ps->SetTextFont(42);
-        //     ps->SetX1NDC(0.6);
-        //     ps->SetX2NDC(0.95);
-        //     ps->SetY1NDC(0.35);
-        //     ps->SetY2NDC(0.95);
-        // }
-        // gPad->Modified(); // Necessary to update the canvas with the new text size
-        // gPad->Update();
-        if (save_invmass_distributions)
-            c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+            fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
+            fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
+            fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
 
-        TCanvas *c2 = new TCanvas("", "", 720, 720);
-        SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(fHistTotal[ip]);
-        SetHistoQA(hfbkg);
+            fHistTotal[ip] = fHistNum->Projection(2, "E");
+            fHistBkg[ip] = fHistDen->Projection(2, "E");
+            fHistRotated[ip] = fHistRot->Projection(2, "E");
+            fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
+            fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
+            fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
 
-        TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
-        hbkg_nopeak->SetLineColor(kRed);
-        hbkg_nopeak->SetMarkerColor(kRed);
-        hbkg_nopeak->SetFillColor(kRed);
-        hbkg_nopeak->SetFillStyle(3001);
-        for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
-        {
-            if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
+            auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
+            auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
+            cout << "energy low value is " << energylow << endl;
+            cout << "energy high value is " << energyhigh << endl;
+
+            auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
+            cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
+
+            //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
+            TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
+            TH1D *hfbkg;
+
+            //*****************************************************************************************************************************
+
+            if (kResBkg == "MIX")
             {
-                hbkg_nopeak->SetBinContent(i + 1, -999);
+                auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                auto normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
+                cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
+                hfbkg = (TH1D *)fHistBkg[ip]->Clone();
+
+                hfbkg->Scale(normfactor);
+                hfbkg->Rebin(kRebin[ip]);
+                hfsig->Rebin(kRebin[ip]);
+
+                hfsig->Add(hfbkg, -1);
             }
-        }
+            else if (kResBkg == "ROTATED")
+            {
+                hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+                hfbkg->Scale(0.5);
+                hfbkg->Rebin(kRebin[ip]);
+                hfsig->Rebin(kRebin[ip]);
+                hfsig->Add(hfbkg, -1);
+            }
 
-        fHistTotal[ip]->SetMarkerStyle(8);
-        fHistTotal[ip]->SetMarkerColor(kBlack);
-        hfbkg->SetMarkerStyle(8);
-        hfbkg->SetMarkerColor(kRed);
-        hfbkg->SetLineColor(kRed);
-        fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
-        fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
-        fHistTotal[ip]->Draw("E");
-        fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
-        hfbkg->Draw("E same");
-        if (kResBkg == "MIX")
-            hbkg_nopeak->Draw("BAR same");
+            fHistTotal[ip]->Rebin(kRebin[ip]);
 
-        TLegend *leg = new TLegend(0.2451253, 0.2054598, 0.5445682, 0.3908046);
-        leg->SetFillStyle(0);
-        leg->SetBorderSize(0);
-        leg->SetTextFont(42);
-        leg->SetTextSize(0.04);
-        leg->AddEntry(fHistTotal[ip], "Signal", "lpe");
-        string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Rotated bkg";
-        leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
-        if (kResBkg == "MIX")
-            leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
-        leg->Draw();
-        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-        if (save_invmass_distributions)
-            c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
-    } // pt bin loop end here
+            //*****************************************************************************************************
+            TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "RECREATE");
+            TCanvas *c1 = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
+            SetHistoQA(hfsig);
+            hfsig->SetTitle(0);
+            hfsig->SetMarkerStyle(8);
+            hfsig->GetYaxis()->SetMaxDigits(3);
+            hfsig->GetYaxis()->SetTitleOffset(1.4);
+            hfsig->SetMarkerColor(kBlack);
+            hfsig->SetLineColor(kBlack);
+            hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
+            hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
+            hfsig->Draw("e");
+            hfsig->Write("ksks_invmass");
+            // gPad->Update();
+            // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
+            // if (ps)
+            // {
+            //     ps->SetTextSize(0.04);
+            //     ps->SetTextFont(42);
+            //     ps->SetX1NDC(0.6);
+            //     ps->SetX2NDC(0.95);
+            //     ps->SetY1NDC(0.35);
+            //     ps->SetY2NDC(0.95);
+            // }
+            // gPad->Modified(); // Necessary to update the canvas with the new text size
+            // gPad->Update();
+            if (save_invmass_distributions)
+                c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+
+            TCanvas *c2 = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
+            SetHistoQA(fHistTotal[ip]);
+            SetHistoQA(hfbkg);
+
+            TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
+            hbkg_nopeak->SetLineColor(kRed);
+            hbkg_nopeak->SetMarkerColor(kRed);
+            hbkg_nopeak->SetFillColor(kRed);
+            hbkg_nopeak->SetFillStyle(3001);
+            for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
+            {
+                if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
+                {
+                    hbkg_nopeak->SetBinContent(i + 1, -999);
+                }
+            }
+
+            fHistTotal[ip]->SetMarkerStyle(8);
+            fHistTotal[ip]->SetMarkerColor(kBlack);
+            hfbkg->SetMarkerStyle(8);
+            hfbkg->SetMarkerColor(kRed);
+            hfbkg->SetLineColor(kRed);
+            fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
+            fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
+            fHistTotal[ip]->Draw("E");
+            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            hfbkg->Draw("E same");
+            if (kResBkg == "MIX")
+                hbkg_nopeak->Draw("BAR same");
+
+            TLegend *leg = new TLegend(0.2451253, 0.2054598, 0.5445682, 0.3908046);
+            leg->SetFillStyle(0);
+            leg->SetBorderSize(0);
+            leg->SetTextFont(42);
+            leg->SetTextSize(0.04);
+            leg->AddEntry(fHistTotal[ip], "Signal", "lpe");
+            string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Rotated bkg";
+            leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
+            if (kResBkg == "MIX")
+                leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
+            leg->Draw();
+            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            if (save_invmass_distributions)
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+        } // pt bin loop end here
+    }
     ////////////////////////////////////////////////////////////////////////
     // QA plots here
     if (makeQAplots)
@@ -439,6 +443,9 @@ void glueball_KsKs_channel()
         SetHistoQA(hNSigmaNegPion_before);
         hNSigmaNegPion_before->GetYaxis()->SetTitle("n#sigma_{#pi^{-}}");
         hNSigmaNegPion_before->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        // gPad->SetLogx();
+        gPad->SetLogz();
+        hNSigmaNegPion_before->SetStats(0);
         hNSigmaNegPion_before->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion." + koutputtype).c_str());
 
@@ -454,6 +461,7 @@ void glueball_KsKs_channel()
         SetHistoQA(hNSigmaPosPion_before);
         hNSigmaPosPion_before->GetYaxis()->SetTitle("n#sigma_{#pi^{+}}");
         hNSigmaPosPion_before->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        hNSigmaPosPion_before->SetStats(0);
         hNSigmaPosPion_before->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaPosPion." + koutputtype).c_str());
 
@@ -469,6 +477,7 @@ void glueball_KsKs_channel()
         SetHistoQA(hNSigmaNegPion_after);
         hNSigmaNegPion_after->GetYaxis()->SetTitle("n#sigma_{#pi^{-}}");
         hNSigmaNegPion_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        hNSigmaNegPion_after->SetStats(0);
         hNSigmaNegPion_after->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion_after." + koutputtype).c_str());
 
@@ -484,8 +493,12 @@ void glueball_KsKs_channel()
         SetHistoQA(hNSigmaPosPion_after);
         hNSigmaPosPion_after->GetYaxis()->SetTitle("n#sigma_{#pi^{+}}");
         hNSigmaPosPion_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        hNSigmaPosPion_after->SetStats(0);
         hNSigmaPosPion_after->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaPosPion_after." + koutputtype).c_str());
+
+        gPad->SetLogx(0);
+        gPad->SetLogz(0);
 
         // psi pair angle plot
         TH1F *hPsiPair = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hpsipair").c_str());
@@ -594,6 +607,7 @@ void glueball_KsKs_channel()
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPhi." + koutputtype).c_str());
 
         // negative daughter pT
+        gPad->SetLogy();
         TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
         if (hNegDaughterPt == nullptr)
         {
@@ -622,5 +636,6 @@ void glueball_KsKs_channel()
         hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
         hPosDaughterPt->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
+        gPad->SetLogy(0);
     }
 }

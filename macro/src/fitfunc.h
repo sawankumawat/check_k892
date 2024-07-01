@@ -217,5 +217,16 @@ Double_t Boltzman(double *x, double *par)
     double massks = 0.497;
     double n = par[1];
     double C = par[2];
-    return (par[0] * exp(-par[1] * x[0]));
+    double y = norm * pow((x[0] - 2 * massks), n / 2) * pow(C, 3 / 2) * exp(-C * pow((x[0] - 2 * massks), n));
+    return y;
+}
+
+Double_t BW3boltzman(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + Boltzman(x, &par[9]));
+}
+
+Double_t BW2boltzman(double *x, double *par)
+{
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + Boltzman(x, &par[6]));
 }

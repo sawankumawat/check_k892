@@ -122,7 +122,7 @@ void gaussian_fit_Ks()
     lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.3f", fit3->GetParameter(1), fit3->GetParError(1)), "");
     lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.3f", fit3->GetParameter(2), fit3->GetParError(2)), "");
     lp1->Draw("same");
-    c1->SaveAs("gaussian_fit_Ks_fullpt.pdf");
+    // c1->SaveAs("gaussian_fit_Ks_fullpt.pdf");
 
     // Now we will plot the Ks invariant mass distribution as a function of pT
     const int Nptbins = 16;
@@ -130,6 +130,8 @@ void gaussian_fit_Ks()
     TH1F *hInvMassPt[Nptbins];
     TCanvas *c2 = new TCanvas("c2", "c2", 720, 720);
     c2->Divide(4, 4);
+    TH1F *hpTwiseMass = new TH1F("hpTwiseMass", "hpTwiseMass", Nptbins, ptbins);
+    TH1F *hpTwiseWidth = new TH1F("hpTwiseWidth", "hpTwiseWidth", Nptbins, ptbins);
     for (int ipt = 0; ipt < Nptbins; ipt++)
     {
         c2->cd(ipt + 1);
@@ -169,6 +171,11 @@ void gaussian_fit_Ks()
             // fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3);
         }
 
+        hpTwiseMass->SetBinContent(ipt + 1, fitpt3->GetParameter(1));
+        hpTwiseMass->SetBinError(ipt + 1, fitpt3->GetParError(1)); 
+        hpTwiseWidth->SetBinContent(ipt + 1, abs(fitpt3->GetParameter(2)));
+        hpTwiseWidth->SetBinError(ipt + 1, fitpt3->GetParError(2));
+
         TLatex lat;
         lat.SetNDC();
         lat.SetTextFont(42);
@@ -176,7 +183,31 @@ void gaussian_fit_Ks()
         lat.DrawLatex(0.57, 0.75, Form("Mean = %.3f #pm %.3f", fitpt3->GetParameter(1), fitpt3->GetParError(1)));
         lat.DrawLatex(0.57, 0.7, Form("Sigma = %.3f #pm %.3f", abs(fitpt3->GetParameter(2)), fitpt3->GetParError(2)));
     }
-    c2->SaveAs("gaussian_fit_Ks_differential_ptbins.pdf");
+    // c2->SaveAs("gaussian_fit_Ks_differential_ptbins.pdf");
+
+    TCanvas *c3 = new TCanvas("c3", "c3", 720, 720);
+    SetCanvasStyle(c3, 0.22, 0.05, 0.05, 0.13);
+    SetHistoQA(hpTwiseMass);
+    hpTwiseMass->SetMarkerSize(1);
+    hpTwiseMass->GetYaxis()->SetTitle("Fit Mean (GeV/#it{c^{2}})");
+    hpTwiseMass->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hpTwiseMass->GetYaxis()->SetMaxDigits(3);
+    hpTwiseMass->GetYaxis()->SetTitleOffset(2.3);
+    hpTwiseMass->SetStats(0);
+    hpTwiseMass->Draw("pe");
+    c3->SaveAs("gaussian_fit_Ks_differential_ptbins_mean.png");
+
+    TCanvas *c4 = new TCanvas("c4", "c4", 720, 720);
+    SetCanvasStyle(c4, 0.13, 0.05, 0.05, 0.13);
+    SetHistoQA(hpTwiseWidth);
+    hpTwiseWidth->SetMarkerSize(1);
+    hpTwiseWidth->GetYaxis()->SetTitle("Fit Width (GeV/#it{c^{2}})");
+    hpTwiseWidth->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hpTwiseWidth->GetYaxis()->SetMaxDigits(3);
+    hpTwiseWidth->GetYaxis()->SetTitleOffset(1.2);
+    hpTwiseWidth->SetStats(0);
+    hpTwiseWidth->Draw("pe");
+    c4->SaveAs("gaussian_fit_Ks_differential_ptbins_width.png");
 }
 
 void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth)

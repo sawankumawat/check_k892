@@ -22,7 +22,7 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -200,7 +200,9 @@ void glueball_KsKs_channel()
             // gPad->Modified(); // Necessary to update the canvas with the new text size
             // gPad->Update();
             if (save_invmass_distributions)
+            {
                 c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+            }
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -227,8 +229,12 @@ void glueball_KsKs_channel()
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
             fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
-            fHistTotal[ip]->Draw("E");
             fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            fHistTotal[ip]->Draw("E");
+            if (save_invmass_distributions)
+            {
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + koutputtype).c_str());
+            }
             hfbkg->Draw("E same");
             if (kResBkg == "MIX")
                 hbkg_nopeak->Draw("BAR same");
@@ -246,7 +252,9 @@ void glueball_KsKs_channel()
             leg->Draw();
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             if (save_invmass_distributions)
+            {
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+            }
         } // pt bin loop end here
     }
     ////////////////////////////////////////////////////////////////////////
@@ -637,5 +645,35 @@ void glueball_KsKs_channel()
         hPosDaughterPt->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
         gPad->SetLogy(0);
+
+        // negative daughter rapidity
+        TH1F *hNegDaughterRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_y").c_str());
+        if (hNegDaughterRapidity == nullptr)
+        {
+            cout << "Negative daughter rapidity plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hNegDaughterRapidity);
+        hNegDaughterRapidity->GetYaxis()->SetTitle("Counts");
+        hNegDaughterRapidity->GetXaxis()->SetTitle("Neg. daughter y");
+        hNegDaughterRapidity->Draw();
+        c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterRapidity." + koutputtype).c_str());
+
+        // positive daughter rapidity
+        TH1F *hPosDaughterRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_y").c_str());
+        if (hPosDaughterRapidity == nullptr)
+        {
+            cout << "Positive daughter rapidity plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hPosDaughterRapidity);
+        hPosDaughterRapidity->GetYaxis()->SetTitle("Counts");
+        hPosDaughterRapidity->GetXaxis()->SetTitle("Pos. daughter y");
+        hPosDaughterRapidity->Draw();
+        c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterRapidity." + koutputtype).c_str());
     }
 }

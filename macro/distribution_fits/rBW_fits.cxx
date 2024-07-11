@@ -11,12 +11,14 @@ TF1 *BW(TH1 *h, double mass, double width, double lowrange, double highrange);
 TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3pol3(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
+TF1 *BW3fit(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 
 void rBW_fits()
 {
     // constant parameters ****************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "LIKE";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "LIKE";
+    const int rebin = 1;
     const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
@@ -40,6 +42,7 @@ void rBW_fits()
             cout << "Error opening histogram" << endl;
             return;
         }
+        hinvMass->Rebin(rebin);
 
         TCanvas *c1 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c1, 0.12, 0.03, 0.05, 0.14);
@@ -47,50 +50,77 @@ void rBW_fits()
         hinvMass->GetXaxis()->SetTitleOffset(1.3);
         hinvMass->Draw();
 
-        // Contants *********************************************
-        double norm1270 = parameter0(f1270Mass, f1270Width);
-        double norm1320 = parameter0(a1320Mass, a1320Width);
-        double norm1525 = parameter0(f1525Mass, f1525Width);
-        double norm1710 = parameter0(f1710Mass, f1710Width);
-        double parameters1[9] = {norm1270, f1270Mass, f1270Width, norm1525, f1525Mass, f1525Width, norm1710, f1710Mass, f1710Width};
+        // Fitting *********************************************
+        double parameters1[9] = {50, f1270Mass, f1270Width, 25, f1525Mass, f1525Width, 25, f1710Mass, f1710Width};
+        TF1 *f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.2);
+        f3pol3->Draw("same");
 
-        // single BW fits ****************************************
-        TF1 *f1bw1270 = BW(hinvMass, f1270Mass, f1270Width, 1.25, 1.33);
-        TF1 *a1bw1320 = BW(hinvMass, a1320Mass, a1320Width, 1.26, 1.35);
-        TF1 *f1bw1525 = BW(hinvMass, f1525Mass, f1525Width, 1.46, 1.56);
-        TF1 *f1bw1710 = BW(hinvMass, f1710Mass, f1710Width, 1.63, 1.79);
-        // f1bw1270->Draw("same");
-        // // a1bw1320->Draw("same");
-        // f1bw1525->Draw("same");
-        // f1bw1710->Draw("same");
-        cout << "mass and width from the BW fit on f1270 is " << f1bw1270->GetParameter(1) << " " << f1bw1270->GetParameter(2) << endl;
-        cout << "mass and width from the BW fit on f1525 is " << f1bw1525->GetParameter(1) << " " << f1bw1525->GetParameter(2) << endl;
-        cout << "mass and width from the BW fit on f1710 is " << f1bw1710->GetParameter(1) << " " << f1bw1710->GetParameter(2) << endl;
+        //making the size of textbox optimal
+        gPad->Update();
+        TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+        ptstats->SetX1NDC(0.6);
+        ptstats->SetX2NDC(0.99);
+        ptstats->SetY1NDC(0.3);
+        ptstats->SetY2NDC(0.95);
+        ptstats->Draw("same");
 
-        // combined fits ****************************************
-        double parameters2[9] = {f1bw1270->GetParameter(0), f1bw1270->GetParameter(1), f1bw1270->GetParameter(2), f1bw1525->GetParameter(0), f1bw1525->GetParameter(1), f1bw1525->GetParameter(2), f1bw1710->GetParameter(0), f1bw1710->GetParameter(1), f1bw1710->GetParameter(2)};
+        // individual functions drawing
+        // BW1
+        TF1 *frBW1 = new TF1("frBW1", RelativisticBW, 1.1, 2.2, 3);
+        TF1 *frBW2 = new TF1("frBW2", RelativisticBW, 1.1, 2.2, 3);
+        TF1 *frBW3 = new TF1("frBW3", RelativisticBW, 1.1, 2.2, 3);
+        frBW1->SetParameter(0, f3pol3->GetParameter(0));
+        frBW1->SetParameter(1, f3pol3->GetParameter(1));
+        frBW1->SetParameter(2, f3pol3->GetParameter(2));
+        // frBW1->SetLineWidth(2);
+        frBW1->SetLineStyle(2);
+        frBW1->SetLineColor(3);
+        frBW1->Draw("same");
 
-        TF1 *f3bw = BW3expo(hinvMass, parameters2, 1.1, 2.2);
-        f3bw->Draw("same");
-        // TF1 *f3pol3 = BW3pol3(hinvMass, parameters2, 1.1, 2.2);
-        // f3pol3->Draw("same");
-        // TF1 *f3boltzman = BW3boltzman(hinvMass, parameters2, 1.1, 2.2);
-        // f3boltzman->Draw("same");
+        // BW2
+        frBW2->SetParameter(0, f3pol3->GetParameter(3));
+        frBW2->SetParameter(1, f3pol3->GetParameter(4));
+        frBW2->SetParameter(2, f3pol3->GetParameter(5));
+        // frBW2->SetLineWidth(2);
+        frBW2->SetLineStyle(2);
+        frBW2->SetLineColor(4);
+        frBW2->Draw("same");
+
+        // BW3
+        frBW3->SetParameter(0, f3pol3->GetParameter(6));
+        frBW3->SetParameter(1, f3pol3->GetParameter(7));
+        frBW3->SetParameter(2, f3pol3->GetParameter(8));
+        // frBW3->SetLineWidth(2);
+        frBW3->SetLineStyle(2);
+        frBW3->SetLineColor(6);
+        frBW3->Draw("same");
+
+        //exponential background
+        TF1 *fpol3 = new TF1("fpol3", polynomial3, 1.1, 2.2, 4);
+        fpol3->SetParameter(0, f3pol3->GetParameter(9));
+        fpol3->SetParameter(1, f3pol3->GetParameter(10));
+        fpol3->SetParameter(2, f3pol3->GetParameter(11));
+        fpol3->SetParameter(3, f3pol3->GetParameter(12));
+        // fpol3->SetLineWidth(2);
+        fpol3->SetLineStyle(2);
+        fpol3->SetLineColor(8);
+        fpol3->Draw("same");
 
         // // save plot ***********************************************
-        //  TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
-        // lfit->SetFillColor(0);
-        // // lfit->SetBorderSize(0);
-        // lfit->SetFillStyle(0);
-        // lfit->SetTextFont(42);
-        // lfit->SetTextSize(0.04);
-        // lfit->AddEntry(hfsig, "Data", "lpe");
-        // lfit->AddEntry(fitBW, "3rBW+expol", "l");
-        // lfit->AddEntry(Bw1, "rBW(a_{2}(1320))", "l");
-        // lfit->AddEntry(Bw2, "rBW(f_{2}(1525))", "l");
-        // lfit->AddEntry(Bw3, "rBW(f_{0}(1710))", "l");
-        // lfit->AddEntry(expo, "Expol", "l");
-        // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+        TLegend *lfit = new TLegend(0.3, 0.65, 0.55, 0.94);
+        lfit->SetFillColor(0);
+        // lfit->SetBorderSize(0);
+        lfit->SetFillStyle(0);
+        lfit->SetTextFont(42);
+        lfit->SetTextSize(0.04);
+        lfit->AddEntry(hinvMass, "Data", "lpe");
+        lfit->AddEntry(f3pol3, "3rBW + pol3", "l");
+        lfit->AddEntry(frBW1, "rBW(f_{2}(1270))", "l");
+        lfit->AddEntry(frBW2, "rBW(f_{2}(1525))", "l");
+        lfit->AddEntry(frBW3, "rBW(f_{0}(1710))", "l");
+        lfit->AddEntry(fpol3, "pol3", "l");
+        t2->SetNDC();
+        t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", 0.0, 30.0));
     }
 }
 
@@ -121,7 +151,7 @@ TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange
 {
     TF1 *f3bwexpo = new TF1("f3bwexpo", expo3bW, lowfitrange, highfitrange, 12);
 
-    // fit names here
+   // fit names here
     f3bwexpo->SetParName(0, "norm1");
     f3bwexpo->SetParName(1, "mass1");
     f3bwexpo->SetParName(2, "width1");
@@ -134,17 +164,21 @@ TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange
     f3bwexpo->SetParName(9, "A");
     f3bwexpo->SetParName(10, "B");
     f3bwexpo->SetParName(11, "C");
+    f3bwexpo->SetParName(12, "D");
 
     // fit parameters here
     f3bwexpo->SetParameter(0, parameters[0]);
     f3bwexpo->SetParameter(1, parameters[1]);
+    f3bwexpo->SetParLimits(1, parameters[1] - 0.08, parameters[1] + 0.08);
     f3bwexpo->SetParameter(2, parameters[2]);
+    f3bwexpo->SetParLimits(2, parameters[2] - 0.01, parameters[2] + 0.01);
     f3bwexpo->SetParameter(3, parameters[3]);
     f3bwexpo->SetParameter(4, parameters[4]);
     f3bwexpo->SetParameter(5, parameters[5]);
     f3bwexpo->SetParameter(6, parameters[6]);
     f3bwexpo->SetParameter(7, parameters[7]);
-    f3bwexpo->SetParameter(8, parameters[8]);
+    f3bwexpo->SetParLimits(7, parameters[7] - 0.08, parameters[7] + 0.08);
+    f3bwexpo->FixParameter(8, parameters[8]);
     f3bwexpo->SetLineStyle(1);
     f3bwexpo->SetLineWidth(2);
 
@@ -174,18 +208,36 @@ TF1 *BW3pol3(TH1 *h, double *parameters, double lowfitrange, double highfitrange
     // fit parameters here
     f3pol3->SetParameter(0, parameters[0]);
     f3pol3->SetParameter(1, parameters[1]);
+    f3pol3->SetParLimits(1, parameters[1] - 0.08, parameters[1] + 0.08);
     f3pol3->SetParameter(2, parameters[2]);
+    f3pol3->SetParLimits(2, parameters[2] - 0.01, parameters[2] + 0.01);
     f3pol3->SetParameter(3, parameters[3]);
     f3pol3->SetParameter(4, parameters[4]);
     f3pol3->SetParameter(5, parameters[5]);
     f3pol3->SetParameter(6, parameters[6]);
     f3pol3->SetParameter(7, parameters[7]);
-    f3pol3->SetParameter(8, parameters[8]);
+    f3pol3->SetParLimits(7, parameters[7] - 0.08, parameters[7] + 0.08);
+    f3pol3->FixParameter(8, parameters[8]);
     f3pol3->SetLineStyle(1);
     f3pol3->SetLineWidth(2);
 
     h->Fit("f3pol3", "REBMS0");
     return f3pol3;
+}
+
+TF1 *BW3fit(TH1 *h, double *parameters, double lowfitrange, double highfitrange)
+{
+    TF1 *f3bw3 = new TF1("f3bw3", BW3, lowfitrange, highfitrange, 9);
+    f3bw3->FixParameter(0, 50);
+    f3bw3->FixParameter(1, parameters[1]);
+    f3bw3->FixParameter(2, parameters[2]);
+    f3bw3->FixParameter(3, 25);
+    f3bw3->FixParameter(4, parameters[4]);
+    f3bw3->FixParameter(5, parameters[5]);
+    f3bw3->FixParameter(6, 25);
+    f3bw3->FixParameter(7, parameters[7]);
+    f3bw3->FixParameter(8, parameters[8]);
+    return f3bw3;
 }
 
 TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitrange)

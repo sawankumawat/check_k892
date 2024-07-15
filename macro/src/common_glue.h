@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
-// #define KKchannel   // for Kaon Kaon channel
-#define KsKschannel  //for Kshort Kshort channel
+#define KKchannel   // for Kaon Kaon channel
+// #define KsKschannel  //for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
@@ -17,8 +17,8 @@ const string kvariation = ""; // change the variation here
 #ifdef KKchannel
 const string kchannel = "KK_Channel";
 const string kfoldername_temp = "kaonkaonAnalysisRun3";
-const string kvariation = ""; // change the variation here
-// const string kvariation = "_Deep_angle"; // change the variation here
+// const string kvariation = ""; // change the variation here
+const string kvariation = "_Deep_angle"; // change the variation here
 #endif
 
 ////******some fixed variables******************************************************

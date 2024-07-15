@@ -19,14 +19,14 @@ float parameter0(float mass, float width)
 void glueball_KK_channelv2()
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
+    const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    const string kResBkg = "LIKE";
-    const bool makeQAplots = true;
+    // const string kResBkg = "LIKE";
+    const bool makeQAplots = false;
     const bool calculate_invmass_distributions = true;
     const bool save_invmass_plots = true;
-    float invmasslow = 1.1; //GeV/c^2
-    float invmasshigh = 3.0; //GeV/c^2
+    float invmasslow = 1.1;  // GeV/c^2
+    float invmasshigh = 3.0; // GeV/c^2
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -184,7 +184,8 @@ void glueball_KK_channelv2()
             else if (kResBkg == "ROTATED" || kResBkg == "LIKE")
             {
                 hfbkg = (kResBkg == "ROTATED") ? (TH1D *)fHistRotated[ip]->Clone() : (TH1D *)fHistLike[ip]->Clone();
-                hfbkg->Scale(0.5);
+                if (kResBkg == "ROTATED")
+                    hfbkg->Scale(0.5);
                 hfbkg->Rebin(kRebin[ip]);
                 hfsig->Rebin(kRebin[ip]);
                 hfsig->Add(hfbkg, -1);
@@ -253,6 +254,10 @@ void glueball_KK_channelv2()
             fHistTotal[ip]->Draw("E");
             fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
             fHistTotal[ip]->GetXaxis()->SetTitle("m_{KK} (GeV/c^{2})");
+            if (save_invmass_plots)
+            {
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + koutputtype).c_str());
+            }
             hfbkg->Draw("E same");
             if (kResBkg == "MIX")
                 hbkg_nopeak->Draw("BAR same");

@@ -63,7 +63,7 @@ const std::vector<int> kRebin = {
 #ifdef KKchannel
 const std::vector<vector<double>> kNormRangepT = {
     // 13.6 TeV
-    {2.00, 2.20}, // 0.0-30.0 GeV/c
+    {1.9, 1.95}, // 0.0-30.0 GeV/c
     // {1.05, 1.10}, // 0.0-1.0 GeV/c
     // {2.00, 2.10}, // 1.0-2.0 GeV/c
     // {2.00, 2.10}, // 2.0-3.0 GeV/c

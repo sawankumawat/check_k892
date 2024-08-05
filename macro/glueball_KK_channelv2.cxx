@@ -19,12 +19,12 @@ float parameter0(float mass, float width)
 void glueball_KK_channelv2()
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
+    // const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    // const string kResBkg = "LIKE";
+    const string kResBkg = "LIKE";
     const bool makeQAplots = false;
     const bool calculate_invmass_distributions = true;
-    const bool save_invmass_plots = true;
+    const bool save_invmass_plots = false;
     float invmasslow = 1.1;  // GeV/c^2
     float invmasshigh = 3.0; // GeV/c^2
     // change here ***********************************************************
@@ -102,8 +102,6 @@ void glueball_KK_channelv2()
     TH1D *fHistLikepp[Npt];
     TH1D *fHistLikemm[Npt];
     TH1D *fHistLike[Npt];
-    int multlow = 0;
-    int multhigh = 100;
     TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hCentrality").c_str());
     if (hmult == nullptr)
     {
@@ -112,6 +110,8 @@ void glueball_KK_channelv2()
     }
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0), hmult->GetXaxis()->FindBin(100.0));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
+    int multlow = 0;
+    int multhigh = 100;
     if (calculate_invmass_distributions)
     {
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop

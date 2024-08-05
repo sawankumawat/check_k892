@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
-#define KKchannel   // for Kaon Kaon channel
-// #define KsKschannel  //for Kshort Kshort channel
+// #define KKchannel   // for Kaon Kaon channel
+#define KsKschannel  //for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
@@ -26,7 +26,8 @@ TLatex *t2 = new TLatex();
 ////******some fixed variables******************************************************
 
 // define datasets here
-#define DATASET_LHC220_pass6_small
+// #define DATASET_LHC220_pass6_small
+#define DATASET_LHC22o_pass7_small
 // #define DATASET_LHC220_pass4_small
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
@@ -34,8 +35,13 @@ const string kSignalOutput_temp = "../output/" + kParticle; // output folder
 
 // define datasets name here
 #ifdef DATASET_LHC220_pass6_small
-const string kDataset_temp = "LHC220_pass6_small/";
+// const string kDataset_temp = "LHC220_pass6_small/";
 // const string kMCDataset = "../mc/LHC24b1/";
+const string kMCDataset = "../mc/LHC24b1b/";
+#endif
+
+#ifdef DATASET_LHC22o_pass7_small
+const string kDataset_temp = "LHC22o_pass7_small/";
 const string kMCDataset = "../mc/LHC24b1b/";
 #endif
 
@@ -45,6 +51,12 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
 // const string kDataFilename_temp2 = "222487.root"; // data file (with larger pT range upto 30 GeV/c)
 const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
+const string kMCFilename_temp = "211346.root";    // MC file
+#endif
+
+#ifdef DATASET_LHC22o_pass7_small
+// const string kDataFilename_temp2 = "240457.root"; // data file (small)
+const string kDataFilename_temp2 = "240361.root"; // data file (medium)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

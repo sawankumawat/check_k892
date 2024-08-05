@@ -66,17 +66,34 @@ void rBW_fits()
 
         if (testing)
         {
-            TF1 *f3bw = new TF1("f3bw", BW3, 1.1, 2.18, 9);
-            f3bw->SetParameter(0, 120000);
-            f3bw->SetParameter(1, f1270Mass - 0.06);
-            f3bw->SetParameter(2, f1270Width);
-            f3bw->SetParameter(3, 35000);
-            f3bw->SetParameter(4, a1320Mass + 0.03);
-            f3bw->SetParameter(5, a1320Width);
-            f3bw->SetParameter(6, 25000);
-            f3bw->SetParameter(7, f1525Mass);
-            f3bw->SetParameter(8, f1525Width);
-            f3bw->Draw("same");
+            // TF1 *f3bw = new TF1("f3bw", BW3, 1.1, 2.18, 9);
+            // f3bw->SetParameter(0, 120000);
+            // f3bw->SetParameter(1, f1270Mass - 0.06);
+            // f3bw->SetParameter(2, f1270Width);
+            // f3bw->SetParameter(3, 35000);
+            // f3bw->SetParameter(4, a1320Mass + 0.03);
+            // f3bw->SetParameter(5, a1320Width);
+            // f3bw->SetParameter(6, 25000);
+            // f3bw->SetParameter(7, f1525Mass);
+            // f3bw->SetParameter(8, f1525Width);
+            // f3bw->Draw("same");
+
+            // TF1 *f1bw = new TF1("f1bw", BreitWignerpoly3, 1.3, 1.42, 7);
+            // f1bw->SetParameter(0, 5000);
+            // f1bw->SetParLimits(0, 0, 1e7);
+            // f1bw->SetParameter(1, 1.355);
+            // f1bw->SetParLimits(1, 1.3, 1.4);
+            // f1bw->SetParameter(2, 0.2);
+            // f1bw->SetParLimits(2, 0.1, 0.3);
+            // hinvMass->Fit("f1bw", "REBMS");
+            // f1bw->Draw("same");
+
+            TF1 *f1bw = new TF1("f1bw", RelativisticBW, 1.34, 1.38, 3);
+            f1bw->SetParameter(0, 2e4);
+            f1bw->SetParameter(1, 1.355);
+            f1bw->SetParameter(2, 0.1);
+            hinvMass->Fit("f1bw", "REBMS");
+            f1bw->Draw("same");
         }
 
         if (!testing)
@@ -102,7 +119,7 @@ void rBW_fits()
 
             if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "expol")
             {
-                //FIXME: need to modify the parameters here for the successfull fit
+                // FIXME: need to modify the parameters here for the successfull fit
                 f3pol3 = BW3expo(hinvMass, parameters1, 1.1, 2.18);
                 f3pol3->SetParameter(0, parameters1[0]);
                 f3pol3->SetParameter(1, parameters1[1]);
@@ -139,23 +156,25 @@ void rBW_fits()
             }
             if (kchannel == "KK_Channel")
             {
-                f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 1.95);
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 1.95);
+                f3pol3 = new TF1("f3pol3", pol3bW3, 1.15, 1.7, 13);
                 // hinvMass->SetMaximum(8e6);
                 f3pol3->SetParameter(0, 3.666e4);
                 f3pol3->SetParLimits(0, 0, 1e7);
-                f3pol3->SetParameter(1, f1270Mass - 0.06);
-                // f3pol3->SetParLimits(1, f1270Mass - 0.1, f1270Mass + 0.05);
+                f3pol3->SetParameter(1, f1270Mass);
+                // f3pol3->SetParLimits(1, 1.15, 1.27);
                 f3pol3->SetParameter(2, f1270Width);
+                f3pol3->SetParLimits(2, 0.05, 0.15);
                 f3pol3->SetParameter(3, 2e4);
-                f3pol3->SetParameter(4, f1500Mass);
-                f3pol3->SetParLimits(4, 0, 1e7);
-                f3pol3->SetParameter(5, f1500Width);
+                f3pol3->SetParLimits(3, 0, 1e7);
+                f3pol3->SetParameter(4, a1320Mass);
+                // f3pol3->SetParLimits(4, 1.3, 1.4);
+                f3pol3->SetParameter(5, a1320Width - 0.05);
                 f3pol3->SetParameter(6, 35000);
                 f3pol3->SetParLimits(6, 0, 1e7);
-                f3pol3->SetParameter(7, f1710Mass);
-                // f3pol3->SetParLimits(7, f1710Mass - 0.08, f1710Mass + 0.08);
-                f3pol3->SetParameter(8, f1710Width);
-                // f3pol3->SetParLimits(8, f1710Width - 0.01, f1710Width + 0.01);
+                f3pol3->FixParameter(7, f1525Mass);
+                f3pol3->SetParLimits(7, 1.5, 1.58);
+                f3pol3->SetParameter(8, f1525Width);
             }
             f3pol3->SetLineStyle(1);
             f3pol3->SetLineWidth(2);

@@ -21,9 +21,28 @@ const int pt_end = Npt;
 #endif
 #endif
 
+#ifdef DATASET_LHC22o_pass7_small
+#ifdef KsKschannel
+const Int_t Npt = 1;
+// const Int_t Npt = 7;
+double pT_bins[Npt + 1] = {0.0, 30.0};
+// float pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0};
+const int pt_start = 0;
+const int pt_end = Npt;
+#endif
+#ifdef KKchannel
+const Int_t Npt = 1;
+// const Int_t Npt = 8;
+double pT_bins[Npt + 1] = {0.0, 30.0};
+// float pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0, 30.0};
+const int pt_start = 0;
+const int pt_end = Npt;
+#endif
+#endif
+
 //******************************************************************************************************************************************************************************************************************************************************************************************************************************************//
 
-#ifdef DATASET_LHC220_pass6_small
+#if defined(DATASET_LHC220_pass6_small) || defined(DATASET_LHC22o_pass7_small)
 #ifdef KsKschannel
 const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV

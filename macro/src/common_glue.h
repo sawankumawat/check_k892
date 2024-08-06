@@ -56,7 +56,8 @@ const string kMCFilename_temp = "211346.root";    // MC file
 
 #ifdef DATASET_LHC22o_pass7_small
 // const string kDataFilename_temp2 = "240457.root"; // data file (small)
-const string kDataFilename_temp2 = "240361.root"; // data file (medium)
+// const string kDataFilename_temp2 = "240361.root"; // data file (medium)
+const string kDataFilename_temp2 = "244178.root"; // data file (medium)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

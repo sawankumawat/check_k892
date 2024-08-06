@@ -9,6 +9,7 @@
 
 using namespace std;
 
+void printDirectoryContents(TDirectory *dir, int indent = 0);
 float parameter0(float mass, float width)
 {
     double gamma = TMath::Sqrt(mass * mass * (mass * mass + width * width));
@@ -63,13 +64,15 @@ void glueball_KK_channelv2()
     }
 
     // showing all folders in the root file using keys
-    TIter next(fInputFile->GetListOfKeys());
-    TKey *key;
-    cout << "The folders in the root file are: \n";
-    while ((key = (TKey *)next()))
-    {
-        cout << key->GetName() << endl;
-    }
+    // TIter next(fInputFile->GetListOfKeys());
+    // TKey *key;
+    // cout << "The folders in the root file are: \n";
+    // while ((key = (TKey *)next()))
+    // {
+    //     cout << key->GetName() << endl;
+    // }
+    // showing all folders as well as their contents
+    printDirectoryContents(fInputFile);
 
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
@@ -455,4 +458,30 @@ void glueball_KK_channelv2()
     c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPCvsTOF_after." + koutputtype).c_str());
 
     // End of code **********************************************************************************************
+}
+
+void printDirectoryContents(TDirectory *dir, int indent = 0)
+{
+    // Get a list of all keys in the directory
+    TIter next(dir->GetListOfKeys());
+    TKey *key;
+
+    // Iterate over all keys
+    while ((key = (TKey *)next()))
+    {
+        // Print the name and class of the object
+        for (int i = 0; i < indent; i++)
+        {
+            std::cout << "  ";
+        }
+        std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
+
+        // If the object is a directory, recursively print its contents
+        TClass *cl = gROOT->GetClass(key->GetClassName());
+        if (cl->InheritsFrom(TDirectory::Class()))
+        {
+            TDirectory *subdir = (TDirectory *)key->ReadObj();
+            printDirectoryContents(subdir, indent + 1);
+        }
+    }
 }

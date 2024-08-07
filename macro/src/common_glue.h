@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
-#define KKchannel   // for Kaon Kaon channel
-// #define KsKschannel  //for Kshort Kshort channel
+// #define KKchannel   // for Kaon Kaon channel
+#define KsKschannel  //for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
@@ -50,8 +50,8 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // const string kDataFilename_temp2 = "215554.root"; // data file
 // const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
 // const string kDataFilename_temp2 = "222487.root"; // data file (with larger pT range upto 30 GeV/c)
-// const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
-const string kDataFilename_temp2 = "245896.root"; // data file (with mulitiplicity distribution, dE/dx tpc plots)
+const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
+// const string kDataFilename_temp2 = "245896.root"; // data file (with mulitiplicity distribution, dE/dx tpc plots)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

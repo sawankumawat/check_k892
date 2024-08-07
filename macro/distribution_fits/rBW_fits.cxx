@@ -17,9 +17,9 @@ TF1 *draw_individual_functions(double *parameters, TLegend *lfit);
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    // const string kResBkg = "MIX";
+    const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    const string kResBkg = "LIKE";
+    // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
     // const string kbgfitfunction = "Boltzman";

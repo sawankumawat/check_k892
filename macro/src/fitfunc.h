@@ -209,6 +209,13 @@ Double_t CrystalBallpol2(double *x, double *par)
     return (CB + pol2);
 }
 
+Double_t DoubleCrystalBallpol1(double *x, double *par)
+{
+    double DCB = DoubleCrystalBall(x, &par[0]);
+    double pol1 = par[6] + par[5] * x[0];
+    return (DCB + pol1);
+}
+
 Double_t DoubleCrystalBallpol2(double *x, double *par)
 {
     double DCB = DoubleCrystalBall(x, &par[0]);

@@ -96,34 +96,6 @@ void glueball_KK_channelv2()
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
     cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
-
-    //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
-
-    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
-    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
-    THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
-    THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
-    THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
-
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
-    {
-        cout << "Invariant mass histograms not found" << endl;
-        return;
-    }
-
-    cout << " The number of entries in histograms: \n"
-         << "same event: " << fHistNum->GetEntries() << "\n"
-         << "mixed event: " << fHistDen->GetEntries() << "\n"
-         << "rotated bkg: " << fHistRot->GetEntries() << "\n"
-         << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
-         << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
-
-    TH1D *fHistTotal[Npt];
-    TH1D *fHistME[Npt];
-    TH1D *fHistRotated[Npt];
-    TH1D *fHistLikepp[Npt];
-    TH1D *fHistLikemm[Npt];
-    TH1D *fHistLike[Npt];
     TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hmutiplicity").c_str());
     if (hmult == nullptr)
     {
@@ -132,10 +104,41 @@ void glueball_KK_channelv2()
     }
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0), hmult->GetXaxis()->FindBin(100.0));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
-    int multlow = 0;
-    int multhigh = 100;
+
     if (calculate_invmass_distributions)
     {
+
+        //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
+
+        THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
+        THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
+        THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
+        THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
+        THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
+
+        if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
+        {
+            cout << "Invariant mass histograms not found" << endl;
+            return;
+        }
+
+        cout << " The number of entries in histograms: \n"
+             << "same event: " << fHistNum->GetEntries() << "\n"
+             << "mixed event: " << fHistDen->GetEntries() << "\n"
+             << "rotated bkg: " << fHistRot->GetEntries() << "\n"
+             << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
+             << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
+
+        TH1D *fHistTotal[Npt];
+        TH1D *fHistME[Npt];
+        TH1D *fHistRotated[Npt];
+        TH1D *fHistLikepp[Npt];
+        TH1D *fHistLikemm[Npt];
+        TH1D *fHistLike[Npt];
+
+        int multlow = 0;
+        int multhigh = 100;
+
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
 
@@ -319,7 +322,7 @@ void glueball_KK_channelv2()
     hmult->Draw();
     c3->SaveAs((outputQAfolder_str + "/hglueball_mult." + koutputtype).c_str());
 
-    //multiplicity distribution
+    // multiplicity distribution
     gPad->SetLogy();
     TH1F *hmultdist_FT0M = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/multdist_FT0M").c_str());
     if (hmultdist_FT0M == nullptr)
@@ -334,9 +337,9 @@ void glueball_KK_channelv2()
     hmultdist_FT0M->GetYaxis()->SetTitle("Events");
     hmultdist_FT0M->GetXaxis()->SetNdivisions(505);
     hmultdist_FT0M->Scale(1. / hmultdist_FT0M->Integral());
+    // hmultdist_FT0M->SetMinimum(1e-8);
     hmultdist_FT0M->Draw();
     c3->SaveAs((outputQAfolder_str + "/hglueball_multdist_FT0M." + koutputtype).c_str());
-
 
     // vertex z position plot
     gPad->SetLogy(0);
@@ -496,7 +499,6 @@ void glueball_KK_channelv2()
     // hnsigmaTPCvsTOF_after->Draw("colz");
     // c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPCvsTOF_after." + koutputtype).c_str());
 
-
     // End of code **********************************************************************************************
 }
 
@@ -506,4 +508,3 @@ float parameter0(float mass, float width)
     double norm = 2.8284 * mass * width * gamma / (3.14 * TMath::Sqrt(mass * mass + gamma));
     return norm;
 }
-

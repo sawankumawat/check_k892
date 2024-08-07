@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
-// #define KKchannel   // for Kaon Kaon channel
-#define KsKschannel  //for Kshort Kshort channel
+#define KKchannel   // for Kaon Kaon channel
+// #define KsKschannel  //for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
@@ -17,8 +17,8 @@ const string kvariation = ""; // change the variation here
 #ifdef KKchannel
 const string kchannel = "KK_Channel";
 const string kfoldername_temp = "kaonkaonAnalysisRun3";
-// const string kvariation = ""; // change the variation here
-const string kvariation = "_Deep_angle"; // change the variation here
+const string kvariation = ""; // change the variation here
+// const string kvariation = "_Deep_angle"; // change the variation here
 #endif
 
 ////******some fixed variables******************************************************
@@ -26,8 +26,8 @@ TLatex *t2 = new TLatex();
 ////******some fixed variables******************************************************
 
 // define datasets here
-// #define DATASET_LHC220_pass6_small
-#define DATASET_LHC22o_pass7_small
+#define DATASET_LHC220_pass6_small
+// #define DATASET_LHC22o_pass7_small
 // #define DATASET_LHC220_pass4_small
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
@@ -35,7 +35,7 @@ const string kSignalOutput_temp = "../output/" + kParticle; // output folder
 
 // define datasets name here
 #ifdef DATASET_LHC220_pass6_small
-// const string kDataset_temp = "LHC220_pass6_small/";
+const string kDataset_temp = "LHC220_pass6_small/";
 // const string kMCDataset = "../mc/LHC24b1/";
 const string kMCDataset = "../mc/LHC24b1b/";
 #endif
@@ -50,7 +50,8 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // const string kDataFilename_temp2 = "215554.root"; // data file
 // const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
 // const string kDataFilename_temp2 = "222487.root"; // data file (with larger pT range upto 30 GeV/c)
-const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
+// const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
+const string kDataFilename_temp2 = "245896.root"; // data file (with mulitiplicity distribution, dE/dx tpc plots)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

@@ -9,13 +9,32 @@
 
 using namespace std;
 
-void printDirectoryContents(TDirectory *dir, int indent = 0);
-float parameter0(float mass, float width)
+void printDirectoryContents(TDirectory *dir, int indent = 0)
 {
-    double gamma = TMath::Sqrt(mass * mass * (mass * mass + width * width));
-    double norm = 2.8284 * mass * width * gamma / (3.14 * TMath::Sqrt(mass * mass + gamma));
-    return norm;
+    // Get a list of all keys in the directory
+    TIter next(dir->GetListOfKeys());
+    TKey *key;
+
+    // Iterate over all keys
+    while ((key = (TKey *)next()))
+    {
+        // Print the name and class of the object
+        for (int i = 0; i < indent; i++)
+        {
+            std::cout << "  ";
+        }
+        std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
+
+        // If the object is a directory, recursively print its contents
+        TClass *cl = gROOT->GetClass(key->GetClassName());
+        if (cl->InheritsFrom(TDirectory::Class()))
+        {
+            TDirectory *subdir = (TDirectory *)key->ReadObj();
+            printDirectoryContents(subdir, indent + 1);
+        }
+    }
 }
+float parameter0(float mass, float width);
 
 void glueball_KK_channelv2()
 {
@@ -23,8 +42,8 @@ void glueball_KK_channelv2()
     // const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
     const string kResBkg = "LIKE";
-    const bool makeQAplots = false;
-    const bool calculate_invmass_distributions = true;
+    const bool makeQAplots = true;
+    const bool calculate_invmass_distributions = false;
     const bool save_invmass_plots = false;
     float invmasslow = 1.1;  // GeV/c^2
     float invmasshigh = 3.0; // GeV/c^2
@@ -105,7 +124,7 @@ void glueball_KK_channelv2()
     TH1D *fHistLikepp[Npt];
     TH1D *fHistLikemm[Npt];
     TH1D *fHistLike[Npt];
-    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hCentrality").c_str());
+    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hmutiplicity").c_str());
     if (hmult == nullptr)
     {
         cout << "Multiplicity histogram not found" << endl;
@@ -300,7 +319,27 @@ void glueball_KK_channelv2()
     hmult->Draw();
     c3->SaveAs((outputQAfolder_str + "/hglueball_mult." + koutputtype).c_str());
 
+    //multiplicity distribution
+    gPad->SetLogy();
+    TH1F *hmultdist_FT0M = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/multdist_FT0M").c_str());
+    if (hmultdist_FT0M == nullptr)
+    {
+        cout << "Multiplicity distribution histogram not found" << endl;
+        return;
+    }
+    c3->Clear();
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hmultdist_FT0M);
+    hmultdist_FT0M->GetXaxis()->SetTitle("Multiplicity");
+    hmultdist_FT0M->GetYaxis()->SetTitle("Events");
+    hmultdist_FT0M->GetXaxis()->SetNdivisions(505);
+    hmultdist_FT0M->Scale(1. / hmultdist_FT0M->Integral());
+    hmultdist_FT0M->Draw();
+    c3->SaveAs((outputQAfolder_str + "/hglueball_multdist_FT0M." + koutputtype).c_str());
+
+
     // vertex z position plot
+    gPad->SetLogy(0);
     TH1F *hvertexz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hVtxZ").c_str());
     if (hvertexz == nullptr)
     {
@@ -382,20 +421,20 @@ void glueball_KK_channelv2()
     hnsigmaTPC_before->Draw("colz");
     c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPC_before." + koutputtype).c_str());
 
-    // nsigma TPC distribution after
-    TH2F *hnsigmaTPC_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTPC_after").c_str());
-    if (hnsigmaTPC_after == nullptr)
-    {
-        cout << "Nsigma TPC distribution histogram not found" << endl;
-        return;
-    }
-    c3->Clear();
-    SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
-    SetHistoQA2D(hnsigmaTPC_after);
-    hnsigmaTPC_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    hnsigmaTPC_after->GetYaxis()->SetTitle("n#sigma_{TPC}");
-    hnsigmaTPC_after->Draw("colz");
-    c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPC_after." + koutputtype).c_str());
+    // // nsigma TPC distribution after
+    // TH2F *hnsigmaTPC_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTPC_after").c_str());
+    // if (hnsigmaTPC_after == nullptr)
+    // {
+    //     cout << "Nsigma TPC distribution histogram not found" << endl;
+    //     return;
+    // }
+    // c3->Clear();
+    // SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
+    // SetHistoQA2D(hnsigmaTPC_after);
+    // hnsigmaTPC_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    // hnsigmaTPC_after->GetYaxis()->SetTitle("n#sigma_{TPC}");
+    // hnsigmaTPC_after->Draw("colz");
+    // c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPC_after." + koutputtype).c_str());
 
     // nsigma TOF distribution before
     TH2F *hnsigmaTOF_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_before").c_str());
@@ -412,20 +451,20 @@ void glueball_KK_channelv2()
     hnsigmaTOF_before->Draw("colz");
     c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTOF_before." + koutputtype).c_str());
 
-    // nsigma TOF distribution after
-    TH2F *hnsigmaTOF_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_after").c_str());
-    if (hnsigmaTOF_after == nullptr)
-    {
-        cout << "Nsigma TOF distribution histogram not found" << endl;
-        return;
-    }
-    c3->Clear();
-    SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
-    SetHistoQA2D(hnsigmaTOF_after);
-    hnsigmaTOF_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    hnsigmaTOF_after->GetYaxis()->SetTitle("n#sigma_{TOF}");
-    hnsigmaTOF_after->Draw("colz");
-    c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTOF_after." + koutputtype).c_str());
+    // // nsigma TOF distribution after
+    // TH2F *hnsigmaTOF_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_after").c_str());
+    // if (hnsigmaTOF_after == nullptr)
+    // {
+    //     cout << "Nsigma TOF distribution histogram not found" << endl;
+    //     return;
+    // }
+    // c3->Clear();
+    // SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
+    // SetHistoQA2D(hnsigmaTOF_after);
+    // hnsigmaTOF_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    // hnsigmaTOF_after->GetYaxis()->SetTitle("n#sigma_{TOF}");
+    // hnsigmaTOF_after->Draw("colz");
+    // c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTOF_after." + koutputtype).c_str());
 
     // nsigma TPC vs nsigma TOF before
     TH2F *hnsigmaTPCvsTOF_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_TPC_before").c_str());
@@ -442,46 +481,29 @@ void glueball_KK_channelv2()
     hnsigmaTPCvsTOF_before->Draw("colz");
     c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPCvsTOF_before." + koutputtype).c_str());
 
-    // nsigma TPC vs nsigma TOF after
-    TH2F *hnsigmaTPCvsTOF_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_TPC_after").c_str());
-    if (hnsigmaTPCvsTOF_after == nullptr)
-    {
-        cout << "Nsigma TPC vs TOF distribution after selection histogram not found" << endl;
-        return;
-    }
-    c3->Clear();
-    SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
-    SetHistoQA2D(hnsigmaTPCvsTOF_after);
-    hnsigmaTPCvsTOF_after->GetXaxis()->SetTitle("n#sigma_{TOF}");
-    hnsigmaTPCvsTOF_after->GetYaxis()->SetTitle("n#sigma_{TPC}");
-    hnsigmaTPCvsTOF_after->Draw("colz");
-    c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPCvsTOF_after." + koutputtype).c_str());
+    // // nsigma TPC vs nsigma TOF after
+    // TH2F *hnsigmaTPCvsTOF_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hNsigmaKaonTOF_TPC_after").c_str());
+    // if (hnsigmaTPCvsTOF_after == nullptr)
+    // {
+    //     cout << "Nsigma TPC vs TOF distribution after selection histogram not found" << endl;
+    //     return;
+    // }
+    // c3->Clear();
+    // SetCanvasStyle(c3, 0.15, 0.18, 0.05, 0.15);
+    // SetHistoQA2D(hnsigmaTPCvsTOF_after);
+    // hnsigmaTPCvsTOF_after->GetXaxis()->SetTitle("n#sigma_{TOF}");
+    // hnsigmaTPCvsTOF_after->GetYaxis()->SetTitle("n#sigma_{TPC}");
+    // hnsigmaTPCvsTOF_after->Draw("colz");
+    // c3->SaveAs((outputQAfolder_str + "/hglueball_nsigmaTPCvsTOF_after." + koutputtype).c_str());
+
 
     // End of code **********************************************************************************************
 }
 
-void printDirectoryContents(TDirectory *dir, int indent = 0)
+float parameter0(float mass, float width)
 {
-    // Get a list of all keys in the directory
-    TIter next(dir->GetListOfKeys());
-    TKey *key;
-
-    // Iterate over all keys
-    while ((key = (TKey *)next()))
-    {
-        // Print the name and class of the object
-        for (int i = 0; i < indent; i++)
-        {
-            std::cout << "  ";
-        }
-        std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
-
-        // If the object is a directory, recursively print its contents
-        TClass *cl = gROOT->GetClass(key->GetClassName());
-        if (cl->InheritsFrom(TDirectory::Class()))
-        {
-            TDirectory *subdir = (TDirectory *)key->ReadObj();
-            printDirectoryContents(subdir, indent + 1);
-        }
-    }
+    double gamma = TMath::Sqrt(mass * mass * (mass * mass + width * width));
+    double norm = 2.8284 * mass * width * gamma / (3.14 * TMath::Sqrt(mass * mass + gamma));
+    return norm;
 }
+

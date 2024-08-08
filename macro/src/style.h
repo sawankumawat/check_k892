@@ -98,14 +98,15 @@ void SetHistoQA2D(TH2 *h)
     h->GetZaxis()->SetMaxDigits(3);
 }
 
-void SetGrapherrorStyle(TGraphErrors *gr, int markercolor, int linecolor)
+void SetGrapherrorStyle(TGraphErrors *gr)
 {
+    gr->SetTitle(0);
     gr->SetMarkerStyle(20);
-    gr->SetMarkerColor(markercolor);
-    gr->SetLineColor(linecolor);
-    gr->SetMarkerSize(1.4);
+    // gr->SetMarkerColor(markercolor);
+    // gr->SetLineColor(linecolor);
+    gr->SetMarkerSize(1.0);
     gr->SetLineWidth(2);
-    gr->GetXaxis()->CenterTitle(false);
+    gr->GetXaxis()->CenterTitle(true);
     gr->GetXaxis()->SetNdivisions(506);
     gr->GetYaxis()->SetNdivisions(505);
     gr->GetXaxis()->SetLabelOffset(0.015);
@@ -114,8 +115,8 @@ void SetGrapherrorStyle(TGraphErrors *gr, int markercolor, int linecolor)
     gr->GetXaxis()->SetLabelSize(0.045);
     gr->GetXaxis()->SetTitleSize(0.05);
     gr->GetXaxis()->SetTickLength(0.04);
-    gr->GetXaxis()->SetTitleOffset(1.2);
-    gr->GetYaxis()->SetTitleOffset(1.2);
+    gr->GetXaxis()->SetTitleOffset(1.3);
+    gr->GetYaxis()->SetTitleOffset(1.5);
     gr->GetYaxis()->CenterTitle(true);
     gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);

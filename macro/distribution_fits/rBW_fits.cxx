@@ -46,6 +46,12 @@ void rBW_fits()
     }
 
     // // *********************** constant parameters *****************************
+    TGraphErrors *massf1270 = new TGraphErrors(Npt - 1);
+    TGraphErrors *widthf1270 = new TGraphErrors(Npt - 1);
+    TGraphErrors *massf1525 = new TGraphErrors(Npt - 1);
+    TGraphErrors *widthf1525 = new TGraphErrors(Npt - 1);
+    TGraphErrors *massf1710 = new TGraphErrors(Npt - 1);
+    TGraphErrors *widthf1710 = new TGraphErrors(Npt - 1);
 
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
@@ -135,7 +141,7 @@ void rBW_fits()
 
                 const auto &iter_bin = bwfit_params[ip];
 
-                // // for all
+                // // for all pT bins
                 f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
                 f3pol3->SetParameter(0, parameters1[0]);
                 if (iter_bin.param0_low_limit != -1)
@@ -153,84 +159,6 @@ void rBW_fits()
                 f3pol3->SetParameter(7, parameters1[7]);
                 f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
                 f3pol3->FixParameter(8, parameters1[8]);
-
-                // // // for full pT range and pT 4 to 6
-                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.15);
-                // f3pol3->SetParameter(0, parameters1[0]);
-                // f3pol3->SetParameter(1, parameters1[1]);
-                // f3pol3->SetParLimits(1, parameters1[1] - 0.08, parameters1[1] + 0.08);
-                // f3pol3->SetParameter(2, parameters1[2]);
-                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
-                // f3pol3->SetParameter(3, parameters1[3]);
-                // f3pol3->SetParameter(4, parameters1[4]);
-                // f3pol3->SetParameter(5, parameters1[5]);
-                // f3pol3->SetParameter(6, parameters1[6]);
-                // f3pol3->SetParameter(7, parameters1[7]);
-                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
-                // f3pol3->FixParameter(8, parameters1[8]);
-
-                // // // for pT 6 to 12
-                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.15);
-                // f3pol3->SetParameter(0, parameters1[0]);
-                // f3pol3->SetParameter(1, parameters1[1]);
-                // f3pol3->SetParLimits(1, parameters1[1] - 0.08, parameters1[1] + 0.08);
-                // f3pol3->SetParameter(2, parameters1[2]);
-                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
-                // f3pol3->SetParameter(3, parameters1[3]);
-                // f3pol3->SetParameter(4, parameters1[4]);
-                // f3pol3->SetParameter(5, parameters1[5]);
-                // f3pol3->SetParameter(6, parameters1[6]);
-                // f3pol3->SetParameter(7, parameters1[7]);
-                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
-                // f3pol3->FixParameter(8, parameters1[8]);
-
-                // // for pT 1 to 2
-                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.09, 2.18);
-                // f3pol3->SetParameter(0, parameters1[0]);
-                // f3pol3->SetParLimits(0, 3, 1e9);
-                // f3pol3->SetParameter(1, parameters1[1]);
-                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
-                // f3pol3->SetParameter(2, parameters1[2]);
-                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
-                // f3pol3->SetParameter(3, parameters1[3]);
-                // f3pol3->SetParameter(4, parameters1[4]);
-                // f3pol3->SetParameter(5, parameters1[5]);
-                // f3pol3->SetParameter(6, parameters1[6]);
-                // f3pol3->SetParameter(7, parameters1[7]);
-                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
-                // f3pol3->FixParameter(8, parameters1[8]);
-
-                // // // for pT 2 to 3
-                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.11, 2.16);
-                // f3pol3->SetParameter(0, parameters1[0]);
-                // f3pol3->SetParLimits(0, 0, 1e9);
-                // f3pol3->SetParameter(1, parameters1[1]);
-                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
-                // f3pol3->SetParameter(2, parameters1[2]);
-                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
-                // f3pol3->SetParameter(3, parameters1[3]);
-                // f3pol3->SetParameter(4, parameters1[4]);
-                // f3pol3->SetParameter(5, parameters1[5]);
-                // f3pol3->SetParameter(6, parameters1[6]);
-                // f3pol3->SetParameter(7, parameters1[7]);
-                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
-                // f3pol3->FixParameter(8, parameters1[8]);
-
-                //  // // for pT 3 to 4
-                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.12, 1.95);
-                // f3pol3->SetParameter(0, parameters1[0]);
-                // f3pol3->SetParLimits(0, 0, 1e9);
-                // f3pol3->SetParameter(1, parameters1[1]);
-                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
-                // f3pol3->SetParameter(2, parameters1[2]);
-                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
-                // f3pol3->SetParameter(3, parameters1[3]);
-                // f3pol3->SetParameter(4, parameters1[4]);
-                // f3pol3->SetParameter(5, parameters1[5]);
-                // f3pol3->SetParameter(6, parameters1[6]);
-                // f3pol3->SetParameter(7, parameters1[7]);
-                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
-                // f3pol3->FixParameter(8, parameters1[8]);
             }
 
             if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "expol")
@@ -297,6 +225,18 @@ void rBW_fits()
             hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.4);
             hinvMass->Fit("f3pol3", "REBMS0");
             f3pol3->Draw("same");
+
+            // Setting the values of the mass and width of the resonances into Tgraphs
+            massf1270->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(1));
+            massf1270->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(1));
+            widthf1270->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(2));
+            widthf1270->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(2));
+            massf1525->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(4));
+            massf1525->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(4));
+            widthf1525->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(5));
+            widthf1525->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(5));
+            massf1710->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(7));
+            massf1710->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(7));
 
             // making the size of textbox optimal
             gPad->Update();
@@ -367,7 +307,123 @@ void rBW_fits()
                 c2->SaveAs((fits_folder_str + "_" + kResBkg + "res_sub_" + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
             }
         }
-    }
+
+    } //************************ end of pT loop **************************************
+
+    TCanvas *c3 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(massf1270);
+    massf1270->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+    massf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    massf1270->SetMaximum(f1270Mass + 0.15);
+    massf1270->SetMinimum(f1270Mass - 0.1);
+    massf1270->Draw("ape");
+    TLine *linepdg = new TLine(0, f1270Mass, 12, f1270Mass);
+    linepdg->SetLineColor(kRed);
+    linepdg->SetLineStyle(2);
+    linepdg->SetLineWidth(2);
+    linepdg->Draw("same");
+    TLegend *lfit3 = new TLegend(0.17, 0.75, 0.47, 0.92);
+    SetLegendStyle(lfit3);
+    lfit3->SetTextSize(0.035);
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+    lfit3->AddEntry(massf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1270 PDG mass", "l");
+    lfit3->Draw("same");
+    c3->SaveAs((fits_folder_str + "_" + kResBkg + "massf1270.png").c_str());
+
+    TCanvas *c4 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c4, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(widthf1270);
+    widthf1270->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+    widthf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    widthf1270->SetMaximum(f1270Width + 0.1);
+    widthf1270->SetMinimum(f1270Width - 0.1);
+    widthf1270->Draw("ape");
+    linepdg->SetY1(f1270Width);
+    linepdg->SetY2(f1270Width);
+    linepdg->Draw("same");
+    lfit3->Clear();
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+    lfit3->AddEntry(widthf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1270 PDG width", "l");
+    lfit3->Draw("same");
+    c4->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1270.png").c_str());
+
+    TCanvas *c5 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c5, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(massf1525);
+    massf1525->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+    massf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    massf1525->SetMaximum(f1525Mass + 0.15);
+    massf1525->SetMinimum(f1525Mass - 0.1);
+    massf1525->Draw("ape");
+    linepdg->SetY1(f1525Mass);
+    linepdg->SetY2(f1525Mass);
+    linepdg->Draw("same");
+    lfit3->Clear();
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+    lfit3->AddEntry(massf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1525 PDG mass", "l");
+    lfit3->Draw("same");
+    c5->SaveAs((fits_folder_str + "_" + kResBkg + "massf1525.png").c_str());
+
+    TCanvas *c6 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c6, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(widthf1525);
+    widthf1525->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+    widthf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    widthf1525->SetMaximum(f1525Width + 0.15);
+    widthf1525->SetMinimum(f1525Width - 0.1);
+    widthf1525->Draw("ape");
+    linepdg->SetY1(f1525Width);
+    linepdg->SetY2(f1525Width);
+    linepdg->Draw("same");
+    lfit3->Clear();
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+    lfit3->AddEntry(widthf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1525 PDG width", "l");
+    lfit3->Draw("same");
+    c6->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1525.png").c_str());
+
+    TCanvas *c7 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c7, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(massf1710);
+    massf1710->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+    massf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    massf1710->SetMaximum(f1710Mass + 0.15);
+    massf1710->SetMinimum(f1710Mass - 0.1);
+    massf1710->Draw("ape");
+    linepdg->SetY1(f1710Mass);
+    linepdg->SetY2(f1710Mass);
+    linepdg->Draw("same");
+    lfit3->Clear();
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+
+    lfit3->AddEntry(massf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1710 PDG mass", "l");
+    lfit3->Draw("same");
+    c7->SaveAs((fits_folder_str + "_" + kResBkg + "massf1710.png").c_str());
+
+    // Since the width of f1710 is fixed, so it the graph will be empty for it
+    TCanvas *c8 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c8, 0.15, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(widthf1710);
+    widthf1710->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+    widthf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    widthf1710->SetMaximum(f1710Width + 0.1);
+    widthf1710->SetMinimum(f1710Width - 0.1);
+    widthf1710->Draw("ape");
+    linepdg->SetY1(f1710Width);
+    linepdg->SetY2(f1710Width);
+    linepdg->Draw("same");
+    lfit3->Clear();
+    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+    lfit3->AddEntry(widthf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
+    lfit3->AddEntry(linepdg, "f1710 PDG width", "l");
+    lfit3->Draw("same");
+    c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
+
 } //*******************************end of main function ***************************************
 
 //**********************************all functions are defined here **********************************

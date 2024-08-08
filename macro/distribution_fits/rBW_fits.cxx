@@ -12,7 +12,7 @@ TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange
 TF1 *BW3pol3(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3fit(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
-TF1 *draw_individual_functions(double *parameters, TLegend *lfit);
+TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool drawpol2 = true);
 
 void rBW_fits()
 {
@@ -26,12 +26,25 @@ void rBW_fits()
 
     const int rebin = 1;
     bool testing = false;
-    bool saveplots = false;
-    const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
+    bool saveplots = true;
     // double f1710Mass = pdg->GetParticle(10331)->Mass();
     // double f1710Width = pdg->GetParticle(10331)->Width();
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
+
+    const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
+    TString fits_folder = outputfolder_str + "/fits";
+    const string fits_folder_str = outputfolder_str + "/fits/";
+    // Create the folder to save the fitted distributions
+    if (gSystem->mkdir(fits_folder, kTRUE))
+    {
+        std::cout << "Folder " << fits_folder << " created successfully." << std::endl;
+    }
+    else
+    {
+        std::cout << "Creating folder " << fits_folder << std::endl;
+    }
+
     // // *********************** constant parameters *****************************
 
     // pT loop ***************************************************
@@ -102,10 +115,35 @@ void rBW_fits()
             TF1 *f3pol3;
             if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "pol3")
             {
-                f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.18);
+                struct FitParams
+                {
+                    double low;
+                    double high;
+                    double param0_low_limit;
+                    double param1_limit;
+                };
+
+                // Define the fit parameters for each pT bin
+                std::vector<FitParams> bwfit_params = {
+                    // {1.0, 2.4, 0, 0.09}, // for testing purpose for single pT bin
+                    {1.09, 2.18, 3, 0.09}, // pT 1 to 2
+                    {1.11, 2.16, 0, 0.09}, // pT 2 to 3
+                    {1.12, 1.95, 0, 0.09}, // pT 3 to 4
+                    {1.1, 2.15, -1, 0.08}, // full pT range and pT 4 to 6
+                    {1.1, 2.15, -1, 0.08}  // pT 6 to 12
+                };
+
+                const auto &iter_bin = bwfit_params[ip];
+
+                // // for all
+                f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
                 f3pol3->SetParameter(0, parameters1[0]);
+                if (iter_bin.param0_low_limit != -1)
+                {
+                    f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
+                }
                 f3pol3->SetParameter(1, parameters1[1]);
-                f3pol3->SetParLimits(1, parameters1[1] - 0.08, parameters1[1] + 0.08);
+                f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
                 f3pol3->SetParameter(2, parameters1[2]);
                 f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
                 f3pol3->SetParameter(3, parameters1[3]);
@@ -115,6 +153,84 @@ void rBW_fits()
                 f3pol3->SetParameter(7, parameters1[7]);
                 f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
                 f3pol3->FixParameter(8, parameters1[8]);
+
+                // // // for full pT range and pT 4 to 6
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.15);
+                // f3pol3->SetParameter(0, parameters1[0]);
+                // f3pol3->SetParameter(1, parameters1[1]);
+                // f3pol3->SetParLimits(1, parameters1[1] - 0.08, parameters1[1] + 0.08);
+                // f3pol3->SetParameter(2, parameters1[2]);
+                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                // f3pol3->SetParameter(3, parameters1[3]);
+                // f3pol3->SetParameter(4, parameters1[4]);
+                // f3pol3->SetParameter(5, parameters1[5]);
+                // f3pol3->SetParameter(6, parameters1[6]);
+                // f3pol3->SetParameter(7, parameters1[7]);
+                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                // f3pol3->FixParameter(8, parameters1[8]);
+
+                // // // for pT 6 to 12
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.15);
+                // f3pol3->SetParameter(0, parameters1[0]);
+                // f3pol3->SetParameter(1, parameters1[1]);
+                // f3pol3->SetParLimits(1, parameters1[1] - 0.08, parameters1[1] + 0.08);
+                // f3pol3->SetParameter(2, parameters1[2]);
+                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                // f3pol3->SetParameter(3, parameters1[3]);
+                // f3pol3->SetParameter(4, parameters1[4]);
+                // f3pol3->SetParameter(5, parameters1[5]);
+                // f3pol3->SetParameter(6, parameters1[6]);
+                // f3pol3->SetParameter(7, parameters1[7]);
+                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                // f3pol3->FixParameter(8, parameters1[8]);
+
+                // // for pT 1 to 2
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.09, 2.18);
+                // f3pol3->SetParameter(0, parameters1[0]);
+                // f3pol3->SetParLimits(0, 3, 1e9);
+                // f3pol3->SetParameter(1, parameters1[1]);
+                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
+                // f3pol3->SetParameter(2, parameters1[2]);
+                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                // f3pol3->SetParameter(3, parameters1[3]);
+                // f3pol3->SetParameter(4, parameters1[4]);
+                // f3pol3->SetParameter(5, parameters1[5]);
+                // f3pol3->SetParameter(6, parameters1[6]);
+                // f3pol3->SetParameter(7, parameters1[7]);
+                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                // f3pol3->FixParameter(8, parameters1[8]);
+
+                // // // for pT 2 to 3
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.11, 2.16);
+                // f3pol3->SetParameter(0, parameters1[0]);
+                // f3pol3->SetParLimits(0, 0, 1e9);
+                // f3pol3->SetParameter(1, parameters1[1]);
+                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
+                // f3pol3->SetParameter(2, parameters1[2]);
+                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                // f3pol3->SetParameter(3, parameters1[3]);
+                // f3pol3->SetParameter(4, parameters1[4]);
+                // f3pol3->SetParameter(5, parameters1[5]);
+                // f3pol3->SetParameter(6, parameters1[6]);
+                // f3pol3->SetParameter(7, parameters1[7]);
+                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                // f3pol3->FixParameter(8, parameters1[8]);
+
+                //  // // for pT 3 to 4
+                // f3pol3 = BW3pol3(hinvMass, parameters1, 1.12, 1.95);
+                // f3pol3->SetParameter(0, parameters1[0]);
+                // f3pol3->SetParLimits(0, 0, 1e9);
+                // f3pol3->SetParameter(1, parameters1[1]);
+                // f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
+                // f3pol3->SetParameter(2, parameters1[2]);
+                // f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                // f3pol3->SetParameter(3, parameters1[3]);
+                // f3pol3->SetParameter(4, parameters1[4]);
+                // f3pol3->SetParameter(5, parameters1[5]);
+                // f3pol3->SetParameter(6, parameters1[6]);
+                // f3pol3->SetParameter(7, parameters1[7]);
+                // f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                // f3pol3->FixParameter(8, parameters1[8]);
             }
 
             if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "expol")
@@ -178,6 +294,7 @@ void rBW_fits()
             }
             f3pol3->SetLineStyle(1);
             f3pol3->SetLineWidth(2);
+            hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.4);
             hinvMass->Fit("f3pol3", "REBMS0");
             f3pol3->Draw("same");
 
@@ -186,40 +303,42 @@ void rBW_fits()
             TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
             ptstats->SetX1NDC(0.6);
             ptstats->SetX2NDC(0.99);
-            ptstats->SetY1NDC(0.3);
+            ptstats->SetY1NDC(0.5);
             ptstats->SetY2NDC(0.95);
             ptstats->Draw("same");
 
             // // //Drawing the individual rBW functions and the legend
-            TLegend *lfit = new TLegend(0.25, 0.6, 0.55, 0.9);
+            TLegend *lfit = new TLegend(0.25, 0.72, 0.55, 0.92);
             lfit->SetFillColor(0);
             // lfit->SetBorderSize(0);
             lfit->SetFillStyle(0);
             lfit->SetTextFont(42);
-            lfit->SetTextSize(0.035);
+            lfit->SetTextSize(0.025);
             lfit->AddEntry(hinvMass, "Data", "lpe");
             lfit->AddEntry(f3pol3, "3rBW + pol3", "l");
             double *parameters2 = f3pol3->GetParameters();
-            TF1 *residualpol3 = draw_individual_functions(parameters2, lfit);
+            TF1 *residualpol3 = draw_individual_functions(f3pol3, parameters2, lfit);
             lfit->Draw("same");
             t2->SetNDC();
-            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", 0.0, 30.0));
+            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
             {
-                string channel_temp = (kchannel == "KsKs_Channel") ? "KsKs_fit" : "KK_fit";
-                c1->SaveAs(("saved/" + channel_temp + "/BW3pol3_" + kResBkg + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
+                c1->SaveAs((fits_folder_str + "_" + kResBkg + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
             }
 
             // ************* subtracting residual background *************
-            TCanvas *c2 = new TCanvas("", "", 720, 720);
+            TCanvas *c2 = new TCanvas("", "", 2432, 85, 720, 720);
             SetCanvasStyle(c2, 0.12, 0.03, 0.05, 0.14);
             hinvMassResSub->Add(residualpol3, -1);
-            hinvMassResSub->GetXaxis()->SetRangeUser(1.1, 2.18);
+            hinvMassResSub->GetXaxis()->SetRangeUser(1.05, 2.18);
             hinvMassResSub->Draw();
-            TF1 *f3bw3 = new TF1("f3bw3", BW3, 1.1, 2.18, 9);
+            float rangelow = f3pol3->GetXmin();
+            float rangehigh = f3pol3->GetXmax();
+            TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
             f3bw3->SetParameter(0, f3pol3->GetParameter(0));
             f3bw3->SetParameter(1, f3pol3->GetParameter(1));
             f3bw3->SetParameter(2, f3pol3->GetParameter(2));
+            // f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.08, f3pol3->GetParameter(2) + 0.08);
             f3bw3->SetParameter(3, f3pol3->GetParameter(3));
             f3bw3->SetParameter(4, f3pol3->GetParameter(4));
             f3bw3->SetParameter(5, f3pol3->GetParameter(5));
@@ -230,20 +349,22 @@ void rBW_fits()
             hinvMassResSub->SetMarkerSize(0.8);
             hinvMassResSub->SetMaximum(hinvMassResSub->GetMaximum() * 1.9);
 
-            TLegend *lfit2 = new TLegend(0.15, 0.72, 0.55, 0.89);
+            TLegend *lfit2 = new TLegend(0.17, 0.62, 0.57, 0.92);
             lfit2->SetFillColor(0);
             lfit2->SetFillStyle(0);
             lfit2->SetTextFont(42);
             lfit2->SetBorderSize(0);
-            lfit2->SetTextSize(0.035);
+            lfit2->SetTextSize(0.03);
             lfit2->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
             lfit2->AddEntry(hinvMassResSub, "KsKs invariant mass", "lpe");
             lfit2->AddEntry(f3bw3, "3rBW fit", "l");
             lfit2->Draw("same");
+            draw_individual_functions(f3pol3, parameters2, lfit2, false); // draw the individual functions
+
+            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
             {
-                string channel_temp = (kchannel == "KsKs_Channel") ? "KsKs_fit" : "KK_fit";
-                c2->SaveAs(("saved/" + channel_temp + "/BW3pol3_residual_sub_" + kResBkg + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
+                c2->SaveAs((fits_folder_str + "_" + kResBkg + "res_sub_" + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
             }
         }
     }
@@ -401,12 +522,14 @@ TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitr
     return f3bw;
 }
 
-TF1 *draw_individual_functions(double *parameters, TLegend *lfit)
+TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool drawpol2 = true)
 {
     // BW1
-    TF1 *frBW1 = new TF1("frBW1", RelativisticBW, 1.1, 2.2, 3);
-    TF1 *frBW2 = new TF1("frBW2", RelativisticBW, 1.1, 2.2, 3);
-    TF1 *frBW3 = new TF1("frBW3", RelativisticBW, 1.1, 2.2, 3);
+    float rangelow = fit->GetXmin();
+    float rangehigh = fit->GetXmax();
+    TF1 *frBW1 = new TF1("frBW1", RelativisticBW, rangelow, rangehigh, 3);
+    TF1 *frBW2 = new TF1("frBW2", RelativisticBW, rangelow, rangehigh, 3);
+    TF1 *frBW3 = new TF1("frBW3", RelativisticBW, rangelow, rangehigh, 3);
     frBW1->SetParameter(0, parameters[0]);
     frBW1->SetParameter(1, parameters[1]);
     frBW1->SetParameter(2, parameters[2]);
@@ -431,19 +554,21 @@ TF1 *draw_individual_functions(double *parameters, TLegend *lfit)
     frBW3->Draw("same");
 
     // pol3 background
-    TF1 *fpol3 = new TF1("fpol3", polynomial3, 1.1, 2.2, 4);
+    TF1 *fpol3 = new TF1("fpol3", polynomial3, rangelow, rangehigh, 4);
     fpol3->SetParameter(0, parameters[9]);
     fpol3->SetParameter(1, parameters[10]);
     fpol3->SetParameter(2, parameters[11]);
     fpol3->SetParameter(3, parameters[12]);
     fpol3->SetLineStyle(2);
     fpol3->SetLineColor(28);
-    fpol3->Draw("same");
-
+    if (drawpol2)
+    {
+        fpol3->Draw("same");
+        lfit->AddEntry(fpol3, "pol3", "l");
+    }
     lfit->AddEntry(frBW1, "rBW(f_{2}(1270))", "l");
     lfit->AddEntry(frBW2, "rBW(f_{2}(1525))", "l");
     lfit->AddEntry(frBW3, "rBW(f_{0}(1710))", "l");
-    lfit->AddEntry(fpol3, "pol3", "l");
 
     return fpol3;
 }

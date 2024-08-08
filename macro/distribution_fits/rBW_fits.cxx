@@ -17,8 +17,8 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
@@ -26,7 +26,7 @@ void rBW_fits()
 
     const int rebin = 1;
     bool testing = false;
-    bool saveplots = true;
+    bool saveplots = false;
     // double f1710Mass = pdg->GetParticle(10331)->Mass();
     // double f1710Width = pdg->GetParticle(10331)->Width();
     gStyle->SetOptStat(1110);
@@ -56,7 +56,8 @@ void rBW_fits()
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
     {
-        TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "READ");
+        // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "READ");
+        TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_0.0_30.0_norm_1.9_2.0_.root", "READ");
 
         if (f->IsZombie())
         {
@@ -196,11 +197,11 @@ void rBW_fits()
                 // Define the fit parameters for each pT bin
                 std::vector<FitParams2> bwfit_params_rot = {
                     // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 1 to 2
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 2 to 3
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 3 to 4
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 1 to 2
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 2 to 3
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 3 to 4
                     {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
-                    {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}  // pT 6 to 12 and min bias
+                    {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}   // pT 6 to 12 and min bias
                 };
 
                 const auto &iter_bin = bwfit_params_rot[ip];
@@ -360,6 +361,7 @@ void rBW_fits()
 
     if (Npt > 1)
     {
+        TFile *file_fitparams = new TFile((fits_folder_str + "fitparams_" + kResBkg + ".root").c_str(), "RECREATE");
         // ************* Drawing the mass and width graphs *************
         TCanvas *c3 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.14);
@@ -369,6 +371,7 @@ void rBW_fits()
         massf1270->SetMaximum(f1270Mass + 0.15);
         massf1270->SetMinimum(f1270Mass - 0.1);
         massf1270->Draw("ape");
+        massf1270->Write("massf1270");
         TLine *linepdg = new TLine(0, f1270Mass, 12, f1270Mass);
         linepdg->SetLineColor(kRed);
         linepdg->SetLineStyle(2);
@@ -381,16 +384,20 @@ void rBW_fits()
         lfit3->AddEntry(massf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1270 PDG mass", "l");
         lfit3->Draw("same");
-        c3->SaveAs((fits_folder_str + "_" + kResBkg + "massf1270.png").c_str());
+        if (saveplots)
+        {
+            c3->SaveAs((fits_folder_str + "_" + kResBkg + "massf1270.png").c_str());
+        }
 
         TCanvas *c4 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c4, 0.15, 0.03, 0.05, 0.14);
         SetGrapherrorStyle(widthf1270);
         widthf1270->GetYaxis()->SetTitle("Width (GeV/c^{2})");
         widthf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-        widthf1270->SetMaximum(f1270Width + 0.1);
-        widthf1270->SetMinimum(f1270Width - 0.1);
+        widthf1270->SetMaximum(f1270Width + 0.3);
+        widthf1270->SetMinimum(f1270Width - 0.3);
         widthf1270->Draw("ape");
+        widthf1270->Write("widthf1270");
         linepdg->SetY1(f1270Width);
         linepdg->SetY2(f1270Width);
         linepdg->Draw("same");
@@ -399,7 +406,8 @@ void rBW_fits()
         lfit3->AddEntry(widthf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1270 PDG width", "l");
         lfit3->Draw("same");
-        c4->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1270.png").c_str());
+        if (saveplots)
+            c4->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1270.png").c_str());
 
         TCanvas *c5 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c5, 0.15, 0.03, 0.05, 0.14);
@@ -409,6 +417,7 @@ void rBW_fits()
         massf1525->SetMaximum(f1525Mass + 0.15);
         massf1525->SetMinimum(f1525Mass - 0.1);
         massf1525->Draw("ape");
+        massf1525->Write("massf1525");
         linepdg->SetY1(f1525Mass);
         linepdg->SetY2(f1525Mass);
         linepdg->Draw("same");
@@ -417,7 +426,8 @@ void rBW_fits()
         lfit3->AddEntry(massf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1525 PDG mass", "l");
         lfit3->Draw("same");
-        c5->SaveAs((fits_folder_str + "_" + kResBkg + "massf1525.png").c_str());
+        if (saveplots)
+            c5->SaveAs((fits_folder_str + "_" + kResBkg + "massf1525.png").c_str());
 
         TCanvas *c6 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c6, 0.15, 0.03, 0.05, 0.14);
@@ -427,6 +437,7 @@ void rBW_fits()
         widthf1525->SetMaximum(f1525Width + 0.15);
         widthf1525->SetMinimum(f1525Width - 0.1);
         widthf1525->Draw("ape");
+        widthf1525->Write("widthf1525");
         linepdg->SetY1(f1525Width);
         linepdg->SetY2(f1525Width);
         linepdg->Draw("same");
@@ -435,7 +446,8 @@ void rBW_fits()
         lfit3->AddEntry(widthf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1525 PDG width", "l");
         lfit3->Draw("same");
-        c6->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1525.png").c_str());
+        if (saveplots)
+            c6->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1525.png").c_str());
 
         TCanvas *c7 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c7, 0.15, 0.03, 0.05, 0.14);
@@ -445,6 +457,7 @@ void rBW_fits()
         massf1710->SetMaximum(f1710Mass + 0.15);
         massf1710->SetMinimum(f1710Mass - 0.1);
         massf1710->Draw("ape");
+        massf1710->Write("massf1710");
         linepdg->SetY1(f1710Mass);
         linepdg->SetY2(f1710Mass);
         linepdg->Draw("same");
@@ -454,7 +467,8 @@ void rBW_fits()
         lfit3->AddEntry(massf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1710 PDG mass", "l");
         lfit3->Draw("same");
-        c7->SaveAs((fits_folder_str + "_" + kResBkg + "massf1710.png").c_str());
+        if (saveplots)
+            c7->SaveAs((fits_folder_str + "_" + kResBkg + "massf1710.png").c_str());
 
         // Since the width of f1710 is fixed, so it the graph will be empty for it
         TCanvas *c8 = new TCanvas("", "", 720, 720);
@@ -465,6 +479,7 @@ void rBW_fits()
         widthf1710->SetMaximum(f1710Width + 0.1);
         widthf1710->SetMinimum(f1710Width - 0.1);
         widthf1710->Draw("ape");
+        widthf1710->Write("widthf1710");
         linepdg->SetY1(f1710Width);
         linepdg->SetY2(f1710Width);
         linepdg->Draw("same");
@@ -473,7 +488,8 @@ void rBW_fits()
         lfit3->AddEntry(widthf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
         lfit3->AddEntry(linepdg, "f1710 PDG width", "l");
         lfit3->Draw("same");
-        c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
+        if (saveplots)
+            c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
     }
 
 } //*******************************end of main function ***************************************

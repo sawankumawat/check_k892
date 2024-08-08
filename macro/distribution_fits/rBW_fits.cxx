@@ -46,12 +46,12 @@ void rBW_fits()
     }
 
     // // *********************** constant parameters *****************************
-    TGraphErrors *massf1270 = new TGraphErrors(Npt - 1);
-    TGraphErrors *widthf1270 = new TGraphErrors(Npt - 1);
-    TGraphErrors *massf1525 = new TGraphErrors(Npt - 1);
-    TGraphErrors *widthf1525 = new TGraphErrors(Npt - 1);
-    TGraphErrors *massf1710 = new TGraphErrors(Npt - 1);
-    TGraphErrors *widthf1710 = new TGraphErrors(Npt - 1);
+    TGraphErrors *massf1270 = new TGraphErrors(Npt);
+    TGraphErrors *widthf1270 = new TGraphErrors(Npt);
+    TGraphErrors *massf1525 = new TGraphErrors(Npt);
+    TGraphErrors *widthf1525 = new TGraphErrors(Npt);
+    TGraphErrors *massf1710 = new TGraphErrors(Npt);
+    TGraphErrors *widthf1710 = new TGraphErrors(Npt);
 
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
@@ -117,6 +117,7 @@ void rBW_fits()
 
         if (!testing)
         {
+
             // Fitting *********************************************
             TF1 *f3pol3;
             if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "pol3")
@@ -130,8 +131,8 @@ void rBW_fits()
                 };
 
                 // Define the fit parameters for each pT bin
-                std::vector<FitParams> bwfit_params = {
-                    // {1.0, 2.4, 0, 0.09}, // for testing purpose for single pT bin
+                std::vector<FitParams> bwfit_params_me = {
+                    // {1.1, 2.15, -1, 0.08}, // for testing purpose for single pT bin
                     {1.09, 2.18, 3, 0.09}, // pT 1 to 2
                     {1.11, 2.16, 0, 0.09}, // pT 2 to 3
                     {1.12, 1.95, 0, 0.09}, // pT 3 to 4
@@ -139,7 +140,7 @@ void rBW_fits()
                     {1.1, 2.15, -1, 0.08}  // pT 6 to 12
                 };
 
-                const auto &iter_bin = bwfit_params[ip];
+                const auto &iter_bin = bwfit_params_me[ip];
 
                 // // for all pT bins
                 f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
@@ -179,23 +180,61 @@ void rBW_fits()
                 f3pol3->FixParameter(8, parameters1[8]);
             }
 
-            if (kchannel == "KsKs_Channel" && kResBkg == "ROTATED")
+            if (kchannel == "KsKs_Channel" && kResBkg == "ROTATED" && kbgfitfunction == "pol3")
             {
-                f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 2.18);
+                struct FitParams2
+                {
+                    double low;
+                    double high;
+                    double param0_low_limit; // norm for f1270
+                    double param1_limit;     // mass for f1270
+                    double param2_limit;     // width for f1270
+                    double param4_limit;     // mass for f1525
+                    double param5_limit;     // width for f1525
+                    double param7_limit;     // mass for f1710
+                };
+                // Define the fit parameters for each pT bin
+                std::vector<FitParams2> bwfit_params_rot = {
+                    // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 1 to 2
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 2 to 3
+                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08},  // pT 3 to 4
+                    {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
+                    {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}  // pT 6 to 12 and min bias
+                };
+
+                const auto &iter_bin = bwfit_params_rot[ip];
+
+                f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
                 f3pol3->SetParameter(0, parameters1[0]);
-                f3pol3->SetParLimits(0, 0, 1e6);
+                f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
                 f3pol3->SetParameter(1, parameters1[1]);
-                f3pol3->SetParLimits(1, parameters1[1] - 0.09, parameters1[1] + 0.09);
+                if (iter_bin.param1_limit != -1)
+                {
+                    f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
+                }
                 f3pol3->SetParameter(2, parameters1[2]);
-                f3pol3->SetParLimits(2, parameters1[2] - 0.05, parameters1[2] + 0.05);
+                if (iter_bin.param2_limit != -1)
+                {
+                    f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
+                }
                 f3pol3->SetParameter(3, parameters1[3]);
                 f3pol3->SetParameter(4, parameters1[4]);
-                f3pol3->SetParLimits(4, parameters1[4] - 0.1, parameters1[4] + 0.1);
+                if (iter_bin.param4_limit != -1)
+                {
+                    f3pol3->SetParLimits(4, parameters1[4] - iter_bin.param4_limit, parameters1[4] + iter_bin.param4_limit);
+                }
                 f3pol3->SetParameter(5, parameters1[5]);
-                f3pol3->SetParLimits(5, parameters1[5] - 0.01, parameters1[5] + 0.01);
+                if (iter_bin.param5_limit != -1)
+                {
+                    f3pol3->SetParLimits(5, parameters1[5] - iter_bin.param5_limit, parameters1[5] + iter_bin.param5_limit);
+                }
                 f3pol3->SetParameter(6, parameters1[6]);
                 f3pol3->SetParameter(7, parameters1[7]);
-                f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                if (iter_bin.param7_limit != -1)
+                {
+                    f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
+                }
                 f3pol3->FixParameter(8, parameters1[8]);
             }
             if (kchannel == "KK_Channel")
@@ -270,15 +309,16 @@ void rBW_fits()
             TCanvas *c2 = new TCanvas("", "", 2432, 85, 720, 720);
             SetCanvasStyle(c2, 0.12, 0.03, 0.05, 0.14);
             hinvMassResSub->Add(residualpol3, -1);
-            hinvMassResSub->GetXaxis()->SetRangeUser(1.05, 2.18);
-            hinvMassResSub->Draw();
             float rangelow = f3pol3->GetXmin();
             float rangehigh = f3pol3->GetXmax();
+            hinvMassResSub->GetXaxis()->SetRangeUser(rangelow + 0.01, 2.18);
+            hinvMassResSub->Draw();
             TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
+            f3bw3->SetParNames("Norm", "Mass_{f1270}", "#Gamma_{f1270}", "Norm_{f1525}", "Mass_{f1525}", "#Gamma_{f1525}", "Norm_{f1710}", "Mass_{f1710}", "#Gamma_{f1710}");
             f3bw3->SetParameter(0, f3pol3->GetParameter(0));
             f3bw3->SetParameter(1, f3pol3->GetParameter(1));
-            f3bw3->SetParameter(2, f3pol3->GetParameter(2));
-            // f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.08, f3pol3->GetParameter(2) + 0.08);
+            f3bw3->FixParameter(2, f3pol3->GetParameter(2));
+            // f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.02, f3pol3->GetParameter(2) + 0.02);
             f3bw3->SetParameter(3, f3pol3->GetParameter(3));
             f3bw3->SetParameter(4, f3pol3->GetParameter(4));
             f3bw3->SetParameter(5, f3pol3->GetParameter(5));
@@ -289,7 +329,15 @@ void rBW_fits()
             hinvMassResSub->SetMarkerSize(0.8);
             hinvMassResSub->SetMaximum(hinvMassResSub->GetMaximum() * 1.9);
 
-            TLegend *lfit2 = new TLegend(0.17, 0.62, 0.57, 0.92);
+            gPad->Update();
+            TPaveStats *ptstats2 = (TPaveStats *)hinvMassResSub->FindObject("stats");
+            ptstats2->SetX1NDC(0.6);
+            ptstats2->SetX2NDC(0.99);
+            ptstats2->SetY1NDC(0.55);
+            ptstats2->SetY2NDC(0.95);
+            ptstats2->Draw("same");
+
+            TLegend *lfit2 = new TLegend(0.17, 0.67, 0.57, 0.92);
             lfit2->SetFillColor(0);
             lfit2->SetFillStyle(0);
             lfit2->SetTextFont(42);
@@ -310,119 +358,123 @@ void rBW_fits()
 
     } //************************ end of pT loop **************************************
 
-    TCanvas *c3 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(massf1270);
-    massf1270->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
-    massf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    massf1270->SetMaximum(f1270Mass + 0.15);
-    massf1270->SetMinimum(f1270Mass - 0.1);
-    massf1270->Draw("ape");
-    TLine *linepdg = new TLine(0, f1270Mass, 12, f1270Mass);
-    linepdg->SetLineColor(kRed);
-    linepdg->SetLineStyle(2);
-    linepdg->SetLineWidth(2);
-    linepdg->Draw("same");
-    TLegend *lfit3 = new TLegend(0.17, 0.75, 0.47, 0.92);
-    SetLegendStyle(lfit3);
-    lfit3->SetTextSize(0.035);
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
-    lfit3->AddEntry(massf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1270 PDG mass", "l");
-    lfit3->Draw("same");
-    c3->SaveAs((fits_folder_str + "_" + kResBkg + "massf1270.png").c_str());
+    if (Npt > 1)
+    {
+        // ************* Drawing the mass and width graphs *************
+        TCanvas *c3 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(massf1270);
+        massf1270->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+        massf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        massf1270->SetMaximum(f1270Mass + 0.15);
+        massf1270->SetMinimum(f1270Mass - 0.1);
+        massf1270->Draw("ape");
+        TLine *linepdg = new TLine(0, f1270Mass, 12, f1270Mass);
+        linepdg->SetLineColor(kRed);
+        linepdg->SetLineStyle(2);
+        linepdg->SetLineWidth(2);
+        linepdg->Draw("same");
+        TLegend *lfit3 = new TLegend(0.17, 0.75, 0.47, 0.92);
+        SetLegendStyle(lfit3);
+        lfit3->SetTextSize(0.035);
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit3->AddEntry(massf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1270 PDG mass", "l");
+        lfit3->Draw("same");
+        c3->SaveAs((fits_folder_str + "_" + kResBkg + "massf1270.png").c_str());
 
-    TCanvas *c4 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c4, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(widthf1270);
-    widthf1270->GetYaxis()->SetTitle("Width (GeV/c^{2})");
-    widthf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    widthf1270->SetMaximum(f1270Width + 0.1);
-    widthf1270->SetMinimum(f1270Width - 0.1);
-    widthf1270->Draw("ape");
-    linepdg->SetY1(f1270Width);
-    linepdg->SetY2(f1270Width);
-    linepdg->Draw("same");
-    lfit3->Clear();
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
-    lfit3->AddEntry(widthf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1270 PDG width", "l");
-    lfit3->Draw("same");
-    c4->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1270.png").c_str());
+        TCanvas *c4 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c4, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(widthf1270);
+        widthf1270->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+        widthf1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        widthf1270->SetMaximum(f1270Width + 0.1);
+        widthf1270->SetMinimum(f1270Width - 0.1);
+        widthf1270->Draw("ape");
+        linepdg->SetY1(f1270Width);
+        linepdg->SetY2(f1270Width);
+        linepdg->Draw("same");
+        lfit3->Clear();
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit3->AddEntry(widthf1270, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1270 PDG width", "l");
+        lfit3->Draw("same");
+        c4->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1270.png").c_str());
 
-    TCanvas *c5 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c5, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(massf1525);
-    massf1525->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
-    massf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    massf1525->SetMaximum(f1525Mass + 0.15);
-    massf1525->SetMinimum(f1525Mass - 0.1);
-    massf1525->Draw("ape");
-    linepdg->SetY1(f1525Mass);
-    linepdg->SetY2(f1525Mass);
-    linepdg->Draw("same");
-    lfit3->Clear();
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
-    lfit3->AddEntry(massf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1525 PDG mass", "l");
-    lfit3->Draw("same");
-    c5->SaveAs((fits_folder_str + "_" + kResBkg + "massf1525.png").c_str());
+        TCanvas *c5 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c5, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(massf1525);
+        massf1525->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+        massf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        massf1525->SetMaximum(f1525Mass + 0.15);
+        massf1525->SetMinimum(f1525Mass - 0.1);
+        massf1525->Draw("ape");
+        linepdg->SetY1(f1525Mass);
+        linepdg->SetY2(f1525Mass);
+        linepdg->Draw("same");
+        lfit3->Clear();
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit3->AddEntry(massf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1525 PDG mass", "l");
+        lfit3->Draw("same");
+        c5->SaveAs((fits_folder_str + "_" + kResBkg + "massf1525.png").c_str());
 
-    TCanvas *c6 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c6, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(widthf1525);
-    widthf1525->GetYaxis()->SetTitle("Width (GeV/c^{2})");
-    widthf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    widthf1525->SetMaximum(f1525Width + 0.15);
-    widthf1525->SetMinimum(f1525Width - 0.1);
-    widthf1525->Draw("ape");
-    linepdg->SetY1(f1525Width);
-    linepdg->SetY2(f1525Width);
-    linepdg->Draw("same");
-    lfit3->Clear();
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
-    lfit3->AddEntry(widthf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1525 PDG width", "l");
-    lfit3->Draw("same");
-    c6->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1525.png").c_str());
+        TCanvas *c6 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c6, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(widthf1525);
+        widthf1525->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+        widthf1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        widthf1525->SetMaximum(f1525Width + 0.15);
+        widthf1525->SetMinimum(f1525Width - 0.1);
+        widthf1525->Draw("ape");
+        linepdg->SetY1(f1525Width);
+        linepdg->SetY2(f1525Width);
+        linepdg->Draw("same");
+        lfit3->Clear();
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit3->AddEntry(widthf1525, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1525 PDG width", "l");
+        lfit3->Draw("same");
+        c6->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1525.png").c_str());
 
-    TCanvas *c7 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c7, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(massf1710);
-    massf1710->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
-    massf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    massf1710->SetMaximum(f1710Mass + 0.15);
-    massf1710->SetMinimum(f1710Mass - 0.1);
-    massf1710->Draw("ape");
-    linepdg->SetY1(f1710Mass);
-    linepdg->SetY2(f1710Mass);
-    linepdg->Draw("same");
-    lfit3->Clear();
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        TCanvas *c7 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c7, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(massf1710);
+        massf1710->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+        massf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        massf1710->SetMaximum(f1710Mass + 0.15);
+        massf1710->SetMinimum(f1710Mass - 0.1);
+        massf1710->Draw("ape");
+        linepdg->SetY1(f1710Mass);
+        linepdg->SetY2(f1710Mass);
+        linepdg->Draw("same");
+        lfit3->Clear();
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
 
-    lfit3->AddEntry(massf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1710 PDG mass", "l");
-    lfit3->Draw("same");
-    c7->SaveAs((fits_folder_str + "_" + kResBkg + "massf1710.png").c_str());
+        lfit3->AddEntry(massf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1710 PDG mass", "l");
+        lfit3->Draw("same");
+        c7->SaveAs((fits_folder_str + "_" + kResBkg + "massf1710.png").c_str());
 
-    // Since the width of f1710 is fixed, so it the graph will be empty for it
-    TCanvas *c8 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c8, 0.15, 0.03, 0.05, 0.14);
-    SetGrapherrorStyle(widthf1710);
-    widthf1710->GetYaxis()->SetTitle("Width (GeV/c^{2})");
-    widthf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-    widthf1710->SetMaximum(f1710Width + 0.1);
-    widthf1710->SetMinimum(f1710Width - 0.1);
-    widthf1710->Draw("ape");
-    linepdg->SetY1(f1710Width);
-    linepdg->SetY2(f1710Width);
-    linepdg->Draw("same");
-    lfit3->Clear();
-    lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
-    lfit3->AddEntry(widthf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
-    lfit3->AddEntry(linepdg, "f1710 PDG width", "l");
-    lfit3->Draw("same");
-    c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
+        // Since the width of f1710 is fixed, so it the graph will be empty for it
+        TCanvas *c8 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c8, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(widthf1710);
+        widthf1710->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+        widthf1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        widthf1710->SetMaximum(f1710Width + 0.1);
+        widthf1710->SetMinimum(f1710Width - 0.1);
+        widthf1710->Draw("ape");
+        linepdg->SetY1(f1710Width);
+        linepdg->SetY2(f1710Width);
+        linepdg->Draw("same");
+        lfit3->Clear();
+        lfit3->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit3->AddEntry(widthf1710, "BW fit K_{s}K_{s} inv. mass", "lpe");
+        lfit3->AddEntry(linepdg, "f1710 PDG width", "l");
+        lfit3->Draw("same");
+        c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
+    }
 
 } //*******************************end of main function ***************************************
 

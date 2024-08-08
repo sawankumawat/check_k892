@@ -8,7 +8,7 @@
 const Int_t Npt = 5;
 // double pT_bins[Npt + 1] = {0.0, 30.0};
 float pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 6.0, 12.0};
-// float pT_bins[Npt + 1] = {1.0, 2.0};
+// float pT_bins[Npt + 1] = {0.0, 12.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif
@@ -62,7 +62,7 @@ const std::vector<vector<float>> kNormRangepT = {
 
 const std::vector<int> kRebin = {
     // 2, // 0.0-30.0 GeV/c
-    4, // 0.0-1.0 GeV/c
+    // 4, // 0.0-1.0 GeV/c
     4, // 1.0-2.0 GeV/c
     4, // 2.0-3.0 GeV/c
     4, // 3.0-4.0 GeV/c

@@ -56,8 +56,8 @@ void rBW_fits()
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
     {
-        // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "READ");
-        TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_0.0_30.0_norm_1.9_2.0_.root", "READ");
+        TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "READ");
+        // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_0.0_30.0_norm_1.9_2.0_.root", "READ");
 
         if (f->IsZombie())
         {

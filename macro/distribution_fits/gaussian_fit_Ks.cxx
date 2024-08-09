@@ -16,7 +16,7 @@ void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth);
 void gaussian_fit_Ks()
 {
     // configurables *********************
-    bool saveplots = true;
+    bool saveplots = false;
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
     int rebin = 1;
@@ -189,16 +189,16 @@ void gaussian_fit_Ks()
             // fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3);
         }
 
-        //trying gaussian fit instead of double CB
-        // TF1 *fitpt3 = new TF1("fitpt3", "gaus(0)+pol2(3)", ksmass - 10 * kswidth, ksmass + 10 * kswidth);
-        // fitpt3->SetParameter(1, ksmass);
-        // fitpt3->SetParameter(2, kswidth);
-        // // fitpt3->SetParameter(3, parameters_temp[3]);
-        // // fitpt3->SetParameter(4, parameters_temp[4]);
-        // // fitpt3->SetParameter(5, parameters_temp[5]);
-        // hInvMassPt[ipt]->Fit(fitpt3, "REBMS0+");
-        // fitpt3->Draw("same");
-        // cout << "fit mean is " << fitpt3->GetParameter(1) << " and fit width is " << fitpt3->GetParameter(2) << endl;
+        // trying gaussian fit instead of double CB
+        //  TF1 *fitpt3 = new TF1("fitpt3", "gaus(0)+pol2(3)", ksmass - 10 * kswidth, ksmass + 10 * kswidth);
+        //  fitpt3->SetParameter(1, ksmass);
+        //  fitpt3->SetParameter(2, kswidth);
+        //  // fitpt3->SetParameter(3, parameters_temp[3]);
+        //  // fitpt3->SetParameter(4, parameters_temp[4]);
+        //  // fitpt3->SetParameter(5, parameters_temp[5]);
+        //  hInvMassPt[ipt]->Fit(fitpt3, "REBMS0+");
+        //  fitpt3->Draw("same");
+        //  cout << "fit mean is " << fitpt3->GetParameter(1) << " and fit width is " << fitpt3->GetParameter(2) << endl;
         hpTwiseMass->SetBinContent(ipt + 1, fitpt3->GetParameter(1));
         hpTwiseMass->SetBinError(ipt + 1, fitpt3->GetParError(1));
         hpTwiseWidth->SetBinContent(ipt + 1, abs(fitpt3->GetParameter(2)));

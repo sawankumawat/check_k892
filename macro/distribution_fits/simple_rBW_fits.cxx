@@ -222,7 +222,7 @@ void simple_rBW_fits()
             // }
         } // end of loop over pT bins
     } // end of me variations
-    cmevar->SaveAs((fits_folder_str + "_" + kResBkg + "_me_range_compare.pdf").c_str());
+    cmevar->SaveAs((fits_folder_str + "_" + kResBkg + "_me_range_compare.png").c_str());
 
 } //*******************************end of main function ***************************************
 

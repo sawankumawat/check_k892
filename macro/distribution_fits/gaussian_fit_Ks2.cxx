@@ -10,14 +10,14 @@ TF1 *fitgauspol2(TH1 *h, double ksmass, double kswidth);
 TF1 *CBpol2(TH1 *h, double *parameters, bool mainfit);
 TF1 *CB(TH1 *h, double ksmass, double kswidth);
 TF1 *doubleCB(TH1 *h, double *parameters, bool mainfit);
-TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit);
+TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04);
 TF1 *doubleCBpol1(TH1 *h, double *parameters, bool mainfit);
 void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth);
 
 void gaussian_fit_Ks2()
 {
     // configurables *********************
-    bool saveplots = true;
+    bool saveplots = false;
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
     int rebin = 1;
@@ -64,7 +64,7 @@ void gaussian_fit_Ks2()
     hInvMassClone1->SetLineWidth(0);
     hInvMassClone1->SetFillColor(5);
     hInvMassClone1->GetXaxis()->SetRangeUser(ksmass - 4 * kswidth, ksmass + 4 * kswidth);
-    // hInvMassClone1->Draw("E3 hist same");
+    hInvMassClone1->Draw("E3 hist same");
     hInvMassClone2->Draw("pe same");
     // // TF1 *fit = fitgaus(hInvMass, ksmass, kswidth);
     // TF1 *fit3 = fitgauspol2(hInvMass, ksmass, kswidth);
@@ -96,7 +96,15 @@ void gaussian_fit_Ks2()
     fit2->SetLineColor(2);
     fit2->SetLineWidth(2);
     // fit2->Draw("SAME");
-    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true); // double crystal ball with pol2 fit
+    // legend
+    TLegend *lp3 = DrawLegend(0.6, 0.45, 0.9, 0.75);
+    lp3->SetFillStyle(0);
+    lp3->SetTextFont(42);
+    lp3->AddEntry(hInvMass, "Data", "pe");
+    lp3->AddEntry(hInvMassClone1, "Signal", "f");
+    // lp3->AddEntry(fit3, "CB + pol2 fit", "l");
+
+    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.03); // double crystal ball with pol2 fit
     fit3->Draw("SAME");
     // TF1 *fit3 = doubleCBpol1(hInvMass, parameters); // double crystal ball with pol1 fit
 
@@ -121,16 +129,6 @@ void gaussian_fit_Ks2()
     lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
     lp2->Draw("same");
 
-    // legend
-    TLegend *lp3 = DrawLegend(0.6, 0.55, 0.9, 0.75);
-    lp3->SetFillStyle(0);
-    lp3->SetTextFont(42);
-    lp3->AddEntry(hInvMass, "Data", "pe");
-    lp3->AddEntry(hInvMassClone1, "Signal", "f");
-    lp3->AddEntry(fit3, "CB + pol2 fit", "l");
-    lp3->SetTextSize(0.04);
-    lp3->Draw("same");
-
     gPad->Modified();
     gPad->Update();
     TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");
@@ -140,17 +138,17 @@ void gaussian_fit_Ks2()
     st->SetY2NDC(0.95);
     st->Draw("same");
 
-    TLegend *lp1 = DrawLegend(0.45, 0.45, 0.9, 0.55);
+    TLegend *lp1 = DrawLegend(0.52, 0.35, 0.9, 0.45);
     lp1->SetFillStyle(0);
     lp1->SetTextFont(42);
     lp1->SetTextSize(0.03);
-    lp1->AddEntry((TObject *)0, Form("Mean = %.7f #pm %.7f", fit3->GetParameter(1), fit3->GetParError(1)), "");
-    lp1->AddEntry((TObject *)0, Form("Sigma = %.7f #pm %.7f", fit3->GetParameter(2), fit3->GetParError(2)), "");
+    lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1), fit3->GetParError(1)), "");
+    lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2), fit3->GetParError(2)), "");
     lp1->Draw("same");
-    // if (saveplots)
-    // {
-    //     c1->SaveAs("gaussian_fit_Ks_fullpt.pdf");
-    // }
+    if (saveplots)
+    {
+        c1->SaveAs("gaussian_fit_Ks_fullpt.pdf");
+    }
 
     // Now we will plot the Ks invariant mass distribution as a function of pT
     const int Nptbins = 16;
@@ -179,7 +177,8 @@ void gaussian_fit_Ks2()
         TF1 *fitpt3;
         if (ipt < 8)
         {
-            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters2, true);
+            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters2, false);
+            fitpt3->Draw("SAME");
         }
         else if (ipt >= 8)
         {
@@ -196,7 +195,8 @@ void gaussian_fit_Ks2()
                 parameters3[i] = fitpt2->GetParameter(i);
             }
             cout << "\n now fitting with doubleCBpol2 with pT bin: " << ipt << "\n\n";
-            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3, true);
+            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3, false);
+            fitpt3->Draw("SAME");
             // double parameters3[7] = {fit3->GetParameter(0), fit3->GetParameter(1), fit3->GetParameter(2), fit3->GetParameter(3)+2.0, fit3->GetParameter(4), fit3->GetParameter(5), fit3->GetParameter(6)};
             // fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3);
         }
@@ -224,11 +224,66 @@ void gaussian_fit_Ks2()
         lat.SetTextSize(0.04);
         lat.DrawLatex(0.57, 0.75, Form("Mean = %.3f #pm %.3f", fitpt3->GetParameter(1), fitpt3->GetParError(1)));
         lat.DrawLatex(0.57, 0.7, Form("Sigma = %.3f #pm %.3f", abs(fitpt3->GetParameter(2)), fitpt3->GetParError(2)));
+
+        // Yield from bin counting method calculation
+        TF1 *fitFcn2_plusm = new TF1("fitFcn2_plusm", DoubleCrystalBallpol2, fitpt3->GetXmin(), fitpt3->GetXmax(), 7);
+        TF1 *fitFcn2_minusm = new TF1("fitFcn2_minusm", DoubleCrystalBallpol2, fitpt3->GetXmin(), fitpt3->GetXmax(), 7);
+
+        for (int ipar = 0; ipar < 7; ipar++)
+        {
+            if (ipar == 1)
+            {
+                fitFcn2_plusm->FixParameter(ipar, fitpt3->GetParameter(ipar) + fitpt3->GetParError(ipar));
+                fitFcn2_minusm->FixParameter(ipar, fitpt3->GetParameter(ipar) - fitpt3->GetParError(ipar));
+            }
+            else
+            {
+                fitFcn2_plusm->FixParameter(ipar, fitpt3->GetParameter(ipar));
+                fitFcn2_minusm->FixParameter(ipar, fitpt3->GetParameter(ipar));
+            }
+        }
+
+        // finding the histogram bin for the mass plus and minus its two times the width (the width is not known, so we will take the value of 4 MeV for now)
+
+        auto bin_min = hInvMassPt[ipt]->FindBin(ksmass - 2 * fitpt3->GetParameter(2));
+        auto bin_max = hInvMassPt[ipt]->FindBin(ksmass + 2 * fitpt3->GetParameter(2));
+        double bc_error;
+        double Yield_bincount_hist = hInvMassPt[ipt]->IntegralAndError(bin_min, bin_max, bc_error);
+        TF1 *double_CB_fit = new TF1("double_CB_fit", DoubleCrystalBall, fitpt3->GetXmin(), fitpt3->GetXmax(), 7);
+        TF1 *pol2_fit = new TF1("pol2_fit", polynomial2, fitpt3->GetXmin(), fitpt3->GetXmax(), 3);
+        for (int ipar = 0; ipar < 10; ipar++)
+        {
+            if (ipar < 7)
+            {
+                double_CB_fit->FixParameter(ipar, fitpt3->GetParameter(ipar));
+            }
+            else
+            {
+                pol2_fit->FixParameter(ipar - 7, fitpt3->GetParameter(ipar));
+            }
+        }
+
+        double bkgvalue = pol2_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
+        double Integral_BW_withsigma = double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
+
+        auto fYield_BinCount = Yield_bincount_hist - (bkgvalue / binwidth);
+        auto YieldIntegral_BW = double_CB_fit->Integral(1.05, 3) / binwidth;
+        auto Yfraction_cBW = (Integral_BW_withsigma / YieldIntegral_BW);
+
+        auto sum_tail_correction = (double_CB_fit->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3)) / binwidth;
+        auto Total_Ybincounting = (sum_tail_correction + fYield_BinCount);
+        cout<<"Total_Ybincounting: "<<Total_Ybincounting<<endl;
+
+        auto Tail_correction_plusm = (fitFcn2_plusm->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_plusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3))) / binwidth;
+        auto Tail_correction_minusm = (fitFcn2_minusm->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_minusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3))) / binwidth;
+        auto Error_2 = (Tail_correction_plusm - Tail_correction_minusm) / 2;
+        auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2));
+        cout<<"Final_pro_error: "<<Final_pro_error<<endl;
     }
-    // if (saveplots)
-    // {
-    //     c2->SaveAs("gaussian_fit_Ks_differential_ptbins.pdf");
-    // }
+    if (saveplots)
+    {
+        c2->SaveAs("gaussian_fit_Ks_differential_ptbins.pdf");
+    }
 
     TCanvas *c3 = new TCanvas("c3", "c3", 720, 720);
     SetCanvasStyle(c3, 0.22, 0.05, 0.05, 0.13);
@@ -317,7 +372,7 @@ void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth)
     h->GetYaxis()->SetTitleOffset(1.6);
     h->GetXaxis()->SetTitleOffset(1.3);
     h->SetMarkerStyle(20);
-    h->SetMarkerSize(0.5);
+    h->SetMarkerSize(0.8);
     h->SetMarkerColor(kBlack);
     h->SetLineColor(kBlack);
     h->SetMaximum(1.2 * h->GetMaximum());
@@ -458,7 +513,7 @@ TF1 *doubleCB(TH1 *h, double *parameters, bool mainfit)
     return fit;
 }
 
-TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit)
+TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04)
 {
     double mass = parameters[1];
     double width = parameters[2];
@@ -484,7 +539,7 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit)
     }
     fit->SetLineColor(2);
     fit->SetLineWidth(2);
-    h->Fit(fit, "REBMS0");
+    h->Fit(fit, "REBMS");
     fit->SetNpx(1e6);
     // fit->Draw("SAME");
 
@@ -519,13 +574,17 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit)
         fitCBright->Draw("SAME");
         fitpol2->Draw("SAME");
 
-        TLegend *leg = new TLegend(0.17, 0.75, 0.5, 0.93);
-        SetLegendStyle(leg);
-        leg->AddEntry(fit, "Double Crystal Ball + pol2 fit", "l");
-        leg->AddEntry(fitCBleft, "Left Crystal Ball", "l");
-        leg->AddEntry(fitCBright, "Right Crystal Ball", "l");
-        leg->AddEntry(fitpol2, "Polynomial 2", "l");
-        leg->Draw("same");
+        // TLegend *leg = new TLegend(0.17, 0.75, 0.5, 0.93);
+        if (leg != nullptr)
+        {
+            SetLegendStyle(leg);
+            leg->SetTextSize(legendsize);
+            leg->AddEntry(fit, "Double CB + pol2", "l");
+            leg->AddEntry(fitCBleft, "Left CB", "l");
+            leg->AddEntry(fitCBright, "Right CB", "l");
+            leg->AddEntry(fitpol2, "Polynomial 2", "l");
+            leg->Draw("same");
+        }
     }
     return fit;
 }

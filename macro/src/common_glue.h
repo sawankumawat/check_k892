@@ -9,8 +9,8 @@ const string koutputtype = "png"; // pdf, eps
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
-const string kvariation = ""; // change the variation here
-// const string kvariation = "_full_ks_distribution"; // change the variation here
+// const string kvariation = ""; // change the variation here
+const string kvariation = "_full_ks_distribution"; // change the variation here
 // const string kvariation = "_old_cuts"; // change the variation here
 #endif
 ////********************************************************************************************

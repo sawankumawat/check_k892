@@ -17,7 +17,7 @@ void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth);
 void gaussian_fit_Ks2()
 {
     // configurables *********************
-    bool saveplots = false;
+    bool saveplots = true;
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
     int rebin = 1;
@@ -158,7 +158,8 @@ void gaussian_fit_Ks2()
     c2->Divide(4, 4);
     TH1F *hpTwiseMass = new TH1F("hpTwiseMass", "hpTwiseMass", Nptbins, ptbins);
     TH1F *hpTwiseWidth = new TH1F("hpTwiseWidth", "hpTwiseWidth", Nptbins, ptbins);
-    TH1F *hpTwiseNorm = new TH1F("hpTwiseNorm", "hpTwiseNorm", Nptbins, ptbins);
+    TH1F *hpTwise_yield_int = new TH1F("hpTwise_yield_int", "hpTwise_yield_int", Nptbins, ptbins);
+    TH1F *hpTwise_yield_bin = new TH1F("hpTwise_yield_bin", "hpTwise_yield_bin", Nptbins, ptbins);
     for (int ipt = 0; ipt < Nptbins; ipt++)
     {
         c2->cd(ipt + 1);
@@ -215,8 +216,8 @@ void gaussian_fit_Ks2()
         hpTwiseMass->SetBinError(ipt + 1, fitpt3->GetParError(1));
         hpTwiseWidth->SetBinContent(ipt + 1, abs(fitpt3->GetParameter(2)));
         hpTwiseWidth->SetBinError(ipt + 1, fitpt3->GetParError(2));
-        hpTwiseNorm->SetBinContent(ipt + 1, fitpt3->GetParameter(0));
-        hpTwiseNorm->SetBinError(ipt + 1, fitpt3->GetParError(0));
+        // hpTwise_yield_int->SetBinContent(ipt + 1, fitpt3->GetParameter(0));
+        // hpTwise_yield_int->SetBinError(ipt + 1, fitpt3->GetParError(0));
 
         TLatex lat;
         lat.SetNDC();
@@ -243,12 +244,8 @@ void gaussian_fit_Ks2()
             }
         }
 
-        // finding the histogram bin for the mass plus and minus its two times the width (the width is not known, so we will take the value of 4 MeV for now)
+        // finding the histogram bin for the mass plus and minus its two times the width (the width is not known, so we will take the value of 10 MeV = 0.01 GeV for now)
 
-        auto bin_min = hInvMassPt[ipt]->FindBin(ksmass - 2 * fitpt3->GetParameter(2));
-        auto bin_max = hInvMassPt[ipt]->FindBin(ksmass + 2 * fitpt3->GetParameter(2));
-        double bc_error;
-        double Yield_bincount_hist = hInvMassPt[ipt]->IntegralAndError(bin_min, bin_max, bc_error);
         TF1 *double_CB_fit = new TF1("double_CB_fit", DoubleCrystalBall, fitpt3->GetXmin(), fitpt3->GetXmax(), 7);
         TF1 *pol2_fit = new TF1("pol2_fit", polynomial2, fitpt3->GetXmin(), fitpt3->GetXmax(), 3);
         for (int ipar = 0; ipar < 10; ipar++)
@@ -262,23 +259,37 @@ void gaussian_fit_Ks2()
                 pol2_fit->FixParameter(ipar - 7, fitpt3->GetParameter(ipar));
             }
         }
+        double total_yield = double_CB_fit->Integral(ksmass - 3 * 0.01, ksmass + 3 * 0.01) / binwidth;
+        cout << "Yield from functional integration: " << total_yield << endl;
+        hpTwise_yield_int->SetBinContent(ipt + 1, total_yield);
+        hpTwise_yield_int->SetBinError(ipt + 1, 0);
+
+        auto bin_min = hInvMassPt[ipt]->FindBin(ksmass - 3 * 0.01);
+        auto bin_max = hInvMassPt[ipt]->FindBin(ksmass + 3 * 0.01);
+        auto ptbinwidth = ptbins[ipt + 1] - ptbins[ipt];
+        double bc_error;
+        double Yield_bincount_hist = hInvMassPt[ipt]->IntegralAndError(bin_min, bin_max, bc_error);
 
         double bkgvalue = pol2_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
         double Integral_BW_withsigma = double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
 
         auto fYield_BinCount = Yield_bincount_hist - (bkgvalue / binwidth);
-        auto YieldIntegral_BW = double_CB_fit->Integral(1.05, 3) / binwidth;
+        auto YieldIntegral_BW = double_CB_fit->Integral(0.2, 0.8) / binwidth;
         auto Yfraction_cBW = (Integral_BW_withsigma / YieldIntegral_BW);
 
-        auto sum_tail_correction = (double_CB_fit->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3)) / binwidth;
-        auto Total_Ybincounting = (sum_tail_correction + fYield_BinCount);
-        cout<<"Total_Ybincounting: "<<Total_Ybincounting<<endl;
+        auto sum_tail_correction = (double_CB_fit->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8)) / binwidth;
+        auto Total_Ybincounting = (sum_tail_correction + fYield_BinCount)/ptbinwidth;
+        cout << "Total_Ybincounting: " << Total_Ybincounting << endl;
+        // cout<<"Error in function integration yield: "<<double_CB_fit->IntegralError(ksmass - 3 * 0.01, ksmass + 3 * 0.01) / binwidth<<endl;
 
-        auto Tail_correction_plusm = (fitFcn2_plusm->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_plusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3))) / binwidth;
-        auto Tail_correction_minusm = (fitFcn2_minusm->Integral(1.05, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_minusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 3))) / binwidth;
+        auto Tail_correction_plusm = (fitFcn2_plusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_plusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
+        auto Tail_correction_minusm = (fitFcn2_minusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_minusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
         auto Error_2 = (Tail_correction_plusm - Tail_correction_minusm) / 2;
-        auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2));
-        cout<<"Final_pro_error: "<<Final_pro_error<<endl;
+        auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2)) / ptbinwidth;
+        cout << "Final_pro_error: " << Final_pro_error << endl;
+
+        hpTwise_yield_bin->SetBinContent(ipt + 1, Total_Ybincounting);
+        hpTwise_yield_bin->SetBinError(ipt + 1, 0);
     }
     if (saveplots)
     {
@@ -332,19 +343,24 @@ void gaussian_fit_Ks2()
     c4->Clear();
     gPad->SetLogy();
     SetCanvasStyle(c4, 0.13, 0.05, 0.05, 0.13);
-    SetHistoQA(hpTwiseNorm);
-    hpTwiseNorm->SetMarkerSize(1);
-    hpTwiseNorm->GetYaxis()->SetTitle("Fit Normalization");
-    hpTwiseNorm->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hpTwiseNorm->GetYaxis()->SetMaxDigits(3);
-    hpTwiseNorm->GetYaxis()->SetTitleOffset(1.3);
-    hpTwiseNorm->SetStats(0);
-    hpTwiseNorm->GetYaxis()->SetRangeUser(50, 1.0e8);
-    hpTwiseNorm->Draw("pe");
+    SetHistoQA(hpTwise_yield_int);
+    SetHistoQA(hpTwise_yield_bin);
+    hpTwise_yield_int->SetMarkerSize(1);
+    hpTwise_yield_bin->SetMarkerSize(1);
+    hpTwise_yield_int->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    hpTwise_yield_int->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hpTwise_yield_int->GetYaxis()->SetMaxDigits(3);
+    hpTwise_yield_int->GetYaxis()->SetTitleOffset(1.3);
+    hpTwise_yield_int->SetStats(0);
+    hpTwise_yield_int->GetYaxis()->SetRangeUser(50, 1.0e8);
+    hpTwise_yield_int->Draw("pe");
+    hpTwise_yield_bin->SetMarkerColor(kRed);
+    hpTwise_yield_bin->Draw("pe same");
     if (saveplots)
     {
-        c4->SaveAs("saved/gaussian_fit_Ks_differential_ptbins_norm.png");
+        c4->SaveAs("saved/gaussian_fit_Ks_differential_ptbins_yield.png");
     }
+
 }
 
 void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth)

@@ -26,6 +26,7 @@
         "SIGNIFICANCE_3rBW_1to10_set1_fixed_width_default.C": "cpp",
         "SIGNIFICANCE_3rBW_1to10_set1_fixed_width_expol.C": "cpp",
         "SIGNIFICANCE_3rBW_1to10_set1_new.C": "cpp",
-        "meanpT_dNdy_BW.C": "cpp"
+        "meanpT_dNdy_BW.C": "cpp",
+        "functional": "cpp"
     }
 }

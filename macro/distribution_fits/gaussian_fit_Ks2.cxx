@@ -18,13 +18,13 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 void gaussian_fit_Ks2()
 {
     // configurables *********************
-    bool saveplots = false;
+    bool saveplots = true;
     bool showpt_study = true;
     gStyle->SetOptStat(1110);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     gStyle->SetOptFit(1111);
 
-    int rebin = 3;
+    int rebin = 1;
     // configurables *********************
 
     double ksmass = pdg->GetParticle(310)->Mass();
@@ -159,6 +159,7 @@ void gaussian_fit_Ks2()
     lp1->SetTextSize(0.03);
     lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1), fit3->GetParError(1)), "");
     lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2), fit3->GetParError(2)), "");
+    // lp1->Draw("same");
 
     // lets calculate the fit to the data ratio
     c1->cd(2);
@@ -186,7 +187,7 @@ void gaussian_fit_Ks2()
 
     if (saveplots)
     {
-        c1->SaveAs("gaussian_fit_Ks_fullpt.png");
+        c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.png", rebin));
     }
 
     if (showpt_study)
@@ -225,44 +226,88 @@ void gaussian_fit_Ks2()
             }
             else if (ipt >= 2)
             {
-                if (ipt != 8 && ipt != 9)
+                if (rebin == 3)
                 {
-                    if (ipt != 13)
+                    if (ipt != 8 && ipt != 9)
                     {
-                        fitpt1 = CB(hInvMassPt[ipt], ksmass, kswidth);
-                        double parameters1[5];
-                        for (int i = 0; i < 5; i++)
+                        if (ipt != 13)
                         {
-                            parameters1[i] = fitpt1->GetParameter(i);
+                            fitpt1 = CB(hInvMassPt[ipt], ksmass, kswidth);
+                            double parameters1[5];
+                            for (int i = 0; i < 5; i++)
+                            {
+                                parameters1[i] = fitpt1->GetParameter(i);
+                            }
+                            fitpt2 = doubleCB(hInvMassPt[ipt], parameters1, false);
+                            double parameters3[7];
+                            for (int i = 0; i < 7; i++)
+                            {
+                                parameters3[i] = fitpt2->GetParameter(i);
+                            }
+                            cout << "\n now fitting with doubleCBpol2 with pT bin: " << ipt << "\n\n";
+                            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3, false);
+                            fitpt3->Draw("SAME");
                         }
-                        fitpt2 = doubleCB(hInvMassPt[ipt], parameters1, false);
-                        double parameters3[7];
-                        for (int i = 0; i < 7; i++)
+                        else
                         {
-                            parameters3[i] = fitpt2->GetParameter(i);
+                            fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt - 1], false);
+                            fitpt3->Draw("SAME");
                         }
-                        cout << "\n now fitting with doubleCBpol2 with pT bin: " << ipt << "\n\n";
-                        fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3, false);
-                        fitpt3->Draw("SAME");
                     }
+
                     else
                     {
-                        fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt -1], false);
+                        fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
+                        fitpt3->Draw("SAME");
+                    }
+
+                    if (ipt == 2 || ipt == 3)
+                    {
+                        fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[1], false);
                         fitpt3->Draw("SAME");
                     }
                 }
                 else
                 {
-                    fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
-                    fitpt3->Draw("SAME");
+                    if (ipt != 9)
+                    {
+                        if (ipt != 13)
+                        {
+                            fitpt1 = CB(hInvMassPt[ipt], ksmass, kswidth);
+                            double parameters1[5];
+                            for (int i = 0; i < 5; i++)
+                            {
+                                parameters1[i] = fitpt1->GetParameter(i);
+                            }
+                            fitpt2 = doubleCB(hInvMassPt[ipt], parameters1, false);
+                            double parameters3[7];
+                            for (int i = 0; i < 7; i++)
+                            {
+                                parameters3[i] = fitpt2->GetParameter(i);
+                            }
+                            cout << "\n now fitting with doubleCBpol2 with pT bin: " << ipt << "\n\n";
+                            fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3, false);
+                            fitpt3->Draw("SAME");
+                        }
+                        else
+                        {
+                            fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt - 1], false);
+                            fitpt3->Draw("SAME");
+                        }
+                    }
+
+                    else
+                    {
+                        fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
+                        fitpt3->Draw("SAME");
+                    }
                 }
                 // double parameters3[7] = {fit3->GetParameter(0), fit3->GetParameter(1), fit3->GetParameter(2), fit3->GetParameter(3)+2.0, fit3->GetParameter(4), fit3->GetParameter(5), fit3->GetParameter(6)};
                 // fitpt3 = doubleCBpol2(hInvMassPt[ipt], parameters3);
             }
-            if(ipt == 2 || ipt == 3){
-                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt -1], false);
-                fitpt3->Draw("SAME");
-            }
+            // if (rebin == 3)
+            // {
+            // }
 
             for (int iparam = 0; iparam < 10; iparam++)
             {
@@ -286,12 +331,12 @@ void gaussian_fit_Ks2()
             // hpTwise_yield_int->SetBinContent(ipt + 1, fitpt3->GetParameter(0));
             // hpTwise_yield_int->SetBinError(ipt + 1, fitpt3->GetParError(0));
 
-            TLatex lat;
-            lat.SetNDC();
-            lat.SetTextFont(42);
-            lat.SetTextSize(0.04);
-            lat.DrawLatex(0.57, 0.75, Form("Mean = %.3f #pm %.3f", fitpt3->GetParameter(1), fitpt3->GetParError(1)));
-            lat.DrawLatex(0.57, 0.7, Form("Sigma = %.3f #pm %.3f", abs(fitpt3->GetParameter(2)), fitpt3->GetParError(2)));
+            // TLatex lat;
+            // lat.SetNDC();
+            // lat.SetTextFont(42);
+            // lat.SetTextSize(0.04);
+            // lat.DrawLatex(0.57, 0.75, Form("Mean = %.3f #pm %.3f", fitpt3->GetParameter(1), fitpt3->GetParError(1)));
+            // lat.DrawLatex(0.57, 0.7, Form("Sigma = %.3f #pm %.3f", abs(fitpt3->GetParameter(2)), fitpt3->GetParError(2)));
 
             // Yield from bin counting method calculation
             TF1 *fitFcn2_plusm = new TF1("fitFcn2_plusm", DoubleCrystalBallpol2, fitpt3->GetXmin(), fitpt3->GetXmax(), 7);
@@ -361,7 +406,7 @@ void gaussian_fit_Ks2()
         }
         if (saveplots)
         {
-            c2->SaveAs("gaussian_fit_Ks_differential_ptbins.pdf");
+            c2->SaveAs(Form("saved/gaussfit_Ks_all_ptbins_rebin%d.pdf", rebin));
         }
 
         TCanvas *c3 = new TCanvas("c3", "c3", 720, 720);
@@ -389,7 +434,7 @@ void gaussian_fit_Ks2()
         lp4->Draw("same");
         if (saveplots)
         {
-            c3->SaveAs("saved/gaussian_fit_Ks_differential_ptbins_mean.png");
+            c3->SaveAs(Form("saved/gaussfit_Ks_mean_rebin%d.png", rebin));
         }
 
         TCanvas *c4 = new TCanvas("c4", "c4", 720, 720);
@@ -405,7 +450,7 @@ void gaussian_fit_Ks2()
         hpTwiseWidth->Draw("pe");
         if (saveplots)
         {
-            c4->SaveAs("saved/gaussian_fit_Ks_differential_ptbins_width.png");
+            c4->SaveAs(Form("saved/gaussfit_Ks_width_rebin%d.png", rebin));
         }
 
         TCanvas *c5 = new TCanvas("", "", 720, 720);
@@ -453,7 +498,7 @@ void gaussian_fit_Ks2()
 
         if (saveplots)
         {
-            c5->SaveAs("saved/gaussian_fit_Ks_differential_ptbins_yield.png");
+            c5->SaveAs(Form("saved/gaussfit_Ks_yield_rebin%d.png", rebin));
         }
     }
 }

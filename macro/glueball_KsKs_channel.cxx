@@ -44,8 +44,8 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;

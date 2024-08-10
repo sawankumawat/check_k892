@@ -24,7 +24,7 @@ void gaussian_fit_Ks2()
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     gStyle->SetOptFit(1111);
 
-    int rebin = 1;
+    int rebin = 2;
     // configurables *********************
 
     double ksmass = pdg->GetParticle(310)->Mass();
@@ -185,10 +185,12 @@ void gaussian_fit_Ks2()
     hInvMassRatio->SetStats(0);
     hInvMassRatio->Draw("pe");
 
+    TFile *foutput = new TFile(Form("saved/output_rebin%d.root", rebin), "recreate");
     if (saveplots)
     {
         c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.png", rebin));
     }
+    c1->Write("ks_fit");
 
     if (showpt_study)
     {
@@ -374,14 +376,20 @@ void gaussian_fit_Ks2()
             auto ptbinwidth = ptbins[ipt + 1] - ptbins[ipt];
 
             double total_yield = double_CB_fit->Integral(0.2, 0.8) / (binwidth * ptbinwidth * noofevents);
+            double total_yield_error = fitpt3->IntegralError(0.2, 0.8) / (binwidth * ptbinwidth * noofevents);
             cout << "Yield from functional integration: " << total_yield << endl;
+            cout << "Error in yield from functional integration: " << total_yield_error << endl;
+            if(total_yield_error > total_yield){
+                total_yield_error = 0;
+            }
             hpTwise_yield_int->SetBinContent(ipt + 1, total_yield);
-            hpTwise_yield_int->SetBinError(ipt + 1, 0);
+            hpTwise_yield_int->SetBinError(ipt + 1, total_yield_error);
 
             auto bin_min = hInvMassPt[ipt]->FindBin(ksmass - 2 * 0.01);
             auto bin_max = hInvMassPt[ipt]->FindBin(ksmass + 2 * 0.01);
             double bc_error;
             double Yield_bincount_hist = hInvMassPt[ipt]->IntegralAndError(bin_min, bin_max, bc_error);
+            cout<<"bc_error is "<<bc_error<<endl;
 
             double bkgvalue = pol2_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
             double Integral_BW_withsigma = double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
@@ -396,17 +404,21 @@ void gaussian_fit_Ks2()
             // cout<<"Error in function integration yield: "<<double_CB_fit->IntegralError(ksmass - 3 * 0.01, ksmass + 3 * 0.01) / binwidth<<endl;
 
             auto Tail_correction_plusm = (fitFcn2_plusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_plusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
+            cout<<"Tail_correction_plusm: "<<Tail_correction_plusm<<endl;
             auto Tail_correction_minusm = (fitFcn2_minusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_minusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
+            cout<<"Tail_correction_minusm: "<<Tail_correction_minusm<<endl;
             auto Error_2 = (Tail_correction_plusm - Tail_correction_minusm) / 2;
-            auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2)) / (ptbinwidth * noofevents);
+            cout<<"Error_2: "<<Error_2<<endl;
+            // auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2)) / (ptbinwidth * noofevents);
+            auto Final_pro_error = sqrt(pow(bc_error, 2)) / (ptbinwidth * noofevents);
             cout << "Final_pro_error: " << Final_pro_error << endl;
 
             hpTwise_yield_bin->SetBinContent(ipt + 1, Total_Ybincounting);
-            hpTwise_yield_bin->SetBinError(ipt + 1, 0);
+            hpTwise_yield_bin->SetBinError(ipt + 1, Final_pro_error);
         }
         if (saveplots)
         {
-            c2->SaveAs(Form("saved/gaussfit_Ks_all_ptbins_rebin%d.pdf", rebin));
+            c2->SaveAs(Form("saved/gaussfit_Ks_all_ptbins_rebin%d.png", rebin));
         }
 
         TCanvas *c3 = new TCanvas("c3", "c3", 720, 720);
@@ -420,6 +432,7 @@ void gaussian_fit_Ks2()
         hpTwiseMass->SetStats(0);
         hpTwiseMass->GetYaxis()->SetRangeUser(0.49, 0.502);
         hpTwiseMass->Draw("pe");
+        hpTwiseMass->Write("ks_mass_fit");
         TLine *line = new TLine(0.0, ksmass, 30.0, ksmass);
         line->SetLineStyle(2);
         line->SetLineWidth(2);
@@ -448,6 +461,7 @@ void gaussian_fit_Ks2()
         hpTwiseWidth->SetStats(0);
         hpTwiseWidth->GetYaxis()->SetRangeUser(0.0, 0.015);
         hpTwiseWidth->Draw("pe");
+        hpTwiseWidth->Write("ks_width_fit");
         if (saveplots)
         {
             c4->SaveAs(Form("saved/gaussfit_Ks_width_rebin%d.png", rebin));
@@ -474,6 +488,8 @@ void gaussian_fit_Ks2()
         hpTwise_yield_bin->SetMarkerColor(kRed);
         hpTwise_yield_bin->SetLineColor(kRed);
         hpTwise_yield_bin->Draw("pe same");
+        hpTwise_yield_int->Write("ks_yield_int");
+        hpTwise_yield_bin->Write("ks_yield_bin");
         TLegend *lp5 = DrawLegend(0.4, 0.75, 0.7, 0.85);
         lp5->SetFillStyle(0);
         lp5->SetTextFont(42);

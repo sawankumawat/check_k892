@@ -31,7 +31,7 @@ void SetgrStyle(TGraph *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
 void SetHistoQA(TH1 *h)
 {
     h->SetMarkerStyle(8);
-    h->SetMarkerSize(0.5);
+    h->SetMarkerSize(1);
     h->SetMarkerColor(1);
     h->SetLineColor(1);
     h->SetLineWidth(2);

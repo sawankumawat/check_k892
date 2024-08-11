@@ -2,6 +2,8 @@
 #include "../src/style.h"
 using namespace std;
 
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
+
 void compare_rebins()
 {
     TFile *frebin1 = new TFile("saved/output_rebin1.root", "READ");
@@ -15,7 +17,7 @@ void compare_rebins()
     }
 
     string histnames[] = {"ks_mass_fit", "ks_width_fit", "ks_yield_int", "ks_yield_bin"};
-    TH1F *hrebin1[4], *hrebin2[4], *hrebin3[4];
+    TH1F *hrebin1[4], *hrebin2[4], *hrebin3[4], *hratio_rebin1[4], *hratio_rebin2[4], *hratio_rebin3[4];
 
     for (int ih = 0; ih < 4; ih++)
     {
@@ -39,6 +41,13 @@ void compare_rebins()
         hrebin3[ih]->SetLineColor(4);
         hrebin3[ih]->SetMarkerColor(4);
         hrebin3[ih]->SetMarkerStyle(22);
+
+        hratio_rebin1[ih] = (TH1F *)hrebin1[0]->Clone();
+        hratio_rebin2[ih] = (TH1F *)hrebin2[0]->Clone();
+        hratio_rebin3[ih] = (TH1F *)hrebin3[0]->Clone();
+        hratio_rebin1[ih]->Divide(hrebin1[ih]);
+        hratio_rebin2[ih]->Divide(hrebin2[ih]);
+        hratio_rebin3[ih]->Divide(hrebin3[ih]);
     }
 
     TCanvas *cmass = new TCanvas("", "", 720, 720);
@@ -86,4 +95,25 @@ void compare_rebins()
     leg2->AddEntry(hrebin3[2], "Rebin 3", "ple");
     leg2->Draw();
     cyield->SaveAs("saved/yield_rebins_comp.png");
+}
+
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
+{
+    SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
+    c->Divide(1, 2, 0, 0);
+    TPad *pad1 = (TPad *)c->GetPad(1);
+    TPad *pad2 = (TPad *)c->GetPad(2);
+    pad2Size = 0.3; // Size of the first pad
+    pad1Size = 1 - pad2Size;
+
+    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2
+    pad2->SetPad(0, 0, 1, 0.3);
+    pad1->SetRightMargin(0.02);
+    pad2->SetRightMargin(0.02);
+    pad2->SetBottomMargin(0.33);
+    pad1->SetLeftMargin(0.14);
+    pad2->SetLeftMargin(0.14);
+    pad1->SetTopMargin(0.08);
+    pad1->SetBottomMargin(0.0001);
+    pad2->SetTopMargin(0.001);
 }

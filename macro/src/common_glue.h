@@ -9,8 +9,8 @@ const string koutputtype = "png"; // pdf, eps
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
-const string kvariation = ""; // change the variation here
-// const string kvariation = "_full_ks_distribution"; // change the variation here
+// const string kvariation = ""; // change the variation here
+const string kvariation = "_full_ks_distribution"; // change the variation here
 // const string kvariation = "_old_cuts"; // change the variation here
 #endif
 ////********************************************************************************************
@@ -26,8 +26,8 @@ TLatex *t2 = new TLatex();
 ////******some fixed variables******************************************************
 
 // define datasets here
-// #define DATASET_LHC220_pass6_small
-#define DATASET_LHC22o_pass7_small
+#define DATASET_LHC220_pass6_small
+// #define DATASET_LHC22o_pass7_small
 // #define DATASET_LHC220_pass4_small
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file

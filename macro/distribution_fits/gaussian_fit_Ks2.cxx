@@ -24,7 +24,7 @@ void gaussian_fit_Ks2()
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     gStyle->SetOptFit(1111);
 
-    int rebin = 2;
+    int rebin = 1;
     // configurables *********************
 
     double ksmass = pdg->GetParticle(310)->Mass();
@@ -67,7 +67,7 @@ void gaussian_fit_Ks2()
     hInvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
     hInvMass->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hInvMass->GetYaxis()->SetTitleOffset(1.2);
-    hInvMass->SetMinimum(0.01);
+    hInvMass->SetMinimum(-100);
     hInvMass->Draw("pe");
     auto noofevents = hInvMass->Integral();
 

@@ -28,6 +28,7 @@
         "SIGNIFICANCE_3rBW_1to10_set1_new.C": "cpp",
         "meanpT_dNdy_BW.C": "cpp",
         "functional": "cpp",
-        "multiplicity_spectra.C": "cpp"
+        "multiplicity_spectra.C": "cpp",
+        "random": "cpp"
     }
 }

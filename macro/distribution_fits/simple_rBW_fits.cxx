@@ -62,10 +62,10 @@ void simple_rBW_fits()
             float binwidth = hinvMass->GetBinWidth(1);
             hinvMass->GetYaxis()->SetTitle(Form("Counts / %.2f MeV/c^{2}", binwidth));
 
-            // TCanvas *c1 = new TCanvas("", "", 720, 720);
-            // SetCanvasStyle(c1, 0.12, 0.03, 0.05, 0.14);
-            // cmevar->Close();
-            cmevar->cd(ime + 1);
+            TCanvas *c1 = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(c1, 0.12, 0.03, 0.05, 0.14);
+            cmevar->Close();
+            // cmevar->cd(ime + 1);
             hinvMass->GetYaxis()->SetTitleOffset(1.1);
             hinvMass->GetXaxis()->SetTitleOffset(1.3);
             hinvMass->GetXaxis()->SetRangeUser(1.0, 2.4);
@@ -158,7 +158,7 @@ void simple_rBW_fits()
             lfit->SetFillStyle(0);
             lfit->SetTextFont(42);
             lfit->SetTextSize(0.025);
-            lfit->AddEntry((TObject *)0, Form("Norm range: %.2f - %.2f GeV/c^{2}", me_var_low[ime], me_var_low[ime]), "");
+            lfit->AddEntry((TObject *)0, Form("Norm range: %.2f - %.2f GeV/c^{2}", me_var_low[ime], me_var_high[ime]), "");
             lfit->AddEntry(hinvMass, "Data", "lpe");
             lfit->AddEntry(f3pol3, "3rBW + pol3", "l");
             double *parameters2 = f3pol3->GetParameters();
@@ -166,10 +166,10 @@ void simple_rBW_fits()
             lfit->Draw("same");
             t2->SetNDC();
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
-            // if (saveplots)
-            // {
-            //     c1->SaveAs((fits_folder_str + "_" + kResBkg + Form("_%.1f_%.1f_me_range_compare_%.2f_%.2f_.png", pT_bins[ip], pT_bins[ip + 1], me_var_low[ime], me_var_high[ime])).c_str());
-            // }
+            if (saveplots)
+            {
+                c1->SaveAs((fits_folder_str + "_" + kResBkg + Form("_%.1f_%.1f_me_range_compare_%.2f_%.2f_.png", pT_bins[ip], pT_bins[ip + 1], me_var_low[ime], me_var_high[ime])).c_str());
+            }
 
             // ************* subtracting residual background *************
             TCanvas *c2 = new TCanvas("", "", 2432, 85, 720, 720);

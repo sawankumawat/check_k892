@@ -44,8 +44,8 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -214,6 +214,7 @@ void glueball_KsKs_channel()
             SetHistoQA(hfsig);
             hfsig->SetTitle(0);
             hfsig->SetMarkerStyle(8);
+            hfsig->SetMarkerSize(0.5);
             hfsig->GetYaxis()->SetMaxDigits(3);
             hfsig->GetYaxis()->SetTitleOffset(1.4);
             hfsig->SetMarkerColor(kBlack);
@@ -262,7 +263,9 @@ void glueball_KsKs_channel()
 
             fHistTotal[ip]->SetMarkerStyle(8);
             fHistTotal[ip]->SetMarkerColor(kBlack);
+            fHistTotal[ip]->SetMarkerSize(0.5);
             hfbkg->SetMarkerStyle(8);
+            hfbkg->SetMarkerSize(0.5);
             hfbkg->SetMarkerColor(kRed);
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);

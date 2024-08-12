@@ -17,8 +17,8 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
@@ -26,7 +26,7 @@ void rBW_fits()
 
     const int rebin = 1;
     bool testing = false;
-    bool saveplots = false;
+    bool saveplots = true;
     // double f1710Mass = pdg->GetParticle(10331)->Mass();
     // double f1710Width = pdg->GetParticle(10331)->Width();
     gStyle->SetOptStat(1110);
@@ -133,11 +133,12 @@ void rBW_fits()
 
                 // Define the fit parameters for each pT bin
                 std::vector<FitParams> bwfit_params_me = {
-                    // {1.1, 2.15, -1, 0.08}, // for testing purpose for single pT bin
+                    {1.1, 2.15, -1, 0.08}, // for testing purpose for single 
+                    // {1.1, 2.15, -1, 0.08}, // for full pT range
                     {1.09, 2.18, 3, 0.09}, // pT 1 to 2
                     {1.11, 2.16, 0, 0.09}, // pT 2 to 3
                     {1.12, 1.95, 0, 0.09}, // pT 3 to 4
-                    {1.1, 2.15, -1, 0.08}, // full pT range and pT 4 to 6
+                    {1.1, 2.15, -1, 0.08}, // pT 4 to 6
                     {1.1, 2.15, -1, 0.08}  // pT 6 to 12
                 };
 

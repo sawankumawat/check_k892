@@ -216,7 +216,7 @@ void glueball_KsKs_channel()
             hfsig->SetMarkerStyle(8);
             hfsig->SetMarkerSize(0.5);
             hfsig->GetYaxis()->SetMaxDigits(3);
-            hfsig->GetYaxis()->SetTitleOffset(1.4);
+            hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
             hfsig->SetLineColor(kBlack);
             hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
@@ -269,7 +269,7 @@ void glueball_KsKs_channel()
             hfbkg->SetMarkerColor(kRed);
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
-            fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
+            fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
             fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             fHistTotal[ip]->Draw("E");
             if (save_invmass_distributions)

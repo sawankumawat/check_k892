@@ -26,8 +26,8 @@ TLatex *t2 = new TLatex();
 ////******some fixed variables******************************************************
 
 // define datasets here
-#define DATASET_LHC220_pass6_small
-// #define DATASET_LHC22o_pass7_small
+// #define DATASET_LHC220_pass6_small
+#define DATASET_LHC22o_pass7_small
 // #define DATASET_LHC220_pass4_small
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
@@ -50,8 +50,9 @@ const string kMCDataset = "../mc/LHC24b1b/";
 // const string kDataFilename_temp2 = "215554.root"; // data file
 // const string kDataFilename_temp2 = "221157.root"; // data file (with rotational background)
 // const string kDataFilename_temp2 = "222487.root"; // data file (with larger pT range upto 30 GeV/c)
-const string kDataFilename_temp2 = "230281.root"; // data file (with larger pT range upto 30 GeV/c)
-// const string kDataFilename_temp2 = "245896.root"; // data file (with mulitiplicity distribution, dE/dx tpc plots)
+const string kDataFilename_temp2 = "230281.root"; // Medium data file (with larger pT range upto 30 GeV/c)
+// const string kDataFilename_temp2 = "245896.root"; // Medium data file (Included  mulitiplicity distribution, dE/dx tpc plots)
+// const string kDataFilename_temp2 = "248997.root"; // Small data file (Increased mult dist x axis range upto 70k, corrected the different entries in the pi- and pi+ daughters)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 
@@ -59,7 +60,8 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "240457.root"; // data file (small)
 // const string kDataFilename_temp2 = "240361.root"; // data file (medium)
 // const string kDataFilename_temp2 = "244178.root"; // data file (medium)
-const string kDataFilename_temp2 = "247473.root"; // data file medium (fixed the tpc energy loss and multiplicity distribution)
+const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
+// const string kDataFilename_temp2 = "248760.root"; // Small data file medium (fixed different entries in the pi- and pi+ daughters, multiplicity distribution, number of Ks produced per event)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

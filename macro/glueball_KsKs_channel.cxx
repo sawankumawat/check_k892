@@ -12,43 +12,18 @@
 
 using namespace std;
 
-void printDirectoryContents(TDirectory *dir, int indent = 0)
-{
-    // Get a list of all keys in the directory
-    TIter next(dir->GetListOfKeys());
-    TKey *key;
-
-    // Iterate over all keys
-    while ((key = (TKey *)next()))
-    {
-        // Print the name and class of the object
-        for (int i = 0; i < indent; i++)
-        {
-            std::cout << "  ";
-        }
-        std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
-
-        // If the object is a directory, recursively print its contents
-        TClass *cl = gROOT->GetClass(key->GetClassName());
-        if (cl->InheritsFrom(TDirectory::Class()))
-        {
-            TDirectory *subdir = (TDirectory *)key->ReadObj();
-            printDirectoryContents(subdir, indent + 1);
-        }
-    }
-}
-
+// void printDirectoryContents(TDirectory *dir, int indent = 0);
 float parameter0(float mass, float width);
 
 void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
-    const bool calculate_inv_mass = true;
-    const bool save_invmass_distributions = true;
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
+    const bool makeQAplots = true;
+    const bool calculate_inv_mass = false;
+    const bool save_invmass_distributions = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -56,15 +31,13 @@ void glueball_KsKs_channel()
     const string outputfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername;
     const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA";
     // Create the folder using TSystem::mkdir()
-    if (gSystem->mkdir(outputfolder, kTRUE) || gSystem->mkdir(outputQAfolder, kTRUE))
+    if (gSystem->mkdir(outputfolder, kTRUE))
     {
         std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
-        std::cout << "Folder " << outputQAfolder << " created successfully." << std::endl;
     }
-    else
+    if (gSystem->mkdir(outputQAfolder, kTRUE))
     {
-        std::cout << "Creating folder " << outputfolder << std::endl;
-        std::cout << "Creating folder " << outputQAfolder << std::endl;
+        std::cout << "Folder " << outputQAfolder << " created successfully." << std::endl;
     }
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
@@ -84,15 +57,15 @@ void glueball_KsKs_channel()
     }
 
     // showing all folders in the root file using keys
-    // TIter next(fInputFile->GetListOfKeys());
-    // TKey *key;
-    // cout << "The folders in the root file are: \n";
-    // while ((key = (TKey *)next()))
-    // {
-    //     cout << key->GetName() << endl;
-    // }
+    TIter next(fInputFile->GetListOfKeys());
+    TKey *key;
+    cout << "The folders in the root file are: \n";
+    while ((key = (TKey *)next()))
+    {
+        cout << key->GetName() << endl;
+    }
     // showing all the folders in the root file as well as their contents
-    printDirectoryContents(fInputFile);
+    // printDirectoryContents(fInputFile);
 
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
@@ -131,6 +104,8 @@ void glueball_KsKs_channel()
 
     if (calculate_inv_mass)
     {
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "RECREATE");
+
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
 
@@ -208,7 +183,6 @@ void glueball_KsKs_channel()
             fHistTotal[ip]->Rebin(kRebin[ip]);
 
             //*****************************************************************************************************
-            TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "RECREATE");
             TCanvas *c1 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
             SetHistoQA(hfsig);
@@ -224,7 +198,7 @@ void glueball_KsKs_channel()
             hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
             hfsig->Draw("e");
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-            hfsig->Write("ksks_invmass");
+            hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
             // gPad->Update();
             // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
             // if (ps)
@@ -296,6 +270,7 @@ void glueball_KsKs_channel()
             {
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
             }
+            c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
         } // pt bin loop end here
     }
     ////////////////////////////////////////////////////////////////////////
@@ -827,3 +802,29 @@ float parameter0(float mass, float width)
     double norm = 2.8284 * mass * width * gamma / (3.14 * TMath::Sqrt(mass * mass + gamma));
     return norm;
 }
+
+// void printDirectoryContents(TDirectory *dir, int indent = 0)
+// {
+//     // Get a list of all keys in the directory
+//     TIter next(dir->GetListOfKeys());
+//     TKey *key;
+
+//     // Iterate over all keys
+//     while ((key = (TKey *)next()))
+//     {
+//         // Print the name and class of the object
+//         for (int i = 0; i < indent; i++)
+//         {
+//             std::cout << "  ";
+//         }
+//         std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
+
+//         // If the object is a directory, recursively print its contents
+//         TClass *cl = gROOT->GetClass(key->GetClassName());
+//         if (cl->InheritsFrom(TDirectory::Class()))
+//         {
+//             TDirectory *subdir = (TDirectory *)key->ReadObj();
+//             printDirectoryContents(subdir, indent + 1);
+//         }
+//     }
+// }

@@ -19,10 +19,10 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
     const bool makeQAplots = true;
-    const bool calculate_inv_mass = false;
+    const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = false;
     // change here ***********************************************************
 
@@ -758,22 +758,22 @@ void glueball_KsKs_channel()
         hRapidity->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_rapidity." + koutputtype).c_str());
 
-        // TPC dE/dx plot
-        gPad->SetLogx();
-        TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
-        if (hTPCenergyloss == nullptr)
-        {
-            cout << "TPC energy loss plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        SetHistoQA(hTPCenergyloss);
-        hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
-        hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
-        hTPCenergyloss->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
+        // // TPC dE/dx plot
+        // gPad->SetLogx();
+        // TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
+        // if (hTPCenergyloss == nullptr)
+        // {
+        //     cout << "TPC energy loss plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        // SetHistoQA(hTPCenergyloss);
+        // hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
+        // hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        // hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
+        // hTPCenergyloss->Draw("colz");
+        // c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
 
         // Mass correlation between lambda and Kshort
         gPad->SetLogx(0);

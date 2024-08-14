@@ -212,7 +212,7 @@ Double_t CrystalBallpol2(double *x, double *par)
 Double_t DoubleCrystalBallpol1(double *x, double *par)
 {
     double DCB = DoubleCrystalBall(x, &par[0]);
-    double pol1 = par[6] + par[5] * x[0];
+    double pol1 = par[8] + par[7] * x[0];
     return (DCB + pol1);
 }
 
@@ -221,6 +221,13 @@ Double_t DoubleCrystalBallpol2(double *x, double *par)
     double DCB = DoubleCrystalBall(x, &par[0]);
     double pol2 = par[9] + par[8] * x[0] + par[7] * x[0] * x[0];
     return (DCB + pol2);
+}
+
+Double_t DoubleCrystalBallpol3(double *x, double *par)
+{
+    double DCB = DoubleCrystalBall(x, &par[0]);
+    double pol3 = par[10] + par[9] * x[0] + par[8] * x[0] * x[0] + par[7] * x[0] * x[0] * x[0];
+    return (DCB + pol3);
 }
 
 Double_t Boltzman(double *x, double *par)

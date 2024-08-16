@@ -41,7 +41,7 @@ void temp_code()
 {
     gStyle->SetOptStat(0);
     // gStyle->SetOptStat(1110);
-    TFile *f = new TFile("../data/glueball/LHC22o_pass7_small/248760.root", "READ");
+    TFile *f = new TFile("../data/glueball/LHC22o_pass7_small/250337.root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -179,22 +179,52 @@ void temp_code()
 
     // c_phi->SaveAs("distribution_fits/saved/phi_new.png");
 
-    TCanvas *cmultdist = new TCanvas("cmultdist", "cmultdist", 720, 720);
-    gPad->SetLogy();
-    string path_mult = "strangeness_tutorial/eventSelection/multdist_FT0M";
-    TH1F *h_mult = (TH1F *)f->Get(path_mult.c_str());
-    if (h_mult == nullptr)
+    // TCanvas *cmultdist = new TCanvas("cmultdist", "cmultdist", 720, 720);
+    // gPad->SetLogy();
+    // string path_mult = "strangeness_tutorial/eventSelection/multdist_FT0M";
+    // TH1F *h_mult = (TH1F *)f->Get(path_mult.c_str());
+    // if (h_mult == nullptr)
+    // {
+    //     cout << "Error reading histogram" << endl;
+    //     return;
+    // }
+    // SetCanvasStyle(cmultdist, 0.15, 0.03, 0.03, 0.14);
+    // SetHistoQA(h_mult);
+    // h_mult->GetXaxis()->SetTitle("Multiplicity");
+    // h_mult->GetYaxis()->SetTitle("Counts");
+    // h_mult->Draw("hist");
+
+    // TF1 *nbd = new TF1("nbd", "([0]*TMath::Gamma(x[0]+[1])/(TMath::Gamma(x[0]+1)*TMath::Gamma([1])))*TMath::Power([2], [1])*TMath::Power(1-[2], x[0])", 0, 60000);
+    // nbd->SetParameters(1e5, 1, 0.5); // Initial values: par0 (normalization), par1 (no of success), par2 (success probability)
+    // h_mult->Fit("nbd", "RS");
+
+    // Correlation plots
+    TCanvas *c_correlation = new TCanvas("c_correlation", "c_correlation", 720, 720);
+    string path_corr_before = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_before";
+    string path_corr_after = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_after";
+    TH2F *h_corr_before = (TH2F *)f->Get(path_corr_before.c_str());
+    TH2F *h_corr_after = (TH2F *)f->Get(path_corr_after.c_str());
+    if (h_corr_before == nullptr || h_corr_after == nullptr)
     {
         cout << "Error reading histogram" << endl;
         return;
     }
-    SetCanvasStyle(cmultdist, 0.15, 0.03, 0.03, 0.14);
-    SetHistoQA(h_mult);
-    h_mult->GetXaxis()->SetTitle("Multiplicity");
-    h_mult->GetYaxis()->SetTitle("Counts");
-    h_mult->Draw("hist");
 
-    TF1 *nbd = new TF1("nbd", "([0]*TMath::Gamma(x[0]+[1])/(TMath::Gamma(x[0]+1)*TMath::Gamma([1])))*TMath::Power([2], [1])*TMath::Power(1-[2], x[0])", 0, 60000);
-    nbd->SetParameters(1e5, 1, 0.5); // Initial values: par0 (normalization), par1 (no of success), par2 (success probability)
-    h_mult->Fit("nbd", "RS");
+    SetCanvasStyle(c_correlation, 0.15, 0.12, 0.06, 0.14);
+    SetHistoQA(h_corr_before);
+    h_corr_before->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
+    h_corr_before->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
+    h_corr_before->GetYaxis()->SetRangeUser(1, 1.5);
+    h_corr_before->Draw("colz");
+    c_correlation->SaveAs("distribution_fits/saved/mass_lambda_kshort_before.png");
+
+    TCanvas *c_correlation_after = new TCanvas("c_correlation_after", "c_correlation_after", 720, 720);
+    SetCanvasStyle(c_correlation_after, 0.15, 0.12, 0.06, 0.14);
+    SetHistoQA(h_corr_after);
+    h_corr_after->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
+    h_corr_after->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
+    h_corr_after->GetYaxis()->SetRangeUser(1, 1.5);
+    h_corr_after->Draw("colz");
+    c_correlation_after->SaveAs("distribution_fits/saved/mass_lambda_kshort_after.png");
+
 }

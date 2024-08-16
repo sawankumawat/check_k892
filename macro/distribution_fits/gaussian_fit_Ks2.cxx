@@ -13,7 +13,7 @@ TF1 *fitgauspol2(TH1 *h, double ksmass, double kswidth);
 TF1 *CBpol2(TH1 *h, double *parameters, bool mainfit);
 TF1 *CB(TH1 *h, double ksmass, double kswidth);
 TF1 *doubleCB(TH1 *h, double *parameters, bool mainfit);
-TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04);
+TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04, float rlow = 15, float rhigh = 15);
 TF1 *doubleCBpol3(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04, float rlow = 15, float rhigh = 15);
 TF1 *doubleCBpol1(TH1 *h, double *parameters, bool mainfit);
 void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth);
@@ -113,29 +113,34 @@ void gaussian_fit_Ks2()
     float rangehigh = 8;
     bool fitsuccessfully = false;
 
-    TF1 *fit3 = doubleCBpol3(hInvMass, parameters2, true, lp3, 0.04, 10.9, 5); // double crystal ball with pol2 fit
+    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04, 15, 15); // double crystal ball with pol2 fit
     // fit3->Draw("SAME");
-    while (!fitsuccessfully)
-    {
-        fit3 = doubleCBpol3(hInvMass, parameters2, true, lp3, 0.04, rangelow, rangehigh); // double crystal ball with pol2 fit
-        TString fitStatus = gMinuit->fCstatu;
-        if (fitStatus.Contains("CONVERGED"))
-        {
-            fitsuccessfully = true;
-            cout << "Fit converged successfully" << endl;
-            cout << "The value of range low and range high is: " << rangelow << " " << rangehigh << endl;
-        }
-        else
-        {
-            rangelow += 0.1;
-            if (rangelow > 20)
-            {
-                rangehigh += 0.1;
-                rangelow = 8;
-            }
-            cout << "\n\nRange low and high is " << rangelow << " " << rangehigh << "\n\n";
-        }
-    }
+    // while (!fitsuccessfully)
+    // {
+    //     fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04, rangelow, rangehigh); // double crystal ball with pol2 fit
+    //     TString fitStatus = gMinuit->fCstatu;
+    //     if (fitStatus.Contains("CONVERGED"))
+    //     {
+    //         fitsuccessfully = true;
+    //         cout << "Fit converged successfully" << endl;
+    //         cout << "The value of range low and range high is: " << rangelow << " " << rangehigh << endl;
+    //     }
+    //     else
+    //     {
+    //         rangelow += 0.1;
+    //         if (rangelow > 20)
+    //         {
+    //             rangehigh += 0.1;
+    //             rangelow = 8;
+    //         }
+    //         if (rangehigh > 20)
+    //         {
+    //             cout << "Fit failed to converge" << endl;
+    //             break;
+    //         }
+    //         cout << "\n\nRange low and high is " << rangelow << " " << rangehigh << "\n\n";
+    //     }
+    // }
     // TF1 *fit3 = doubleCBpol1(hInvMass, parameters, false); // double crystal ball with pol1 fit
     cout << "The value and error of alpha Left is: " << fit3->GetParameter(3) << " " << fit3->GetParError(3) << endl;
     cout << "The value and error of alpha right is : " << fit3->GetParameter(5) << " " << fit3->GetParError(5) << endl;
@@ -151,6 +156,23 @@ void gaussian_fit_Ks2()
          << "No. and percentage of Ks in +- 3 sigma: " << Npairs3sigma << " " << Npairs3sigma / allks << "\n"
          << "No. and percentage of Ks in +- 4 sigma: " << Npairs4sigma << " " << Npairs4sigma / allks << "\n"
          << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n";
+
+    // Purity of signal = S/(S+B)
+    // S = signal yield from functional integration fit after subtracting the background
+    // S+B = total yield from the invariant mass distribution before subtracting the background
+    // purity for 4 sigma invariant mass region
+    double sigbkg2 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 2 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 2 * kswidth));
+    double sigbkg3 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 3 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 3 * kswidth));
+    double sigbkg4 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 4 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 4 * kswidth));
+    double sigbkg5 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 5 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 5 * kswidth));
+    double purity2 = Npairs2sigma / sigbkg2;
+    double purity3 = Npairs3sigma / sigbkg3;
+    double purity4 = Npairs4sigma / sigbkg4;
+    double purity5 = Npairs5sigma / sigbkg5;
+    cout << "Purity of signal in 2 sigma: " << purity2 << "\n"
+         << "Purity of signal in 3 sigma: " << purity3 << "\n"
+         << "Purity of signal in 4 sigma: " << purity4 << "\n"
+         << "Purity of signal in 5 sigma: " << purity5 << "\n";
 
     TLegend *lp2 = DrawLegend(0.16, 0.68, 0.42, 0.85);
     lp2->SetTextSize(0.04);
@@ -666,7 +688,7 @@ TF1 *doubleCB(TH1 *h, double *parameters, bool mainfit)
     return fit;
 }
 
-TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04)
+TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullptr, float legendsize = 0.04, float rlow = 15, float rhigh = 15)
 {
     double mass = parameters[1];
     double width = parameters[2];

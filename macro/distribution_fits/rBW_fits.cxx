@@ -52,20 +52,31 @@ void rBW_fits()
     TGraphErrors *widthf1525 = new TGraphErrors(Npt);
     TGraphErrors *massf1710 = new TGraphErrors(Npt);
     TGraphErrors *widthf1710 = new TGraphErrors(Npt);
+    TGraphErrors *yield1270 = new TGraphErrors(Npt);
+    TGraphErrors *yield1525 = new TGraphErrors(Npt);
+    TGraphErrors *yield1710 = new TGraphErrors(Npt);
+    TGraphErrors *yield_bc[3] = {
+        new TGraphErrors(Npt),
+        new TGraphErrors(Npt),
+        new TGraphErrors(Npt)};
 
+    TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
+    if (f->IsZombie())
+    {
+        cout << "Error opening file" << endl;
+        return;
+    }
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
     {
-        TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "READ");
         // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_0.0_30.0_norm_1.9_2.0_.root", "READ");
+        // if (f->IsZombie())
+        // {
+        //     cout << "Error opening file" << endl;
+        //     return;
+        // }
 
-        if (f->IsZombie())
-        {
-            cout << "Error opening file" << endl;
-            return;
-        }
-
-        TH1F *hinvMass = (TH1F *)f->Get("ksks_invmass");
+        TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", pT_bins[ip], pT_bins[ip + 1]));
         if (hinvMass == nullptr)
         {
             cout << "Error opening histogram" << endl;
@@ -73,6 +84,7 @@ void rBW_fits()
         }
         hinvMass->Rebin(rebin);
         float binwidth = hinvMass->GetBinWidth(1);
+        int noofevents = hinvMass->Integral();
         hinvMass->GetYaxis()->SetTitle(Form("Counts / %.2f MeV/c^{2}", binwidth));
 
         TCanvas *c1 = new TCanvas("", "", 720, 720);
@@ -129,17 +141,30 @@ void rBW_fits()
                     double high;
                     double param0_low_limit;
                     double param1_limit;
+                    double param3_limit;
+                    double param6_limit;
                 };
 
-                // Define the fit parameters for each pT bin
+                // // Define the fit parameters for each pT bin (pass 6)
+                // std::vector<FitParams> bwfit_params_me = {
+                //     // {1.1, 2.15, -1, 0.08, -1, -1}, // for testing purpose for single
+                //     // {1.1, 2.15, -1, 0.08, -1, -1}, // for full pT range
+                //     {1.09, 2.18, 3, 0.09, -1, -1}, // pT 1 to 2
+                //     {1.11, 2.16, 0, 0.09, -1, -1}, // pT 2 to 3
+                //     {1.12, 1.95, 0, 0.09, -1, -1}, // pT 3 to 4
+                //     {1.1, 2.15, -1, 0.08, -1, -1}, // pT 4 to 6
+                //     {1.1, 2.15, -1, 0.08, -1, -1}  // pT 6 to 12
+                // };
+
+                // for pass 7
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.1, 2.15, -1, 0.08}, // for testing purpose for single 
-                    // {1.1, 2.15, -1, 0.08}, // for full pT range
-                    {1.09, 2.18, 3, 0.09}, // pT 1 to 2
-                    {1.11, 2.16, 0, 0.09}, // pT 2 to 3
-                    {1.12, 1.95, 0, 0.09}, // pT 3 to 4
-                    {1.1, 2.15, -1, 0.08}, // pT 4 to 6
-                    {1.1, 2.15, -1, 0.08}  // pT 6 to 12
+                    // {1.1, 2.15, -1, 0.08, -1, -1}, // for testing purpose for single
+                    // {1.1, 2.15, -1, 0.08, -1, -1}, // for full pT range
+                    {1.09, 2.18, 3, 0.09, -1, -1},    // pT 1 to 2
+                    {1.119, 2.15, 2.6, 0.09, -1, -1}, // pT 2 to 3
+                    {1.12, 1.95, 0, 0.09, -1, -1},    // pT 3 to 4
+                    {1.1, 2.15, -1, 0.08, -1, -1},    // pT 4 to 6
+                    {1.1, 2.15, -1, 0.08, -1, -1}     // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];
@@ -156,9 +181,17 @@ void rBW_fits()
                 f3pol3->SetParameter(2, parameters1[2]);
                 f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
                 f3pol3->SetParameter(3, parameters1[3]);
+                if (iter_bin.param3_limit != -1)
+                {
+                    f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
+                }
                 f3pol3->SetParameter(4, parameters1[4]);
                 f3pol3->SetParameter(5, parameters1[5]);
                 f3pol3->SetParameter(6, parameters1[6]);
+                if (iter_bin.param6_limit != -1)
+                {
+                    f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
+                }
                 f3pol3->SetParameter(7, parameters1[7]);
                 f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
                 f3pol3->FixParameter(8, parameters1[8]);
@@ -267,17 +300,81 @@ void rBW_fits()
             hinvMass->Fit("f3pol3", "REBMS0");
             f3pol3->Draw("same");
 
-            // Setting the values of the mass and width of the resonances into Tgraphs
-            massf1270->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(1));
-            massf1270->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(1));
-            widthf1270->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(2));
-            widthf1270->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(2));
-            massf1525->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(4));
-            massf1525->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(4));
-            widthf1525->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(5));
-            widthf1525->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(5));
-            massf1710->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, f3pol3->GetParameter(7));
-            massf1710->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2.0, f3pol3->GetParError(7));
+            auto setPoint = [&](TGraphErrors *graph, int paramIndex)
+            {
+                double pT_center = (pT_bins[ip] + pT_bins[ip + 1]) / 2;
+                double pT_width = (pT_bins[ip + 1] - pT_bins[ip]) / 2.0;
+                graph->SetPoint(ip, pT_center, f3pol3->GetParameter(paramIndex));
+                graph->SetPointError(ip, pT_width, f3pol3->GetParError(paramIndex));
+            };
+
+            setPoint(massf1270, 1);
+            setPoint(widthf1270, 2);
+            setPoint(massf1525, 4);
+            setPoint(widthf1525, 5);
+            setPoint(massf1710, 7);
+            setPoint(widthf1710, 8);
+
+            TF1 *fitFuncs[3] = {
+                new TF1("fit1270", RelativisticBW, f3pol3->GetXmin(), f3pol3->GetXmax(), 3),
+                new TF1("fit1525", RelativisticBW, f3pol3->GetXmin(), f3pol3->GetXmax(), 3),
+                new TF1("fit1710", RelativisticBW, f3pol3->GetXmin(), f3pol3->GetXmax(), 3)};
+
+            TF1 *fitpol3 = new TF1("fitpol3", polynomial3, f3pol3->GetXmin(), f3pol3->GetXmax(), 4);
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                    fitFuncs[i]->SetParameter(j, f3pol3->GetParameter(i * 3 + j));
+            }
+
+            for (int i = 0; i < 4; i++)
+                fitpol3->SetParameter(i, f3pol3->GetParameter(i + 9));
+
+            float ptbinwidth = pT_bins[ip + 1] - pT_bins[ip];
+            double normFactor = binwidth * ptbinwidth * noofevents;
+
+            TVirtualFitter::SetFitter(0); // Reset the fitter to avoid conflicts
+            auto computeYield = [&](TF1 *func, TGraphErrors *graph, int index)
+            {
+                TVirtualFitter::Fitter(func); // Set the fitter for this TF1
+                double yield = func->Integral(f3pol3->GetXmin(), f3pol3->GetXmax()) / normFactor;
+                double yieldErr = func->IntegralError(f3pol3->GetXmin(), f3pol3->GetXmax()) / normFactor;
+                double pT_center = (pT_bins[ip + 1] + pT_bins[ip]) / 2;
+                double pT_width = (pT_bins[ip + 1] - pT_bins[ip]) / 2.0;
+                graph->SetPoint(ip, pT_center, yield);
+                graph->SetPointError(ip, pT_width, yieldErr);
+                std::cout << "yield" << index << ": " << yield << " +/- " << yieldErr << std::endl;
+            };
+
+            computeYield(fitFuncs[0], yield1270, 1270);
+            computeYield(fitFuncs[1], yield1525, 1525);
+            computeYield(fitFuncs[2], yield1710, 1710);
+
+            int resonanceno[] = {1270, 1525, 1710};
+            double mass[] = {f1270Mass, f1525Mass, f1710Mass};
+            double width[] = {f1270Width, f1525Width, f1710Width};
+            int bin_min[3], bin_max[3];
+            double bc_errors[3], bkgValues[3], intBW[3], sumTailCorr[3], totalY[3], yields[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                bin_min[i] = hinvMass->FindBin(mass[i] - 2 * width[i]);
+                bin_max[i] = hinvMass->FindBin(mass[i] + 2 * width[i]);
+                yields[i] = hinvMass->IntegralAndError(bin_min[i], bin_max[i], bc_errors[i]);
+            }
+
+            for (int i = 0; i < 3; ++i)
+            {
+                cout << "bc_errors: " << bc_errors[i] << endl;
+                bkgValues[i] = fitpol3->Integral(hinvMass->GetBinLowEdge(bin_min[i]), hinvMass->GetBinLowEdge(bin_max[i] + 1));
+                intBW[i] = fitFuncs[i]->Integral(hinvMass->GetBinLowEdge(bin_min[i]), hinvMass->GetBinLowEdge(bin_max[i] + 1));
+                sumTailCorr[i] = (fitFuncs[i]->Integral(f3pol3->GetXmin(), hinvMass->GetBinLowEdge(bin_min[i])) + fitFuncs[i]->Integral(hinvMass->GetBinLowEdge(bin_max[i] + 1), f3pol3->GetXmax())) / binwidth;
+                totalY[i] = (sumTailCorr[i] + yields[i] - (bkgValues[i] / binwidth)) / (ptbinwidth * noofevents);
+                std::cout << "Total_Ybincounting" << resonanceno[i] << " " << totalY[i] << std::endl;
+                yield_bc[i]->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, totalY[i]);
+                yield_bc[i]->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2, bc_errors[i] / (ptbinwidth * noofevents));
+            }
 
             // making the size of textbox optimal
             gPad->Update();
@@ -491,6 +588,76 @@ void rBW_fits()
         lfit3->Draw("same");
         if (saveplots)
             c8->SaveAs((fits_folder_str + "_" + kResBkg + "widthf1710.png").c_str());
+
+        TCanvas *c9 = new TCanvas("", "", 720, 720);
+        gPad->SetLogy();
+        SetCanvasStyle(c9, 0.15, 0.03, 0.05, 0.14);
+        SetGrapherrorStyle(yield1270);
+        SetGrapherrorStyle(yield_bc[0]);
+        yield_bc[0]->SetMarkerStyle(21);
+        yield_bc[0]->SetMarkerColor(kRed);
+        yield_bc[0]->SetLineColor(kRed);
+        yield1270->GetYaxis()->SetTitle("Yield");
+        yield1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        // yield1270->SetMaximum(yield1270->GetMaximum() * 1.5);
+        // yield1270->SetMinimum(0);
+        yield1270->Draw("ape");
+        yield_bc[0]->Draw("pe same");
+        yield1270->Write("yield1270");
+
+        TLegend *lfit4 = new TLegend(0.65, 0.65, 0.9, 0.9);
+        lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit4->AddEntry(yield1270, "Function integration", "lpe");
+        lfit4->AddEntry(yield_bc[0], "Bin counting", "lpe");
+        lfit4->Draw("same");
+        if (saveplots)
+            c9->SaveAs((fits_folder_str + "_" + kResBkg + "yield1270.png").c_str());
+
+        TCanvas *c10 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c10, 0.15, 0.03, 0.05, 0.14);
+        gPad->SetLogy();
+        SetGrapherrorStyle(yield1525);
+        SetGrapherrorStyle(yield_bc[1]);
+        yield_bc[1]->SetMarkerStyle(21);
+        yield_bc[1]->SetMarkerColor(kRed);
+        yield_bc[1]->SetLineColor(kRed);
+        yield1525->GetYaxis()->SetTitle("Yield");
+        yield1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        // yield1525->SetMaximum(yield1525->GetMaximum() * 1.5);
+        // yield1525->SetMinimum(0);
+        yield1525->Draw("ape");
+        yield_bc[1]->Draw("pe same");
+        yield1525->Write("yield1525");
+        lfit4->Clear();
+        lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit4->AddEntry(yield1525, "Function integration", "lpe");
+        lfit4->AddEntry(yield_bc[1], "Bin counting", "lpe");
+        lfit4->Draw("same");
+        if (saveplots)
+            c10->SaveAs((fits_folder_str + "_" + kResBkg + "yield1525.png").c_str());
+
+        TCanvas *c11 = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c11, 0.15, 0.03, 0.05, 0.14);
+        gPad->SetLogy();
+        SetGrapherrorStyle(yield1710);
+        SetGrapherrorStyle(yield_bc[2]);
+        yield_bc[2]->SetMarkerStyle(21);
+        yield_bc[2]->SetMarkerColor(kRed);
+        yield_bc[2]->SetLineColor(kRed);
+        yield1710->GetYaxis()->SetTitle("Yield");
+        yield1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        // yield1710->SetMaximum(yield1710->GetMaximum() * 1.5);
+        // yield1710->SetMinimum(0);
+        yield1710->Draw("ape");
+        yield_bc[2]->Draw("pe same");
+        yield1710->Write("yield1710");
+        lfit4->Clear();
+        lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
+        lfit4->AddEntry(yield1710, "Function integration", "lpe");
+        lfit4->AddEntry(yield_bc[2], "Bin counting", "lpe");
+        lfit4->Draw("same");
+        if (saveplots)
+            c11->SaveAs((fits_folder_str + "_" + kResBkg + "yield1710.png").c_str());
     }
 
 } //*******************************end of main function ***************************************

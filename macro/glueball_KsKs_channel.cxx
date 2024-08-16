@@ -19,8 +19,8 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -477,7 +477,7 @@ void glueball_KsKs_channel()
         hNSigmaNegPion_before->SetStats(0);
         // hNSigmaNegPion_before->Draw("colz");
         nsigma_projection_neg->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion." + koutputtype).c_str());
+        // c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaNegPion." + koutputtype).c_str());
 
         // n sigma pos pion daugter before
         TH2F *hNSigmaPosPion_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaPosPionK0s_before").c_str());
@@ -487,7 +487,7 @@ void glueball_KsKs_channel()
             return;
         }
         TH1D *nsigma_projection_pos = hNSigmaPosPion_before->ProjectionX();
-        c3->Clear();
+        // c3->Clear();
         SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
         SetHistoQA(nsigma_projection_pos);
         SetHistoQA(hNSigmaPosPion_before);
@@ -496,9 +496,17 @@ void glueball_KsKs_channel()
         nsigma_projection_pos->GetXaxis()->SetTitle("n#sigma_{#pi^{+}}");
         nsigma_projection_pos->GetYaxis()->SetTitle("Counts");
         hNSigmaPosPion_before->SetStats(0);
-        // hNSigmaPosPion_before->Draw("colz");
-        nsigma_projection_pos->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_nSigmaPosPion." + koutputtype).c_str());
+        nsigma_projection_neg->Draw("colz");
+        nsigma_projection_pos->SetLineColor(kRed);
+        nsigma_projection_pos->Draw("same");
+        TLegend *leg3 = new TLegend(0.6, 0.7, 0.9, 0.9);
+        leg3->SetFillStyle(0);
+        leg3->SetBorderSize(0);
+        leg3->SetTextFont(42);
+        leg3->AddEntry(nsigma_projection_neg, "#pi^{-}", "l");
+        leg3->AddEntry(nsigma_projection_pos, "#pi^{+}", "l");
+        leg3->Draw();
+        c3->SaveAs((outputQAfolder_str + "/kshort_nSigma_compare." + koutputtype).c_str());
 
         // // n sigma neg pion daugter after
         // TH2F *hNSigmaNegPion_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hNSigmaNegPionK0s_after").c_str());

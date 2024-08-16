@@ -25,7 +25,7 @@ void gaussian_fit_Ks2()
 {
     // configurables *********************
     bool saveplots = true;
-    bool showpt_study = false;
+    bool showpt_study = true;
     gStyle->SetOptStat(1110);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     gStyle->SetOptFit(1111);
@@ -109,12 +109,14 @@ void gaussian_fit_Ks2()
     lp3->AddEntry(hInvMass, "Data", "pe");
     lp3->AddEntry(hInvMassClone1, "Signal", "f");
     // lp3->AddEntry(fit3, "CB + pol2 fit", "l");
+
+    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04, 15, 15); // double crystal ball with pol2 fit
+    fit3->Draw("SAME");
+
+    // iteration for successful fit
     float rangelow = 8;
     float rangehigh = 8;
     bool fitsuccessfully = false;
-
-    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04, 15, 15); // double crystal ball with pol2 fit
-    // fit3->Draw("SAME");
     // while (!fitsuccessfully)
     // {
     //     fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04, rangelow, rangehigh); // double crystal ball with pol2 fit
@@ -262,39 +264,25 @@ void gaussian_fit_Ks2()
             TF1 *fitpt3;
 
             bool conditions[] = {
-                ipt < 9,                                         // Condition 0
-                rebin == 3 && ipt != 8 && ipt != 9 && ipt != 13, // Condition 1
-                rebin == 3 && ipt == 13,                         // Condition 2
-                rebin == 3 && (ipt == 8 || ipt == 9),            // Condition 3
-                rebin == 3 && (ipt == 2 || ipt == 3),            // Condition 4
-                rebin != 3 && ipt != 9 && ipt != 13,             // Condition 5
-                rebin != 3 && ipt == 13,                         // Condition 6
-                rebin != 3 && ipt == 9                           // Condition 7
+                rebin == 1 && ipt < 7,                 // Condition 0
+                (rebin == 2 || rebin ==3) && ipt < 5,                 // Condition 2
+                rebin == 1 && (ipt == 9 || ipt == 10), // Condition 1
             };
 
             if (conditions[0])
             {
                 directfit(fitpt3, hInvMassPt[ipt], parameters2, false);
             }
-            // else if (conditions[1] || conditions[5])
-            // {
-            //     perform_fit(fitpt3, hInvMassPt[ipt], false);
-            // }
-            // else if (conditions[2] || conditions[6])
-            // {
-            //     fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt - 1], false);
-            //     fitpt3->Draw("SAME");
-            // }
-            // else if (conditions[3] || conditions[7])
-            // {
-            //     fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
-            //     fitpt3->Draw("SAME");
-            // }
-            // else if (conditions[4])
-            // {
-            //     fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[1], false);
-            //     fitpt3->Draw("SAME");
-            // }
+            else if (conditions[1])
+            {
+                directfit(fitpt3, hInvMassPt[ipt], parameters2, false);
+            }
+
+            else if (conditions[2])
+            {
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
+                fitpt3->Draw("SAME");
+            }
             else
             {
                 fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[ipt - 1], false);

@@ -60,7 +60,8 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "240457.root"; // data file (small)
 // const string kDataFilename_temp2 = "240361.root"; // data file (medium)
 // const string kDataFilename_temp2 = "244178.root"; // data file (medium)
-const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
+// const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
+const string kDataFilename_temp2 = "250337.root"; // Medium data file medium (fixed rotation bkg and competing cascade cuts)
 // const string kDataFilename_temp2 = "248760.root"; // Small data file medium (fixed different entries in the pi- and pi+ daughters, multiplicity distribution, number of Ks produced per event)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif

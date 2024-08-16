@@ -17,8 +17,8 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
@@ -61,6 +61,7 @@ void rBW_fits()
         new TGraphErrors(Npt)};
 
     TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/250337/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_1.1_1.15_.root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -69,12 +70,6 @@ void rBW_fits()
     // pT loop ***************************************************
     for (Int_t ip = pt_start; ip < pt_end; ip++)
     {
-        // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_0.0_30.0_norm_1.9_2.0_.root", "READ");
-        // if (f->IsZombie())
-        // {
-        //     cout << "Error opening file" << endl;
-        //     return;
-        // }
 
         TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", pT_bins[ip], pT_bins[ip + 1]));
         if (hinvMass == nullptr)
@@ -139,32 +134,35 @@ void rBW_fits()
                 {
                     double low;
                     double high;
-                    double param0_low_limit;
-                    double param1_limit;
-                    double param3_limit;
-                    double param6_limit;
+                    double param0_low_limit; // norm for f1270
+                    double param1_limit;     // mass for f1270
+                    double param2_limit;     // width for f1270
+                    double param3_limit;     // norm for f1525
+                    double param6_limit;     // norm for f1710
+                    double param7_limit;     // mass for f1710
                 };
 
                 // // Define the fit parameters for each pT bin (pass 6)
                 // std::vector<FitParams> bwfit_params_me = {
-                //     // {1.1, 2.15, -1, 0.08, -1, -1}, // for testing purpose for single
-                //     // {1.1, 2.15, -1, 0.08, -1, -1}, // for full pT range
-                //     {1.09, 2.18, 3, 0.09, -1, -1}, // pT 1 to 2
-                //     {1.11, 2.16, 0, 0.09, -1, -1}, // pT 2 to 3
-                //     {1.12, 1.95, 0, 0.09, -1, -1}, // pT 3 to 4
-                //     {1.1, 2.15, -1, 0.08, -1, -1}, // pT 4 to 6
-                //     {1.1, 2.15, -1, 0.08, -1, -1}  // pT 6 to 12
+                //     // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
+                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
+                //     {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
+                //     {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
+                //     {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
+                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
+                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
                 // };
 
                 // for pass 7
                 std::vector<FitParams> bwfit_params_me = {
-                    // {1.1, 2.15, -1, 0.08, -1, -1}, // for testing purpose for single
-                    // {1.1, 2.15, -1, 0.08, -1, -1}, // for full pT range
-                    {1.09, 2.18, 3, 0.09, -1, -1},    // pT 1 to 2
-                    {1.119, 2.15, 2.6, 0.09, -1, -1}, // pT 2 to 3
-                    {1.12, 1.95, 0, 0.09, -1, -1},    // pT 3 to 4
-                    {1.1, 2.15, -1, 0.08, -1, -1},    // pT 4 to 6
-                    {1.1, 2.15, -1, 0.08, -1, -1}     // pT 6 to 12
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
+                    {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2 and full pT range (2.1 to 2.2)
+                    {1.12, 2.13, 0, 0.015, 0.008, 0, 0, 0.08},   // pT 2 to 3
+                    {1.11, 2.12, 0, 0.09, 0.01, -1, -1, 0.08},   // pT 3 to 4
+                    {1.075, 2.17, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
+                    {1.09, 2.13, -1, 0.08, 0.01, -1, -1, 0.08}   // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];
@@ -179,7 +177,10 @@ void rBW_fits()
                 f3pol3->SetParameter(1, parameters1[1]);
                 f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
                 f3pol3->SetParameter(2, parameters1[2]);
-                f3pol3->SetParLimits(2, parameters1[2] - 0.01, parameters1[2] + 0.01);
+                if (iter_bin.param2_limit != -1)
+                {
+                    f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
+                }
                 f3pol3->SetParameter(3, parameters1[3]);
                 if (iter_bin.param3_limit != -1)
                 {
@@ -193,7 +194,10 @@ void rBW_fits()
                     f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
                 }
                 f3pol3->SetParameter(7, parameters1[7]);
-                f3pol3->SetParLimits(7, parameters1[7] - 0.08, parameters1[7] + 0.08);
+                if (iter_bin.param7_limit != -1)
+                {
+                    f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
+                }
                 f3pol3->FixParameter(8, parameters1[8]);
             }
 
@@ -224,18 +228,28 @@ void rBW_fits()
                     double param0_low_limit; // norm for f1270
                     double param1_limit;     // mass for f1270
                     double param2_limit;     // width for f1270
-                    double param4_limit;     // mass for f1525
-                    double param5_limit;     // width for f1525
+                    double param3_limit;     // norm for f1525
+                    double param6_limit;     // norm for f1710
                     double param7_limit;     // mass for f1710
                 };
-                // Define the fit parameters for each pT bin
+                // // Define the fit parameters for each pT bin (pass 3)
+                // std::vector<FitParams2> bwfit_params_rot = {
+                //     // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
+                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 1 to 2
+                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 2 to 3
+                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 3 to 4
+                //     {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
+                //     {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}   // pT 6 to 12 and min bias
+                // };
+
+                // // for pass 7
                 std::vector<FitParams2> bwfit_params_rot = {
-                    // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 1 to 2
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 2 to 3
-                    {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 3 to 4
-                    {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
-                    {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}   // pT 6 to 12 and min bias
+                    // {1.10, 2.12, 0, 0.1, 0.02, 0, 0, 0.1},  // integrated pT
+                    {1.11, 2.13, 2, 0.07, -1, -1, -1, -1},  // pT 1 to 2
+                    {1.09, 2.13, 0, 0.07, 0.1, 0, 0, -1},   // pT 2 to 3
+                    {1.09, 2.1, 0, 0.07, -1, -1, -1, 0.15}, // pT 3 to 4
+                    {1.1, 2.15, 0, 0.07, -1, -1, -1, 0.11},   // pT 4 to 6
+                    {1.09, 2.08, 0, 0.03, -1, -1, -1, 0.2}  // pT 6 to 12 and min bias
                 };
 
                 const auto &iter_bin = bwfit_params_rot[ip];
@@ -254,17 +268,17 @@ void rBW_fits()
                     f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
                 }
                 f3pol3->SetParameter(3, parameters1[3]);
+                if (iter_bin.param3_limit != -1)
+                {
+                    f3pol3->SetParLimits(3, parameters1[3] - iter_bin.param3_limit, 1e8);
+                }
                 f3pol3->SetParameter(4, parameters1[4]);
-                if (iter_bin.param4_limit != -1)
-                {
-                    f3pol3->SetParLimits(4, parameters1[4] - iter_bin.param4_limit, parameters1[4] + iter_bin.param4_limit);
-                }
                 f3pol3->SetParameter(5, parameters1[5]);
-                if (iter_bin.param5_limit != -1)
-                {
-                    f3pol3->SetParLimits(5, parameters1[5] - iter_bin.param5_limit, parameters1[5] + iter_bin.param5_limit);
-                }
                 f3pol3->SetParameter(6, parameters1[6]);
+                if (iter_bin.param6_limit != -1)
+                {
+                    f3pol3->SetParLimits(6, parameters1[6] - iter_bin.param6_limit, 1e8);
+                }
                 f3pol3->SetParameter(7, parameters1[7]);
                 if (iter_bin.param7_limit != -1)
                 {
@@ -411,13 +425,15 @@ void rBW_fits()
             float rangelow = f3pol3->GetXmin();
             float rangehigh = f3pol3->GetXmax();
             hinvMassResSub->GetXaxis()->SetRangeUser(rangelow + 0.01, 2.18);
+            hinvMassResSub->SetMinimum(-100);
             hinvMassResSub->Draw();
             TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
             f3bw3->SetParNames("Norm", "Mass_{f1270}", "#Gamma_{f1270}", "Norm_{f1525}", "Mass_{f1525}", "#Gamma_{f1525}", "Norm_{f1710}", "Mass_{f1710}", "#Gamma_{f1710}");
             f3bw3->SetParameter(0, f3pol3->GetParameter(0));
             f3bw3->SetParameter(1, f3pol3->GetParameter(1));
-            f3bw3->FixParameter(2, f3pol3->GetParameter(2));
-            // f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.02, f3pol3->GetParameter(2) + 0.02);
+            // f3bw3->FixParameter(2, f3pol3->GetParameter(2));
+            f3bw3->SetParameter(2, f3pol3->GetParameter(2));
+            f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.05, f3pol3->GetParameter(2) + 0.05);
             f3bw3->SetParameter(3, f3pol3->GetParameter(3));
             f3bw3->SetParameter(4, f3pol3->GetParameter(4));
             f3bw3->SetParameter(5, f3pol3->GetParameter(5));

@@ -4,10 +4,10 @@
 
 #ifdef DATASET_LHC220_pass6_small
 #ifdef KsKschannel
-// const Int_t Npt = 1;
-const Int_t Npt = 5;
-// double pT_bins[Npt + 1] = {0.0, 30.0};
-float pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 6.0, 12.0};
+const Int_t Npt = 1;
+// const Int_t Npt = 5;
+double pT_bins[Npt + 1] = {0.0, 30.0};
+// float pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 6.0, 12.0};
 // float pT_bins[Npt + 1] = {0.0, 12.0};
 const int pt_start = 0;
 const int pt_end = Npt;
@@ -48,17 +48,17 @@ const int pt_end = Npt;
 #ifdef KsKschannel
 const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV
-    // {1.10, 1.15}, // 0.0-30.0 GeV/c
+    // {2.30, 2.50}, // 0.0-30.0 GeV/c
     // {1.10, 1.15}, // 0.0-1.0 GeV/c
-    {2.00, 2.10}, // 1.0-2.0 GeV/c
-    {2.00, 2.10}, // 2.0-3.0 GeV/c
-    {2.00, 2.10}, // 3.0-4.0 GeV/c
-    {2.00, 2.10}, // 4.0-6.0 GeV/c
-    {2.00, 2.10}, // 6.0-12.0 GeV/c
-    {2.00, 2.10}, // 12.0-20.0 GeV/c
-    {2.00, 2.10}, // 12.0-20.0 GeV/c
-    {2.00, 2.10}, // 12.0-20.0 GeV/c
-    {2.00, 2.10}, // 12.0-20.0 GeV/c
+    {2.10, 2.20}, // 1.0-2.0 GeV/c (for mixed event 2.00 to 2.10)
+    {2.10, 2.20}, // 2.0-3.0 GeV/c
+    {2.10, 2.20}, // 3.0-4.0 GeV/c
+    {2.10, 2.20}, // 4.0-6.0 GeV/c
+    {2.10, 2.20}, // 6.0-12.0 GeV/c
+    {2.10, 2.20}, // 12.0-20.0 GeV/c
+    {2.10, 2.20}, // 12.0-20.0 GeV/c
+    {2.10, 2.20}, // 12.0-20.0 GeV/c
+    {2.10, 2.20}, // 12.0-20.0 GeV/c
 };
 
 const std::vector<int> kRebin = {

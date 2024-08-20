@@ -17,8 +17,8 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
@@ -142,28 +142,28 @@ void rBW_fits()
                     double param7_limit;     // mass for f1710
                 };
 
-                // // Define the fit parameters for each pT bin (pass 6)
-                // std::vector<FitParams> bwfit_params_me = {
-                //     // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
-                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
-                //     {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
-                //     {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
-                //     {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
-                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
-                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
-                // };
-
-                // for pass 7
+                // Define the fit parameters for each pT bin (pass 6)
                 std::vector<FitParams> bwfit_params_me = {
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
-                    {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2 and full pT range (2.1 to 2.2)
-                    {1.12, 2.13, 0, 0.015, 0.008, 0, 0, 0.08},   // pT 2 to 3
-                    {1.11, 2.12, 0, 0.09, 0.01, -1, -1, 0.08},   // pT 3 to 4
-                    {1.075, 2.17, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
-                    {1.09, 2.13, -1, 0.08, 0.01, -1, -1, 0.08}   // pT 6 to 12
+                    // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
+                    {1.09, 2.1, 3, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
+                    {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
+                    {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
+                    {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
+                    {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
+                    {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
                 };
+
+                // // for pass 7
+                // std::vector<FitParams> bwfit_params_me = {
+                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
+                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
+                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
+                //     {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2 and full pT range (2.1 to 2.2)
+                //     {1.12, 2.13, 0, 0.015, 0.008, 0, 0, 0.08},   // pT 2 to 3
+                //     {1.11, 2.12, 0, 0.09, 0.01, -1, -1, 0.08},   // pT 3 to 4
+                //     {1.075, 2.17, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
+                //     {1.09, 2.13, -1, 0.08, 0.01, -1, -1, 0.08}   // pT 6 to 12
+                // };
 
                 const auto &iter_bin = bwfit_params_me[ip];
 

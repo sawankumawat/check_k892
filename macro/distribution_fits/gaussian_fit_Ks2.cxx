@@ -265,7 +265,7 @@ void gaussian_fit_Ks2()
 
             bool conditions[] = {
                 rebin == 1 && ipt < 7,                 // Condition 0
-                (rebin == 2 || rebin ==3) && ipt < 5,                 // Condition 2
+                (rebin == 2 || rebin == 3) && ipt < 5, // Condition 2
                 rebin == 1 && (ipt == 9 || ipt == 10), // Condition 1
             };
 
@@ -397,7 +397,7 @@ void gaussian_fit_Ks2()
         hpTwiseMass->GetYaxis()->SetMaxDigits(3);
         hpTwiseMass->GetYaxis()->SetTitleOffset(2.3);
         hpTwiseMass->SetStats(0);
-        hpTwiseMass->GetYaxis()->SetRangeUser(0.49, 0.502);
+        hpTwiseMass->GetYaxis()->SetRangeUser(0.492, 0.502);
         hpTwiseMass->Draw("pe");
         hpTwiseMass->Write("ks_mass_fit");
         TLine *line = new TLine(0.0, ksmass, 30.0, ksmass);
@@ -405,12 +405,23 @@ void gaussian_fit_Ks2()
         line->SetLineWidth(2);
         line->SetLineColor(kRed);
         line->Draw("l same");
-        TLegend *lp4 = DrawLegend(0.6, 0.75, 0.9, 0.85);
+        // create a band around the line of width equal to the pdg error bar (0.013 * 1e-3)
+        double xvalues[2] = {0.0, 30.0};
+        double yvalues[2] = {ksmass, ksmass};
+        double exvalues[2] = {0.0, 0.0};
+        double eyvalues[2] = {0.000013, 0.000013};
+        TGraphErrors *band = new TGraphErrors(2, xvalues, yvalues, exvalues, eyvalues);
+        band->SetFillColor(kBlue); // Blue color with 30% opacity
+        band->SetFillStyle(3001);
+        band->SetLineColor(kBlue);
+        band->Draw("3"); // "3" option draws a filled band
+        TLegend *lp4 = DrawLegend(0.23, 0.73, 0.9, 0.9);
         lp4->SetFillStyle(0);
         lp4->SetTextFont(42);
-        lp4->SetTextSize(0.04);
+        lp4->SetTextSize(0.035);
         lp4->AddEntry(hpTwiseMass, "Fit Mean", "lpe");
-        lp4->AddEntry(line, "PDG Mass", "l");
+        // lp4->AddEntry(line, "PDG Mass ", "l");
+        lp4->AddEntry(band, "PDG Mass (0.4976 #pm 1.3e-5 MeV/c^{2})", "f");
         lp4->Draw("same");
         if (saveplots)
         {

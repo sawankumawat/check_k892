@@ -50,7 +50,7 @@ const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV
     // {2.30, 2.50}, // 0.0-30.0 GeV/c
     // {1.10, 1.15}, // 0.0-1.0 GeV/c
-    {2.10, 2.20}, // 1.0-2.0 GeV/c (for mixed event 2.00 to 2.10)
+    {2.00, 2.10}, // 1.0-2.0 GeV/c (for mixed event 2.00 to 2.10)
     {2.10, 2.20}, // 2.0-3.0 GeV/c
     {2.10, 2.20}, // 3.0-4.0 GeV/c
     {2.10, 2.20}, // 4.0-6.0 GeV/c

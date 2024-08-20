@@ -26,8 +26,8 @@ TLatex *t2 = new TLatex();
 ////******some fixed variables******************************************************
 
 // define datasets here
-// #define DATASET_LHC220_pass6_small
-#define DATASET_LHC22o_pass7_small
+#define DATASET_LHC220_pass6_small
+// #define DATASET_LHC22o_pass7_small
 // #define DATASET_LHC220_pass4_small
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file

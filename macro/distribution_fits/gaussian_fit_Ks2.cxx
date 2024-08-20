@@ -31,7 +31,7 @@ void gaussian_fit_Ks2()
     gStyle->SetOptFit(1111);
     string whichpass = "pass7";
 
-    int rebin = 1;
+    int rebin = 3;
     // configurables *********************
 
     // double kswidth = pdg->GetParticle(310)->Width();
@@ -265,8 +265,12 @@ void gaussian_fit_Ks2()
 
             bool conditions[] = {
                 rebin == 1 && ipt < 7,                 // Condition 0
-                (rebin == 2 || rebin == 3) && ipt < 5, // Condition 2
-                rebin == 1 && (ipt == 9 || ipt == 10), // Condition 1
+                (rebin == 2) && ipt < 4,               // Condition 1
+                (rebin == 3) && ipt < 5,               // Condition 2
+                rebin == 1 && (ipt == 9 || ipt == 10), // Condition 3
+                rebin == 1 && ipt == Nptbins - 2,      // Condition 4
+                rebin == 2 && ipt == Nptbins - 2,       // Condition 5
+                rebin == 3 && ipt == Nptbins - 1       // Condition 6
             };
 
             if (conditions[0])
@@ -277,10 +281,29 @@ void gaussian_fit_Ks2()
             {
                 directfit(fitpt3, hInvMassPt[ipt], parameters2, false);
             }
-
-            else if (conditions[2])
+             else if (conditions[2])
             {
-                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[7], false);
+                directfit(fitpt3, hInvMassPt[ipt], parameters2, false);
+            }
+
+            else if (conditions[3])
+            {
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[5], false);
+                fitpt3->Draw("SAME");
+            }
+            else if (conditions[4])
+            {
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[Nptbins - 4], false);
+                fitpt3->Draw("SAME");
+            }
+            else if (conditions[5])
+            {
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[Nptbins - 4], false);
+                fitpt3->Draw("SAME");
+            }
+            else if (conditions[6])
+            {
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[Nptbins - 3], false);
                 fitpt3->Draw("SAME");
             }
             else
@@ -489,6 +512,10 @@ void gaussian_fit_Ks2()
         hratios->GetYaxis()->SetRangeUser(0.9, 1.1);
         hratios->GetYaxis()->SetNdivisions(505);
         hratios->Draw("pe");
+        TLine *line1 = new TLine(0.0, 1.0, 30.0, 1.0);
+        line1->SetLineStyle(2);
+        line1->SetLineWidth(2);
+        line1->Draw("l same");
 
         if (saveplots)
         {

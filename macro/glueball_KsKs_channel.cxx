@@ -19,9 +19,9 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -104,7 +104,7 @@ void glueball_KsKs_channel()
 
     if (calculate_inv_mass)
     {
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "RECREATE");
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f.", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
@@ -214,7 +214,7 @@ void glueball_KsKs_channel()
             // gPad->Update();
             if (save_invmass_distributions)
             {
-                c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+                c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
             }
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
@@ -248,7 +248,7 @@ void glueball_KsKs_channel()
             fHistTotal[ip]->Draw("E");
             if (save_invmass_distributions)
             {
-                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + koutputtype).c_str());
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", pT_bins[ip], pT_bins[ip + 1]) + koutputtype).c_str());
             }
             hfbkg->Draw("E same");
             if (kResBkg == "MIX" || kResBkg == "ROTATED")
@@ -268,7 +268,7 @@ void glueball_KsKs_channel()
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             if (save_invmass_distributions)
             {
-                c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
             }
             c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
         } // pt bin loop end here
@@ -650,37 +650,37 @@ void glueball_KsKs_channel()
         // hPosDaughterPhi->Draw();
         // c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPhi." + koutputtype).c_str());
 
-        // // negative daughter pT
-        // gPad->SetLogy();
-        // TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
-        // if (hNegDaughterPt == nullptr)
-        // {
-        //     cout << "Negative daughter pT plot not found" << endl;
-        //     return;
-        // }
-        // c3->Clear();
-        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        // SetHistoQA(hNegDaughterPt);
-        // hNegDaughterPt->GetYaxis()->SetTitle("Counts");
-        // hNegDaughterPt->GetXaxis()->SetTitle("Neg. daughter p_{T} (GeV/c)");
-        // hNegDaughterPt->Draw();
-        // c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPt." + koutputtype).c_str());
+        // negative daughter pT
+        gPad->SetLogy();
+        TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
+        if (hNegDaughterPt == nullptr)
+        {
+            cout << "Negative daughter pT plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hNegDaughterPt);
+        hNegDaughterPt->GetYaxis()->SetTitle("Counts");
+        hNegDaughterPt->GetXaxis()->SetTitle("Neg. daughter p_{T} (GeV/c)");
+        hNegDaughterPt->Draw();
+        c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPt." + koutputtype).c_str());
 
-        // // positive daughter pT
-        // TH1F *hPosDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_pt").c_str());
-        // if (hPosDaughterPt == nullptr)
-        // {
-        //     cout << "Positive daughter pT plot not found" << endl;
-        //     return;
-        // }
-        // c3->Clear();
-        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        // SetHistoQA(hPosDaughterPt);
-        // hPosDaughterPt->GetYaxis()->SetTitle("Counts");
-        // hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
-        // hPosDaughterPt->Draw();
-        // c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
-        // gPad->SetLogy(0);
+        // positive daughter pT
+        TH1F *hPosDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_pt").c_str());
+        if (hPosDaughterPt == nullptr)
+        {
+            cout << "Positive daughter pT plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hPosDaughterPt);
+        hPosDaughterPt->GetYaxis()->SetTitle("Counts");
+        hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
+        hPosDaughterPt->Draw();
+        c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
+        gPad->SetLogy(0);
 
         // // negative daughter rapidity
         // TH1F *hNegDaughterRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_y").c_str());

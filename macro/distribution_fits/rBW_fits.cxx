@@ -17,8 +17,8 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
 void rBW_fits()
 {
     // // *********************** constant parameters *****************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
@@ -60,8 +60,8 @@ void rBW_fits()
         new TGraphErrors(Npt),
         new TGraphErrors(Npt)};
 
-    TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/250337/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_1.1_1.15_.root", "READ");
+    // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/250337/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.20_2.30..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -128,7 +128,7 @@ void rBW_fits()
 
             // Fitting *********************************************
             TF1 *f3pol3;
-            if (kchannel == "KsKs_Channel" && kResBkg == "MIX" && kbgfitfunction == "pol3")
+            if (kchannel == "KsKs_Channel" && kbgfitfunction == "pol3")
             {
                 struct FitParams
                 {
@@ -142,28 +142,40 @@ void rBW_fits()
                     double param7_limit;     // mass for f1710
                 };
 
-                // Define the fit parameters for each pT bin (pass 6)
-                std::vector<FitParams> bwfit_params_me = {
-                    // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
-                    {1.09, 2.1, 3, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
-                    {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
-                    {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
-                    {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
-                    {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
-                    {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
-                };
+                // // Define the fit parameters for each pT bin (pass 6)
+                // std::vector<FitParams> bwfit_params_me = {
+                //     // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
+                //     {1.09, 2.1, 3, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
+                //     {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
+                //     {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
+                //     {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
+                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
+                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
+                // };
 
-                // // for pass 7
+                // // for pass 7 (for ME norm range 2.0 - 2.1)
                 // std::vector<FitParams> bwfit_params_me = {
                 //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
                 //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
                 //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
-                //     {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2 and full pT range (2.1 to 2.2)
+                //     {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2, full pT range, both ME and Rot (norm  2.2-2.3)
                 //     {1.12, 2.13, 0, 0.015, 0.008, 0, 0, 0.08},   // pT 2 to 3
                 //     {1.11, 2.12, 0, 0.09, 0.01, -1, -1, 0.08},   // pT 3 to 4
                 //     {1.075, 2.17, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
                 //     {1.09, 2.13, -1, 0.08, 0.01, -1, -1, 0.08}   // pT 6 to 12
                 // };
+
+                // for pass 7 (for ME norm range 2.2 - 2.3) (both mix and rot works)
+                std::vector<FitParams> bwfit_params_me = {
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
+                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
+                    {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},    // pT 1 to 2, full pT range, both ME and Rot (norm  2.2-2.3)
+                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 2 to 3
+                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 3 to 4
+                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
+                    {1.09, 2.11, 0, 0.08, 0.01, -1, -1, 0.085}   // pT 6 to 12
+                };
 
                 const auto &iter_bin = bwfit_params_me[ip];
 
@@ -219,73 +231,73 @@ void rBW_fits()
                 f3pol3->FixParameter(8, parameters1[8]);
             }
 
-            if (kchannel == "KsKs_Channel" && kResBkg == "ROTATED" && kbgfitfunction == "pol3")
-            {
-                struct FitParams2
-                {
-                    double low;
-                    double high;
-                    double param0_low_limit; // norm for f1270
-                    double param1_limit;     // mass for f1270
-                    double param2_limit;     // width for f1270
-                    double param3_limit;     // norm for f1525
-                    double param6_limit;     // norm for f1710
-                    double param7_limit;     // mass for f1710
-                };
-                // // Define the fit parameters for each pT bin (pass 3)
-                // std::vector<FitParams2> bwfit_params_rot = {
-                //     // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
-                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 1 to 2
-                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 2 to 3
-                //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 3 to 4
-                //     {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
-                //     {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}   // pT 6 to 12 and min bias
-                // };
+            // if (kchannel == "KsKs_Channel" && kResBkg == "ROTATED" && kbgfitfunction == "pol3")
+            // {
+            //     struct FitParams2
+            //     {
+            //         double low;
+            //         double high;
+            //         double param0_low_limit; // norm for f1270
+            //         double param1_limit;     // mass for f1270
+            //         double param2_limit;     // width for f1270
+            //         double param3_limit;     // norm for f1525
+            //         double param6_limit;     // norm for f1710
+            //         double param7_limit;     // mass for f1710
+            //     };
+            //     // // Define the fit parameters for each pT bin (pass 6)
+            //     // std::vector<FitParams2> bwfit_params_rot = {
+            //     //     // {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}, // for testing purpose for single pT bin
+            //     //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 1 to 2
+            //     //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 2 to 3
+            //     //     {1.11, 2.15, 1, 0.07, -1.0, 0.1, 0.01, 0.08}, // pT 3 to 4
+            //     //     {1.09, 2.15, 0, 0.07, 0.05, 0.1, 0.01, 0.08}, // pT 4 to 6
+            //     //     {1.05, 2.15, 0, 0.1, 0.02, 0.1, 0.01, 0.08}   // pT 6 to 12 and min bias
+            //     // };
 
-                // // for pass 7
-                std::vector<FitParams2> bwfit_params_rot = {
-                    // {1.10, 2.12, 0, 0.1, 0.02, 0, 0, 0.1},  // integrated pT
-                    {1.11, 2.13, 2, 0.07, -1, -1, -1, -1},  // pT 1 to 2
-                    {1.09, 2.13, 0, 0.07, 0.1, 0, 0, -1},   // pT 2 to 3
-                    {1.09, 2.1, 0, 0.07, -1, -1, -1, 0.15}, // pT 3 to 4
-                    {1.1, 2.15, 0, 0.07, -1, -1, -1, 0.11},   // pT 4 to 6
-                    {1.09, 2.08, 0, 0.03, -1, -1, -1, 0.2}  // pT 6 to 12 and min bias
-                };
+            //     // // for pass 7
+            //     std::vector<FitParams2> bwfit_params_rot = {
+            //         // {1.10, 2.12, 0, 0.1, 0.02, 0, 0, 0.1},  // integrated pT
+            //         {1.11, 2.13, 2, 0.07, -1, -1, -1, -1},  // pT 1 to 2
+            //         {1.09, 2.13, 0, 0.07, 0.1, 0, 0, -1},   // pT 2 to 3
+            //         {1.09, 2.1, 0, 0.07, -1, -1, -1, 0.15}, // pT 3 to 4
+            //         {1.1, 2.15, 0, 0.07, -1, -1, -1, 0.11}, // pT 4 to 6
+            //         {1.09, 2.08, 0, 0.03, -1, -1, -1, 0.2}  // pT 6 to 12 and min bias
+            //     };
 
-                const auto &iter_bin = bwfit_params_rot[ip];
+            //     const auto &iter_bin = bwfit_params_rot[ip];
 
-                f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
-                f3pol3->SetParameter(0, parameters1[0]);
-                f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
-                f3pol3->SetParameter(1, parameters1[1]);
-                if (iter_bin.param1_limit != -1)
-                {
-                    f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
-                }
-                f3pol3->SetParameter(2, parameters1[2]);
-                if (iter_bin.param2_limit != -1)
-                {
-                    f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
-                }
-                f3pol3->SetParameter(3, parameters1[3]);
-                if (iter_bin.param3_limit != -1)
-                {
-                    f3pol3->SetParLimits(3, parameters1[3] - iter_bin.param3_limit, 1e8);
-                }
-                f3pol3->SetParameter(4, parameters1[4]);
-                f3pol3->SetParameter(5, parameters1[5]);
-                f3pol3->SetParameter(6, parameters1[6]);
-                if (iter_bin.param6_limit != -1)
-                {
-                    f3pol3->SetParLimits(6, parameters1[6] - iter_bin.param6_limit, 1e8);
-                }
-                f3pol3->SetParameter(7, parameters1[7]);
-                if (iter_bin.param7_limit != -1)
-                {
-                    f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
-                }
-                f3pol3->FixParameter(8, parameters1[8]);
-            }
+            //     f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
+            //     f3pol3->SetParameter(0, parameters1[0]);
+            //     f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
+            //     f3pol3->SetParameter(1, parameters1[1]);
+            //     if (iter_bin.param1_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
+            //     }
+            //     f3pol3->SetParameter(2, parameters1[2]);
+            //     if (iter_bin.param2_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
+            //     }
+            //     f3pol3->SetParameter(3, parameters1[3]);
+            //     if (iter_bin.param3_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(3, parameters1[3] - iter_bin.param3_limit, 1e8);
+            //     }
+            //     f3pol3->SetParameter(4, parameters1[4]);
+            //     f3pol3->SetParameter(5, parameters1[5]);
+            //     f3pol3->SetParameter(6, parameters1[6]);
+            //     if (iter_bin.param6_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(6, parameters1[6] - iter_bin.param6_limit, 1e8);
+            //     }
+            //     f3pol3->SetParameter(7, parameters1[7]);
+            //     if (iter_bin.param7_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
+            //     }
+            //     f3pol3->FixParameter(8, parameters1[8]);
+            // }
             if (kchannel == "KK_Channel")
             {
                 // f3pol3 = BW3pol3(hinvMass, parameters1, 1.1, 1.95);
@@ -615,16 +627,16 @@ void rBW_fits()
         yield_bc[0]->SetLineColor(kRed);
         yield1270->GetYaxis()->SetTitle("Yield");
         yield1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-        // yield1270->SetMaximum(yield1270->GetMaximum() * 1.5);
+        yield1270->SetMaximum(0.5);
         // yield1270->SetMinimum(0);
         yield1270->Draw("ape");
-        yield_bc[0]->Draw("pe same");
+        // yield_bc[0]->Draw("pe same");
         yield1270->Write("yield1270");
 
         TLegend *lfit4 = new TLegend(0.65, 0.65, 0.9, 0.9);
         lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
         lfit4->AddEntry(yield1270, "Function integration", "lpe");
-        lfit4->AddEntry(yield_bc[0], "Bin counting", "lpe");
+        // lfit4->AddEntry(yield_bc[0], "Bin counting", "lpe");
         lfit4->Draw("same");
         if (saveplots)
             c9->SaveAs((fits_folder_str + "_" + kResBkg + "yield1270.png").c_str());
@@ -639,15 +651,15 @@ void rBW_fits()
         yield_bc[1]->SetLineColor(kRed);
         yield1525->GetYaxis()->SetTitle("Yield");
         yield1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-        // yield1525->SetMaximum(yield1525->GetMaximum() * 1.5);
+        yield1525->SetMaximum(0.5);
         // yield1525->SetMinimum(0);
         yield1525->Draw("ape");
-        yield_bc[1]->Draw("pe same");
+        // yield_bc[1]->Draw("pe same");
         yield1525->Write("yield1525");
         lfit4->Clear();
         lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
         lfit4->AddEntry(yield1525, "Function integration", "lpe");
-        lfit4->AddEntry(yield_bc[1], "Bin counting", "lpe");
+        // lfit4->AddEntry(yield_bc[1], "Bin counting", "lpe");
         lfit4->Draw("same");
         if (saveplots)
             c10->SaveAs((fits_folder_str + "_" + kResBkg + "yield1525.png").c_str());
@@ -662,15 +674,15 @@ void rBW_fits()
         yield_bc[2]->SetLineColor(kRed);
         yield1710->GetYaxis()->SetTitle("Yield");
         yield1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-        // yield1710->SetMaximum(yield1710->GetMaximum() * 1.5);
+        yield1710->SetMaximum(0.5);
         // yield1710->SetMinimum(0);
         yield1710->Draw("ape");
-        yield_bc[2]->Draw("pe same");
+        // yield_bc[2]->Draw("pe same");
         yield1710->Write("yield1710");
         lfit4->Clear();
         lfit4->AddEntry((TObject *)0, "Run 3 pp #sqrt{s} = 13 TeV", "");
         lfit4->AddEntry(yield1710, "Function integration", "lpe");
-        lfit4->AddEntry(yield_bc[2], "Bin counting", "lpe");
+        // lfit4->AddEntry(yield_bc[2], "Bin counting", "lpe");
         lfit4->Draw("same");
         if (saveplots)
             c11->SaveAs((fits_folder_str + "_" + kResBkg + "yield1710.png").c_str());

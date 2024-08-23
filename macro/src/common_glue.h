@@ -10,6 +10,7 @@ const string koutputtype = "png"; // pdf, eps
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
 const string kvariation = ""; // change the variation here
+// const string kvariation = "_mix_rot_10_varbin"; // for 10 mixed events and total rotations
 // const string kvariation = "_full_ks_distribution"; // change the variation here
 // const string kvariation = "_old_cuts"; // change the variation here
 #endif
@@ -63,7 +64,7 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
 // const string kDataFilename_temp2 = "250337.root"; // Medium data file (fixed rotation bkg and competing cascade cuts) (only 2 out of 4 run numbers)
 // const string kDataFilename_temp2 = "248760.root"; // Small data file (fixed different entries in the pi- and pi+ daughters, multiplicity distribution, number of Ks produced per event)
-const string kDataFilename_temp2 = "251575"; // Medium data file (all run numbers combined, does not containt KK channel)
+const string kDataFilename_temp2 = "251575.root"; // Medium data file (Full statistics, does not containt KK channel)
 const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 

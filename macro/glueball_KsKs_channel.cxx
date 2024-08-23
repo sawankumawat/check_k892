@@ -21,9 +21,9 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
-    const bool calculate_inv_mass = true;
-    const bool save_invmass_distributions = true;
+    const bool makeQAplots = true;
+    const bool calculate_inv_mass = false;
+    const bool save_invmass_distributions = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -766,41 +766,157 @@ void glueball_KsKs_channel()
         hRapidity->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_rapidity." + koutputtype).c_str());
 
-        // // TPC dE/dx plot
-        // gPad->SetLogx();
-        // TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
-        // if (hTPCenergyloss == nullptr)
-        // {
-        //     cout << "TPC energy loss plot not found" << endl;
-        //     return;
-        // }
-        // c3->Clear();
-        // SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        // SetHistoQA(hTPCenergyloss);
-        // hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
-        // hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        // hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
-        // hTPCenergyloss->Draw("colz");
-        // c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
-
-        // Mass correlation between lambda and Kshort
-        gPad->SetLogx(0);
-        TH2F *hMassCorr_ks_lambda = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort").c_str());
-        if (hMassCorr_ks_lambda == nullptr)
+        // TPC dE/dx plot
+        gPad->SetLogx();
+        TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
+        if (hTPCenergyloss == nullptr)
         {
-            cout << "Mass correlation between lambda and Kshort plot not found" << endl;
+            cout << "TPC energy loss plot not found" << endl;
             return;
         }
         c3->Clear();
         SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        SetHistoQA(hMassCorr_ks_lambda);
-        hMassCorr_ks_lambda->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
-        hMassCorr_ks_lambda->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda->GetYaxis()->SetTitleOffset(1.3);
-        hMassCorr_ks_lambda->GetXaxis()->SetRangeUser(0.25, 0.78);
-        hMassCorr_ks_lambda->GetYaxis()->SetRangeUser(1.05, 1.5);
-        hMassCorr_ks_lambda->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks." + koutputtype).c_str());
+        SetHistoQA(hTPCenergyloss);
+        hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
+        hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
+        hTPCenergyloss->Draw("colz");
+        c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
+
+        // Mass correlation between lambda and Kshort
+        gPad->SetLogx(0);
+        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_before").c_str());
+        if (hMassCorr_ks_lambda_before == nullptr)
+        {
+            cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetHistoQA(hMassCorr_ks_lambda_before);
+        hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
+        hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_before->Draw("colz");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
+
+        // Mass correlation between lambda and Kshort after the cut
+        TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after").c_str());
+        if (hMassCorr_ks_lambda_after == nullptr)
+        {
+            cout << "Mass correlation plot between lambda and Kshort after the cut not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetHistoQA(hMassCorr_ks_lambda_after);
+        hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
+        hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_after->Draw("colz");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
+
+        // Number of ks produced in an event plot
+        gPad->SetLogy();
+        TH1F *hNofKshort = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/NksProduced").c_str());
+        if (hNofKshort == nullptr)
+        {
+            cout << "Number of Kshort produced in an event plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hNofKshort);
+        hNofKshort->GetYaxis()->SetTitle("Counts");
+        hNofKshort->GetXaxis()->SetTitle("N_{K_{s}}/Event");
+        hNofKshort->GetYaxis()->SetMaxDigits(3);
+        hNofKshort->Draw();
+        c3->SaveAs((outputQAfolder_str + "/NKs_produced." + koutputtype).c_str());
+
+        // multiplicity distribution FT0M
+        TH1F *hMult_FT0M = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/multdist_FT0M").c_str());
+        if (hMult_FT0M == nullptr)
+        {
+            cout << "Multiplicity distribution FT0M plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hMult_FT0M);
+        hMult_FT0M->GetYaxis()->SetTitle("Counts");
+        hMult_FT0M->GetXaxis()->SetTitle("Multiplicity FT0M");
+        hMult_FT0M->Draw();
+        c3->SaveAs((outputQAfolder_str + "/mult_FT0M." + koutputtype).c_str());
+
+        // Events check histogram
+        gPad->SetLogy(0);
+        string xlable_eventscheck[] = {"No cut", "No cut", "time frame", "sel8", "pileup", "goodzvertex", "itstpc_match", "additional evsel", "additional evsel"};
+        TH1I *hEventsCheck = (TH1I *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/heventscheck").c_str());
+        if (hEventsCheck == nullptr)
+        {
+            cout << "Events check plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hEventsCheck);
+        hEventsCheck->GetYaxis()->SetTitle("Counts");
+        for (int i = 0; i < 9; i++)
+        {
+            hEventsCheck->GetXaxis()->SetBinLabel(i + 1, xlable_eventscheck[i].c_str());
+        }
+        hEventsCheck->SetStats(0);
+        hEventsCheck->SetMaximum(1.2 * hEventsCheck->GetMaximum());
+        hEventsCheck->Draw("HIST text");
+        c3->SaveAs((outputQAfolder_str + "/events_check." + koutputtype).c_str());
+
+        // Events check in v0 selection histogram
+        string xlable_v0selection[] = {"No cut", "DCAv0_to_PV", "rapidity Ks", "p_{T} min", "DCAv0_daughters", "Cos PA", "Tran_rad_min", "Tran_rad_max", "max lifetime", "armenteros", "competing"};
+        TH1I *hEventsCheckV0 = (TH1I *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/htrackscheck_v0").c_str());
+        if (hEventsCheckV0 == nullptr)
+        {
+            cout << "Events check in V0 selection plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hEventsCheckV0);
+        hEventsCheckV0->GetYaxis()->SetTitle("Counts");
+        hEventsCheckV0->GetXaxis()->SetRangeUser(0, 12);
+        for (int i = 0; i < 11; i++)
+        {
+            hEventsCheckV0->GetXaxis()->SetBinLabel(i + 1, xlable_v0selection[i].c_str());
+        }
+        hEventsCheckV0->SetStats(0);
+        hEventsCheckV0->SetMaximum(1.2 * hEventsCheckV0->GetMaximum());
+        hEventsCheckV0->Draw("HIST text");
+        c3->SaveAs((outputQAfolder_str + "/events_check_v0." + koutputtype).c_str());
+
+        // Events check in v0 daughters selection histogram
+        string xlable_v0daughterselection[] = {"No cut", "has TPC", "TPC CR", "TPC CRFC", "charge_sign", "charge_sign", "eta", "TPC clusters", "PID"};
+        TH1I *hEventsCheckV0Daughters = (TH1I *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/htrackscheck_v0_daughters").c_str());
+        if (hEventsCheckV0Daughters == nullptr)
+        {
+            cout << "Events check in V0 daughters selection plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hEventsCheckV0Daughters);
+        hEventsCheckV0Daughters->GetYaxis()->SetTitle("Counts");
+        hEventsCheckV0Daughters->GetXaxis()->SetRangeUser(0, 10);
+        for (int i = 0; i < 9; i++)
+        {
+            hEventsCheckV0Daughters->GetXaxis()->SetBinLabel(i + 1, xlable_v0daughterselection[i].c_str());
+        }
+        hEventsCheckV0Daughters->SetStats(0);
+        hEventsCheckV0Daughters->SetMaximum(1.2 * hEventsCheckV0Daughters->GetMaximum());
+        hEventsCheckV0Daughters->Draw("HIST text");
+        c3->SaveAs((outputQAfolder_str + "/events_check_v0_daughters." + koutputtype).c_str());
     }
 }
 

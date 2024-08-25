@@ -31,7 +31,7 @@ void gaussian_fit_Ks2()
     gStyle->SetOptFit(1111);
     string whichpass = "pass7";
 
-    int rebin = 1;
+    int rebin = 3; // for rebin 3, change the normalization factor in CB function (and use 254232 output)
     // configurables *********************
 
     // double kswidth = pdg->GetParticle(310)->Width();
@@ -154,10 +154,12 @@ void gaussian_fit_Ks2()
     double Npairs3sigma = fit3->Integral(ksmass - 3 * kswidth, ksmass + 3 * kswidth) / binwidth;
     double Npairs4sigma = fit3->Integral(ksmass - 4 * kswidth, ksmass + 4 * kswidth) / binwidth;
     double Npairs5sigma = fit3->Integral(ksmass - 5 * kswidth, ksmass + 5 * kswidth) / binwidth;
+    double Npairs6sigma = fit3->Integral(ksmass - 6 * kswidth, ksmass + 6 * kswidth) / binwidth;
     cout << "No. and percentage of Ks in +- 2 sigma: " << Npairs2sigma << " " << Npairs2sigma / allks << "\n"
          << "No. and percentage of Ks in +- 3 sigma: " << Npairs3sigma << " " << Npairs3sigma / allks << "\n"
          << "No. and percentage of Ks in +- 4 sigma: " << Npairs4sigma << " " << Npairs4sigma / allks << "\n"
-         << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n";
+         << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n"
+         << "No. and percentage of Ks in +- 6 sigma: " << Npairs6sigma << " " << Npairs6sigma / allks << "\n";
 
     // Purity of signal = S/(S+B)
     // S = signal yield from functional integration fit after subtracting the background
@@ -167,14 +169,17 @@ void gaussian_fit_Ks2()
     double sigbkg3 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 3 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 3 * kswidth));
     double sigbkg4 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 4 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 4 * kswidth));
     double sigbkg5 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 5 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 5 * kswidth));
+    double sigbkg6 = hInvMass->Integral(hInvMass->GetXaxis()->FindBin(ksmass - 6 * kswidth), hInvMass->GetXaxis()->FindBin(ksmass + 6 * kswidth));
     double purity2 = Npairs2sigma / sigbkg2;
     double purity3 = Npairs3sigma / sigbkg3;
     double purity4 = Npairs4sigma / sigbkg4;
     double purity5 = Npairs5sigma / sigbkg5;
+    double purity6 = Npairs6sigma / sigbkg6;
     cout << "Purity of signal in 2 sigma: " << purity2 << "\n"
          << "Purity of signal in 3 sigma: " << purity3 << "\n"
          << "Purity of signal in 4 sigma: " << purity4 << "\n"
-         << "Purity of signal in 5 sigma: " << purity5 << "\n";
+         << "Purity of signal in 5 sigma: " << purity5 << "\n"
+         << "Purity of signal in 6 sigma: " << purity6 << "\n";
 
     TLegend *lp2 = DrawLegend(0.16, 0.68, 0.42, 0.85);
     lp2->SetTextSize(0.04);
@@ -193,6 +198,17 @@ void gaussian_fit_Ks2()
     st->SetY1NDC(0.3); // 0.78
     st->SetY2NDC(0.95);
     st->Draw("same");
+
+    TLine *linevert = new TLine(ksmass - 4 * kswidth, 0, ksmass - 4 * kswidth, hInvMass->GetMaximum());
+    linevert->SetLineStyle(2);
+    linevert->SetLineColor(3);
+    linevert->SetLineWidth(3);
+    linevert->Draw("same");
+    TLine *linevert2 = new TLine(ksmass + 4 * kswidth, 0, ksmass + 4 * kswidth, hInvMass->GetMaximum());
+    linevert2->SetLineStyle(2);
+    linevert2->SetLineColor(3);
+    linevert2->SetLineWidth(3);
+    linevert2->Draw("same");
 
     TLegend *lp1 = DrawLegend(0.52, 0.35, 0.9, 0.45);
     lp1->SetFillStyle(0);
@@ -275,13 +291,13 @@ void gaussian_fit_Ks2()
 
             bool conditions[] = {
                 // for pass 8 with full statistics
-                rebin == 1 && ipt < 4,                                    // Condition 0
-                (rebin == 10) && ipt < 4,                                 // Condition 1
+                (rebin == 1 || rebin == 3) && ipt < 4,                     // Condition 0
+                (rebin == 2) && ipt < 3,                                   // Condition 1
                 rebin == 10 && (ipt == Nptbins - 2 || ipt == Nptbins - 1), // Condition 2
-                rebin == 10 && (ipt == 9 || ipt == 10),                   // Condition 3
-                rebin == 1 && ipt == Nptbins - 2,                        // Condition 4
-                rebin == 10 && (ipt == Nptbins - 2 || ipt == Nptbins - 1), // Condition 5
-                rebin == 1 && ipt == Nptbins - 1                         // Condition 6
+                rebin == 10 && (ipt == 9 || ipt == 10),                    // Condition 3
+                rebin == 1 && ipt == Nptbins - 2,                          // Condition 4
+                rebin == 3 && ipt == Nptbins - 1,                          // Condition 5
+                (rebin == 1 || rebin == 2) && ipt == Nptbins - 1           // Condition 6
             };
 
             if (conditions[0])
@@ -309,7 +325,7 @@ void gaussian_fit_Ks2()
             }
             else if (conditions[5])
             {
-                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[Nptbins - 5], false);
+                fitpt3 = doubleCBpol2(hInvMassPt[ipt], param_allpt[Nptbins - 4], false);
                 fitpt3->Draw("SAME");
             }
             else if (conditions[6])
@@ -520,7 +536,7 @@ void gaussian_fit_Ks2()
         hratios->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hratios->GetYaxis()->SetTitleOffset(0.55);
         hratios->GetXaxis()->SetTitleOffset(1.1);
-        hratios->GetYaxis()->SetRangeUser(0.9, 1.1);
+        hratios->GetYaxis()->SetRangeUser(0.9, 1.098);
         hratios->GetYaxis()->SetNdivisions(505);
         hratios->Draw("pe");
         TLine *line1 = new TLine(0.0, 1.0, 30.0, 1.0);
@@ -621,7 +637,7 @@ TF1 *CB(TH1 *h, double ksmass, double kswidth)
 {
     TF1 *fit = new TF1("fit", CrystalBall, ksmass - 2.5 * kswidth, ksmass + 3.0 * kswidth, 5);
     fit->SetParNames("Norm", "Mean", "Sigma", "Alpha", "n");
-    fit->SetParameter(0, 8.1e7);
+    fit->SetParameter(0, 5e8); // if rebin == 3, then 5e8 else 8e7
     fit->SetParameter(1, ksmass);
     fit->SetParameter(2, kswidth);
     fit->SetLineColor(1);

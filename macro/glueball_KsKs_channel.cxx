@@ -19,11 +19,11 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
-    const bool calculate_inv_mass = false;
-    const bool save_invmass_distributions = false;
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
+    const bool calculate_inv_mass = true;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -245,6 +245,7 @@ void glueball_KsKs_channel()
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
             fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
             fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
             fHistTotal[ip]->Draw("E");
             if (save_invmass_distributions)
             {
@@ -768,6 +769,7 @@ void glueball_KsKs_channel()
 
         // TPC dE/dx plot
         gPad->SetLogx();
+        gPad->SetLogz();
         TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
         if (hTPCenergyloss == nullptr)
         {
@@ -775,16 +777,18 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetCanvasStyle(c3, 0.15, 0.14, 0.05, 0.15);
         SetHistoQA(hTPCenergyloss);
         hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
         hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
+        hTPCenergyloss->SetStats(0);
         hTPCenergyloss->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
 
         // Mass correlation between lambda and Kshort
         gPad->SetLogx(0);
+        gPad->SetLogz(0);
         TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_before").c_str());
         if (hMassCorr_ks_lambda_before == nullptr)
         {
@@ -834,7 +838,9 @@ void glueball_KsKs_channel()
         hNofKshort->GetYaxis()->SetTitle("Counts");
         hNofKshort->GetXaxis()->SetTitle("N_{K_{s}}/Event");
         hNofKshort->GetYaxis()->SetMaxDigits(3);
-        hNofKshort->Draw();
+        hNofKshort->SetMaximum(100 * hNofKshort->GetMaximum());
+        hNofKshort->Draw("HIST text");
+        cout<<"Percentage of events in which > 1 Ks are produced "<<hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100<<endl;
         c3->SaveAs((outputQAfolder_str + "/NKs_produced." + koutputtype).c_str());
 
         // multiplicity distribution FT0M
@@ -849,6 +855,8 @@ void glueball_KsKs_channel()
         SetHistoQA(hMult_FT0M);
         hMult_FT0M->GetYaxis()->SetTitle("Counts");
         hMult_FT0M->GetXaxis()->SetTitle("Multiplicity FT0M");
+        hMult_FT0M->GetXaxis()->SetRangeUser(-10000, 45000);
+        hMult_FT0M->GetXaxis()->SetNdivisions(505);
         hMult_FT0M->Draw();
         c3->SaveAs((outputQAfolder_str + "/mult_FT0M." + koutputtype).c_str());
 

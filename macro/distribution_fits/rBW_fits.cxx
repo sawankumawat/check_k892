@@ -26,7 +26,7 @@ void rBW_fits()
 
     const int rebin = 1;
     bool testing = false;
-    bool saveplots = true;
+    bool saveplots = false;
     // double f1710Mass = pdg->GetParticle(10331)->Mass();
     // double f1710Width = pdg->GetParticle(10331)->Width();
     gStyle->SetOptStat(1110);

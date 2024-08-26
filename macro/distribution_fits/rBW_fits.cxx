@@ -61,7 +61,8 @@ void rBW_fits()
         new TGraphErrors(Npt)};
 
     // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -89,6 +90,7 @@ void rBW_fits()
         hinvMass->GetXaxis()->SetRangeUser(1.0, 2.4);
         TH1F *hinvMassResSub = (TH1F *)hinvMass->Clone();
         hinvMass->Draw();
+        c1->SaveAs((fits_folder_str + Form("hinvMass_withoutfit_pt_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
         double parameters1[9] = {50, f1270Mass, f1270Width, 25, f1525Mass, f1525Width, 25, f1710Mass, f1710Width};
 
         if (testing)
@@ -144,7 +146,7 @@ void rBW_fits()
 
                 // // Define the fit parameters for each pT bin
 
-                // // for pass 7 full statistics (MIX)
+                // // for pass 7 full statistics (MIX, 0.02 MeV binwidth)
                 // std::vector<FitParams> bwfit_params_me = {
                 //     // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c
                 //     {1.07, 2.15, 0, 0.02, 0.008, 0, 0, 0.08},    // pT 1 to 2
@@ -156,7 +158,9 @@ void rBW_fits()
 
                 // for pass 7 full statistics (ROTATED)
                 std::vector<FitParams> bwfit_params_me = {
-                    // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c
+                    // {1.02, 2.16, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.08, 2.16, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c (0.01 MeV)
+                    // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c (0.02 MeV)
                     {1.14, 2.10, 0, 0.02, 0.008, 0, 0, 0.08},   // pT 1 to 2
                     {1.08, 2.16, 1, 0.019, 0.008, 0, 0, 0.08},   // pT 2 to 3
                     {1.09, 2.16, 0, 0.015, 0.008, 0, 0, 0.08}, // pT 3 to 4

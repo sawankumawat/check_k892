@@ -26,7 +26,7 @@ void rBW_fits()
 
     const int rebin = 1;
     bool testing = false;
-    bool saveplots = false;
+    bool saveplots = true;
     // double f1710Mass = pdg->GetParticle(10331)->Mass();
     // double f1710Width = pdg->GetParticle(10331)->Width();
     gStyle->SetOptStat(1110);
@@ -61,7 +61,7 @@ void rBW_fits()
         new TGraphErrors(Npt)};
 
     // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/250337/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.20_2.30..root", "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -142,39 +142,26 @@ void rBW_fits()
                     double param7_limit;     // mass for f1710
                 };
 
-                // // Define the fit parameters for each pT bin (pass 6)
+                // // Define the fit parameters for each pT bin
+
+                // // for pass 7 full statistics (MIX)
                 // std::vector<FitParams> bwfit_params_me = {
-                //     // {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // for testing purpose for single
-                //     {1.09, 2.1, 3, 0.08, 0.01, -1, -1, 0.08}, // for full pT range
-                //     {1.09, 2.18, 3, 0.09, 0.01, -1, -1, 0.08}, // pT 1 to 2
-                //     {1.11, 2.16, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 2 to 3
-                //     {1.12, 1.95, 0, 0.09, 0.01, -1, -1, 0.08}, // pT 3 to 4
-                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
-                //     {1.1, 2.15, -1, 0.08, 0.01, -1, -1, 0.08}  // pT 6 to 12
+                //     // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c
+                //     {1.07, 2.15, 0, 0.02, 0.008, 0, 0, 0.08},    // pT 1 to 2
+                //     {1.09, 2.15, 0, 0.02, 0.008, 0, 0, 0.09}, // pT 2 to 3
+                //     {1.10, 2.16, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 3 to 4
+                //     {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
+                //     {1.07, 2.10, 0, 0.012, 0.01, 0, 0, 0.085}  // pT 6 to 12
                 // };
 
-                // // for pass 7 (for ME norm range 2.0 - 2.1)
-                // std::vector<FitParams> bwfit_params_me = {
-                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
-                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
-                //     // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
-                //     {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},     // pT 1 to 2, full pT range, both ME and Rot (norm  2.2-2.3)
-                //     {1.12, 2.13, 0, 0.015, 0.008, 0, 0, 0.08},   // pT 2 to 3
-                //     {1.11, 2.12, 0, 0.09, 0.01, -1, -1, 0.08},   // pT 3 to 4
-                //     {1.075, 2.17, -1, 0.08, 0.01, -1, -1, 0.08}, // pT 4 to 6
-                //     {1.09, 2.13, -1, 0.08, 0.01, -1, -1, 0.08}   // pT 6 to 12
-                // };
-
-                // for pass 7 (for ME norm range 2.2 - 2.3) (both mix and rot works)
+                // for pass 7 full statistics (ROTATED)
                 std::vector<FitParams> bwfit_params_me = {
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // for testing purpose (norm 2.3 to 2.50)
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 2.3 to 2.50)
-                    // {1.12, 2.13, 0, 0.08, 0.01, 0, 0, 0.08}, // full pT and (norm 1.1 to 1.15)
-                    {1.08, 2.1, 0, 0.02, 0.008, 0, 0, 0.08},    // pT 1 to 2, full pT range, both ME and Rot (norm  2.2-2.3)
-                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 2 to 3
-                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 3 to 4
-                    {1.07, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
-                    {1.09, 2.11, 0, 0.08, 0.01, -1, -1, 0.085}   // pT 6 to 12
+                    // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c
+                    {1.14, 2.10, 0, 0.02, 0.008, 0, 0, 0.08},   // pT 1 to 2
+                    {1.08, 2.16, 1, 0.019, 0.008, 0, 0, 0.08},   // pT 2 to 3
+                    {1.09, 2.16, 0, 0.015, 0.008, 0, 0, 0.08}, // pT 3 to 4
+                    {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
+                    {1.08, 2.11, 0, 0.015, 0.008, 0, 0, 0.08}   // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];

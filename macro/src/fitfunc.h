@@ -94,7 +94,7 @@ Double_t RelativisticBW(double *x, double *par)
 
 Double_t exponential_bkg(double *x, double *par)
 {
-    return (par[0] * pow((x[0] - 2 * 0.497), par[1]) * TMath::Exp(-par[2] * (x[0] - 2 * 0.497)));
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * (x[0] - 2.0 * 0.497)));
 }
 
 Double_t BW3(double *x, double *par)

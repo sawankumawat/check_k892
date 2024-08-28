@@ -249,3 +249,13 @@ Double_t BW2boltzman(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + Boltzman(x, &par[6]));
 }
+
+Double_t coherentBWsum(double *x, double *par)
+{
+    return par[12] * TMath::Power(5 * RelativisticBW(x, &par[0]) - 3 * RelativisticBW(x, &par[3]) + 2 * RelativisticBW(x, &par[6]), 2) + par[13] * (TMath::Power(RelativisticBW(x, &par[9]), 2));
+}
+
+Double_t coherentBWsum_expol(double *x, double *par)
+{
+    return coherentBWsum(x, &par[0]) + exponential_bkg(x, &par[14]);
+}

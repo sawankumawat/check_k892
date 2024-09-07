@@ -19,11 +19,11 @@ void glueball_KsKs_channel()
 
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
-    const bool calculate_inv_mass = false;
-    const bool save_invmass_distributions = false;
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
+    const bool calculate_inv_mass = true;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -247,6 +247,7 @@ void glueball_KsKs_channel()
             fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
             fHistTotal[ip]->Draw("E");
+            fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
             if (save_invmass_distributions)
             {
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", pT_bins[ip], pT_bins[ip + 1]) + koutputtype).c_str());

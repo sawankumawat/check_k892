@@ -37,6 +37,7 @@ double alephParam(double *x, double *par)
     double dEdx = (P1 / pow(bg, P4)) * (P2 - pow(bg, 4) - log(P3 + 1.0 / pow(bg, P5)));
     return dEdx; // dE/dx in arbitrary units
 }
+int colors[] = {1, 2, 4, 6, 9, 28, 42};
 
 void temp_code()
 {
@@ -409,4 +410,97 @@ void temp_code()
     // leg_width->SetTextSize(0.03);
     // leg_width->Draw();
     // ccompare_width_rebins->SaveAs("distribution_fits/saved/pass7/width_rebins_check.png");
+
+    // // compare the KsKs distribution for different Ks mass cuts
+    // TCanvas *ccut_var = new TCanvas("", "", 720, 720);
+    // SetCanvasStyle(ccut_var, 0.17, 0.03, 0.06, 0.14);
+    // string pathtemp = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/";
+    // TFile *fcut2 = new TFile((pathtemp + "strangeness_tutorial_ks_masscut2/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    // TFile *fcut3 = new TFile((pathtemp + "strangeness_tutorial_ks_masscut3/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    // TFile *fcut4 = new TFile((pathtemp + "strangeness_tutorial/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    // TFile *fcut5 = new TFile((pathtemp + "strangeness_tutorial_ks_masscut5/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    // TFile *fcut6 = new TFile((pathtemp + "strangeness_tutorial_ks_masscut6/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    // if (fcut2->IsZombie() || fcut3->IsZombie() || fcut4->IsZombie() || fcut5->IsZombie() || fcut6->IsZombie())
+    // {
+    //     cout << "Error opening file" << endl;
+    //     return;
+    // }
+    // vector<TFile *> files = {fcut2, fcut3, fcut4, fcut5, fcut6};
+
+    // TH1F *hcuts[5];
+    // TLegend *leg = new TLegend(0.6, 0.6, 0.8, 0.9);
+    // leg->SetFillStyle(0);
+    // leg->SetBorderSize(0);
+    // leg->SetTextFont(42);
+    // leg->SetTextSize(0.035);
+    // leg->SetHeader("Rec K_{S}K_{S} pairs:");
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     hcuts[i] = (TH1F *)files[i]->Get("ksks_invmass_pt_0.0_30.0");
+    //     if (hcuts[i] == nullptr)
+    //     {
+    //         cout << "Error reading histogram" << endl;
+    //         return;
+    //     }
+    //     SetHistoQA(hcuts[i]);
+    //     hcuts[i]->SetMarkerStyle(20 + i);
+    //     hcuts[i]->SetMarkerColor(colors[i]);
+    //     hcuts[i]->SetLineColor(colors[i]);
+    //     hcuts[i]->GetYaxis()->SetMaxDigits(3);
+    //     hcuts[i]->GetYaxis()->SetTitleOffset(1.7);
+    //     hcuts[i]->SetMaximum(hcuts[i]->GetMaximum() * 1.2);
+    //     // if (i == 0 || i == 2 || i == 4)
+    //     // {
+    //     hcuts[i]->GetXaxis()->SetRangeUser(1.0, 2.51);
+    //     hcuts[i]->Draw("PE same");
+    //     int events = hcuts[i]->Integral();
+    //     cout << "Events for " << i + 2 << " sigma cut: " << events << endl;
+    //     leg->AddEntry(hcuts[i], Form("%d #sigma cut: %d", 2 + i, events), "pe");
+    //     // }
+    // }
+    // leg->Draw();
+    // ccut_var->SaveAs(string(pathtemp + "ksks_masscut_comparison.png").c_str());
+
+    // compare KsKs distribution with and without pileup rejection cut.
+    TCanvas *cpile = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cpile, 0.17, 0.03, 0.06, 0.14);
+    string pathtemp = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/";
+    TFile *fwithout_pileup = new TFile((pathtemp + "253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    TFile *fwith_pileup = new TFile((pathtemp + "254232/KsKs_Channel/strangeness_tutorial_pileup_cut/hglue_ROTATED_norm_2.20_2.30..root").c_str(), "READ");
+    if (fwithout_pileup->IsZombie() || fwith_pileup->IsZombie())
+    {
+        cout << "Error opening file" << endl;
+        return;
+    }
+    TLegend *leg = new TLegend(0.42, 0.65, 0.8, 0.9);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0);
+    leg->SetTextFont(42);
+    leg->SetTextSize(0.035);
+    leg->SetHeader("Rec K_{S}K_{S} pairs:");
+    TH1F *hpileup[2];
+    string name[] = {"Without pileup cut", "With pileup cut"};
+    vector<TFile *> files = {fwithout_pileup, fwith_pileup};
+    for (int i = 0; i < 2; i++)
+    {
+        hpileup[i] = (TH1F *)files[i]->Get("ksks_invmass_pt_0.0_30.0");
+        if (hpileup[i] == nullptr)
+        {
+            cout << "Error reading histogram" << endl;
+            return;
+        }
+        SetHistoQA(hpileup[i]);
+        hpileup[i]->SetMarkerStyle(20 + i);
+        hpileup[i]->SetMarkerColor(colors[i]);
+        hpileup[i]->SetLineColor(colors[i]);
+        hpileup[i]->GetYaxis()->SetMaxDigits(3);
+        hpileup[i]->GetYaxis()->SetTitleOffset(1.7);
+        hpileup[i]->SetMaximum(hpileup[i]->GetMaximum() * 1.2);
+        hpileup[i]->GetXaxis()->SetRangeUser(1.0, 2.51);
+        hpileup[i]->Draw("PE same");
+        int events = hpileup[i]->Integral();
+        leg->AddEntry(hpileup[i], Form("%s: %d", name[i].c_str(), events), "pe");
+    }
+    leg->Draw();
+    cpile->SaveAs(string(pathtemp + "253148/KsKs_Channel/ksks_pileup_comparison.png").c_str());
 }

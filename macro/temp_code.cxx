@@ -40,6 +40,8 @@ double alephParam(double *x, double *par)
 
 void temp_code()
 {
+    //This is a temporary code to compare different histograms, like tpc dE/dx, multiplicity, rebin variations etc.
+    
     gStyle->SetOptStat(0);
     // gStyle->SetOptStat(1110);
     // TFile *f = new TFile("../data/glueball/LHC22o_pass7_small/247473.root", "READ");
@@ -200,205 +202,211 @@ void temp_code()
     // // nbd->SetParameters(1e5, 1, 0.5); // Initial values: par0 (normalization), par1 (no of success), par2 (success probability)
     // // h_mult->Fit("nbd", "RS");
 
-    // // Correlation plots
-    // TCanvas *c_correlation = new TCanvas("c_correlation", "c_correlation", 720, 720);
-    // string path_corr_before = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_before";
-    // string path_corr_after = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_after";
-    // TH2F *h_corr_before = (TH2F *)f->Get(path_corr_before.c_str());
-    // TH2F *h_corr_after = (TH2F *)f->Get(path_corr_after.c_str());
-    // if (h_corr_before == nullptr || h_corr_after == nullptr)
+    // Correlation plots
+    TFile *f = new TFile("/home/sawan/Downloads/AnalysisResults.root", "READ");
+    if(f->IsZombie())
+    {
+        cout<<"Error opening file"<<endl;
+        return;
+    }
+    TCanvas *c_correlation = new TCanvas("c_correlation", "c_correlation", 720, 720);
+    string path_corr_before = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_after9";
+    string path_corr_after = "strangeness_tutorial/kzeroShort/mass_lambda_kshort_after10";
+    TH2F *h_corr_before = (TH2F *)f->Get(path_corr_before.c_str());
+    TH2F *h_corr_after = (TH2F *)f->Get(path_corr_after.c_str());
+    if (h_corr_before == nullptr || h_corr_after == nullptr)
+    {
+        cout << "Error reading histogram" << endl;
+        return;
+    }
+
+    SetCanvasStyle(c_correlation, 0.15, 0.12, 0.06, 0.14);
+    SetHistoQA(h_corr_before);
+    h_corr_before->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
+    h_corr_before->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
+    h_corr_before->GetYaxis()->SetRangeUser(1, 1.5);
+    h_corr_before->Draw("colz");
+    c_correlation->SaveAs("distribution_fits/saved/mass_lambda_kshort_before.png");
+
+    TCanvas *c_correlation_after = new TCanvas("c_correlation_after", "c_correlation_after", 720, 720);
+    SetCanvasStyle(c_correlation_after, 0.15, 0.12, 0.06, 0.14);
+    SetHistoQA(h_corr_after);
+    h_corr_after->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
+    h_corr_after->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
+    h_corr_after->GetYaxis()->SetRangeUser(1, 1.5);
+    h_corr_after->Draw("colz");
+    c_correlation_after->SaveAs("distribution_fits/saved/mass_lambda_kshort_after.png");
+
+    // // comparing the mass and width of distribution for different rebin variations
+    // gStyle->SetErrorX(0);
+    // TString labels[3] = {"f_{2}(1270)", "f_{2}(1525)", "f_{0}(1710)"};
+    // float masses_rebin1[3] = {1.289, 1.519, 1.707};
+    // float masses_rebin1_err[3] = {0.011, 0.002, 0.011};
+    // float masses_rebin2[3] = {1.284, 1.518, 1.706};
+    // float masses_rebin2_err[3] = {0.012, 0.002, 0.011};
+    // float masses_rebin4[3] = {1.301, 1.518, 1.708};
+    // float masses_rebin4_err[3] = {0.006, 0.002, 0.007};
+
+    // TCanvas *ccompare_rebins = new TCanvas("ccompare_rebins", "ccompare_rebins", 720, 720);
+    // SetCanvasStyle(ccompare_rebins, 0.15, 0.03, 0.03, 0.14);
+
+    // // Create histograms for each rebin variation
+    // TH1F *h_mass1 = new TH1F("h_mass1", "", 3, 0.5, 3.5);
+    // TH1F *h_mass2 = new TH1F("h_mass2", "", 3, 0.5, 3.5);
+    // TH1F *h_mass4 = new TH1F("h_mass4", "", 3, 0.5, 3.5);
+
+    // // Fill histograms with mass values and set bin labels
+    // for (int i = 0; i < 3; i++)
     // {
-    //     cout << "Error reading histogram" << endl;
-    //     return;
+    //     SetHistoQA(h_mass1);
+    //     SetHistoQA(h_mass2);
+    //     SetHistoQA(h_mass4);
+    //     h_mass1->SetMarkerSize(1.5);
+    //     h_mass2->SetMarkerSize(1.5);
+    //     h_mass4->SetMarkerSize(1.5);
+    //     h_mass1->SetBinContent(i + 1, masses_rebin1[i]);
+    //     h_mass1->SetBinError(i + 1, masses_rebin1_err[i]);
+    //     h_mass2->SetBinContent(i + 1, masses_rebin2[i]);
+    //     h_mass2->SetBinError(i + 1, masses_rebin2_err[i]);
+    //     h_mass4->SetBinContent(i + 1, masses_rebin4[i]);
+    //     h_mass4->SetBinError(i + 1, masses_rebin4_err[i]);
+    //     h_mass1->GetXaxis()->SetBinLabel(i + 1, labels[i]);
+    //     h_mass2->GetXaxis()->SetBinLabel(i + 1, labels[i]);
+    //     h_mass4->GetXaxis()->SetBinLabel(i + 1, labels[i]);
     // }
 
-    // SetCanvasStyle(c_correlation, 0.15, 0.12, 0.06, 0.14);
-    // SetHistoQA(h_corr_before);
-    // h_corr_before->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
-    // h_corr_before->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
-    // h_corr_before->GetYaxis()->SetRangeUser(1, 1.5);
-    // h_corr_before->Draw("colz");
-    // c_correlation->SaveAs("distribution_fits/saved/mass_lambda_kshort_before.png");
+    // // Set styles for the histograms
+    // h_mass1->SetMarkerColor(28);
+    // h_mass1->SetLineColor(28);
+    // h_mass1->SetMarkerStyle(21);
+    // h_mass2->SetMarkerColor(2);
+    // h_mass2->SetLineColor(2);
+    // h_mass2->SetMarkerStyle(22);
+    // h_mass4->SetMarkerColor(4);
+    // h_mass4->SetLineColor(4);
+    // h_mass4->SetMarkerStyle(23);
 
-    // TCanvas *c_correlation_after = new TCanvas("c_correlation_after", "c_correlation_after", 720, 720);
-    // SetCanvasStyle(c_correlation_after, 0.15, 0.12, 0.06, 0.14);
-    // SetHistoQA(h_corr_after);
-    // h_corr_after->GetYaxis()->SetTitle("M_{#Lambda} (GeV/c^{2})");
-    // h_corr_after->GetXaxis()->SetTitle("M_{K_{S}} (GeV/c^{2})");
-    // h_corr_after->GetYaxis()->SetRangeUser(1, 1.5);
-    // h_corr_after->Draw("colz");
-    // c_correlation_after->SaveAs("distribution_fits/saved/mass_lambda_kshort_after.png");
+    // h_mass1->GetYaxis()->SetNdivisions(510);
+    // h_mass1->GetXaxis()->SetTitle("Resonance");
+    // h_mass1->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
+    // h_mass1->GetXaxis()->LabelsOption("h");
 
-    // comparing the mass and width of distribution for different rebin variations
-    gStyle->SetErrorX(0);
-    TString labels[3] = {"f_{2}(1270)", "f_{2}(1525)", "f_{0}(1710)"};
-    float masses_rebin1[3] = {1.289, 1.519, 1.707};
-    float masses_rebin1_err[3] = {0.011, 0.002, 0.011};
-    float masses_rebin2[3] = {1.284, 1.518, 1.706};
-    float masses_rebin2_err[3] = {0.012, 0.002, 0.011};
-    float masses_rebin4[3] = {1.301, 1.518, 1.708};
-    float masses_rebin4_err[3] = {0.006, 0.002, 0.007};
+    // // Draw histograms
+    // h_mass1->Draw("E1");
+    // h_mass2->Draw("E1 same");
+    // h_mass4->Draw("E1 same");
 
-    TCanvas *ccompare_rebins = new TCanvas("ccompare_rebins", "ccompare_rebins", 720, 720);
-    SetCanvasStyle(ccompare_rebins, 0.15, 0.03, 0.03, 0.14);
+    // // Draw lines for PDG masses
+    // TLine *linepdg1270 = new TLine(0.8, f1270Mass, 1.2, f1270Mass);
+    // linepdg1270->SetLineColor(1);
+    // linepdg1270->SetLineWidth(3);
+    // linepdg1270->SetLineStyle(2);
+    // linepdg1270->Draw();
 
-    // Create histograms for each rebin variation
-    TH1F *h_mass1 = new TH1F("h_mass1", "", 3, 0.5, 3.5);
-    TH1F *h_mass2 = new TH1F("h_mass2", "", 3, 0.5, 3.5);
-    TH1F *h_mass4 = new TH1F("h_mass4", "", 3, 0.5, 3.5);
+    // TLine *linepdg1525 = new TLine(1.8, f1525Mass, 2.2, f1525Mass);
+    // linepdg1525->SetLineColor(1);
+    // linepdg1525->SetLineWidth(3);
+    // linepdg1525->SetLineStyle(3);
+    // linepdg1525->Draw();
 
-    // Fill histograms with mass values and set bin labels
-    for (int i = 0; i < 3; i++)
-    {
-        SetHistoQA(h_mass1);
-        SetHistoQA(h_mass2);
-        SetHistoQA(h_mass4);
-        h_mass1->SetMarkerSize(1.5);
-        h_mass2->SetMarkerSize(1.5);
-        h_mass4->SetMarkerSize(1.5);
-        h_mass1->SetBinContent(i + 1, masses_rebin1[i]);
-        h_mass1->SetBinError(i + 1, masses_rebin1_err[i]);
-        h_mass2->SetBinContent(i + 1, masses_rebin2[i]);
-        h_mass2->SetBinError(i + 1, masses_rebin2_err[i]);
-        h_mass4->SetBinContent(i + 1, masses_rebin4[i]);
-        h_mass4->SetBinError(i + 1, masses_rebin4_err[i]);
-        h_mass1->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-        h_mass2->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-        h_mass4->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-    }
+    // TLine *linepdg1710 = new TLine(2.8, f1710Mass, 3.2, f1710Mass);
+    // linepdg1710->SetLineColor(1);
+    // linepdg1710->SetLineWidth(3);
+    // linepdg1710->SetLineStyle(4);
+    // linepdg1710->Draw();
 
-    // Set styles for the histograms
-    h_mass1->SetMarkerColor(28);
-    h_mass1->SetLineColor(28);
-    h_mass1->SetMarkerStyle(21);
-    h_mass2->SetMarkerColor(2);
-    h_mass2->SetLineColor(2);
-    h_mass2->SetMarkerStyle(22);
-    h_mass4->SetMarkerColor(4);
-    h_mass4->SetLineColor(4);
-    h_mass4->SetMarkerStyle(23);
+    // TLegend *leg_mass = new TLegend(0.22, 0.64, 0.62, 0.94);
+    // leg_mass->AddEntry(h_mass1, "0.01 MeV/c^{2}", "pe");
+    // leg_mass->AddEntry(h_mass2, "0.02 MeV/c^{2}", "pe");
+    // leg_mass->AddEntry(h_mass4, "0.04 MeV/c^{2}", "pe");
+    // leg_mass->AddEntry(linepdg1270, "PDG f_{2}(1270)", "l");
+    // leg_mass->AddEntry(linepdg1525, "PDG f_{2}(1525)", "l");
+    // leg_mass->AddEntry(linepdg1710, "PDG f_{0}(1710)", "l");
+    // leg_mass->SetBorderSize(0);
+    // leg_mass->SetFillStyle(0);
+    // leg_mass->SetTextFont(42);
+    // leg_mass->SetTextSize(0.03);
+    // leg_mass->Draw();
 
-    h_mass1->GetYaxis()->SetNdivisions(510);
-    h_mass1->GetXaxis()->SetTitle("Resonance");
-    h_mass1->GetYaxis()->SetTitle("Mass (GeV/c^{2})");
-    h_mass1->GetXaxis()->LabelsOption("h");
+    // ccompare_rebins->SaveAs("distribution_fits/saved/pass7/mass_rebins.png");
 
-    // Draw histograms
-    h_mass1->Draw("E1");
-    h_mass2->Draw("E1 same");
-    h_mass4->Draw("E1 same");
+    // // width
+    // float x_value2[2] = {1, 2};
+    // float x_error2[2] = {0, 0};
+    // float width_rebin1[2] = {0.1856, 0.08542};
+    // float width_rebin1_err[2] = {0.0143, 0.01008};
+    // float width_rebin2[2] = {0.1901, 0.08952};
+    // float width_rebin2_err[2] = {0.0164, 0.00960};
+    // float width_rebin4[2] = {0.196, 0.1354};
+    // float width_rebin4_err[2] = {0.004, 0.0131};
 
-    // Draw lines for PDG masses
-    TLine *linepdg1270 = new TLine(0.8, f1270Mass, 1.2, f1270Mass);
-    linepdg1270->SetLineColor(1);
-    linepdg1270->SetLineWidth(3);
-    linepdg1270->SetLineStyle(2);
-    linepdg1270->Draw();
+    // TCanvas *ccompare_width_rebins = new TCanvas("", "", 720, 720);
+    // SetCanvasStyle(ccompare_width_rebins, 0.15, 0.03, 0.03, 0.14);
+    // TH1F *h_width1 = new TH1F("h_width1", "", 2, 0.5, 2.5);
+    // TH1F *h_width2 = new TH1F("h_width2", "", 2, 0.5, 2.5);
+    // TH1F *h_width4 = new TH1F("h_width4", "", 2, 0.5, 2.5);
 
-    TLine *linepdg1525 = new TLine(1.8, f1525Mass, 2.2, f1525Mass);
-    linepdg1525->SetLineColor(1);
-    linepdg1525->SetLineWidth(3);
-    linepdg1525->SetLineStyle(3);
-    linepdg1525->Draw();
+    // for (int i = 0; i < 2; i++)
+    // {
+    //     SetHistoQA(h_width1);
+    //     SetHistoQA(h_width2);
+    //     SetHistoQA(h_width4);
+    //     h_width1->SetMarkerSize(1.5);
+    //     h_width2->SetMarkerSize(1.5);
+    //     h_width4->SetMarkerSize(1.5);
+    //     h_width1->SetBinContent(i + 1, width_rebin1[i]);
+    //     h_width1->SetBinError(i + 1, width_rebin1_err[i]);
+    //     h_width2->SetBinContent(i + 1, width_rebin2[i]);
+    //     h_width2->SetBinError(i + 1, width_rebin2_err[i]);
+    //     h_width4->SetBinContent(i + 1, width_rebin4[i]);
+    //     h_width4->SetBinError(i + 1, width_rebin4_err[i]);
+    //     h_width1->GetXaxis()->SetBinLabel(i + 1, labels[i]);
+    //     h_width2->GetXaxis()->SetBinLabel(i + 1, labels[i]);
+    //     h_width4->GetXaxis()->SetBinLabel(i + 1, labels[i]);
+    // }
 
-    TLine *linepdg1710 = new TLine(2.8, f1710Mass, 3.2, f1710Mass);
-    linepdg1710->SetLineColor(1);
-    linepdg1710->SetLineWidth(3);
-    linepdg1710->SetLineStyle(4);
-    linepdg1710->Draw();
-
-    TLegend *leg_mass = new TLegend(0.22, 0.64, 0.62, 0.94);
-    leg_mass->AddEntry(h_mass1, "0.01 MeV/c^{2}", "pe");
-    leg_mass->AddEntry(h_mass2, "0.02 MeV/c^{2}", "pe");
-    leg_mass->AddEntry(h_mass4, "0.04 MeV/c^{2}", "pe");
-    leg_mass->AddEntry(linepdg1270, "PDG f_{2}(1270)", "l");
-    leg_mass->AddEntry(linepdg1525, "PDG f_{2}(1525)", "l");
-    leg_mass->AddEntry(linepdg1710, "PDG f_{0}(1710)", "l");
-    leg_mass->SetBorderSize(0);
-    leg_mass->SetFillStyle(0);
-    leg_mass->SetTextFont(42);
-    leg_mass->SetTextSize(0.03);
-    leg_mass->Draw();
-
-    ccompare_rebins->SaveAs("distribution_fits/saved/pass7/mass_rebins.png");
-
-    // width
-    float x_value2[2] = {1, 2};
-    float x_error2[2] = {0, 0};
-    float width_rebin1[2] = {0.1856, 0.08542};
-    float width_rebin1_err[2] = {0.0143, 0.01008};
-    float width_rebin2[2] = {0.1901, 0.08952};
-    float width_rebin2_err[2] = {0.0164, 0.00960};
-    float width_rebin4[2] = {0.196, 0.1354};
-    float width_rebin4_err[2] = {0.004, 0.0131};
-
-    TCanvas *ccompare_width_rebins = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(ccompare_width_rebins, 0.15, 0.03, 0.03, 0.14);
-    TH1F *h_width1 = new TH1F("h_width1", "", 2, 0.5, 2.5);
-    TH1F *h_width2 = new TH1F("h_width2", "", 2, 0.5, 2.5);
-    TH1F *h_width4 = new TH1F("h_width4", "", 2, 0.5, 2.5);
-
-    for (int i = 0; i < 2; i++)
-    {
-        SetHistoQA(h_width1);
-        SetHistoQA(h_width2);
-        SetHistoQA(h_width4);
-        h_width1->SetMarkerSize(1.5);
-        h_width2->SetMarkerSize(1.5);
-        h_width4->SetMarkerSize(1.5);
-        h_width1->SetBinContent(i + 1, width_rebin1[i]);
-        h_width1->SetBinError(i + 1, width_rebin1_err[i]);
-        h_width2->SetBinContent(i + 1, width_rebin2[i]);
-        h_width2->SetBinError(i + 1, width_rebin2_err[i]);
-        h_width4->SetBinContent(i + 1, width_rebin4[i]);
-        h_width4->SetBinError(i + 1, width_rebin4_err[i]);
-        h_width1->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-        h_width2->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-        h_width4->GetXaxis()->SetBinLabel(i + 1, labels[i]);
-    }
-
-    h_width1->SetMarkerColor(28);
-    h_width1->SetLineColor(28);
-    h_width1->SetMarkerStyle(21);
-    h_width2->SetMarkerColor(2);
-    h_width2->SetLineColor(2);
-    h_width2->SetMarkerStyle(22);
-    h_width4->SetMarkerColor(4);
-    h_width4->SetLineColor(4);
-    h_width4->SetMarkerStyle(23);
+    // h_width1->SetMarkerColor(28);
+    // h_width1->SetLineColor(28);
+    // h_width1->SetMarkerStyle(21);
+    // h_width2->SetMarkerColor(2);
+    // h_width2->SetLineColor(2);
+    // h_width2->SetMarkerStyle(22);
+    // h_width4->SetMarkerColor(4);
+    // h_width4->SetLineColor(4);
+    // h_width4->SetMarkerStyle(23);
     
-    h_width1->GetYaxis()->SetNdivisions(510);
-    h_width1->GetXaxis()->SetTitle("Resonance");
-    h_width1->GetYaxis()->SetTitle("Width (GeV/c^{2})");
-    h_width1->GetXaxis()->LabelsOption("h");
-    h_width1->SetMaximum(h_width1->GetMaximum() * 1.2);
+    // h_width1->GetYaxis()->SetNdivisions(510);
+    // h_width1->GetXaxis()->SetTitle("Resonance");
+    // h_width1->GetYaxis()->SetTitle("Width (GeV/c^{2})");
+    // h_width1->GetXaxis()->LabelsOption("h");
+    // h_width1->SetMaximum(h_width1->GetMaximum() * 1.2);
 
-    h_width1->Draw("E1");
-    h_width2->Draw("E1 same");
-    h_width4->Draw("E1 same");
+    // h_width1->Draw("E1");
+    // h_width2->Draw("E1 same");
+    // h_width4->Draw("E1 same");
 
-    TLine *linepdg1270_width = new TLine(0.8, f1270Width, 1.2, f1270Width);
-    linepdg1270_width->SetLineColor(1);
-    linepdg1270_width->SetLineWidth(3);
-    linepdg1270_width->SetLineStyle(2);
-    linepdg1270_width->Draw();
+    // TLine *linepdg1270_width = new TLine(0.8, f1270Width, 1.2, f1270Width);
+    // linepdg1270_width->SetLineColor(1);
+    // linepdg1270_width->SetLineWidth(3);
+    // linepdg1270_width->SetLineStyle(2);
+    // linepdg1270_width->Draw();
 
-    TLine *linepdg1525_width = new TLine(1.8, f1525Width, 2.2, f1525Width);
-    linepdg1525_width->SetLineColor(1);
-    linepdg1525_width->SetLineWidth(3);
-    linepdg1525_width->SetLineStyle(3);
-    linepdg1525_width->Draw();
+    // TLine *linepdg1525_width = new TLine(1.8, f1525Width, 2.2, f1525Width);
+    // linepdg1525_width->SetLineColor(1);
+    // linepdg1525_width->SetLineWidth(3);
+    // linepdg1525_width->SetLineStyle(3);
+    // linepdg1525_width->Draw();
 
-    TLegend *leg_width = new TLegend(0.2172702,0.262931,0.5376045,0.5632184);
-    leg_width->AddEntry(h_width1, "0.01 MeV/c^{2}", "pe");
-    leg_width->AddEntry(h_width2, "0.02 MeV/c^{2}", "pe");
-    leg_width->AddEntry(h_width4, "0.04 MeV/c^{2}", "pe");
-    leg_width->AddEntry(linepdg1270_width, "PDG f_{2}(1270)", "l");
-    leg_width->AddEntry(linepdg1525_width, "PDG f_{2}(1525)", "l");
-    leg_width->SetBorderSize(0);
-    leg_width->SetFillStyle(0);
-    leg_width->SetTextFont(42);
-    leg_width->SetTextSize(0.03);
-    leg_width->Draw();
-    ccompare_width_rebins->SaveAs("distribution_fits/saved/pass7/width_rebins_check.png");
+    // TLegend *leg_width = new TLegend(0.2172702,0.262931,0.5376045,0.5632184);
+    // leg_width->AddEntry(h_width1, "0.01 MeV/c^{2}", "pe");
+    // leg_width->AddEntry(h_width2, "0.02 MeV/c^{2}", "pe");
+    // leg_width->AddEntry(h_width4, "0.04 MeV/c^{2}", "pe");
+    // leg_width->AddEntry(linepdg1270_width, "PDG f_{2}(1270)", "l");
+    // leg_width->AddEntry(linepdg1525_width, "PDG f_{2}(1525)", "l");
+    // leg_width->SetBorderSize(0);
+    // leg_width->SetFillStyle(0);
+    // leg_width->SetTextFont(42);
+    // leg_width->SetTextSize(0.03);
+    // leg_width->Draw();
+    // ccompare_width_rebins->SaveAs("distribution_fits/saved/pass7/width_rebins_check.png");
 }

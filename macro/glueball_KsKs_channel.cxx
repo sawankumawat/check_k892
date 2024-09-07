@@ -21,9 +21,9 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     const string kResBkg = "MIX";
     // const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
-    const bool calculate_inv_mass = true;
-    const bool save_invmass_distributions = true;
+    const bool makeQAplots = true;
+    const bool calculate_inv_mass = false;
+    const bool save_invmass_distributions = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -91,16 +91,16 @@ void glueball_KsKs_channel()
     TH1D *fHistBkg[Npt];
     TH1D *fHistRotated[Npt];
 
-    // TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
-    // if (hmult == nullptr)
-    // {
-    //     cout << "Multiplicity histogram not found" << endl;
-    //     return;
-    // }
+    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
+    if (hmult == nullptr)
+    {
+        cout << "Multiplicity histogram not found" << endl;
+        return;
+    }
     int multlow = 0;
     int multhigh = 100;
-    // double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
-    // cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
+    double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
+    cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
     if (calculate_inv_mass)
     {
@@ -337,12 +337,12 @@ void glueball_KsKs_channel()
         fitKshort->Draw("same");
         c3->SaveAs((outputQAfolder_str + "/kshort_mass_after_fit." + koutputtype).c_str());
 
-        // // Mulitplicity plot
-        // SetHistoQA(hmult);
-        // hmult->GetYaxis()->SetTitle("Counts");
-        // hmult->GetXaxis()->SetTitle("Multiplicity percentile");
-        // hmult->Draw();
-        // c3->SaveAs((outputQAfolder_str + "/hglueball_multiplicity." + koutputtype).c_str());
+        // Mulitplicity plot
+        SetHistoQA(hmult);
+        hmult->GetYaxis()->SetTitle("Counts");
+        hmult->GetXaxis()->SetTitle("Multiplicity percentile");
+        hmult->Draw();
+        c3->SaveAs((outputQAfolder_str + "/hglueball_multiplicity_percentile." + koutputtype).c_str());
 
         // // vtz distribution plot
         // TH1F *hvtz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hVertexZRec").c_str());
@@ -840,7 +840,7 @@ void glueball_KsKs_channel()
         hNofKshort->GetYaxis()->SetMaxDigits(3);
         hNofKshort->SetMaximum(100 * hNofKshort->GetMaximum());
         hNofKshort->Draw("HIST text");
-        cout<<"Percentage of events in which > 1 Ks are produced "<<hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100<<endl;
+        cout << "Percentage of events in which > 1 Ks are produced " << hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100 << endl;
         c3->SaveAs((outputQAfolder_str + "/NKs_produced." + koutputtype).c_str());
 
         // multiplicity distribution FT0M

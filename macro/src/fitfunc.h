@@ -89,7 +89,7 @@ Double_t Expo(Double_t *x, Double_t *par)
 
 Double_t RelativisticBW(double *x, double *par)
 {
-    return (x[0] * par[0] / (pow((x[0] * x[0] - par[1] * par[1]), 2) + pow((par[1] * par[2]), 2))); // par[0] is the normalization constant, par[1] is the mass, par[2] is the width
+    return (x[0] * par[0] * par[1] / (pow((x[0] * x[0] - par[1] * par[1]), 2) + pow((par[1] * par[2]), 2))); // par[0] is the normalization constant, par[1] is the mass, par[2] is the width
 }
 
 Double_t exponential_bkg(double *x, double *par)

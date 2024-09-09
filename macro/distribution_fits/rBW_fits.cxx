@@ -22,9 +22,9 @@ void rBW_fits()
     const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     // const string kbgfitfunction = "pol3";
-    // const string kbgfitfunction = "expol";
+    const string kbgfitfunction = "expol";
     // const string kbgfitfunction = "Boltzman";
-    const string kbgfitfunction = "CoherentBWsum";
+    // const string kbgfitfunction = "CoherentBWsum";
 
     const int rebin = 2;
     bool testing = false;
@@ -64,8 +64,8 @@ void rBW_fits()
 
     // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_pt1to30..root", "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -218,6 +218,7 @@ void rBW_fits()
                     double param1_limit;     // mass for f1270
                     double param2_limit;     // width for f1270
                     double param3_limit;     // norm for f1525
+                    double param4_limit;     // mass for f1525
                     double param6_limit;     // norm for f1710
                     double param7_limit;     // mass for f1710
                 };
@@ -226,12 +227,12 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.05, 2.10, 0, -1, 0.1, 0, 0, -1},         // for full pT 0-30 GeV/c (0.04 MeV)
-                    {1.14, 2.10, 0, -1, 0.008, 0, 0, 0.08},     // pT 1 to 2
-                    {1.08, 2.16, 1, 0.019, 0.008, 0, 0, 0.08},  // pT 2 to 3
-                    {1.09, 2.16, 0, 0.015, 0.008, 0, 0, 0.08},  // pT 3 to 4
-                    {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
-                    {1.08, 2.11, 0, 0.015, 0.008, 0, 0, 0.08}   // pT 6 to 12
+                    {1.00, 2.15, -1, 3 * f1270Width, -1, -1, 3 * f1525Width, -1, 3*f1710Mass}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
+                    {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
+                    {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
+                    {1.06, 2.10, 0, 0.013, 0.008, 0, -1, 0, 0.085},                  // pT 4 to 6
+                    {1.08, 2.11, 0, 0.015, 0.008, 0, -1, 0, 0.08}                    // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];
@@ -258,6 +259,10 @@ void rBW_fits()
                     f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
                 }
                 f3pol3->SetParameter(4, parameters1[4]);
+                if (iter_bin.param4_limit != -1)
+                {
+                    f3pol3->SetParLimits(4, parameters1[4] - iter_bin.param4_limit, parameters1[4] + iter_bin.param4_limit);
+                }
                 f3pol3->SetParameter(5, parameters1[5]);
                 f3pol3->SetParameter(6, parameters1[6]);
                 if (iter_bin.param6_limit != -1)
@@ -269,12 +274,12 @@ void rBW_fits()
                 {
                     f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
                 }
-                f3pol3->FixParameter(8, parameters1[8]);
+                f3pol3->SetParameter(8, parameters1[8]);
 
                 // expol parameters
                 f3pol3->SetParameter(9, 1e5);
                 f3pol3->SetParameter(10, 0);
-                f3pol3->SetParameter(11, 5);
+                f3pol3->SetParameter(11, 4.5);
             }
 
             if (kchannel == "KsKs_Channel" && kbgfitfunction == "Boltzman")
@@ -287,6 +292,7 @@ void rBW_fits()
                     double param1_limit;     // mass for f1270
                     double param2_limit;     // width for f1270
                     double param3_limit;     // norm for f1525
+                    double param4_limit;     // mass for f1525
                     double param6_limit;     // norm for f1710
                     double param7_limit;     // mass for f1710
                 };
@@ -295,12 +301,12 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.05, 2.10, 0, -1, 0.1, 0, 0, -1},         // for full pT 0-30 GeV/c (0.04 MeV)
-                    {1.14, 2.10, 0, -1, 0.008, 0, 0, 0.08},     // pT 1 to 2
-                    {1.08, 2.16, 1, 0.019, 0.008, 0, 0, 0.08},  // pT 2 to 3
-                    {1.09, 2.16, 0, 0.015, 0.008, 0, 0, 0.08},  // pT 3 to 4
-                    {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
-                    {1.08, 2.11, 0, 0.015, 0.008, 0, 0, 0.08}   // pT 6 to 12
+                    {1.00, 2.05, -1, 3 * f1270Width, -1, -1, 3 * f1525Mass, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
+                    {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
+                    {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
+                    {1.06, 2.10, 0, 0.013, 0.008, 0, -1, 0, 0.085},                  // pT 4 to 6
+                    {1.08, 2.11, 0, 0.015, 0.008, 0, -1, 0, 0.08}                    // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];
@@ -327,6 +333,10 @@ void rBW_fits()
                     f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
                 }
                 f3pol3->SetParameter(4, parameters1[4]);
+                if (iter_bin.param4_limit != -1)
+                {
+                    f3pol3->SetParLimits(4, parameters1[4] - iter_bin.param4_limit, parameters1[4] + iter_bin.param4_limit);
+                }
                 f3pol3->SetParameter(5, parameters1[5]);
                 f3pol3->SetParameter(6, parameters1[6]);
                 if (iter_bin.param6_limit != -1)
@@ -338,11 +348,11 @@ void rBW_fits()
                 {
                     f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
                 }
-                f3pol3->FixParameter(8, parameters1[8]);
+                f3pol3->SetParameter(8, parameters1[8]);
 
                 // Boltzman parameters
                 f3pol3->SetParameter(9, 1e5);
-                f3pol3->SetParameter(10, 0.5);
+                f3pol3->SetParameter(10, 0.56);
                 f3pol3->SetParameter(11, 5);
             }
 
@@ -575,7 +585,7 @@ void rBW_fits()
             f3bw3->SetParameter(1, f3pol3->GetParameter(1));
             // f3bw3->FixParameter(2, f3pol3->GetParameter(2));
             f3bw3->SetParameter(2, f3pol3->GetParameter(2));
-            f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.05, f3pol3->GetParameter(2) + 0.05);
+            // f3bw3->SetParLimits(2, f3pol3->GetParameter(2) - 0.05, f3pol3->GetParameter(2) + 0.05);
             f3bw3->SetParameter(3, f3pol3->GetParameter(3));
             f3bw3->SetParameter(4, f3pol3->GetParameter(4));
             f3bw3->SetParameter(5, f3pol3->GetParameter(5));
@@ -595,6 +605,7 @@ void rBW_fits()
             ptstats2->Draw("same");
 
             TLegend *lfit2 = new TLegend(0.17, 0.67, 0.57, 0.92);
+            TLegend *lfit3 = new TLegend(0.17, 0.67, 0.57, 0.92);
             lfit2->SetFillColor(0);
             lfit2->SetFillStyle(0);
             lfit2->SetTextFont(42);
@@ -604,7 +615,7 @@ void rBW_fits()
             lfit2->AddEntry(hinvMassResSub, "KsKs invariant mass", "lpe");
             lfit2->AddEntry(f3bw3, "3rBW fit", "l");
             lfit2->Draw("same");
-            // draw_individual_functions(f3pol3, parameters2, lfit, true, kbgfitfunction); // draw the individual functions
+            draw_individual_functions(f3pol3, parameters2, lfit2, false, kbgfitfunction); // draw the individual functions
 
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
@@ -1047,5 +1058,20 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
     lfit->AddEntry(frBW2, "rBW(f_{2}(1525))", "l");
     lfit->AddEntry(frBW3, "rBW(f_{0}(1710))", "l");
 
-    return fpol3;
+    if (kbgfitfunction == "pol3")
+    {
+        return fpol3;
+    }
+    else if (kbgfitfunction == "expol")
+    {
+        return fexpol;
+    }
+    else if (kbgfitfunction == "Boltzman")
+    {
+        return fBoltzman;
+    }
+    else
+    {
+        return fexpol;
+    }
 }

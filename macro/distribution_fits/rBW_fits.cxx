@@ -64,8 +64,8 @@ void rBW_fits()
 
     // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -227,7 +227,7 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.00, 2.15, -1, 3 * f1270Width, -1, -1, 3 * f1525Width, -1, 3*f1710Mass}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.08, 2.15, -1, 3 * f1270Width, -1, -1, 3 * f1525Width, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
                     {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
                     {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
                     {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
@@ -454,7 +454,7 @@ void rBW_fits()
             f3pol3->SetLineWidth(2);
             hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.4);
             hinvMass->SetMinimum(-1000);
-            hinvMass->Fit("f3pol3", "REBMS0");
+            hinvMass->Fit("f3pol3", "REBMS");
             f3pol3->Draw("same");
 
             auto setPoint = [&](TGraphErrors *graph, int paramIndex)

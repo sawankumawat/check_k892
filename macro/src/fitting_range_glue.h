@@ -26,7 +26,7 @@ const int pt_end = Npt;
 #ifdef KsKschannel
 const Int_t Npt = 1;
 // const Int_t Npt = 5;
-double pT_bins[Npt + 1] = {1, 30.0};
+double pT_bins[Npt + 1] = {0, 30.0};
 // float pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 6.0, 12.0};
 const int pt_start = 0;
 const int pt_end = Npt;

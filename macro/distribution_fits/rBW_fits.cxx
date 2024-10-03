@@ -64,8 +64,8 @@ void rBW_fits()
 
     // TFile *f = new TFile((outputfolder_str + "/hglue_" + kResBkg + ".root").c_str(), "READ");
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_full_ptrange_0.01MeV..root", "READ");
+    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -227,12 +227,13 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.08, 2.15, -1, 3 * f1270Width, -1, -1, 3 * f1525Width, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
-                    {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
-                    {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
-                    {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
-                    {1.06, 2.10, 0, 0.013, 0.008, 0, -1, 0, 0.085},                  // pT 4 to 6
-                    {1.08, 2.11, 0, 0.015, 0.008, 0, -1, 0, 0.08}                    // pT 6 to 12
+                    {1.01, 2.3, 0, 5 * f1270Width, 0.05, 0, 5 * f1525Width, 0, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.01, 2.3, 0, -1, 0.008, 0, -1, 0, 0.08},      // check
+                    {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},     // pT 1 to 2
+                    {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},  // pT 2 to 3
+                    {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},  // pT 3 to 4
+                    {1.06, 2.10, 0, 0.013, 0.008, 0, -1, 0, 0.085}, // pT 4 to 6
+                    {1.08, 2.11, 0, 0.015, 0.008, 0, -1, 0, 0.08}   // pT 6 to 12
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];
@@ -277,7 +278,7 @@ void rBW_fits()
                 f3pol3->SetParameter(8, parameters1[8]);
 
                 // expol parameters
-                f3pol3->SetParameter(9, 1e5);
+                f3pol3->SetParameter(9, 1e6);
                 f3pol3->SetParameter(10, 0);
                 f3pol3->SetParameter(11, 4.5);
             }
@@ -301,7 +302,7 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.00, 2.05, -1, 3 * f1270Width, -1, -1, 3 * f1525Mass, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.01, 2.3, 0, 5 * f1270Width, 0.05, 0, 5 * f1525Width, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
                     {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
                     {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
                     {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
@@ -351,9 +352,11 @@ void rBW_fits()
                 f3pol3->SetParameter(8, parameters1[8]);
 
                 // Boltzman parameters
-                f3pol3->SetParameter(9, 1e5);
-                f3pol3->SetParameter(10, 0.56);
-                f3pol3->SetParameter(11, 5);
+                f3pol3->SetParameter(9, 1e6);
+                f3pol3->SetParameter(10, 0.56); //n
+                // f3pol3->SetParLimits(10, -2, 2);
+                f3pol3->SetParameter(11, 5); //c
+                
             }
 
             if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum")
@@ -379,7 +382,7 @@ void rBW_fits()
 
                 // for pass 7 full statistics
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.05, 2.15, 0, 0.4, 0.2, 0, 0.4, -1, -1, 0.15, -1, 0.1, 0.1}, // for full pT 0-30 GeV/c
+                    {1.05, 2.15, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1}, // for full pT 0-30 GeV/c
                 };
 
                 const auto &iter_bin = bwfit_params_me[ip];

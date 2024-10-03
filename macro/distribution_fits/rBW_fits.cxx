@@ -4,6 +4,7 @@
 #include "../src/common_glue.h"
 #include "../src/fitting_range_glue.h"
 #include "../src/style.h"
+#include <tuple>
 
 TDatabasePDG *pdg = new TDatabasePDG();
 double parameter0(double mass, double width);
@@ -29,7 +30,7 @@ void rBW_fits()
 
     const int rebin = 2;
     bool testing = false;
-    bool saveplots = false;
+    bool saveplots = true;
     gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
 
@@ -132,81 +133,101 @@ void rBW_fits()
 
             // Fitting *********************************************
             TF1 *f3pol3;
-            if (kchannel == "KsKs_Channel" && kbgfitfunction == "pol3")
-            {
-                struct FitParams
-                {
-                    double low;
-                    double high;
-                    double param0_low_limit; // norm for f1270
-                    double param1_limit;     // mass for f1270
-                    double param2_limit;     // width for f1270
-                    double param3_limit;     // norm for f1525
-                    double param6_limit;     // norm for f1710
-                    double param7_limit;     // mass for f1710
-                };
+            // if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum")
+            // {
+            //     struct FitParams
+            //     {
+            //         double low;
+            //         double high;
+            //         double param0_low_limit; // norm for f1270
+            //         double param1_limit;     // mass for f1270
+            //         double param2_limit;     // width for f1270
+            //         double param3_limit;     // norm for f1320
+            //         double param4_limit;     // mass for f1320
+            //         double param5_limit;     // width for f1320
+            //         double param6_limit;     // norm for f1525
+            //         double param7_limit;     // mass for f525
+            //         double param9_limit;     // norm for f1710
+            //         double param10_limit;    // mass for f1710
+            //         double param11_limit;    // width for f1710
+            //     };
 
-                // // Define the fit parameters for each pT bin
+            //     // // Define the fit parameters for each pT bin
 
-                // // for pass 7 full statistics (MIX, 0.02 MeV binwidth)
-                // std::vector<FitParams> bwfit_params_me = {
-                //     // {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c
-                //     {1.07, 2.15, 0, 0.02, 0.008, 0, 0, 0.08},    // pT 1 to 2
-                //     {1.09, 2.15, 0, 0.02, 0.008, 0, 0, 0.09}, // pT 2 to 3
-                //     {1.10, 2.16, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 3 to 4
-                //     {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
-                //     {1.07, 2.10, 0, 0.012, 0.01, 0, 0, 0.085}  // pT 6 to 12
-                // };
+            //     // for pass 7 full statistics
+            //     std::vector<FitParams> bwfit_params_me = {
+            //         {1.05, 2.15, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1}, // for full pT 0-30 GeV/c
+            //     };
 
-                // for pass 7 full statistics (ROTATED)
-                std::vector<FitParams> bwfit_params_me = {
-                    // {1.02, 2.16, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c (0.04 MeV)
-                    // {1.08, 2.16, 0, 0.08, 0.01, 0, 0, 0.08}, // for full pT 0-30 GeV/c (0.01 MeV)
-                    {1.11, 2.15, 0, 0.08, 0.01, 0, 0, 0.08},    // for full pT 0-30 GeV/c (0.02 MeV)
-                    {1.14, 2.10, 0, 0.02, 0.008, 0, 0, 0.08},   // pT 1 to 2
-                    {1.08, 2.16, 1, 0.019, 0.008, 0, 0, 0.08},  // pT 2 to 3
-                    {1.09, 2.16, 0, 0.015, 0.008, 0, 0, 0.08},  // pT 3 to 4
-                    {1.06, 2.10, 0, 0.013, 0.008, 0, 0, 0.085}, // pT 4 to 6
-                    {1.08, 2.11, 0, 0.015, 0.008, 0, 0, 0.08}   // pT 6 to 12
-                };
+            //     const auto &iter_bin = bwfit_params_me[ip];
+            //     // // for all pT bins
+            //     f3pol3 = CoherentBWexpol(hinvMass, parameter_coherent, iter_bin.low, iter_bin.high);
+            //     f3pol3->SetParameter(0, parameter_coherent[0]); // norm for f1270
+            //     if (iter_bin.param0_low_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
+            //     }
+            //     f3pol3->SetParameter(1, parameter_coherent[1]); // mass for f1270
+            //     if (iter_bin.param1_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(1, parameter_coherent[1] - iter_bin.param1_limit, parameter_coherent[1] + iter_bin.param1_limit);
+            //     }
+            //     f3pol3->SetParameter(2, parameter_coherent[2]); // width for f1270
+            //     if (iter_bin.param2_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(2, parameter_coherent[2] - iter_bin.param2_limit, parameter_coherent[2] + iter_bin.param2_limit);
+            //     }
+            //     f3pol3->SetParameter(3, parameter_coherent[3]);
+            //     if (iter_bin.param3_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
+            //     }
+            //     f3pol3->SetParameter(4, parameter_coherent[4]);
+            //     if (iter_bin.param4_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(4, parameter_coherent[4] - iter_bin.param4_limit, parameter_coherent[4] + iter_bin.param4_limit);
+            //     }
+            //     f3pol3->SetParameter(5, parameter_coherent[5]);
+            //     if (iter_bin.param5_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(5, parameter_coherent[5] - iter_bin.param5_limit, parameter_coherent[5] + iter_bin.param5_limit);
+            //     }
+            //     f3pol3->SetParameter(6, parameter_coherent[6]);
+            //     if (iter_bin.param6_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
+            //     }
+            //     f3pol3->SetParameter(7, parameter_coherent[7]);
+            //     if (iter_bin.param7_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(7, parameter_coherent[7] - iter_bin.param7_limit, parameter_coherent[7] + iter_bin.param7_limit);
+            //     }
+            //     f3pol3->SetParameter(8, parameter_coherent[8]);
+            //     f3pol3->SetParameter(9, parameter_coherent[9]);
+            //     if (iter_bin.param9_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(9, iter_bin.param9_limit, 1e8);
+            //     }
+            //     f3pol3->SetParameter(10, parameter_coherent[10]);
+            //     if (iter_bin.param10_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(10, parameter_coherent[10] - iter_bin.param10_limit, parameter_coherent[10] + iter_bin.param10_limit);
+            //     }
+            //     f3pol3->SetParameter(11, parameter_coherent[11]); // width for f1710
+            //     if (iter_bin.param11_limit != -1)
+            //     {
+            //         f3pol3->SetParLimits(11, parameter_coherent[11] - iter_bin.param11_limit, parameter_coherent[11] + iter_bin.param11_limit);
+            //     }
+            //     // f3pol3->SetParameter(12, parameter_coherent[12]);  // overall amplitude
+            //     // f3pol3->SetParameter(13, parameter_coherent[13]);  // norm of f1710
 
-                const auto &iter_bin = bwfit_params_me[ip];
+            //     // expol parameters
+            //     f3pol3->SetParameter(14, 1e5);
+            //     f3pol3->SetParameter(15, 0.2);
+            //     f3pol3->SetParameter(16, 5);
+            // }
 
-                // // for all pT bins
-                f3pol3 = BW3pol3(hinvMass, parameters1, iter_bin.low, iter_bin.high);
-                f3pol3->SetParameter(0, parameters1[0]);
-                if (iter_bin.param0_low_limit != -1)
-                {
-                    f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
-                }
-                f3pol3->SetParameter(1, parameters1[1]);
-                f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
-                f3pol3->SetParameter(2, parameters1[2]);
-                if (iter_bin.param2_limit != -1)
-                {
-                    f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
-                }
-                f3pol3->SetParameter(3, parameters1[3]);
-                if (iter_bin.param3_limit != -1)
-                {
-                    f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
-                }
-                f3pol3->SetParameter(4, parameters1[4]);
-                f3pol3->SetParameter(5, parameters1[5]);
-                f3pol3->SetParameter(6, parameters1[6]);
-                if (iter_bin.param6_limit != -1)
-                {
-                    f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
-                }
-                f3pol3->SetParameter(7, parameters1[7]);
-                if (iter_bin.param7_limit != -1)
-                {
-                    f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
-                }
-                f3pol3->FixParameter(8, parameters1[8]);
-            }
-
-            if (kchannel == "KsKs_Channel" && kbgfitfunction == "expol")
+            if (kchannel == "KsKs_Channel" && (kbgfitfunction == "Boltzman"))
             {
                 struct FitParams
                 {
@@ -223,15 +244,177 @@ void rBW_fits()
                     double param8_limit; // width for f1710
                 };
 
-                // // Define the fit parameters for each pT bin
-
-                // for pass 7 full statistics
+                // Define the fit parameters for each pT bin
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.01, 2.3, 0, 5 * f1270Width, 0.05, 0, 5 * f1525Width, -1, 0, -1, -1}, // full pT 0-30 GeV/c (0.04 MeV)
-                    {1.01, 2.3, 0, -1, 0.008, 0, -1, -1, 0, 0.08, -1},                      // check
+                    {1.09, 2.17, 0, 10 * f1270Width, 0.07, 0, 10 * f1525Width, -1, 0, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
                 };
                 const auto &iter_bin = bwfit_params_me[ip];
-                f3pol3 = BW3expo(hinvMass, parameters1, iter_bin.low, iter_bin.high);
+
+                // Vector to store (low, high, chi2/NDF)
+                std::vector<std::tuple<double, double, double>> chi2_results;
+                std::vector<std::tuple<float, float, float, float>> chi2_results2;
+
+                // // // Loop through low and high ranges
+                // for (double low = 0.98; low <= 1.10; low += 0.01)
+                // {
+                //     for (double high = 2.1; high <= 2.8; high += 0.01)
+                //     {
+                // Update the fitting range
+                // f3pol3 = BW3boltzman(hinvMass, parameters1, low, high); // use for fitting range loop
+                f3pol3 = BW3boltzman(hinvMass, parameters1, iter_bin.low, iter_bin.high); // without fitting range loop
+
+                // int iteration = 0;
+                // for (int ipar1 = 1e4; ipar1 < 1e7; ipar1 *= 2) // loop for expol parameter 1
+                // {
+                //     for (double ipar2 = -1; ipar2 <= 1; ipar2 += 0.1) // loop for expol parameter 2
+                //     {
+                //         for (double ipar3 = 2; ipar3 < 8; ipar3 += 0.2) // loop for expol parameter 3
+                //         {
+
+                            std::vector<std::pair<int, double>> limits = {
+                                {0, iter_bin.param0_limit},
+                                {1, iter_bin.param1_limit},
+                                {2, iter_bin.param2_limit},
+                                {3, iter_bin.param3_limit},
+                                {4, iter_bin.param4_limit},
+                                {5, iter_bin.param5_limit},
+                                {6, iter_bin.param6_limit},
+                                {7, iter_bin.param7_limit},
+                                {8, iter_bin.param8_limit},
+                            };
+
+                            // Loop through the parameter index and limit pairs
+                            for (const auto &[param_idx, limit] : limits)
+                            {
+                                f3pol3->SetParameter(param_idx, parameters1[param_idx]); // Set parameter
+                                if (limit != -1 && limit != 0)
+                                {
+                                    f3pol3->SetParLimits(param_idx, parameter_coherent[param_idx] - limit, parameter_coherent[param_idx] + limit); // Set limit
+                                }
+                                else if (limit == 0)
+                                {
+                                    f3pol3->SetParLimits(param_idx, 0, 1e9); // Set limit for normalization
+                                }
+                            }
+
+                //             // // Loop in expol parameters
+                //             f3pol3->SetParameter(9, ipar1);
+                //             f3pol3->SetParameter(10, ipar2);
+                //             f3pol3->SetParameter(11, ipar3);
+                //             hinvMass->Fit("f3pol3", "REBMS"); // use for loop
+                //             double chi2ndf = f3pol3->GetChisquare() / f3pol3->GetNDF();
+                //             cout << "chi2ndf: " << chi2ndf << endl;
+                //             chi2_results2.push_back(std::make_tuple(ipar1, ipar2, ipar3, chi2ndf));
+                //             iteration++;
+                //             cout << "Iteration: " << iteration << endl;
+                //         } // ipar3 loop end
+                //     } // ipar2 loop end
+                // } // ipar1 loop end
+
+                // cout << "Total iterations: " << iteration << endl;
+                // // Sort the vector to get the 10 lowest chi2/NDF values
+                // size_t n = std::min(chi2_results2.size(), static_cast<size_t>(10));
+
+                // // Partially sort to get the 10 smallest elements based on chi2/NDF
+                // std::partial_sort(chi2_results2.begin(), chi2_results2.begin() + n, chi2_results2.end(),
+                //                   [](const auto &a, const auto &b)
+                //                   {
+                //                       return std::get<3>(a) < std::get<3>(b);
+                //                   });
+
+                // // Output the 10 best (low, high) combinations with their chi2/NDF values
+                // std::cout << "Top " << n << " lowest chi2/NDF values:\n";
+                // for (size_t i = 0; i < n; ++i)
+                // {
+                //     float best_ipar1 = std::get<0>(chi2_results2[i]);
+                //     float best_ipar2 = std::get<1>(chi2_results2[i]);
+                //     float best_ipar3 = std::get<2>(chi2_results2[i]);
+                //     float best_chi2ndf = std::get<3>(chi2_results2[i]);
+                //     cout << "Best ipar1: " << best_ipar1 << ", Best ipar2: " << best_ipar2 << ", Best ipar3: " << best_ipar3 << ", Best chi2/NDF: " << best_chi2ndf << endl;
+                // } // here ends the loop for expol parameters
+
+                // //for Boltzman parameters
+                f3pol3->SetParameter(9, 520000);
+                f3pol3->SetParameter(10, 0.5); // n
+                f3pol3->SetParameter(11, 5.5);    // c
+
+                //         // Fit the function
+                //         hinvMass->Fit("f3pol3", "REBMS"); // use for loop
+
+                //         // Get chi2 and NDF (number of degrees of freedom)
+                //         double chi2 = f3pol3->GetChisquare();
+                //         double ndf = f3pol3->GetNDF();
+                //         double chi2_ndf = chi2 / ndf;
+                //         cout << "chi2/NDF is: " << chi2 / ndf << endl;
+
+                //         // Store (low, high, chi2/NDF)
+                //         chi2_results.push_back(std::make_tuple(low, high, chi2_ndf));
+                //     } // high range loop
+                // } // low range loop
+
+                // // Sort the vector to get the 10 lowest chi2/NDF values
+                // size_t n = std::min(chi2_results.size(), static_cast<size_t>(10)); // Take only the top 10 or less if size is smaller
+
+                // // Partially sort to get the 10 smallest elements based on chi2/NDF
+                // std::partial_sort(chi2_results.begin(), chi2_results.begin() + n, chi2_results.end(),
+                //                   [](const auto &a, const auto &b)
+                //                   {
+                //                       return std::get<2>(a) < std::get<2>(b);
+                //                   });
+
+                // for (size_t i = 0; i < n; ++i)
+                // {
+                //     double low = std::get<0>(chi2_results[i]);
+                //     double high = std::get<1>(chi2_results[i]);
+                //     double chi2_ndf = std::get<2>(chi2_results[i]);
+                //     std::cout << "Low: " << low << ", High: " << high << ", chi2/NDF: " << chi2_ndf << std::endl;
+                // }
+            }
+
+            if (kchannel == "KsKs_Channel" && (kbgfitfunction == "expol"))
+            {
+                struct FitParams
+                {
+                    double low;
+                    double high;
+                    double param0_limit; // norm for f1270
+                    double param1_limit; // mass for f1270
+                    double param2_limit; // width for f1270
+                    double param3_limit; // norm for f1525
+                    double param4_limit; // mass for f1525
+                    double param5_limit; // width for f1525
+                    double param6_limit; // norm for f1710
+                    double param7_limit; // mass for f1710
+                    double param8_limit; // width for f1710
+                };
+
+                // Define the fit parameters for each pT bin
+                std::vector<FitParams> bwfit_params_me = {
+                    {1.01, 2.2, 0, 10 * f1270Width, 0.05, 0, 10 * f1525Width, -1, 0, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
+                    {1.01, 2.3, 0, -1, 0.008, 0, -1, -1, 0, 0.08, -1},                        // check
+                };
+                const auto &iter_bin = bwfit_params_me[ip];
+
+                // Vector to store (low, high, chi2/NDF)
+                std::vector<std::tuple<double, double, double>> chi2_results;
+                std::vector<std::tuple<float, float, float, float>> chi2_results2;
+
+                // // // Loop through low and high ranges
+                // for (double low = 0.98; low <= 1.10; low += 0.01)
+                // {
+                //     for (double high = 2.1; high <= 2.8; high += 0.1)
+                //     {
+                //         // Update the fitting range
+                //         f3pol3 = BW3expo(hinvMass, parameters1, low, high); // use for fitting range loop
+                f3pol3 = BW3expo(hinvMass, parameters1, iter_bin.low, iter_bin.high); // without fitting range loop
+
+                // int iteration = 0;
+                // for (int ipar1 = 1e4; ipar1 < 1e7; ipar1 *= 2) // loop for expol parameter 1
+                // {
+                //     for (double ipar2 = -1; ipar2 <= 1; ipar2 += 0.1) // loop for expol parameter 2
+                //     {
+                //         for (double ipar3 = 2; ipar3 < 8; ipar3 += 0.2) // loop for expol parameter 3
+                //         {
 
                 std::vector<std::pair<int, double>> limits = {
                     {0, iter_bin.param0_limit},
@@ -259,179 +442,78 @@ void rBW_fits()
                     }
                 }
 
-                // expol parameters
+                //             // // Loop in expol parameters
+                //             f3pol3->SetParameter(9, ipar1);
+                //             f3pol3->SetParameter(10, ipar2);
+                //             f3pol3->SetParameter(11, ipar3);
+                //             hinvMass->Fit("f3pol3", "REBMS"); // use for loop
+                //             double chi2ndf = f3pol3->GetChisquare() / f3pol3->GetNDF();
+                //             cout << "chi2ndf: " << chi2ndf << endl;
+                //             chi2_results2.push_back(std::make_tuple(ipar1, ipar2, ipar3, chi2ndf));
+                //             iteration++;
+                //             cout << "Iteration: " << iteration << endl;
+                //         } // ipar3 loop end
+                //     }    // ipar2 loop end
+                // }       // ipar1 loop end
+
+                // cout << "Total iterations: " << iteration << endl;
+                // // Sort the vector to get the 10 lowest chi2/NDF values
+                // size_t n = std::min(chi2_results2.size(), static_cast<size_t>(10));
+
+                // // Partially sort to get the 10 smallest elements based on chi2/NDF
+                // std::partial_sort(chi2_results2.begin(), chi2_results2.begin() + n, chi2_results2.end(),
+                //                   [](const auto &a, const auto &b)
+                //                   {
+                //                       return std::get<3>(a) < std::get<3>(b);
+                //                   });
+
+                // // Output the 10 best (low, high) combinations with their chi2/NDF values
+                // std::cout << "Top " << n << " lowest chi2/NDF values:\n";
+                // for (size_t i = 0; i < n; ++i)
+                // {
+                //     float best_ipar1 = std::get<0>(chi2_results2[i]);
+                //     float best_ipar2 = std::get<1>(chi2_results2[i]);
+                //     float best_ipar3 = std::get<2>(chi2_results2[i]);
+                //     float best_chi2ndf = std::get<3>(chi2_results2[i]);
+                //     cout << "Best ipar1: " << best_ipar1 << ", Best ipar2: " << best_ipar2 << ", Best ipar3: " << best_ipar3 << ", Best chi2/NDF: " << best_chi2ndf << endl;
+                // }
+
+                // for expol parameters
                 f3pol3->SetParameter(9, 1e6);
-                f3pol3->SetParameter(10, 0);
-                f3pol3->SetParameter(11, 4.5);
-            }
+                f3pol3->SetParameter(10, 0.4);
+                f3pol3->SetParameter(11, 6.6);
 
-            if (kchannel == "KsKs_Channel" && kbgfitfunction == "Boltzman")
-            {
-                struct FitParams
-                {
-                    double low;
-                    double high;
-                    double param0_low_limit; // norm for f1270
-                    double param1_limit;     // mass for f1270
-                    double param2_limit;     // width for f1270
-                    double param3_limit;     // norm for f1525
-                    double param4_limit;     // mass for f1525
-                    double param6_limit;     // norm for f1710
-                    double param7_limit;     // mass for f1710
-                };
+                //         // Fit the function
+                //         hinvMass->Fit("f3pol3", "REBMS"); // use for loop
 
-                // // Define the fit parameters for each pT bin
+                //         // Get chi2 and NDF (number of degrees of freedom)
+                //         double chi2 = f3pol3->GetChisquare();
+                //         double ndf = f3pol3->GetNDF();
+                //         double chi2_ndf = chi2 / ndf;
+                //         cout << "chi2/NDF is: " << chi2 / ndf << endl;
 
-                // for pass 7 full statistics
-                std::vector<FitParams> bwfit_params_me = {
-                    {1.01, 2.3, 0, 5 * f1270Width, 0.05, 0, 5 * f1525Width, -1, -1}, // for full pT 0-30 GeV/c (0.04 MeV)
-                    {1.14, 2.10, 0, -1, 0.008, 0, -1, 0, 0.08},                      // pT 1 to 2
-                    {1.08, 2.16, 1, 0.019, 0.008, 0, -1, 0, 0.08},                   // pT 2 to 3
-                    {1.09, 2.16, 0, 0.015, 0.008, 0, -1, 0, 0.08},                   // pT 3 to 4
-                    {1.06, 2.10, 0, 0.013, 0.008, 0, -1, 0, 0.085},                  // pT 4 to 6
-                    {1.08, 2.11, 0, 0.015, 0.008, 0, -1, 0, 0.08}                    // pT 6 to 12
-                };
+                //         // Store (low, high, chi2/NDF)
+                //         chi2_results.push_back(std::make_tuple(low, high, chi2_ndf));
+                //     } // high range loop
+                // } // low range loop
 
-                const auto &iter_bin = bwfit_params_me[ip];
-                // // for all pT bins
-                f3pol3 = BW3boltzman(hinvMass, parameters1, iter_bin.low, iter_bin.high);
-                f3pol3->SetParameter(0, parameters1[0]);
-                if (iter_bin.param0_low_limit != -1)
-                {
-                    f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
-                }
-                f3pol3->SetParameter(1, parameters1[1]);
-                if (iter_bin.param1_limit != -1)
-                {
-                    f3pol3->SetParLimits(1, parameters1[1] - iter_bin.param1_limit, parameters1[1] + iter_bin.param1_limit);
-                }
-                f3pol3->SetParameter(2, parameters1[2]);
-                if (iter_bin.param2_limit != -1)
-                {
-                    f3pol3->SetParLimits(2, parameters1[2] - iter_bin.param2_limit, parameters1[2] + iter_bin.param2_limit);
-                }
-                f3pol3->SetParameter(3, parameters1[3]);
-                if (iter_bin.param3_limit != -1)
-                {
-                    f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
-                }
-                f3pol3->SetParameter(4, parameters1[4]);
-                if (iter_bin.param4_limit != -1)
-                {
-                    f3pol3->SetParLimits(4, parameters1[4] - iter_bin.param4_limit, parameters1[4] + iter_bin.param4_limit);
-                }
-                f3pol3->SetParameter(5, parameters1[5]);
-                f3pol3->SetParameter(6, parameters1[6]);
-                if (iter_bin.param6_limit != -1)
-                {
-                    f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
-                }
-                f3pol3->SetParameter(7, parameters1[7]);
-                if (iter_bin.param7_limit != -1)
-                {
-                    f3pol3->SetParLimits(7, parameters1[7] - iter_bin.param7_limit, parameters1[7] + iter_bin.param7_limit);
-                }
-                f3pol3->SetParameter(8, parameters1[8]);
+                // // Sort the vector to get the 10 lowest chi2/NDF values
+                // size_t n = std::min(chi2_results.size(), static_cast<size_t>(10)); // Take only the top 10 or less if size is smaller
 
-                // Boltzman parameters
-                f3pol3->SetParameter(9, 1e6);
-                f3pol3->SetParameter(10, 0.56); // n
-                // f3pol3->SetParLimits(10, -2, 2);
-                f3pol3->SetParameter(11, 5); // c
-            }
+                // // Partially sort to get the 10 smallest elements based on chi2/NDF
+                // std::partial_sort(chi2_results.begin(), chi2_results.begin() + n, chi2_results.end(),
+                //                   [](const auto &a, const auto &b)
+                //                   {
+                //                       return std::get<2>(a) < std::get<2>(b);
+                //                   });
 
-            if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum")
-            {
-                struct FitParams
-                {
-                    double low;
-                    double high;
-                    double param0_low_limit; // norm for f1270
-                    double param1_limit;     // mass for f1270
-                    double param2_limit;     // width for f1270
-                    double param3_limit;     // norm for f1320
-                    double param4_limit;     // mass for f1320
-                    double param5_limit;     // width for f1320
-                    double param6_limit;     // norm for f1525
-                    double param7_limit;     // mass for f525
-                    double param9_limit;     // norm for f1710
-                    double param10_limit;    // mass for f1710
-                    double param11_limit;    // width for f1710
-                };
-
-                // // Define the fit parameters for each pT bin
-
-                // for pass 7 full statistics
-                std::vector<FitParams> bwfit_params_me = {
-                    {1.05, 2.15, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1}, // for full pT 0-30 GeV/c
-                };
-
-                const auto &iter_bin = bwfit_params_me[ip];
-                // // for all pT bins
-                f3pol3 = CoherentBWexpol(hinvMass, parameter_coherent, iter_bin.low, iter_bin.high);
-                f3pol3->SetParameter(0, parameter_coherent[0]); // norm for f1270
-                if (iter_bin.param0_low_limit != -1)
-                {
-                    f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
-                }
-                f3pol3->SetParameter(1, parameter_coherent[1]); // mass for f1270
-                if (iter_bin.param1_limit != -1)
-                {
-                    f3pol3->SetParLimits(1, parameter_coherent[1] - iter_bin.param1_limit, parameter_coherent[1] + iter_bin.param1_limit);
-                }
-                f3pol3->SetParameter(2, parameter_coherent[2]); // width for f1270
-                if (iter_bin.param2_limit != -1)
-                {
-                    f3pol3->SetParLimits(2, parameter_coherent[2] - iter_bin.param2_limit, parameter_coherent[2] + iter_bin.param2_limit);
-                }
-                f3pol3->SetParameter(3, parameter_coherent[3]);
-                if (iter_bin.param3_limit != -1)
-                {
-                    f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
-                }
-                f3pol3->SetParameter(4, parameter_coherent[4]);
-                if (iter_bin.param4_limit != -1)
-                {
-                    f3pol3->SetParLimits(4, parameter_coherent[4] - iter_bin.param4_limit, parameter_coherent[4] + iter_bin.param4_limit);
-                }
-                f3pol3->SetParameter(5, parameter_coherent[5]);
-                if (iter_bin.param5_limit != -1)
-                {
-                    f3pol3->SetParLimits(5, parameter_coherent[5] - iter_bin.param5_limit, parameter_coherent[5] + iter_bin.param5_limit);
-                }
-                f3pol3->SetParameter(6, parameter_coherent[6]);
-                if (iter_bin.param6_limit != -1)
-                {
-                    f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
-                }
-                f3pol3->SetParameter(7, parameter_coherent[7]);
-                if (iter_bin.param7_limit != -1)
-                {
-                    f3pol3->SetParLimits(7, parameter_coherent[7] - iter_bin.param7_limit, parameter_coherent[7] + iter_bin.param7_limit);
-                }
-                f3pol3->SetParameter(8, parameter_coherent[8]);
-                f3pol3->SetParameter(9, parameter_coherent[9]);
-                if (iter_bin.param9_limit != -1)
-                {
-                    f3pol3->SetParLimits(9, iter_bin.param9_limit, 1e8);
-                }
-                f3pol3->SetParameter(10, parameter_coherent[10]);
-                if (iter_bin.param10_limit != -1)
-                {
-                    f3pol3->SetParLimits(10, parameter_coherent[10] - iter_bin.param10_limit, parameter_coherent[10] + iter_bin.param10_limit);
-                }
-                f3pol3->SetParameter(11, parameter_coherent[11]); // width for f1710
-                if (iter_bin.param11_limit != -1)
-                {
-                    f3pol3->SetParLimits(11, parameter_coherent[11] - iter_bin.param11_limit, parameter_coherent[11] + iter_bin.param11_limit);
-                }
-                // f3pol3->SetParameter(12, parameter_coherent[12]);  // overall amplitude
-                // f3pol3->SetParameter(13, parameter_coherent[13]);  // norm of f1710
-
-                // expol parameters
-                f3pol3->SetParameter(14, 1e5);
-                f3pol3->SetParameter(15, 0.2);
-                f3pol3->SetParameter(16, 5);
+                // for (size_t i = 0; i < n; ++i)
+                // {
+                //     double low = std::get<0>(chi2_results[i]);
+                //     double high = std::get<1>(chi2_results[i]);
+                //     double chi2_ndf = std::get<2>(chi2_results[i]);
+                //     std::cout << "Low: " << low << ", High: " << high << ", chi2/NDF: " << chi2_ndf << std::endl;
+                // }
             }
 
             // Drawing the fit
@@ -440,7 +522,17 @@ void rBW_fits()
             hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.4);
             hinvMass->SetMinimum(-1000);
             hinvMass->Fit("f3pol3", "REBMS");
+            cout << "chi2/ndf: " << f3pol3->GetChisquare() / f3pol3->GetNDF() << endl;
             f3pol3->Draw("same");
+
+            // making the size of textbox optimal
+            gPad->Update();
+            TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+            ptstats->SetX1NDC(0.6);
+            ptstats->SetX2NDC(0.99);
+            ptstats->SetY1NDC(0.5);
+            ptstats->SetY2NDC(0.95);
+            ptstats->Draw("same");
 
             // Initializting the individual rBW functions
             TF1 *fitFuncs[3] = {
@@ -571,7 +663,7 @@ void rBW_fits()
                 double pT_width = (pT_bins[ip + 1] - pT_bins[ip]) / 2.0;
                 graph->SetPoint(ip, pT_center, yield);
                 // graph->SetPointError(ip, pT_width, yieldErr);
-                std::cout << "yield" << index << ": " << yield * normFactor << std::endl;
+                // std::cout << "yield" << index << ": " << yield * normFactor << std::endl;
             };
 
             computeYield(fitFuncs[0], yield1270, 1270);
@@ -593,24 +685,15 @@ void rBW_fits()
 
             for (int i = 0; i < 3; ++i)
             {
-                cout << "bc_errors: " << bc_errors[i] << endl;
+                // cout << "bc_errors: " << bc_errors[i] << endl;
                 bkgValues[i] = fitpol3->Integral(hinvMass->GetBinLowEdge(bin_min[i]), hinvMass->GetBinLowEdge(bin_max[i] + 1));
                 intBW[i] = fitFuncs[i]->Integral(hinvMass->GetBinLowEdge(bin_min[i]), hinvMass->GetBinLowEdge(bin_max[i] + 1));
                 sumTailCorr[i] = (fitFuncs[i]->Integral(f3pol3->GetXmin(), hinvMass->GetBinLowEdge(bin_min[i])) + fitFuncs[i]->Integral(hinvMass->GetBinLowEdge(bin_max[i] + 1), f3pol3->GetXmax())) / binwidth;
                 totalY[i] = (sumTailCorr[i] + yields[i] - (bkgValues[i] / binwidth)) / (ptbinwidth * noofevents);
-                std::cout << "Total_Ybincounting" << resonanceno[i] << " " << totalY[i] << std::endl;
+                // std::cout << "Total_Ybincounting" << resonanceno[i] << " " << totalY[i] << std::endl;
                 yield_bc[i]->SetPoint(ip, (pT_bins[ip] + pT_bins[ip + 1]) / 2, totalY[i]);
                 yield_bc[i]->SetPointError(ip, (pT_bins[ip + 1] - pT_bins[ip]) / 2, bc_errors[i] / (ptbinwidth * noofevents));
             }
-
-            // making the size of textbox optimal
-            gPad->Update();
-            TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
-            ptstats->SetX1NDC(0.6);
-            ptstats->SetX2NDC(0.99);
-            ptstats->SetY1NDC(0.5);
-            ptstats->SetY2NDC(0.95);
-            ptstats->Draw("same");
 
             // c2->Close();
         }

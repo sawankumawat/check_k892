@@ -107,8 +107,8 @@ void SetGrapherrorStyle(TGraphErrors *gr)
     gr->SetMarkerSize(1.0);
     gr->SetLineWidth(2);
     gr->GetXaxis()->CenterTitle(true);
-    gr->GetXaxis()->SetNdivisions(506);
-    gr->GetYaxis()->SetNdivisions(505);
+    // gr->GetXaxis()->SetNdivisions(506);
+    // gr->GetYaxis()->SetNdivisions(505);
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);
@@ -118,7 +118,7 @@ void SetGrapherrorStyle(TGraphErrors *gr)
     gr->GetXaxis()->SetTitleOffset(1.3);
     gr->GetYaxis()->SetTitleOffset(1.5);
     gr->GetYaxis()->CenterTitle(true);
-    gr->GetYaxis()->SetDecimals(false);
+    // gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
     gr->GetYaxis()->SetLabelSize(0.045);

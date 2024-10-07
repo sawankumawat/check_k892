@@ -13,7 +13,8 @@ TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange
 TF1 *BW3pol3(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
 TF1 *BW3fit(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
-TF1 *CoherentBWexpol(TH1 *h, double *parameters, double lowfitrange, double highfitrange);
+TF1 *CoherentBWexpol(TH1 *h, double *parameters, double lowfitrange, double highfitrange);  // this one is onld
+TF1 *CoherentBWexpol2(TH1 *h, double *parameters, double lowfitrange, double highfitrange); // this one is from HERA thesis which includes both real and imaginary parts
 TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool drawpol2 = true, string kbgfitfunction = "pol3");
 void setParameterNames(TF1 *f3bw3);
 
@@ -24,9 +25,10 @@ void rBW_fits()
     const string kResBkg = "ROTATED";
     // const string kResBkg = "LIKE";
     // const string kbgfitfunction = "pol3";
-    const string kbgfitfunction = "expol";
+    // const string kbgfitfunction = "expol";
     // const string kbgfitfunction = "Boltzman";
     // const string kbgfitfunction = "CoherentBWsum";
+    const string kbgfitfunction = "CoherentBWsum2";
 
     const int rebin = 2;
     bool testing = false;
@@ -93,7 +95,7 @@ void rBW_fits()
         hinvMass->GetXaxis()->SetRangeUser(1.0, 2.4);
         TH1F *hinvMassResSub = (TH1F *)hinvMass->Clone();
         hinvMass->Draw();
-        c1->SaveAs((fits_folder_str + Form("hinvMass_withoutfit_pt_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
+        // c1->SaveAs((fits_folder_str + Form("hinvMass_withoutfit_pt_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
         double parameters1[9] = {50, f1270Mass, f1270Width, 25, f1525Mass, f1525Width, 25, f1710Mass, f1710Width};
         double parameters2[9] = {50, a1320Mass, a1320Width, 25, f1525Mass, f1525Width, 25, f1710Mass, f1710Width};
         double parameter_coherent[12] = {5000, f1270Mass, f1270Width, 500, a1320Mass, a1320Width, 250, f1525Mass, f1525Width, 25, f1710Mass, f1710Width};
@@ -143,89 +145,6 @@ void rBW_fits()
             TF1 *f3pol3;
             // if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum")
             // {
-            //     struct FitParams
-            //     {
-            //         double low;
-            //         double high;
-            //         double param0_low_limit; // norm for f1270
-            //         double param1_limit;     // mass for f1270
-            //         double param2_limit;     // width for f1270
-            //         double param3_limit;     // norm for f1320
-            //         double param4_limit;     // mass for f1320
-            //         double param5_limit;     // width for f1320
-            //         double param6_limit;     // norm for f1525
-            //         double param7_limit;     // mass for f525
-            //         double param9_limit;     // norm for f1710
-            //         double param10_limit;    // mass for f1710
-            //         double param11_limit;    // width for f1710
-            //     };
-
-            //     // // Define the fit parameters for each pT bin
-
-            //     // for pass 7 full statistics
-            //     std::vector<FitParams> bwfit_params_me = {
-            //         {1.05, 2.15, 0, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1}, // for full pT 0-30 GeV/c
-            //     };
-
-            //     const auto &iter_bin = bwfit_params_me[ip];
-            //     // // for all pT bins
-            //     f3pol3 = CoherentBWexpol(hinvMass, parameter_coherent, iter_bin.low, iter_bin.high);
-            //     f3pol3->SetParameter(0, parameter_coherent[0]); // norm for f1270
-            //     if (iter_bin.param0_low_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(0, iter_bin.param0_low_limit, 1e9);
-            //     }
-            //     f3pol3->SetParameter(1, parameter_coherent[1]); // mass for f1270
-            //     if (iter_bin.param1_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(1, parameter_coherent[1] - iter_bin.param1_limit, parameter_coherent[1] + iter_bin.param1_limit);
-            //     }
-            //     f3pol3->SetParameter(2, parameter_coherent[2]); // width for f1270
-            //     if (iter_bin.param2_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(2, parameter_coherent[2] - iter_bin.param2_limit, parameter_coherent[2] + iter_bin.param2_limit);
-            //     }
-            //     f3pol3->SetParameter(3, parameter_coherent[3]);
-            //     if (iter_bin.param3_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(3, iter_bin.param3_limit, 1e8);
-            //     }
-            //     f3pol3->SetParameter(4, parameter_coherent[4]);
-            //     if (iter_bin.param4_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(4, parameter_coherent[4] - iter_bin.param4_limit, parameter_coherent[4] + iter_bin.param4_limit);
-            //     }
-            //     f3pol3->SetParameter(5, parameter_coherent[5]);
-            //     if (iter_bin.param5_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(5, parameter_coherent[5] - iter_bin.param5_limit, parameter_coherent[5] + iter_bin.param5_limit);
-            //     }
-            //     f3pol3->SetParameter(6, parameter_coherent[6]);
-            //     if (iter_bin.param6_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(6, iter_bin.param6_limit, 1e8);
-            //     }
-            //     f3pol3->SetParameter(7, parameter_coherent[7]);
-            //     if (iter_bin.param7_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(7, parameter_coherent[7] - iter_bin.param7_limit, parameter_coherent[7] + iter_bin.param7_limit);
-            //     }
-            //     f3pol3->SetParameter(8, parameter_coherent[8]);
-            //     f3pol3->SetParameter(9, parameter_coherent[9]);
-            //     if (iter_bin.param9_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(9, iter_bin.param9_limit, 1e8);
-            //     }
-            //     f3pol3->SetParameter(10, parameter_coherent[10]);
-            //     if (iter_bin.param10_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(10, parameter_coherent[10] - iter_bin.param10_limit, parameter_coherent[10] + iter_bin.param10_limit);
-            //     }
-            //     f3pol3->SetParameter(11, parameter_coherent[11]); // width for f1710
-            //     if (iter_bin.param11_limit != -1)
-            //     {
-            //         f3pol3->SetParLimits(11, parameter_coherent[11] - iter_bin.param11_limit, parameter_coherent[11] + iter_bin.param11_limit);
-            //     }
             //     // f3pol3->SetParameter(12, parameter_coherent[12]);  // overall amplitude
             //     // f3pol3->SetParameter(13, parameter_coherent[13]);  // norm of f1710
 
@@ -234,6 +153,82 @@ void rBW_fits()
             //     f3pol3->SetParameter(15, 0.2);
             //     f3pol3->SetParameter(16, 5);
             // }
+
+            if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum2")
+            {
+
+                double parameter_temp[] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1, 500, 500};
+
+                struct FitParams
+                {
+                    double low;
+                    double high;
+                    double param0_limit;  // mass for f1270
+                    double param1_limit;  // width for f1270
+                    double param2_limit;  // mass for a1320
+                    double param3_limit;  // width for a1320
+                    double param4_limit;  // mass for f1525
+                    double param5_limit;  // width for f1525
+                    double param6_limit;  // mass for f1710
+                    double param7_limit;  // width for f1710
+                    double param8_limit;  // a0
+                    double param9_limit;  // a1
+                    double param10_limit; // a3
+                };
+
+                // Define the fit parameters for each pT bin // -1 free, -2 fixed
+                std::vector<FitParams> bwfit_params_me = {
+                    {1.05, 2.20, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1}, //
+                };
+                const auto &iter_bin = bwfit_params_me[ip];
+
+                // Vector to store (low, high, chi2/NDF)
+                std::vector<std::tuple<double, double, double>> chi2_results;
+                std::vector<std::tuple<float, float, float, float>> chi2_results2;
+
+                f3pol3 = CoherentBWexpol2(hinvMass, parameter_temp, iter_bin.low, iter_bin.high); //
+
+                std::vector<std::pair<int, double>> limits = {
+                    {0, iter_bin.param0_limit},
+                    {1, iter_bin.param1_limit},
+                    {2, iter_bin.param2_limit},
+                    {3, iter_bin.param3_limit},
+                    {4, iter_bin.param4_limit},
+                    {5, iter_bin.param5_limit},
+                    {6, iter_bin.param6_limit},
+                    {7, iter_bin.param7_limit},
+                    {8, iter_bin.param8_limit},
+                    {9, iter_bin.param9_limit},
+                    {10, iter_bin.param10_limit}};
+
+                for (const auto &[param_idx, limit] : limits)
+                {
+                    if (parameter_temp[param_idx] != -1)
+                        f3pol3->SetParameter(param_idx, parameter_temp[param_idx]); // Set parameter
+
+                    if (limit != -1 && limit != 0 && limit != -2)
+                    {
+                        f3pol3->SetParLimits(param_idx, parameter_temp[param_idx] - limit, parameter_temp[param_idx] + limit); // Set limit
+                    }
+                    else if (limit == 0)
+                    {
+                        f3pol3->SetParLimits(param_idx, 0, 1e9); // Set limit for normalization
+                    }
+                    else if (limit == -2)
+                    {
+                        f3pol3->FixParameter(param_idx, parameter_temp[param_idx]); // Fix the parameter
+                    }
+                }
+
+                // temporary fixing
+                f3pol3->FixParameter(6, 1.688);
+                f3pol3->FixParameter(7, 0.2377);
+
+                // //for expol parameters
+                f3pol3->SetParameter(11, 7.5e5); // default 1e6
+                f3pol3->SetParameter(12, -0.010); // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
+                f3pol3->SetParameter(13, 2.68); // This scales the distribution up or down. A lower value scans up and vice versa
+            }
 
             if (kchannel == "KsKs_Channel" && (kbgfitfunction == "Boltzman"))
             {
@@ -606,20 +601,50 @@ void rBW_fits()
                     fitboltzman->SetParameter(i, f3pol3->GetParameter(i + 9));
             }
 
-            // // //Drawing the individual rBW functions and the legend
-            TLegend *lfit = new TLegend(0.25, 0.72, 0.55, 0.92);
-            lfit->SetFillColor(0);
-            // lfit->SetBorderSize(0);
-            lfit->SetFillStyle(0);
-            lfit->SetTextFont(42);
-            lfit->SetTextSize(0.025);
-            lfit->AddEntry(hinvMass, "Data", "lpe");
-            lfit->AddEntry(f3pol3, Form("3rBW + %s", kbgfitfunction.c_str()), "l");
             double *parameters3 = f3pol3->GetParameters();
-            TF1 *residualbkg = draw_individual_functions(f3pol3, parameters3, lfit, true, kbgfitfunction);
-            lfit->Draw("same");
-            t2->SetNDC();
-            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+            double parameter_expo[3] = {parameters3[11], parameters3[12], parameters3[13]};
+            double parameter_BW[11] = {parameters3[0], parameters3[1], parameters3[2], parameters3[3], parameters3[4], parameters3[5], parameters3[6], parameters3[7], parameters3[8], parameters3[9], parameters3[10]};
+            TF1 *residualbkg = new TF1("residualbkg", exponential_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 3);
+            residualbkg->SetParameter(0, parameters3[11]);
+            residualbkg->SetParameter(1, parameters3[12]);
+            residualbkg->SetParameter(2, parameters3[13]);
+            residualbkg->SetLineColor(kBlue);
+            residualbkg->SetLineStyle(2);
+            residualbkg->SetLineWidth(2);
+            residualbkg->Draw("same");
+            TF1 *BWfits = new TF1("BWfits", choerentBW_fitfunction_wo_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 11);
+            for (int i = 0; i < 11; i++)
+            {
+                BWfits->SetParameter(i, parameter_BW[i]);
+            }
+            BWfits->SetLineColor(kMagenta);
+            BWfits->SetLineStyle(2);
+            BWfits->SetLineWidth(2);
+            BWfits->Draw("same");
+
+            TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
+            ltemp->SetFillStyle(0);
+            ltemp->SetTextFont(42);
+            // ltemp->SetBorderSize(0);
+            ltemp->SetTextSize(0.035);
+            ltemp->AddEntry(hinvMass, "Data", "lpe");
+            ltemp->AddEntry(f3pol3, Form("4rBW + %s", "expol"), "l");
+            ltemp->AddEntry(BWfits, "4rBW", "l");
+            ltemp->AddEntry(residualbkg, Form("%s", "expol"), "l");
+            ltemp->Draw("same");
+
+            // // // //Drawing the individual rBW functions and the legend
+            // TLegend *lfit = new TLegend(0.25, 0.72, 0.55, 0.92);
+            // lfit->SetFillStyle(0);
+            // lfit->SetTextFont(42);
+            // lfit->SetTextSize(0.025);
+            // lfit->AddEntry(hinvMass, "Data", "lpe");
+            // lfit->AddEntry(f3pol3, Form("3rBW + %s", kbgfitfunction.c_str()), "l");
+            // double *parameters3 = f3pol3->GetParameters();
+            // TF1 *residualbkg = draw_individual_functions(f3pol3, parameters3, lfit, true, kbgfitfunction);
+            // lfit->Draw("same");
+            // t2->SetNDC();
+            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
             {
                 c1->SaveAs((fits_folder_str + "_" + kResBkg + "_" + kbgfitfunction + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
@@ -628,10 +653,11 @@ void rBW_fits()
             // ************* subtract residual background and the plot *************
             TCanvas *c2 = new TCanvas("", "", 2432, 85, 720, 720);
             SetCanvasStyle(c2, 0.12, 0.03, 0.05, 0.14);
+            residualbkg->SetRange(0.98, 3); // extrpolating the fitting range
             hinvMassResSub->Add(residualbkg, -1); // subtract the residual background
             float rangelow = f3pol3->GetXmin();
             float rangehigh = f3pol3->GetXmax();
-            hinvMassResSub->GetXaxis()->SetRangeUser(rangelow + 0.01, 2.18);
+            // hinvMassResSub->GetXaxis()->SetRangeUser(rangelow + 0.01, 2.18);
             hinvMassResSub->SetMinimum(-100);
             hinvMassResSub->Draw();
             TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
@@ -1085,6 +1111,27 @@ TF1 *BW3boltzman(TH1 *h, double *parameters, double lowfitrange, double highfitr
     f3pol3->SetParName(11, "C");
 
     // h->Fit("f3pol3", "REBMS0");
+    return f3pol3;
+}
+
+TF1 *CoherentBWexpol2(TH1 *h, double *parameters, double lowfitrange, double highfitrange)
+{
+    TF1 *f3pol3 = new TF1("f3pol3", choerentBW_fitfunction, lowfitrange, highfitrange, 14);
+    f3pol3->SetParName(0, "mass1");
+    f3pol3->SetParName(1, "width1");
+    f3pol3->SetParName(2, "mass2");
+    f3pol3->SetParName(3, "width2");
+    f3pol3->SetParName(4, "mass3");
+    f3pol3->SetParName(5, "width3");
+    f3pol3->SetParName(6, "mass4");
+    f3pol3->SetParName(7, "width4");
+    f3pol3->SetParName(8, "a0");
+    f3pol3->SetParName(9, "a1");
+    f3pol3->SetParName(10, "a3");
+    f3pol3->SetParName(11, "expol 1");
+    f3pol3->SetParName(12, "expol 2");
+    f3pol3->SetParName(13, "expol 3");
+
     return f3pol3;
 }
 

@@ -259,3 +259,51 @@ Double_t coherentBWsum_expol(double *x, double *par)
 {
     return coherentBWsum(x, &par[0]) + exponential_bkg(x, &par[14]);
 }
+
+Double_t choerentBW_fitfunction_wo_bkg(double *x, double *par)
+{
+    // total 11 + 3 parameters, 2 for each resonance (total 4 resonance), 3 for normalization and 3 for background
+    double mass1270 = par[0];
+    double width1270 = par[1];
+    double mass1320 = par[2];
+    double width1320 = par[3];
+    double mass1525 = par[4];
+    double width1525 = par[5];
+    double mass1710 = par[6];
+    double width1710 = par[7];
+    double a0 = par[8];
+    double a1 = par[9];
+    double a3 = par[10]; // we took a3 so as to not confuse with a2(1320)
+
+    double den1270 = (x[0] * x[0] - mass1270 * mass1270) * (x[0] * x[0] - mass1270 * mass1270) + mass1270 * mass1270 * width1270 * width1270;
+    double den1320 = (x[0] * x[0] - mass1320 * mass1320) * (x[0] * x[0] - mass1320 * mass1320) + mass1320 * mass1320 * width1320 * width1320;
+    double den1525 = (x[0] * x[0] - mass1525 * mass1525) * (x[0] * x[0] - mass1525 * mass1525) + mass1525 * mass1525 * width1525 * width1525;
+    double den1710 = (x[0] * x[0] - mass1710 * mass1710) * (x[0] * x[0] - mass1710 * mass1710) + mass1710 * mass1710 * width1710 * width1710;
+
+    double realnum1270 = (mass1270 * mass1270 - x[0] * x[0]) * mass1270 * TMath::Sqrt(width1270);
+    double realnum1320 = (mass1320 * mass1320 - x[0] * x[0]) * mass1320 * TMath::Sqrt(width1320);
+    double realnum1525 = (mass1525 * mass1525 - x[0] * x[0]) * mass1525 * TMath::Sqrt(width1525);
+    double realnum1710 = (mass1710 * mass1710 - x[0] * x[0]) * mass1710 * TMath::Sqrt(width1710);
+
+    double imagnum1270 = mass1270 * mass1270 * width1270 * TMath::Sqrt(width1270);
+    double imagnum1320 = mass1320 * mass1320 * width1320 * TMath::Sqrt(width1320);
+    double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
+    double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
+
+    // real part of first 3 BW (we take interference of 1270, 1320 and 1525 because they are all spin 0)
+    double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
+    // imaginary part of first 3 BW
+    double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
+    // cross section of first 3 BW
+    double sig1 = (real3BW * real3BW + imag3BW * imag3BW);
+    // add cross sectio fo f1710 with factors
+    double fit = a1 * sig1 + a3 * (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / den1710 * den1710;
+    // double fit_with_bkg = fit + exponential_bkg(x, &par[11]);
+
+    return fit;
+}
+
+Double_t choerentBW_fitfunction(double *x, double *par)
+{
+    return choerentBW_fitfunction_wo_bkg(x, par) + exponential_bkg(x, &par[11]);
+}

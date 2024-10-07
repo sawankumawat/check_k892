@@ -352,7 +352,7 @@ void rBW_fits()
                 //     float best_ipar2 = std::get<1>(chi2_results2[i]);
                 //     float best_ipar3 = std::get<2>(chi2_results2[i]);
                 //     float best_chi2ndf = std::get<3>(chi2_results2[i]);
-                //     cout << "Best ipar1: " << best_ipar1 << ", Best ipar2: " << best_ipar2 << ", Best ipar3: " << best_ipar3 << ", Best chi2/NDF: " << best_chi2ndf << endl;
+                //     cout << " ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ",  chi2/NDF: " << best_chi2ndf << endl;
                 // } // here ends the loop for expol parameters
 
                 // //for Boltzman parameters
@@ -429,8 +429,8 @@ void rBW_fits()
                 const auto &iter_bin = bwfit_params_me[ip];
 
                 // Vector to store (low, high, chi2/NDF)
-                std::vector<std::tuple<double, double, double>> chi2_results;
-                std::vector<std::tuple<float, float, float, float>> chi2_results2;
+                vector<tuple<double, double, double>> chi2_results;
+                vector<tuple<float, float, float, float>> chi2_results2;
 
                 // // // Loop through low and high ranges
                 // for (double low = 0.98; low <= 1.10; low += 0.01)
@@ -439,15 +439,15 @@ void rBW_fits()
                 //     {
                 //         // Update the fitting range
                 //         f3pol3 = BW3expo(hinvMass, parameter_temp, low, high); // use for fitting range loop
-                f3pol3 = BW3expo(hinvMass, parameter_temp, iter_bin.low, iter_bin.high); // without fitting range loop
 
                 // int iteration = 0;
-                // for (int ipar1 = 1e4; ipar1 < 1e7; ipar1 *= 2) // loop for expol parameter 1
+                // for (int ipar1 = 1e4; ipar1 < 1e7; ipar1 *= 10) // loop for expol parameter 1
                 // {
-                //     for (double ipar2 = -1; ipar2 <= 1; ipar2 += 0.1) // loop for expol parameter 2
+                //     for (double ipar2 = -1; ipar2 <= 1; ipar2 += 1) // loop for expol parameter 2
                 //     {
-                //         for (double ipar3 = 2; ipar3 < 8; ipar3 += 0.2) // loop for expol parameter 3
+                //         for (double ipar3 = 2; ipar3 < 8; ipar3 += 2) // loop for expol parameter 3
                 //         {
+                f3pol3 = BW3expo(hinvMass, parameter_temp, iter_bin.low, iter_bin.high); // without fitting range loop
 
                 std::vector<std::pair<int, double>> limits = {
                     {0, iter_bin.param0_limit},
@@ -483,12 +483,13 @@ void rBW_fits()
                 //             f3pol3->SetParameter(9, ipar1);
                 //             f3pol3->SetParameter(10, ipar2);
                 //             f3pol3->SetParameter(11, ipar3);
-                //             hinvMass->Fit("f3pol3", "REBMSL"); // use for loop
+                //             hinvMass->Fit("f3pol3", "REBMS"); // use for loop
                 //             double chi2ndf = f3pol3->GetChisquare() / f3pol3->GetNDF();
                 //             cout << "chi2ndf: " << chi2ndf << endl;
                 //             chi2_results2.push_back(std::make_tuple(ipar1, ipar2, ipar3, chi2ndf));
                 //             iteration++;
                 //             cout << "Iteration: " << iteration << endl;
+                //             f3pol3->Clear();
                 //         } // ipar3 loop end
                 //     } // ipar2 loop end
                 // } // ipar1 loop end
@@ -499,7 +500,7 @@ void rBW_fits()
                 // sort(chi2_results2.begin(), chi2_results2.end(),
                 //      [](const auto &a, const auto &b)
                 //      {
-                //          return std::get<3>(a) < std::get<3>(b);
+                //          return get<3>(a) < get<3>(b);
                 //      });
 
                 // for (int i = 0; i < 20; i++)
@@ -508,13 +509,13 @@ void rBW_fits()
                 //     float best_ipar2 = std::get<1>(chi2_results2[i]);
                 //     float best_ipar3 = std::get<2>(chi2_results2[i]);
                 //     float best_chi2ndf = std::get<3>(chi2_results2[i]);
-                //     cout << "Best ipar1: " << best_ipar1 << ", Best ipar2: " << best_ipar2 << ", Best ipar3: " << best_ipar3 << ", Best chi2/NDF: " << best_chi2ndf << endl;
+                //     cout << "ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ",  chi2/NDF: " << best_chi2ndf << endl;
                 // }
 
                 // for expol parameters
-                f3pol3->SetParameter(9, 5.12e06); // default 1e6
-                f3pol3->SetParameter(10, 0.1);
-                f3pol3->SetParameter(11, 6.2);
+                f3pol3->SetParameter(9, 1e6); // default 1e6
+                f3pol3->SetParameter(10, 0);
+                f3pol3->SetParameter(11, 6);
 
                 //         // Fit the function
                 //         hinvMass->Fit("f3pol3", "REBMS"); // use for loop
@@ -553,7 +554,7 @@ void rBW_fits()
             f3pol3->SetLineWidth(2);
             // hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.4);
             // hinvMass->SetMinimum(-1000);
-            hinvMass->Fit("f3pol3", "REBMSL");
+            hinvMass->Fit("f3pol3", "REBMS");
             cout << "chi2/ndf: " << f3pol3->GetChisquare() / f3pol3->GetNDF() << endl;
             f3pol3->Draw("same");
             int mass_index[3] = {1, 4, 7};

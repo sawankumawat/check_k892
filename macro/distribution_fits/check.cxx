@@ -11,7 +11,7 @@ int check()
     int arr1[5] = {1, 2, 3, 4, 5};      // First element of the tuple
     int arr2[5] = {10, 20, 30, 40, 50}; // Second element of the tuple
     int arr3[5] = {9, 8, 8, 2, 6};      // Third element of the tuple
-    int arr4[5] = {5, 10, 15, 20, 25};  // Fourth element of the tuple
+    int arr4[5] = {5, 10, 50, 20, 25};  // Fourth element of the tuple
 
     // Create tuples using elements at corresponding positions in the arrays
     for (int i = 0; i < 5; i++)
@@ -23,7 +23,7 @@ int check()
     sort(check.begin(), check.end(),
          [](const auto &a, const auto &b)
          {
-             return std::get<2>(a) < std::get<2>(b);
+             return std::get<3>(a) < std::get<3>(b);
          });
 
     for (int i = 0; i < 5; i++)

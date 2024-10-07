@@ -178,13 +178,21 @@ void rBW_fits()
 
                 // Define the fit parameters for each pT bin // -1 free, -2 fixed
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.05, 2.20, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1}, //
+                    {1.01, 2.5, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1}, //
                 };
                 const auto &iter_bin = bwfit_params_me[ip];
 
                 // Vector to store (low, high, chi2/NDF)
                 std::vector<std::tuple<double, double, double>> chi2_results;
                 std::vector<std::tuple<float, float, float, float>> chi2_results2;
+
+                // int iteration = 0;
+                // for (int ipar1 = 6e5; ipar1 < 9e5; ipar1 += 2e4) // loop for expol parameter 1
+                // {
+                //     for (double ipar2 = -0.032; ipar2 <= -0.01; ipar2 += 0.002) // loop for expol parameter 2
+                //     {
+                //         for (double ipar3 = 2; ipar3 < 4; ipar3 += 0.02) // loop for expol parameter 3
+                //         {
 
                 f3pol3 = CoherentBWexpol2(hinvMass, parameter_temp, iter_bin.low, iter_bin.high); //
 
@@ -220,14 +228,47 @@ void rBW_fits()
                     }
                 }
 
-                // temporary fixing
-                f3pol3->FixParameter(6, 1.688);
-                f3pol3->FixParameter(7, 0.2377);
+                //             // // Loop in expol parameters
+                //             f3pol3->SetParameter(11, ipar1);
+                //             f3pol3->SetParameter(12, ipar2);
+                //             f3pol3->SetParameter(13, ipar3);
+                //             hinvMass->Fit("f3pol3", "REBMS"); // use for loop
+                //             double chi2ndf = f3pol3->GetChisquare() / f3pol3->GetNDF();
+                //             cout << "chi2ndf: " << chi2ndf << endl;
+                //             chi2_results2.push_back(std::make_tuple(ipar1, ipar2, ipar3, chi2ndf));
+                //             iteration++;
+                //             cout << "Iteration: " << iteration << endl;
+                //             f3pol3->Clear();
+                //         } // ipar3 loop end
+                //     } // ipar2 loop end
+                // } // ipar1 loop end
+
+                // cout << "Total iterations: " << iteration << endl;
+
+                // // sort in asceding order w.r.t to the third array i.e. chi2/NDF
+                // sort(chi2_results2.begin(), chi2_results2.end(),
+                //      [](const auto &a, const auto &b)
+                //      {
+                //          return get<3>(a) < get<3>(b);
+                //      });
+
+                // for (int i = 0; i < 30; i++)
+                // {
+                //     float best_ipar1 = std::get<0>(chi2_results2[i]);
+                //     float best_ipar2 = std::get<1>(chi2_results2[i]);
+                //     float best_ipar3 = std::get<2>(chi2_results2[i]);
+                //     float best_chi2ndf = std::get<3>(chi2_results2[i]);
+                //     cout << "ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ",  chi2/NDF: " << best_chi2ndf << endl;
+                // }
+
+                // // temporary fixing
+                f3pol3->FixParameter(6, 1.689);
+                f3pol3->FixParameter(7, 0.224);
 
                 // //for expol parameters
-                f3pol3->SetParameter(11, 7.5e5); // default 1e6
-                f3pol3->SetParameter(12, -0.010); // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
-                f3pol3->SetParameter(13, 2.68); // This scales the distribution up or down. A lower value scans up and vice versa
+                f3pol3->FixParameter(11, 7.5e5); // default
+                f3pol3->SetParameter(12, -0.01); // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
+                f3pol3->SetParameter(13, 2.68);   // This scales the distribution up or down. A lower value scans up and vice versa
             }
 
             if (kchannel == "KsKs_Channel" && (kbgfitfunction == "Boltzman"))
@@ -643,7 +684,7 @@ void rBW_fits()
             // double *parameters3 = f3pol3->GetParameters();
             // TF1 *residualbkg = draw_individual_functions(f3pol3, parameters3, lfit, true, kbgfitfunction);
             // lfit->Draw("same");
-            // t2->SetNDC();
+            t2->SetNDC();
             // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
             {
@@ -653,37 +694,42 @@ void rBW_fits()
             // ************* subtract residual background and the plot *************
             TCanvas *c2 = new TCanvas("", "", 2432, 85, 720, 720);
             SetCanvasStyle(c2, 0.12, 0.03, 0.05, 0.14);
-            residualbkg->SetRange(0.98, 3); // extrpolating the fitting range
+            residualbkg->SetRange(0.99, 2.99);    // extrpolating the fitting range
             hinvMassResSub->Add(residualbkg, -1); // subtract the residual background
             float rangelow = f3pol3->GetXmin();
             float rangehigh = f3pol3->GetXmax();
-            // hinvMassResSub->GetXaxis()->SetRangeUser(rangelow + 0.01, 2.18);
+            hinvMassResSub->GetXaxis()->SetRangeUser(0.95, 2.6);
             hinvMassResSub->SetMinimum(-100);
             hinvMassResSub->Draw();
-            TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
-            f3bw3->SetParameter(0, f3pol3->GetParameter(0));
-            f3bw3->SetParameter(1, f3pol3->GetParameter(1));
-            f3bw3->SetParameter(2, f3pol3->GetParameter(2));
-            f3bw3->SetParameter(3, f3pol3->GetParameter(3));
-            f3bw3->SetParameter(4, f3pol3->GetParameter(4));
-            f3bw3->SetParameter(5, f3pol3->GetParameter(5));
-            f3bw3->SetParameter(6, f3pol3->GetParameter(6));
-            f3bw3->SetParameter(7, f3pol3->GetParameter(7));
-            f3bw3->SetParameter(8, f3pol3->GetParameter(8));
+            // TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
+            // f3bw3->SetParameter(0, f3pol3->GetParameter(0));
+            // f3bw3->SetParameter(1, f3pol3->GetParameter(1));
+            // f3bw3->SetParameter(2, f3pol3->GetParameter(2));
+            // f3bw3->SetParameter(3, f3pol3->GetParameter(3));
+            // f3bw3->SetParameter(4, f3pol3->GetParameter(4));
+            // f3bw3->SetParameter(5, f3pol3->GetParameter(5));
+            // f3bw3->SetParameter(6, f3pol3->GetParameter(6));
+            // f3bw3->SetParameter(7, f3pol3->GetParameter(7));
+            // f3bw3->SetParameter(8, f3pol3->GetParameter(8));
+
+            TF1 *f3bw3 = (TF1 *)BWfits->Clone("f3bw3");
+            f3bw3->SetParNames("mass f1270", "width f1270", "mass a1320", "width a1320", "mass f1525", "width f1525", "mass f1710", "width f1710", "a0", "a1", "a3");
+            f3bw3->SetLineColor(kRed);
+            f3bw3->SetLineStyle(1);
             hinvMassResSub->Fit("f3bw3", "REBMS");
             hinvMassResSub->SetMarkerSize(0.8);
-            hinvMassResSub->SetMaximum(hinvMassResSub->GetMaximum() * 1.9);
+            hinvMassResSub->SetMaximum(hinvMassResSub->GetMaximum() * 1.3);
             cout << "Subtracted plot Chi2/ndf: " << f3bw3->GetChisquare() / f3bw3->GetNDF() << endl;
 
-            for (int i = 0; i < 3; i++)
-            {
-                mass_all->SetPoint(i + 3, i + 4, f3bw3->GetParameter(mass_index[i]));
-                mass_all->SetPointError(i + 3, 0, f3bw3->GetParError(mass_index[i]));
-                width_all->SetPoint(i + 3, i + 4, f3bw3->GetParameter(width_index[i]));
-                width_all->SetPointError(i + 3, 0, f3bw3->GetParError(width_index[i]));
-            }
-            mass_all->Write("mass_all");
-            width_all->Write("width_all");
+            // for (int i = 0; i < 3; i++)
+            // {
+            //     mass_all->SetPoint(i + 3, i + 4, f3bw3->GetParameter(mass_index[i]));
+            //     mass_all->SetPointError(i + 3, 0, f3bw3->GetParError(mass_index[i]));
+            //     width_all->SetPoint(i + 3, i + 4, f3bw3->GetParameter(width_index[i]));
+            //     width_all->SetPointError(i + 3, 0, f3bw3->GetParError(width_index[i]));
+            // }
+            // mass_all->Write("mass_all");
+            // width_all->Write("width_all");
 
             gPad->Update();
             TPaveStats *ptstats2 = (TPaveStats *)hinvMassResSub->FindObject("stats");
@@ -694,7 +740,6 @@ void rBW_fits()
             ptstats2->Draw("same");
 
             TLegend *lfit2 = new TLegend(0.17, 0.67, 0.57, 0.92);
-            TLegend *lfit3 = new TLegend(0.17, 0.67, 0.57, 0.92);
             lfit2->SetFillColor(0);
             lfit2->SetFillStyle(0);
             lfit2->SetTextFont(42);
@@ -704,7 +749,7 @@ void rBW_fits()
             lfit2->AddEntry(hinvMassResSub, "KsKs invariant mass", "lpe");
             lfit2->AddEntry(f3bw3, "3rBW fit", "l");
             lfit2->Draw("same");
-            draw_individual_functions(f3pol3, parameters3, lfit2, false, kbgfitfunction); // draw the individual functions
+            // draw_individual_functions(f3pol3, parameters3, lfit2, false, kbgfitfunction); // draw the individual functions
 
             // save the plot
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));

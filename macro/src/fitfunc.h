@@ -97,6 +97,32 @@ Double_t exponential_bkg(double *x, double *par)
     return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * (x[0] - 2.0 * 0.497)));
 }
 
+Double_t exponential_bkg2(double *x, double *par)
+{
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * pow((x[0] - 2.0 * 0.497), par[1])));
+}
+
+Double_t exponential_bkg3(double *x, double *par)
+{
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * pow((x[0] - 2.0 * 0.497), par[3])));
+}
+
+Double_t exponential_bkg4(double *x, double *par)
+{
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * (pow((x[0] - 2.0 * 0.497), par[3])) + pow((x[0] - 2.0 * 0.497), par[4])));
+}
+
+Double_t exponential_bkg5(double *x, double *par)
+{
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * x[0]));
+}
+
+Double_t exponential_bkg6(double *x, double *par)
+{
+    return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(par[2] + par[1] * x[0] + par[3] * x[0] * x[0]));
+}
+
+
 Double_t BW3(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]));

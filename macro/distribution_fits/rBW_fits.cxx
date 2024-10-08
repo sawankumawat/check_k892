@@ -157,7 +157,7 @@ void rBW_fits()
             if (kchannel == "KsKs_Channel" && kbgfitfunction == "CoherentBWsum2")
             {
 
-                double parameter_temp[] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1, 500, 500};
+                double parameter_temp[] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1, 5000, 500};
 
                 struct FitParams
                 {
@@ -178,7 +178,7 @@ void rBW_fits()
 
                 // Define the fit parameters for each pT bin // -1 free, -2 fixed
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.01, 2.5, -1, -1, -1, -1, -1, -1, -1, -1, -2, -1, -1}, //
+                    {1.03, 2.2, f1270Width, -1, 3 * a1320Width, -1, 3 * f1525Width, -1, 3 * f1710Width, -1, -2, -1, -1}, //
                 };
                 const auto &iter_bin = bwfit_params_me[ip];
 
@@ -187,9 +187,9 @@ void rBW_fits()
                 std::vector<std::tuple<float, float, float, float>> chi2_results2;
 
                 // int iteration = 0;
-                // for (int ipar1 = 6e5; ipar1 < 9e5; ipar1 += 2e4) // loop for expol parameter 1
+                // for (int ipar1 = 4e5; ipar1 < 9e5; ipar1 += 4e4) // loop for expol parameter 1
                 // {
-                //     for (double ipar2 = -0.032; ipar2 <= -0.01; ipar2 += 0.002) // loop for expol parameter 2
+                //     for (double ipar2 = -0.1; ipar2 <= -0.01; ipar2 += 0.01) // loop for expol parameter 2
                 //     {
                 //         for (double ipar3 = 2; ipar3 < 4; ipar3 += 0.02) // loop for expol parameter 3
                 //         {
@@ -261,14 +261,14 @@ void rBW_fits()
                 //     cout << "ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ",  chi2/NDF: " << best_chi2ndf << endl;
                 // }
 
-                // // temporary fixing
-                f3pol3->FixParameter(6, 1.689);
-                f3pol3->FixParameter(7, 0.224);
+                // temporary fixing
+                // f3pol3->FixParameter(6, 1.689);
+                // f3pol3->FixParameter(7, 0.224);
 
                 // //for expol parameters
-                f3pol3->FixParameter(11, 7.5e5); // default
-                f3pol3->SetParameter(12, -0.01); // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
-                f3pol3->SetParameter(13, 2.68);   // This scales the distribution up or down. A lower value scans up and vice versa
+                f3pol3->SetParameter(11, 760000); // default
+                f3pol3->SetParameter(12, -0.09);  // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
+                f3pol3->SetParameter(13, 3.7);    // This scales the distribution up or down. A lower value scans up and vice versa
             }
 
             if (kchannel == "KsKs_Channel" && (kbgfitfunction == "Boltzman"))
@@ -658,6 +658,7 @@ void rBW_fits()
             {
                 BWfits->SetParameter(i, parameter_BW[i]);
             }
+            BWfits->SetParLimits(0, parameter_BW[0] - 2 * f1270Width, parameter_BW[0] + 2 * f1270Width);
             BWfits->SetLineColor(kMagenta);
             BWfits->SetLineStyle(2);
             BWfits->SetLineWidth(2);
@@ -701,19 +702,14 @@ void rBW_fits()
             hinvMassResSub->GetXaxis()->SetRangeUser(0.95, 2.6);
             hinvMassResSub->SetMinimum(-100);
             hinvMassResSub->Draw();
-            // TF1 *f3bw3 = new TF1("f3bw3", BW3, rangelow, rangehigh, 9);
-            // f3bw3->SetParameter(0, f3pol3->GetParameter(0));
-            // f3bw3->SetParameter(1, f3pol3->GetParameter(1));
-            // f3bw3->SetParameter(2, f3pol3->GetParameter(2));
-            // f3bw3->SetParameter(3, f3pol3->GetParameter(3));
-            // f3bw3->SetParameter(4, f3pol3->GetParameter(4));
-            // f3bw3->SetParameter(5, f3pol3->GetParameter(5));
-            // f3bw3->SetParameter(6, f3pol3->GetParameter(6));
-            // f3bw3->SetParameter(7, f3pol3->GetParameter(7));
-            // f3bw3->SetParameter(8, f3pol3->GetParameter(8));
 
-            TF1 *f3bw3 = (TF1 *)BWfits->Clone("f3bw3");
+            TF1 *f3bw3 = new TF1("f3bw3", choerentBW_fitfunction_wo_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 11);
             f3bw3->SetParNames("mass f1270", "width f1270", "mass a1320", "width a1320", "mass f1525", "width f1525", "mass f1710", "width f1710", "a0", "a1", "a3");
+            for (int i = 0; i < 11; i++)
+            {
+                f3bw3->SetParameter(i, parameter_BW[i]);
+            }
+
             f3bw3->SetLineColor(kRed);
             f3bw3->SetLineStyle(1);
             hinvMassResSub->Fit("f3bw3", "REBMS");

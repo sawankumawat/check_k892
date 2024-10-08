@@ -122,7 +122,6 @@ Double_t exponential_bkg6(double *x, double *par)
     return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(par[2] + par[1] * x[0] + par[3] * x[0] * x[0]));
 }
 
-
 Double_t BW3(double *x, double *par)
 {
     return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]));
@@ -317,13 +316,18 @@ Double_t choerentBW_fitfunction_wo_bkg(double *x, double *par)
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
     // real part of first 3 BW (we take interference of 1270, 1320 and 1525 because they are all spin 0)
-    double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
+    // double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
+    double real3BW = realnum1270 / den1270 + realnum1320 / den1320 + a0 * realnum1525 / den1525;
+
     // imaginary part of first 3 BW
-    double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
+    // double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
+    double imag3BW = imagnum1270 / den1270 + imagnum1320 / den1320 + a0 * imagnum1525 / den1525;
+
     // cross section of first 3 BW
     double sig1 = (real3BW * real3BW + imag3BW * imag3BW);
+
     // add cross sectio fo f1710 with factors
-    double fit = a1 * sig1 + a3 * (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / den1710 * den1710;
+    double fit = a1 * sig1 + a3 * (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / (den1710 * den1710);
     // double fit_with_bkg = fit + exponential_bkg(x, &par[11]);
 
     return fit;

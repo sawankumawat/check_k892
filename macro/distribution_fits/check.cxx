@@ -25,7 +25,7 @@ Double_t singleBW(double *x, double *par)
     double imag = imagnum1270 / den1270;
 
     // cross section of first 3 BW
-    double sig1 = (real * real + imag * imag);
+    double sig1 = par[2] * (real * real + imag * imag);
 
     return sig1;
 }
@@ -41,9 +41,6 @@ Double_t BWchecks(double *x, double *par)
     double width1525 = par[5];
     double mass1710 = par[6];
     double width1710 = par[7];
-    double a0 = par[8];
-    double a1 = par[9];
-    double a3 = par[10]; // we took a3 so as to not confuse with a2(1320)
 
     double den1270 = (x[0] * x[0] - mass1270 * mass1270) * (x[0] * x[0] - mass1270 * mass1270) + mass1270 * mass1270 * width1270 * width1270;
     double den1320 = (x[0] * x[0] - mass1320 * mass1320) * (x[0] * x[0] - mass1320 * mass1320) + mass1320 * mass1320 * width1320 * width1320;
@@ -60,13 +57,11 @@ Double_t BWchecks(double *x, double *par)
     double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
-    // double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
-    // double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
-    // double sig1 = (real3BW * real3BW + imag3BW * imag3BW);
-    // double fit = a1 * sig1 + a3 * (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / den1710 * den1710;
+    double fit1 = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * realnum1525 / den1525;
+    double fit2 = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * imagnum1525 / den1525;
 
-    double fit1 = realnum1270 / den1270 - realnum1320 / den1320;
-    double fit2 = imagnum1270 / den1270 - imagnum1320 / den1320;
+    // double fit1 = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320;
+    // double fit2 = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320;
 
     // double fit1 = realnum1270 / den1270 + realnum1320 / den1320 + realnum1525 / den1525;
     // double fit2 = imagnum1270 / den1270 + imagnum1320 / den1320 + imagnum1525 / den1525;
@@ -74,7 +69,8 @@ Double_t BWchecks(double *x, double *par)
     // double fit1 = realnum1270 / den1270 + realnum1320 / den1320 + realnum1525 / den1525 + realnum1710 / den1710;
     // double fit2 = imagnum1270 / den1270 + imagnum1320 / den1320 + imagnum1525 / den1525 + imagnum1710 / den1710;
 
-    double fit = fit1 * fit1 + fit2 * fit2;
+    double fit = (fit1 * fit1 + fit2 * fit2) + (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / (den1710 * den1710);
+    // double fit = fit1 * fit1 + fit2 * fit2;
 
     return fit;
 }
@@ -165,43 +161,47 @@ int check()
     {
         BWf1270_and_f1320->SetParameter(i, parameter_temp[i]);
     }
+    BWf1270_and_f1320->GetYaxis()->SetRangeUser(-30, 60);
     BWf1270_and_f1320->Draw();
 
     // // //Here we are checking with the single BW functions
-    TF1 *sBW1 = new TF1("sBW1", singleBW, 0, 3, 2);
+    TF1 *sBW1 = new TF1("sBW1", singleBW, 0, 3, 3);
     sBW1->SetParameter(0, f1270Mass);
     sBW1->SetParameter(1, f1270Width);
+    sBW1->SetParameter(2, 5);
     sBW1->SetLineColor(1);
     sBW1->SetLineStyle(2);
     sBW1->Draw("same");
 
-    TF1 *sBW2 = new TF1("sBW2", singleBW, 0, 3, 2);
+    TF1 *sBW2 = new TF1("sBW2", singleBW, 0, 3, 3);
     sBW2->SetParameter(0, a1320Mass);
     sBW2->SetParameter(1, a1320Width);
+    sBW2->SetParameter(2, -3);
     sBW2->SetLineColor(3);
     sBW2->SetLineStyle(2);
     sBW2->Draw("same");
 
-    // TF1 *sBW3 = new TF1("sBW3", RelativisticBW1, 0, 3, 2);
-    // sBW3->SetParameter(0, f1525Mass);
-    // sBW3->SetParameter(1, f1525Width);
-    // sBW3->SetLineColor(4);
-    // sBW3->SetLineStyle(2);
-    // sBW3->Draw("same");
+    TF1 *sBW3 = new TF1("sBW3", RelativisticBW1, 0, 3, 3);
+    sBW3->SetParameter(0, f1525Mass);
+    sBW3->SetParameter(1, f1525Width);
+    sBW3->SetParameter(2, 1);
+    sBW3->SetLineColor(4);
+    sBW3->SetLineStyle(2);
+    sBW3->Draw("same");
 
-    // TF1 *sBW4 = new TF1("sBW4", RelativisticBW1, 0, 3, 2);
-    // sBW4->SetParameter(0, f1710Mass);
-    // sBW4->SetParameter(1, f1710Width);
-    // sBW4->SetLineColor(6);
-    // sBW4->SetLineStyle(2);
-    // sBW4->Draw("same");
+    TF1 *sBW4 = new TF1("sBW4", RelativisticBW1, 0, 3, 3);
+    sBW4->SetParameter(0, f1710Mass);
+    sBW4->SetParameter(1, f1710Width);
+    sBW4->SetLineColor(6);
+    sBW4->SetLineStyle(2);
+    sBW4->Draw("same");
 
     TLegend *leg = new TLegend(0.65, 0.6, 0.92, 0.9);
     leg->AddEntry(sBW1, "f1270", "l");
     leg->AddEntry(sBW2, "a1320", "l");
     // leg->AddEntry(sBW3, "1525", "l");
     // leg->AddEntry(sBW4, "1710", "l");
-    leg->AddEntry(BWf1270_and_f1320, "f1270 + a1320 + f1525 + f1710", "l");
+    leg->AddEntry(BWf1270_and_f1320, "f1270 + a1320", "l");
     leg->Draw("same");
 
     // // Here we are checking with the combinations of the BW functions using only the magnitude

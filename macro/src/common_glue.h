@@ -110,3 +110,5 @@ float f1710Mass = 1.713;
 float f1710MassErr = 8e-3;
 float f1710Width = 0.150;
 float f1710WidthErr = 0.011;
+float f2020Mass = 1.982;
+float f2020Width = 0.436;

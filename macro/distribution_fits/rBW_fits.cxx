@@ -178,7 +178,7 @@ void rBW_fits()
 
                 // Define the fit parameters for each pT bin // -1 free, -2 fixed
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.03, 2.2, f1270Width, -1, 3 * a1320Width, -1, 3 * f1525Width, -1, 3 * f1710Width, -1, -2, -1, -1}, //
+                    {1.03, 2.2, 3 * f1270Width, -1, 3 * a1320Width, -1, 3 * f1525Width, -1, 3 * f1710Width, -1, -2, -1, -1}, //
                 };
                 const auto &iter_bin = bwfit_params_me[ip];
 
@@ -268,7 +268,7 @@ void rBW_fits()
                 // //for expol parameters
                 f3pol3->SetParameter(11, 760000); // default
                 f3pol3->SetParameter(12, -0.09);  // This parameter shifts the left peak up or down. A lower value shifts up and vice versa
-                f3pol3->SetParameter(13, 3.7);    // This scales the distribution up or down. A lower value scans up and vice versa
+                f3pol3->SetParameter(13, 3.7);    // This scales the distribution up or down. A lower value scales up and vice versa
             }
 
             if (kchannel == "KsKs_Channel" && (kbgfitfunction == "Boltzman"))

@@ -316,12 +316,12 @@ Double_t choerentBW_fitfunction_wo_bkg(double *x, double *par)
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
     // real part of first 3 BW (we take interference of 1270, 1320 and 1525 because they are all spin 0)
-    // double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
-    double real3BW = realnum1270 / den1270 + realnum1320 / den1320 + a0 * realnum1525 / den1525;
+    double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
+    // double real3BW = realnum1270 / den1270 + realnum1320 / den1320 + a0 * realnum1525 / den1525;
 
     // imaginary part of first 3 BW
-    // double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
-    double imag3BW = imagnum1270 / den1270 + imagnum1320 / den1320 + a0 * imagnum1525 / den1525;
+    double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
+    // double imag3BW = imagnum1270 / den1270 + imagnum1320 / den1320 + a0 * imagnum1525 / den1525;
 
     // cross section of first 3 BW
     double sig1 = (real3BW * real3BW + imag3BW * imag3BW);

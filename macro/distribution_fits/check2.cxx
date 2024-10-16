@@ -37,7 +37,7 @@ Double_t single_BW_fit2(double *x, double *par)
 
 Double_t choerentBW_fitfunction_wo_bkg1(double *x, double *par) // taken 4 resonances here
 {
-    // total 11 + 3 parameters, 2 for each resonance (total 4 resonance), 3 for normalization and 3 for background
+    // total 11 parameters, 2 for each resonance (total 4 resonance), 3 for normalization
     double mass1270 = par[0];
     double width1270 = par[1];
     double mass1320 = par[2];
@@ -65,16 +65,13 @@ Double_t choerentBW_fitfunction_wo_bkg1(double *x, double *par) // taken 4 reson
     double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
-    // double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * a0 * realnum1525 / den1525;
     double real3BW = -realnum1270 / den1270 + realnum1320 / den1320 + a0 * realnum1525 / den1525;
 
-    // double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * a0 * imagnum1525 / den1525;
     double imag3BW = -imagnum1270 / den1270 + imagnum1320 / den1320 + a0 * imagnum1525 / den1525;
 
     double sig1 = (real3BW * real3BW + imag3BW * imag3BW);
 
     double fit = a1 * sig1 + a3 * (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / (den1710 * den1710);
-    // double fit_with_bkg = fit + exponential_bkg_1(x, &par[11]);
 
     return fit;
 }
@@ -183,8 +180,8 @@ Double_t BWsum(double *x, double *par)
     double fit1710 = yield1710 * mass1710 * width1710 * x[0] / (pow((x[0] * x[0] - mass1710 * mass1710), 2) + pow(mass1710 * width1710, 2));
 
     // double fit = fit1270 + fit1320 + fit1525 + fit1710;
-    double fit = Amp_interference * pow((fit1320 - fit1270 + fit1525), 2) + Amp_f1710 * fit1710 * fit1710;
-    // double fit = (fit1320 - fit1270 + fit1525) + fit1710;
+    // double fit = Amp_interference * pow((fit1320 - fit1270 + fit1525), 2) + Amp_f1710 * fit1710 * fit1710;
+    double fit = (fit1320 - fit1270 + fit1525) + fit1710;
     return fit;
 }
 

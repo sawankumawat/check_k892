@@ -4,7 +4,43 @@
 #include <algorithm>
 #include "../src/fitfunc.h"
 #include "../src/common_glue.h"
+#include "../src/style.h"
 using namespace std;
+
+Double_t single_BW2(double *x, double *par)
+{
+    double yield1270 = par[0];
+    double mass1270 = par[1];
+    double width1270 = par[2];
+
+    double fit1270 = yield1270 * mass1270 * width1270 * x[0] / (pow((x[0] * x[0] - mass1270 * mass1270), 2) + pow(mass1270 * width1270, 2));
+
+    return fit1270;
+}
+
+Double_t BWsum(double *x, double *par)
+{
+    double yield1270 = par[0];
+    double mass1270 = par[1];
+    double width1270 = par[2];
+    double yield1320 = par[3];
+    double mass1320 = par[4];
+    double width1320 = par[5];
+    double yield1525 = par[6];
+    double mass1525 = par[7];
+    double width1525 = par[8];
+    double yield1710 = par[9];
+    double mass1710 = par[10];
+    double width1710 = par[11];
+
+    double fit1270 = yield1270 * mass1270 * width1270 * x[0] / (pow((x[0] * x[0] - mass1270 * mass1270), 2) + pow(mass1270 * width1270, 2));
+    double fit1320 = yield1320 * mass1320 * width1320 * x[0] / (pow((x[0] * x[0] - mass1320 * mass1320), 2) + pow(mass1320 * width1320, 2));
+    double fit1525 = yield1525 * mass1525 * width1525 * x[0] / (pow((x[0] * x[0] - mass1525 * mass1525), 2) + pow(mass1525 * width1525, 2));
+    double fit1710 = yield1710 * mass1710 * width1710 * x[0] / (pow((x[0] * x[0] - mass1710 * mass1710), 2) + pow(mass1710 * width1710, 2));
+
+    double fit = (fit1320 + fit1270 + fit1525) + fit1710;
+    return fit;
+}
 
 Double_t singleBW(double *x, double *par)
 {
@@ -57,8 +93,8 @@ Double_t BWchecks(double *x, double *par)
     double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
-    double fit1 = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * realnum1525 / den1525;
-    double fit2 = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * imagnum1525 / den1525;
+    double fit1 = -realnum1270 / den1270 + realnum1320 / den1320 + 2 * realnum1525 / den1525;
+    double fit2 = -imagnum1270 / den1270 + imagnum1320 / den1320 + 2 * imagnum1525 / den1525;
 
     // double fit1 = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320;
     // double fit2 = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320;
@@ -125,7 +161,8 @@ int check()
     // }
 
     // checking the fitting function expol
-    TCanvas *c1 = new TCanvas("c1", "c1", 800, 600);
+    TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
+    SetCanvasStyle(c1, 0.1, 0.05, 0.05, 1);
 
     // Here we are checking with the expol function
     //  TF1 *expol = new TF1("expol", exponential_bkg, 0, 10, 3);
@@ -154,44 +191,49 @@ int check()
     // coherentBW->Draw();
 
     // Here we are checking with the combinations of the BW functions using both real and imag parts (this is unsuccesful)
-    TF1 *BWf1270_and_f1320 = new TF1("BWf1270_and_f1320", BWchecks, 1, 2.5, 8);
-    double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width};
-    // double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width};
-    for (int i = 0; i < 11; i++)
+    // TF1 *BWf1270_and_f1320 = new TF1("", BWchecks, 1, 2.5, 8);
+    TF1 *BWf1270_and_f1320 = new TF1("", BWsum, 1, 2.5, 12);
+    // double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width};
+    double parameter_temp[12] = {10, f1270Mass, f1270Width, 10,  a1320Mass, a1320Width, 10, f1525Mass, f1525Width, 10, f1710Mass, f1710Width};
+    for (int i = 0; i < 12; i++)
     {
         BWf1270_and_f1320->SetParameter(i, parameter_temp[i]);
     }
-    BWf1270_and_f1320->GetYaxis()->SetRangeUser(-30, 60);
+    // BWf1270_and_f1320->GetYaxis()->SetRangeUser(-30, 60);
     BWf1270_and_f1320->Draw();
 
     // // //Here we are checking with the single BW functions
-    TF1 *sBW1 = new TF1("sBW1", singleBW, 0, 3, 3);
-    sBW1->SetParameter(0, f1270Mass);
-    sBW1->SetParameter(1, f1270Width);
-    sBW1->SetParameter(2, 5);
+    TF1 *sBW1 = new TF1("sBW1", single_BW2, 0, 3, 3);
+    sBW1->SetParameter(0, 10);
+    sBW1->SetParameter(1, f1270Mass);
+    sBW1->SetParameter(2, f1270Width);
+    // sBW1->SetParameter(2, 5);
     sBW1->SetLineColor(1);
     sBW1->SetLineStyle(2);
     sBW1->Draw("same");
 
-    TF1 *sBW2 = new TF1("sBW2", singleBW, 0, 3, 3);
-    sBW2->SetParameter(0, a1320Mass);
-    sBW2->SetParameter(1, a1320Width);
-    sBW2->SetParameter(2, -3);
+    TF1 *sBW2 = new TF1("sBW2", single_BW2, 0, 3, 3);
+    sBW2->SetParameter(0, 10);
+    sBW2->SetParameter(1, a1320Mass);
+    sBW2->SetParameter(2, a1320Width);
+    // sBW2->SetParameter(2, -3);
     sBW2->SetLineColor(3);
     sBW2->SetLineStyle(2);
     sBW2->Draw("same");
 
-    TF1 *sBW3 = new TF1("sBW3", RelativisticBW1, 0, 3, 3);
-    sBW3->SetParameter(0, f1525Mass);
-    sBW3->SetParameter(1, f1525Width);
-    sBW3->SetParameter(2, 1);
+    TF1 *sBW3 = new TF1("sBW3", single_BW2, 0, 3, 3);
+    sBW3->SetParameter(0, 10);
+    sBW3->SetParameter(1, f1525Mass);
+    sBW3->SetParameter(2, f1525Width);
+    // sBW3->SetParameter(2, 1);
     sBW3->SetLineColor(4);
     sBW3->SetLineStyle(2);
     sBW3->Draw("same");
 
-    TF1 *sBW4 = new TF1("sBW4", RelativisticBW1, 0, 3, 3);
-    sBW4->SetParameter(0, f1710Mass);
-    sBW4->SetParameter(1, f1710Width);
+    TF1 *sBW4 = new TF1("sBW4", single_BW2, 0, 3, 3);
+    sBW4->SetParameter(0, 10);
+    sBW4->SetParameter(1, f1710Mass);
+    sBW4->SetParameter(2, f1710Width);
     sBW4->SetLineColor(6);
     sBW4->SetLineStyle(2);
     sBW4->Draw("same");
@@ -199,9 +241,9 @@ int check()
     TLegend *leg = new TLegend(0.65, 0.6, 0.92, 0.9);
     leg->AddEntry(sBW1, "f1270", "l");
     leg->AddEntry(sBW2, "a1320", "l");
-    // leg->AddEntry(sBW3, "1525", "l");
-    // leg->AddEntry(sBW4, "1710", "l");
-    leg->AddEntry(BWf1270_and_f1320, "f1270 + a1320", "l");
+    leg->AddEntry(sBW3, "1525", "l");
+    leg->AddEntry(sBW4, "1710", "l");
+    leg->AddEntry(BWf1270_and_f1320, "Direct sum", "l");
     leg->Draw("same");
 
     // // Here we are checking with the combinations of the BW functions using only the magnitude
@@ -254,7 +296,7 @@ int check()
     // leg->AddEntry(BWf1270_and_f1320, "f1270 - a1320", "l");
     // leg->Draw("same");
 
-    c1->SaveAs("/home/sawan/Pictures/BWchecks.png");
+    c1->SaveAs("/home/sawan/Pictures/BWchecks_sum.png");
 
     return 0;
 }

@@ -7,7 +7,7 @@
 #include "../src/common_glue.h"
 #include "../src/fitting_range_glue.h"
 
-void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonance[3], string xaxistitle, double *pdg, double *pdgerr);
+void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TGraphErrors *gr_mass_coherent[3], TGraphErrors *gr_mass_L3[3], TGraphErrors *gr_mass_BES[3], TGraphErrors *gr_mass_WA02[3], TGraphErrors *gr_mass_BESIII[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonance[3], string xaxistitle, double *pdg, double *pdgerr);
 const string kResBkg = "ROTATED";
 // path to the output folder
 const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -43,6 +43,46 @@ void compare_mass_width()
     float width_values[2][6];
     float width_values_errors[2][6];
 
+    // float mass_coherent[4] = {1.19, 1.33, 1.513, 1.705};
+    // float width_coherent[4] = {0.1557, 0.09088, 0.07935, 0.1705};
+    // float mass_coherent_err[4] = {0.01, 0.004, 0.001, 0.005};
+    // float width_coherent_err[4] = {0.0229, 0.00756, 0.00182, 0.0139};
+
+    float mass_coherent[4] = {1.19, 1.513, 1.705};
+    float width_coherent[4] = {0.1557, 0.07935, 0.1705};
+    float mass_coherent_err[4] = {0.01, 0.001, 0.005};
+    float width_coherent_err[4] = {0.0229, 0.00182, 0.0139};
+
+    // HERA reuslts without interference terms
+    float HERA_mass[3] = {1.304, 1.523, 1.692};
+    float HERA_mass_errors[3] = {0.006, 0.003, 0.006};
+    float HERA_width[3] = {0.061, 0.071, 0.125};
+    float HERA_width_errors[3] = {0.011, 0.005, 0.012};
+
+    // L3 results without interference terms
+    float L3_mass[3] = {1.239, 1.523, 1.767};
+    float L3_mass_errors[3] = {0.006, 0.006, 0.014};
+    float L3_width[3] = {0.078, 0.1, 0.187};
+    float L3_width_errors[3] = {0.019, 0.015, 0.06};
+
+    // BES results without interference terms
+    float BES_mass[3] = {1.262, 0, 1.765};
+    float BES_mass_errors[3] = {0.002, 0, 0.013};
+    float BES_width[3] = {0.175, 0, 0.145};
+    float BES_width_errors[3] = {0.006, 0, 0.069};
+
+    // WA02 experiment
+    float WA02_mass[3] = {1.305, 1.515, 1.730};
+    float WA02_mass_errors[3] = {0.02, 0.015, 0.015};
+    float WA02_width[3] = {0.132, 0.070, 0.1};
+    float WA02_width_errors[3] = {0.025, 0.025, 0.025};
+
+    // BESIII experiment
+    float BESIII_mass[3] = {0, 0, 1.765};
+    float BESIII_mass_errors[3] = {0, 0, 0.002};
+    float BESIII_width[3] = {0, 0, 0.146};
+    float BESIII_width_errors[3] = {0, 0, 0.003};
+
     for (int i = 0; i < 2; i++)
     {
         r_mass[i] = (TGraphErrors *)fboth[i]->Get("mass_all");
@@ -66,23 +106,27 @@ void compare_mass_width()
     TGraphErrors *gr_width_expol[3];
     TGraphErrors *gr_mass_boltzman[3];
     TGraphErrors *gr_width_boltzman[3];
+    TGraphErrors *gr_mass_coherent[3];
+    TGraphErrors *gr_width_coherent[3];
     TGraphErrors *gr_HERA_mass[3];
     TGraphErrors *gr_HERA_width[3];
+    TGraphErrors *gr_L3_mass[3];
+    TGraphErrors *gr_L3_width[3];
+    TGraphErrors *gr_BES_mass[3];
+    TGraphErrors *gr_BES_width[3];
+    TGraphErrors *gr_WA02_mass[3];
+    TGraphErrors *gr_WA02_width[3];
+    TGraphErrors *gr_BESIII_mass[3];
+    TGraphErrors *gr_BESIII_width[3];
     TLine *line[3];
 
     double pdgmasses[3] = {f1270Mass, f1525Mass, f1710Mass};
     double pdgmasserrors[3] = {f1270MassErr, f1525MassErr, f1710MassErr};
     double pdgwidths[3] = {f1270Width, f1525Width, f1710Width};
     double pdgwidtherrors[3] = {f1270WidthErr, f1525WidthErr, f1710WidthErr};
-    float limits_mass[3][2] = {{1.26, 1.33}, {1.505, 1.53}, {1.66, 1.77}};
+    float limits_mass[3][2] = {{1.15, 1.51}, {1.5, 1.56}, {1.66, 1.85}};
     float limits_width[3][2] = {{0.02, 0.38}, {0.05, 0.15}, {0.06, 0.4}};
     string resonances[3] = {"f1270", "f1525", "f1710"};
-
-    // HERA reuslts without interference terms
-    float HERA_mass[3] = {1.304, 1.523, 1.692};
-    float HERA_mass_errors[3] = {0.006, 0.003, 0.006};
-    float HERA_width[3] = {0.061, 0.071, 0.125};
-    float HERA_width_errors[3] = {0.011, 0.005, 0.012};
     TBox *box[3];
 
     for (int i = 0; i < 3; i++)
@@ -91,72 +135,162 @@ void compare_mass_width()
         gr_width_expol[i] = new TGraphErrors(3);
         gr_mass_boltzman[i] = new TGraphErrors(3);
         gr_width_boltzman[i] = new TGraphErrors(3);
+        gr_mass_coherent[i] = new TGraphErrors(3);
+        gr_width_coherent[i] = new TGraphErrors(3);
         gr_HERA_mass[i] = new TGraphErrors(3);
         gr_HERA_width[i] = new TGraphErrors(3);
-        SetGrapherrorStyle(gr_mass_expol[i]);
-        SetGrapherrorStyle(gr_mass_boltzman[i]);
-        SetGrapherrorStyle(gr_width_expol[i]);
-        SetGrapherrorStyle(gr_width_boltzman[i]);
+        gr_L3_mass[i] = new TGraphErrors(3);
+        gr_L3_width[i] = new TGraphErrors(3);
+        gr_BES_mass[i] = new TGraphErrors(3);
+        gr_BES_width[i] = new TGraphErrors(3);
+        gr_WA02_mass[i] = new TGraphErrors(3);
+        gr_WA02_width[i] = new TGraphErrors(3);
+        gr_BESIII_mass[i] = new TGraphErrors(3);
+        gr_BESIII_width[i] = new TGraphErrors(3);
 
-        gr_mass_expol[i]->SetPoint(i, mass_values[0][i + 3], 1);
-        gr_mass_expol[i]->SetPointError(i, mass_values_errors[0][i + 3], 0);
-        gr_mass_boltzman[i]->SetPoint(i, mass_values[1][i + 3], 2);
-        gr_mass_boltzman[i]->SetPointError(i, mass_values_errors[1][i + 3], 0);
-        gr_width_expol[i]->SetPoint(i, width_values[0][i + 3], 1);
-        gr_width_expol[i]->SetPointError(i, width_values_errors[0][i + 3], 0);
-        gr_width_boltzman[i]->SetPoint(i, width_values[1][i + 3], 2);
-        gr_width_boltzman[i]->SetPointError(i, width_values_errors[1][i + 3], 0);
-        gr_HERA_mass[i]->SetPoint(i, HERA_mass[i], 3);
+        SetGrapherrorStyle(gr_mass_expol[i]);
+        SetGrapherrorStyle(gr_width_expol[i]);
+        SetGrapherrorStyle(gr_mass_boltzman[i]);
+        SetGrapherrorStyle(gr_width_boltzman[i]);
+        SetGrapherrorStyle(gr_mass_coherent[i]);
+        SetGrapherrorStyle(gr_width_coherent[i]);
+        SetGrapherrorStyle(gr_HERA_mass[i]);
+        SetGrapherrorStyle(gr_HERA_width[i]);
+        SetGrapherrorStyle(gr_L3_mass[i]);
+        SetGrapherrorStyle(gr_L3_width[i]);
+        SetGrapherrorStyle(gr_BES_mass[i]);
+        SetGrapherrorStyle(gr_BES_width[i]);
+        SetGrapherrorStyle(gr_WA02_mass[i]);
+        SetGrapherrorStyle(gr_WA02_width[i]);
+        SetGrapherrorStyle(gr_BESIII_mass[i]);
+        SetGrapherrorStyle(gr_BESIII_width[i]);
+
+        gr_HERA_mass[i]->SetPoint(i, HERA_mass[i], 1);
         gr_HERA_mass[i]->SetPointError(i, HERA_mass_errors[i], 0);
-        gr_HERA_width[i]->SetPoint(i, HERA_width[i], 3);
+        gr_HERA_width[i]->SetPoint(i, HERA_width[i], 1);
         gr_HERA_width[i]->SetPointError(i, HERA_width_errors[i], 0);
+
+        gr_L3_mass[i]->SetPoint(i, L3_mass[i], 2);
+        gr_L3_mass[i]->SetPointError(i, L3_mass_errors[i], 0);
+        gr_L3_width[i]->SetPoint(i, L3_width[i], 2);
+        gr_L3_width[i]->SetPointError(i, L3_width_errors[i], 0);
+
+        gr_BES_mass[i]->SetPoint(i, BES_mass[i], 3);
+        gr_BES_mass[i]->SetPointError(i, BES_mass_errors[i], 0);
+        gr_BES_width[i]->SetPoint(i, BES_width[i], 3);
+        gr_BES_width[i]->SetPointError(i, BES_width_errors[i], 0);
+
+        gr_WA02_mass[i]->SetPoint(i, WA02_mass[i], 4);
+        gr_WA02_mass[i]->SetPointError(i, WA02_mass_errors[i], 0);
+        gr_WA02_width[i]->SetPoint(i, WA02_width[i], 4);
+        gr_WA02_width[i]->SetPointError(i, WA02_width_errors[i], 0);
+
+        gr_BESIII_mass[i]->SetPoint(i, BESIII_mass[i], 5);
+        gr_BESIII_mass[i]->SetPointError(i, BESIII_mass_errors[i], 0);
+        gr_BESIII_width[i]->SetPoint(i, BESIII_width[i], 5);
+        gr_BESIII_width[i]->SetPointError(i, BESIII_width_errors[i], 0);
+
+        gr_mass_boltzman[i]->SetPoint(i, mass_values[1][i + 3], 6);
+        gr_mass_boltzman[i]->SetPointError(i, mass_values_errors[1][i + 3], 0);
+        gr_width_boltzman[i]->SetPoint(i, width_values[1][i + 3], 6);
+        gr_width_boltzman[i]->SetPointError(i, width_values_errors[1][i + 3], 0);
+
+        gr_mass_expol[i]->SetPoint(i, mass_values[0][i + 3], 7);
+        gr_mass_expol[i]->SetPointError(i, mass_values_errors[0][i + 3], 0);
+        gr_width_expol[i]->SetPoint(i, width_values[0][i + 3], 7);
+        gr_width_expol[i]->SetPointError(i, width_values_errors[0][i + 3], 0);
+
+        gr_mass_coherent[i]->SetPoint(i, mass_coherent[i], 8);
+        gr_mass_coherent[i]->SetPointError(i, mass_coherent_err[i], 0);
+        gr_width_coherent[i]->SetPoint(i, width_coherent[i], 8);
+        gr_width_coherent[i]->SetPointError(i, width_coherent_err[i], 0);
     }
 
-    plot(gr_mass_expol, gr_mass_boltzman, gr_HERA_mass, line, box, limits_mass, resonances, "Mass", pdgmasses, pdgmasserrors);
-    plot(gr_width_expol, gr_width_boltzman, gr_HERA_width, line, box, limits_width, resonances, "Width", pdgwidths, pdgwidtherrors);
+    plot(gr_mass_expol, gr_mass_boltzman, gr_HERA_mass, gr_mass_coherent, gr_L3_mass, gr_BES_mass, gr_WA02_mass, gr_BESIII_mass, line, box, limits_mass, resonances, "Mass", pdgmasses, pdgmasserrors);
+
+    plot(gr_width_expol, gr_width_boltzman, gr_HERA_width, gr_width_coherent, gr_L3_width, gr_BES_width, gr_WA02_width, gr_BESIII_width, line, box, limits_width, resonances, "Width", pdgwidths, pdgwidtherrors);
 
 } // end of main function
 
-void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonances[3], string xaxistitle, double *pdg, double *pdgerr)
+void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TGraphErrors *gr_mass_coherent[3], TGraphErrors *gr_mass_L3[3], TGraphErrors *gr_mass_BES[3], TGraphErrors *gr_mass_WA02[3], TGraphErrors *gr_mass_BESIII[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonances[3], string xaxistitle, double *pdg, double *pdgerr)
 {
     for (int i = 0; i < 3; i++)
     {
 
         TCanvas *c = new TCanvas("", "", 800, 600);
-        SetCanvasStyle(c, 0.2, 0.03, 0.05, 0.14);
+        SetCanvasStyle(c, 0.24, 0.03, 0.05, 0.14);
         gr_mass_expol[i]->SetTitle(Form("; %s (GeV/c)", xaxistitle.c_str()));
         gr_mass_expol[i]->SetMarkerStyle(20);
-        gr_mass_expol[i]->SetMarkerColor(kBlue);
-        gr_mass_expol[i]->SetLineColor(kBlue);
+        gr_mass_expol[i]->SetMarkerColor(1);
+        gr_mass_expol[i]->SetLineColor(1);
+
         gr_mass_boltzman[i]->SetMarkerStyle(21);
-        gr_mass_boltzman[i]->SetMarkerColor(1);
-        gr_mass_boltzman[i]->SetLineColor(1);
-        gr_HERA_mass[i]->SetMarkerStyle(22);
-        gr_HERA_mass[i]->SetMarkerColor(kGreen);
-        gr_HERA_mass[i]->SetLineColor(kGreen);
+        gr_mass_boltzman[i]->SetMarkerColor(2);
+        gr_mass_boltzman[i]->SetLineColor(2);
+
+        gr_mass_coherent[i]->SetMarkerStyle(22);
+        gr_mass_coherent[i]->SetMarkerColor(4);
+        gr_mass_coherent[i]->SetLineColor(4);
+
+        gr_HERA_mass[i]->SetMarkerStyle(23);
+        gr_HERA_mass[i]->SetMarkerColor(6);
+        gr_HERA_mass[i]->SetLineColor(6);
+
+        gr_mass_L3[i]->SetMarkerStyle(24);
+        gr_mass_L3[i]->SetMarkerColor(9);
+        gr_mass_L3[i]->SetLineColor(9);
+
+        gr_mass_BES[i]->SetMarkerStyle(25);
+        gr_mass_BES[i]->SetMarkerColor(28);
+        gr_mass_BES[i]->SetLineColor(28);
+
+        gr_mass_WA02[i]->SetMarkerStyle(26);
+        gr_mass_WA02[i]->SetMarkerColor(46);
+        gr_mass_WA02[i]->SetLineColor(46);
+
+        gr_mass_BESIII[i]->SetMarkerStyle(27);
+        gr_mass_BESIII[i]->SetMarkerColor(42);
+        gr_mass_BESIII[i]->SetLineColor(42);
+
         gr_mass_expol[i]->Draw("AP");
         gr_mass_boltzman[i]->Draw("P SAME");
+        gr_mass_coherent[i]->Draw("P SAME");
         gr_HERA_mass[i]->Draw("P SAME");
-        line[i] = new TLine(pdg[i], 0, pdg[i], 3.5);
+        gr_mass_L3[i]->Draw("P SAME");
+        gr_mass_BES[i]->Draw("P SAME");
+        gr_mass_WA02[i]->Draw("P SAME");
+        gr_mass_BESIII[i]->Draw("P SAME");
+
+        line[i] = new TLine(pdg[i], 0, pdg[i], 8.5);
         line[i]->SetLineColor(kRed);
         line[i]->SetLineWidth(2);
         line[i]->Draw("same");
-        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 3.5);
+        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 8.5);
         box[i]->SetFillColor(kYellow);
         box[i]->SetFillStyle(3001);
         box[i]->Draw("same");
 
-        TLegend *leg = new TLegend(0.7, 0.2, 0.95, 0.55);
+        TLegend *leg = new TLegend(0.7, 0.35, 0.95, 0.9);
         leg->SetFillStyle(0);
         // leg->SetBorderSize(0);
-        leg->AddEntry(gr_HERA_mass[i], "HERA", "lp");
-        leg->AddEntry(gr_mass_boltzman[i], "Boltzman fit", "lp");
-        leg->AddEntry(gr_mass_expol[i], "Expol fit", "lp");
+        leg->AddEntry(gr_mass_coherent[i], "Coherent fit", "lp");
+        leg->AddEntry(gr_mass_expol[i], "3BW + Expol fit", "lp");
+        leg->AddEntry(gr_mass_boltzman[i], "3BW + Boltzman fit", "lp");
+        leg->AddEntry(gr_mass_BESIII[i], "BESIII expt.", "lp");
+        leg->AddEntry(gr_mass_WA02[i], "WA02 expt.", "lp");
+        leg->AddEntry(gr_mass_BES[i], "BES expt.", "lp");
+        leg->AddEntry(gr_mass_L3[i], "L3 expt.", "lp");
+        leg->AddEntry(gr_HERA_mass[i], "HERA expt.", "lp");
         leg->AddEntry(box[i], Form("PDG %s", resonances[i].c_str()), "f");
         leg->Draw("same");
-        TLegend *leg2 = new TLegend(0.7, 0.2, 0.95, 0.55); // this is created to show line and box in the legend
+        TLegend *leg2 = new TLegend(0.7, 0.35, 0.95, 0.9); // this is created to show line and box in the legend
         leg2->SetFillStyle(0);
         leg2->SetBorderSize(0);
+        leg2->AddEntry((TObject *)0, "", "");
+        leg2->AddEntry((TObject *)0, "", "");
+        leg2->AddEntry((TObject *)0, "", "");
+        leg2->AddEntry((TObject *)0, "", "");
+        leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
@@ -164,7 +298,7 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         leg2->Draw("same");
 
         gr_mass_expol[i]->GetXaxis()->SetLimits(limits[i][0], limits[i][1]); // Set X-axis from 1 to 2 GeV/c
-        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 4);                    // Adjust Y-axis range
+        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 9);                    // Adjust Y-axis range
         gr_mass_expol[i]->GetYaxis()->SetNdivisions(3);
         gr_mass_expol[i]->GetYaxis()->SetBinLabel(1, "");
 
@@ -172,13 +306,18 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         double xMin = gr_mass_expol[i]->GetXaxis()->GetXmin();
 
         // Define a small offset to position the text just to the left of the y-axis
-        double offset = 0.25 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
+        double offset = 0.32 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
 
         TLatex latex;
         latex.SetTextSize(0.04);
-        latex.DrawLatex(xMin - offset, 1, "Expol fit");
-        latex.DrawLatex(xMin - offset, 2, "Boltzman fit");
-        latex.DrawLatex(xMin - offset, 3, "HERA Expt.");
+        latex.DrawLatex(xMin - offset, 1, "HERA Expt.");
+        latex.DrawLatex(xMin - offset, 2, "L3 Expt.");
+        latex.DrawLatex(xMin - offset, 3, "BES Expt.");
+        latex.DrawLatex(xMin - offset, 4, "WA02 Expt.");
+        latex.DrawLatex(xMin - offset, 5, "BESIII Expt.");
+        latex.DrawLatex(xMin - offset, 6, "3BW + Boltzman");
+        latex.DrawLatex(xMin - offset, 7, "3BW + Expol fit");
+        latex.DrawLatex(xMin - offset, 8, "Coherent fit");
 
         c->SaveAs((save_folder_str + xaxistitle + resonances[i] + ".png").c_str());
     }

@@ -134,7 +134,7 @@ Double_t expo2bW(double *x, double *par)
 
 Double_t expo3bW(double *x, double *par)
 {
-    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + exponential_bkg(x, &par[9]));
+    return (RelativisticBW(x, &par[0]) + RelativisticBW(x, &par[3]) + RelativisticBW(x, &par[6]) + exponential_bkg3(x, &par[9]));
 }
 
 Double_t pol2bW3(double *x, double *par)

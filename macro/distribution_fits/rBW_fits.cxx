@@ -26,9 +26,9 @@ void rBW_fits()
     // const string kResBkg = "LIKE";
     // const string kbgfitfunction = "pol3";
     // const string kbgfitfunction = "expol";
-    // const string kbgfitfunction = "Boltzman";
+    const string kbgfitfunction = "Boltzman";
     // const string kbgfitfunction = "CoherentBWsum";
-    const string kbgfitfunction = "CoherentBWsum2";
+    // const string kbgfitfunction = "CoherentBWsum2";
 
     const int rebin = 2;
     bool testing = false;
@@ -456,9 +456,9 @@ void rBW_fits()
 
                 // Define the fit parameters for each pT bin
                 std::vector<FitParams> bwfit_params_me = {
-                    {1.01, 2.2, -1, 5 * f1270Mass, 0.1, -1, 5 * f1525Width, -1, -1, -1, -1}, // free mass and width of f1270
+                    // {1.01, 2.2, -1, 5 * f1270Mass, 0.1, -1, 5 * f1525Width, -1, -1, -1, -1}, // free mass and width of f1270
 
-                    // {1.01, 2.2, 0, 10 * a1320Width, 0.05, 0, 10 * f1525Width, -1, 0, -1, -1}, // free mass and width of f1270
+                    {1.01, 2.2, 0, 10 * a1320Width, 0.05, 0, 10 * f1525Width, -1, 0, -1, -1}, // free mass and width of f1270
 
                     // {1.01, 2.2, 0, -2, -2, 0, 10 * f1525Width, -1, 0, -1, -1}, // fix mass and width of f1270
                 };
@@ -552,6 +552,7 @@ void rBW_fits()
                 f3pol3->SetParameter(9, 1e6); // default 1e6
                 f3pol3->SetParameter(10, 0);
                 f3pol3->SetParameter(11, 6);
+                f3pol3->SetParameter(12, 1);
 
                 //         // Fit the function
                 //         hinvMass->Fit("f3pol3", "REBMS"); // use for loop
@@ -621,7 +622,7 @@ void rBW_fits()
 
             // Initializing the background functions
             TF1 *fitpol3 = new TF1("fitpol3", polynomial3, f3pol3->GetXmin(), f3pol3->GetXmax(), 4);
-            TF1 *fitexpol = new TF1("fitexpol", exponential_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 3);
+            TF1 *fitexpol = new TF1("fitexpol", exponential_bkg3, f3pol3->GetXmin(), f3pol3->GetXmax(), 4);
             TF1 *fitboltzman = new TF1("fitboltzman", Boltzman, f3pol3->GetXmin(), f3pol3->GetXmax(), 3);
 
             // Setting the parameters of the individual rBW functions
@@ -642,51 +643,51 @@ void rBW_fits()
                     fitboltzman->SetParameter(i, f3pol3->GetParameter(i + 9));
             }
 
-            double *parameters3 = f3pol3->GetParameters();
-            double parameter_expo[3] = {parameters3[11], parameters3[12], parameters3[13]};
-            double parameter_BW[11] = {parameters3[0], parameters3[1], parameters3[2], parameters3[3], parameters3[4], parameters3[5], parameters3[6], parameters3[7], parameters3[8], parameters3[9], parameters3[10]};
-            TF1 *residualbkg = new TF1("residualbkg", exponential_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 3);
-            residualbkg->SetParameter(0, parameters3[11]);
-            residualbkg->SetParameter(1, parameters3[12]);
-            residualbkg->SetParameter(2, parameters3[13]);
-            residualbkg->SetLineColor(kBlue);
-            residualbkg->SetLineStyle(2);
-            residualbkg->SetLineWidth(2);
-            residualbkg->Draw("same");
-            TF1 *BWfits = new TF1("BWfits", choerentBW_fitfunction_wo_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 11);
-            for (int i = 0; i < 11; i++)
-            {
-                BWfits->SetParameter(i, parameter_BW[i]);
-            }
-            BWfits->SetParLimits(0, parameter_BW[0] - 2 * f1270Width, parameter_BW[0] + 2 * f1270Width);
-            BWfits->SetLineColor(kMagenta);
-            BWfits->SetLineStyle(2);
-            BWfits->SetLineWidth(2);
-            BWfits->Draw("same");
-
-            TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
-            ltemp->SetFillStyle(0);
-            ltemp->SetTextFont(42);
-            // ltemp->SetBorderSize(0);
-            ltemp->SetTextSize(0.035);
-            ltemp->AddEntry(hinvMass, "Data", "lpe");
-            ltemp->AddEntry(f3pol3, Form("4rBW + %s", "expol"), "l");
-            ltemp->AddEntry(BWfits, "4rBW", "l");
-            ltemp->AddEntry(residualbkg, Form("%s", "expol"), "l");
-            ltemp->Draw("same");
-
-            // // // //Drawing the individual rBW functions and the legend
-            // TLegend *lfit = new TLegend(0.25, 0.72, 0.55, 0.92);
-            // lfit->SetFillStyle(0);
-            // lfit->SetTextFont(42);
-            // lfit->SetTextSize(0.025);
-            // lfit->AddEntry(hinvMass, "Data", "lpe");
-            // lfit->AddEntry(f3pol3, Form("3rBW + %s", kbgfitfunction.c_str()), "l");
             // double *parameters3 = f3pol3->GetParameters();
-            // TF1 *residualbkg = draw_individual_functions(f3pol3, parameters3, lfit, true, kbgfitfunction);
-            // lfit->Draw("same");
+            // double parameter_expo[3] = {parameters3[11], parameters3[12], parameters3[13]};
+            // double parameter_BW[11] = {parameters3[0], parameters3[1], parameters3[2], parameters3[3], parameters3[4], parameters3[5], parameters3[6], parameters3[7], parameters3[8], parameters3[9], parameters3[10]};
+            // TF1 *residualbkg = new TF1("residualbkg", exponential_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 3);
+            // residualbkg->SetParameter(0, parameters3[11]);
+            // residualbkg->SetParameter(1, parameters3[12]);
+            // residualbkg->SetParameter(2, parameters3[13]);
+            // residualbkg->SetLineColor(kBlue);
+            // residualbkg->SetLineStyle(2);
+            // residualbkg->SetLineWidth(2);
+            // residualbkg->Draw("same");
+            // TF1 *BWfits = new TF1("BWfits", choerentBW_fitfunction_wo_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 11);
+            // for (int i = 0; i < 11; i++)
+            // {
+            //     BWfits->SetParameter(i, parameter_BW[i]);
+            // }
+            // BWfits->SetParLimits(0, parameter_BW[0] - 2 * f1270Width, parameter_BW[0] + 2 * f1270Width);
+            // BWfits->SetLineColor(kMagenta);
+            // BWfits->SetLineStyle(2);
+            // BWfits->SetLineWidth(2);
+            // BWfits->Draw("same");
+
+            // TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
+            // ltemp->SetFillStyle(0);
+            // ltemp->SetTextFont(42);
+            // // ltemp->SetBorderSize(0);
+            // ltemp->SetTextSize(0.035);
+            // ltemp->AddEntry(hinvMass, "Data", "lpe");
+            // ltemp->AddEntry(f3pol3, Form("4rBW + %s", "expol"), "l");
+            // ltemp->AddEntry(BWfits, "4rBW", "l");
+            // ltemp->AddEntry(residualbkg, Form("%s", "expol"), "l");
+            // ltemp->Draw("same");
+
+            // // //Drawing the individual rBW functions and the legend
+            TLegend *lfit = new TLegend(0.25, 0.72, 0.55, 0.92);
+            lfit->SetFillStyle(0);
+            lfit->SetTextFont(42);
+            lfit->SetTextSize(0.025);
+            lfit->AddEntry(hinvMass, "Data", "lpe");
+            lfit->AddEntry(f3pol3, Form("3rBW + %s", kbgfitfunction.c_str()), "l");
+            double *parameters3 = f3pol3->GetParameters();
+            TF1 *residualbkg = draw_individual_functions(f3pol3, parameters3, lfit, true, kbgfitfunction);
+            lfit->Draw("same");
             t2->SetNDC();
-            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
             if (saveplots)
             {
                 c1->SaveAs((fits_folder_str + "_" + kResBkg + "_" + kbgfitfunction + Form("_%.1f_%.1f.png", pT_bins[ip], pT_bins[ip + 1])).c_str());
@@ -703,11 +704,11 @@ void rBW_fits()
             hinvMassResSub->SetMinimum(-100);
             hinvMassResSub->Draw();
 
-            TF1 *f3bw3 = new TF1("f3bw3", choerentBW_fitfunction_wo_bkg, f3pol3->GetXmin(), f3pol3->GetXmax(), 11);
-            f3bw3->SetParNames("mass f1270", "width f1270", "mass a1320", "width a1320", "mass f1525", "width f1525", "mass f1710", "width f1710", "a0", "a1", "a3");
-            for (int i = 0; i < 11; i++)
+            TF1 *f3bw3 = new TF1("f3bw3", BW3, f3pol3->GetXmin(), f3pol3->GetXmax(), 9);
+            // f3bw3->SetParNames("mass f1270", "width f1270", "mass a1320", "width a1320", "mass f1525", "width f1525", "mass f1710", "width f1710", "a0", "a1", "a3");
+            for (int i = 0; i < 9; i++)
             {
-                f3bw3->SetParameter(i, parameter_BW[i]);
+                f3bw3->SetParameter(i, parameters3[i]);
             }
 
             f3bw3->SetLineColor(kRed);
@@ -745,7 +746,7 @@ void rBW_fits()
             lfit2->AddEntry(hinvMassResSub, "KsKs invariant mass", "lpe");
             lfit2->AddEntry(f3bw3, "3rBW fit", "l");
             lfit2->Draw("same");
-            // draw_individual_functions(f3pol3, parameters3, lfit2, false, kbgfitfunction); // draw the individual functions
+            draw_individual_functions(f3pol3, parameters3, lfit2, false, kbgfitfunction); // draw the individual functions
 
             // save the plot
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
@@ -1052,7 +1053,7 @@ TF1 *BW(TH1 *h, double mass, double width, double lowrange, double highrange)
 
 TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange)
 {
-    TF1 *f3pol3 = new TF1("f3pol3", expo3bW, lowfitrange, highfitrange, 12);
+    TF1 *f3pol3 = new TF1("f3pol3", expo3bW, lowfitrange, highfitrange, 13);
 
     // fit names here
     f3pol3->SetParName(0, "norm1");
@@ -1067,6 +1068,7 @@ TF1 *BW3expo(TH1 *h, double *parameters, double lowfitrange, double highfitrange
     f3pol3->SetParName(9, "A");
     f3pol3->SetParName(10, "B");
     f3pol3->SetParName(11, "C");
+    f3pol3->SetParName(12, "D");
 
     // h->Fit("f3pol3", "REBMS0");
     return f3pol3;
@@ -1230,18 +1232,20 @@ TF1 *draw_individual_functions(TF1 *fit, double *parameters, TLegend *lfit, bool
     fpol3->SetLineColor(28);
 
     // expol background
-    TF1 *fexpol = new TF1("fexpol", exponential_bkg, rangelow, rangehigh, 3);
+    TF1 *fexpol = new TF1("fexpol", exponential_bkg3, rangelow, rangehigh, 4);
     if (kbgfitfunction != "CoherentBWsum")
     {
         fexpol->SetParameter(0, parameters[9]);
         fexpol->SetParameter(1, parameters[10]);
         fexpol->SetParameter(2, parameters[11]);
+        fexpol->SetParameter(3, parameters[12]);
     }
     else
     {
         fexpol->SetParameter(0, parameters[14]);
         fexpol->SetParameter(1, parameters[15]);
         fexpol->SetParameter(2, parameters[16]);
+        fexpol->SetParameter(3, parameters[13]);
     }
     fexpol->SetLineStyle(2);
     fexpol->SetLineColor(28);

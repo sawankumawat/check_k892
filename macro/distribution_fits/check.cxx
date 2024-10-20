@@ -296,7 +296,7 @@ int check()
     // leg->AddEntry(BWf1270_and_f1320, "f1270 - a1320", "l");
     // leg->Draw("same");
 
-    c1->SaveAs("/home/sawan/Pictures/BWchecks_sum.png");
+    // c1->SaveAs("/home/sawan/Pictures/BWchecks.png");
 
     return 0;
 }

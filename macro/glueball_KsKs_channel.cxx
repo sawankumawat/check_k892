@@ -102,6 +102,13 @@ void glueball_KsKs_channel()
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
+    // if (Npt > 1)
+    // {
+    // TCanvas *cdivide = new TCanvas("", "all_bins", 1440, 720);
+    // SetCanvasStyle(cdivide, 0.15, 0.03, 0.05, 0.15);
+    // cdivide->Divide(3, 2);
+    // }
+
     if (calculate_inv_mass)
     {
         TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f.", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
@@ -273,8 +280,18 @@ void glueball_KsKs_channel()
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
             }
             c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
+
+            // cdivide->cd(ip + 1);
+            // fHistTotal[ip]->Draw("E");
+            // hfbkg->Draw("E same");
+            // if (kResBkg == "MIX" || kResBkg == "ROTATED")
+            //     hbkg_nopeak->Draw("BAR same");
+            // leg->Draw();
+            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
         } // pt bin loop end here
     }
+
+    // cdivide->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());
     ////////////////////////////////////////////////////////////////////////
     // QA plots here
     if (makeQAplots)

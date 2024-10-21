@@ -489,73 +489,73 @@ void check2()
     // ltemp->AddEntry(expol, "expol", "l");
     // ltemp->Draw("same");
 
-    // // // // // // ********************************************************************************
-    // // // // // **************** For 3 BW sum ****************************
-    // TF1 *BEexpol = new TF1("BEexpol", BWsum3_expol3, 1.02, 2.20, 9);
-    // string parnames[] = {"yield1270", "mass1270", "width1270", "yield1525", "mass1525", "width1525", "yield1710", "mass1710", "width1710"};
-    // int size_params = sizeof(parnames) / sizeof(parnames[0]);
-    // for (int i = 0; i < size_params; i++)
-    // {
-    //     BEexpol->SetParName(i, parnames[i].c_str());
-    // }
-    // double parameters[] = {10, f1270Mass, f1270Width, 10, f1525Mass, f1525Width, 10, f1710Mass, f1710Width};
-    // int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
-    // for (int i = 0; i < size_fitparams; i++)
-    // {
-    //     BEexpol->SetParameter(i, parameters[i]);
-    // }
-    // vector<vector<float>> par_limits = {{1, 5 * f1270Width}, {4, 5 * f1525Width}, {7, 5 * f1710Width}};
-    // int limits_size = par_limits.size();
-    // for (int i = 0; i < limits_size; i++)
-    // {
-    //     int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
-    //     BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
-    // }
-    // BEexpol->SetParameter(10, 80000); // expol 3  //5.249e+05  //5.204e+05
-    // BEexpol->SetParameter(11, -0.4);  // expol 3  //-0.09598   //-0.1065
-    // BEexpol->SetParameter(12, 6.6);     // expol 3  //2.573      //2.467
-    // BEexpol->SetParameter(13, 1.00);     // expol 3  //1.101      //1.199
+    // // // // // ********************************************************************************
+    // // // // **************** For 3 BW sum ****************************
+    TF1 *BEexpol = new TF1("BEexpol", BWsum3_expol3, 1.02, 2.20, 9);
+    string parnames[] = {"yield1270", "mass1270", "width1270", "yield1525", "mass1525", "width1525", "yield1710", "mass1710", "width1710"};
+    int size_params = sizeof(parnames) / sizeof(parnames[0]);
+    for (int i = 0; i < size_params; i++)
+    {
+        BEexpol->SetParName(i, parnames[i].c_str());
+    }
+    double parameters[] = {10, f1270Mass, f1270Width, 10, f1525Mass, f1525Width, 10, f1710Mass, f1710Width};
+    int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
+    for (int i = 0; i < size_fitparams; i++)
+    {
+        BEexpol->SetParameter(i, parameters[i]);
+    }
+    vector<vector<float>> par_limits = {{1, 5 * f1270Width}, {4, 5 * f1525Width}, {7, 5 * f1710Width}};
+    int limits_size = par_limits.size();
+    for (int i = 0; i < limits_size; i++)
+    {
+        int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+        BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+    }
+    BEexpol->SetParameter(10, 80000); // expol 3  //5.249e+05  //5.204e+05
+    BEexpol->SetParameter(11, -0.4);  // expol 3  //-0.09598   //-0.1065
+    BEexpol->SetParameter(12, 6.6);   // expol 3  //2.573      //2.467
+    BEexpol->SetParameter(13, 1.00);  // expol 3  //1.101      //1.199
 
-    // // BEexpol->FixParameter(1, f1270Mass);
-    // // BEexpol->FixParameter(2, f1270Width);
-    // // BEexpol->FixParameter(4, f1525Mass);
-    // // BEexpol->FixParameter(5, f1525Width);
-    // // BEexpol->FixParameter(7, f1710Mass);
-    // // BEexpol->FixParameter(8, f1710Width);
-    // hinvMass->Fit("BEexpol", "REBMS");
+    // BEexpol->FixParameter(1, f1270Mass);
+    // BEexpol->FixParameter(2, f1270Width);
+    // BEexpol->FixParameter(4, f1525Mass);
+    // BEexpol->FixParameter(5, f1525Width);
+    // BEexpol->FixParameter(7, f1710Mass);
+    // BEexpol->FixParameter(8, f1710Width);
+    hinvMass->Fit("BEexpol", "REBMS");
 
-    // double *obtained_parameters = BEexpol->GetParameters();
-    // TF1 *expol = new TF1("expol", exponential_bkg_3, 1.03, 2.3, 4);
-    // expol->SetParameter(0, obtained_parameters[14]);
-    // expol->SetParameter(1, obtained_parameters[15]);
-    // expol->SetParameter(2, obtained_parameters[16]);
-    // expol->SetParameter(3, obtained_parameters[17]);
-    // expol->SetLineColor(3);
-    // expol->SetLineStyle(2);
-    // expol->Draw("same");
+    double *obtained_parameters = BEexpol->GetParameters();
+    TF1 *expol = new TF1("expol", exponential_bkg_3, 1.03, 2.3, 4);
+    expol->SetParameter(0, obtained_parameters[14]);
+    expol->SetParameter(1, obtained_parameters[15]);
+    expol->SetParameter(2, obtained_parameters[16]);
+    expol->SetParameter(3, obtained_parameters[17]);
+    expol->SetLineColor(3);
+    expol->SetLineStyle(2);
+    expol->Draw("same");
 
-    // TF1 *onlyBW = new TF1("onlyBW", BWsum, 1.03, 2.3, 14);
-    // TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum, 1.03, 2.3, 14);
-    // for (int i = 0; i < 14; i++)
-    // {
-    //     onlyBW->SetParName(i, parnames[i].c_str());
-    //     onlyBW_clone->SetParName(i, parnames[i].c_str());
-    //     onlyBW->SetParameter(i, obtained_parameters[i]);
-    //     onlyBW_clone->SetParameter(i, obtained_parameters[i]);
-    // }
-    // onlyBW->SetLineColor(4);
-    // onlyBW->SetLineStyle(2);
-    // onlyBW->Draw("same");
+    TF1 *onlyBW = new TF1("onlyBW", BWsum, 1.03, 2.3, 14);
+    TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum, 1.03, 2.3, 14);
+    for (int i = 0; i < 14; i++)
+    {
+        onlyBW->SetParName(i, parnames[i].c_str());
+        onlyBW_clone->SetParName(i, parnames[i].c_str());
+        onlyBW->SetParameter(i, obtained_parameters[i]);
+        onlyBW_clone->SetParameter(i, obtained_parameters[i]);
+    }
+    onlyBW->SetLineColor(4);
+    onlyBW->SetLineStyle(2);
+    onlyBW->Draw("same");
 
-    // TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
-    // ltemp->SetFillStyle(0);
-    // ltemp->SetTextFont(42);
-    // ltemp->SetTextSize(0.035);
-    // ltemp->AddEntry(hinvMass, "Data", "lpe");
-    // ltemp->AddEntry(BEexpol, "4rBW + expol", "l");
-    // ltemp->AddEntry(onlyBW, "4rBW", "l");
-    // ltemp->AddEntry(expol, "expol", "l");
-    // ltemp->Draw("same");
+    TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
+    ltemp->SetFillStyle(0);
+    ltemp->SetTextFont(42);
+    ltemp->SetTextSize(0.035);
+    ltemp->AddEntry(hinvMass, "Data", "lpe");
+    ltemp->AddEntry(BEexpol, "4rBW + expol", "l");
+    ltemp->AddEntry(onlyBW, "4rBW", "l");
+    ltemp->AddEntry(expol, "expol", "l");
+    ltemp->Draw("same");
 
     // // // // ********************************************************************************
     // // // // **************** For Coherent BW sum with amplitdues ****************************

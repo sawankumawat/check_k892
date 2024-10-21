@@ -7,7 +7,7 @@
 #include "../src/style.h"
 using namespace std;
 
-void mass_width_ptwise_temp()
+void plot_mass_width_ptwise_temp()
 {
     float pt[] = {1, 2, 3, 4, 6, 10};
     float ptmean[] = {1.5, 2.5, 3.5, 5, 8};

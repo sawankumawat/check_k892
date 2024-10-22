@@ -165,11 +165,13 @@ void glueball_KsKs_channel()
                 if (kResBkg == "MIX")
                 {
                     hfbkg = (TH1D *)fHistBkg[ip]->Clone();
+                    hfbkg->Write("bkg_without_normalization");
                     hfbkg->Scale(normfactor);
                 }
                 else
                 {
                     hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+                    hfbkg->Write("bkg_without_normalization");
                     hfbkg->Scale(normfactor_rotated);
                 }
 
@@ -255,6 +257,7 @@ void glueball_KsKs_channel()
             // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
             fHistTotal[ip]->Draw("E");
             fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
+            hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
             if (save_invmass_distributions)
             {
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", pT_bins[ip], pT_bins[ip + 1]) + koutputtype).c_str());

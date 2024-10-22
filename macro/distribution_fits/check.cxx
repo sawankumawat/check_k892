@@ -2,301 +2,242 @@
 #include <tuple>
 #include <vector>
 #include <algorithm>
-#include "../src/fitfunc.h"
 #include "../src/common_glue.h"
 #include "../src/style.h"
 using namespace std;
 
-Double_t single_BW2(double *x, double *par)
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 {
-    double yield1270 = par[0];
-    double mass1270 = par[1];
-    double width1270 = par[2];
+    // SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
+    c->Divide(1, 2, 0, 0);
+    TPad *pad1 = (TPad *)c->GetPad(1); // top pad
+    TPad *pad2 = (TPad *)c->GetPad(2); // bottom pad
+    pad2Size = 0.3;                    // Size of the first pad
+    pad1Size = 1 - pad2Size;
 
-    double fit1270 = yield1270 * mass1270 * width1270 * x[0] / (pow((x[0] * x[0] - mass1270 * mass1270), 2) + pow(mass1270 * width1270, 2));
-
-    return fit1270;
+    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2
+    pad2->SetPad(0, 0, 1, 0.3);
+    pad2->SetRightMargin(0.009);
+    pad2->SetBottomMargin(0.33);
+    pad2->SetLeftMargin(0.14);
+    pad2->SetTopMargin(0.04);
+    pad1->SetRightMargin(0.009);
+    pad1->SetTopMargin(0.08);
+    pad1->SetLeftMargin(0.14);
+    pad1->SetBottomMargin(0.002);
 }
 
-Double_t BWsum(double *x, double *par)
+void check()
 {
-    double yield1270 = par[0];
-    double mass1270 = par[1];
-    double width1270 = par[2];
-    double yield1320 = par[3];
-    double mass1320 = par[4];
-    double width1320 = par[5];
-    double yield1525 = par[6];
-    double mass1525 = par[7];
-    double width1525 = par[8];
-    double yield1710 = par[9];
-    double mass1710 = par[10];
-    double width1710 = par[11];
-
-    double fit1270 = yield1270 * mass1270 * width1270 * x[0] / (pow((x[0] * x[0] - mass1270 * mass1270), 2) + pow(mass1270 * width1270, 2));
-    double fit1320 = yield1320 * mass1320 * width1320 * x[0] / (pow((x[0] * x[0] - mass1320 * mass1320), 2) + pow(mass1320 * width1320, 2));
-    double fit1525 = yield1525 * mass1525 * width1525 * x[0] / (pow((x[0] * x[0] - mass1525 * mass1525), 2) + pow(mass1525 * width1525, 2));
-    double fit1710 = yield1710 * mass1710 * width1710 * x[0] / (pow((x[0] * x[0] - mass1710 * mass1710), 2) + pow(mass1710 * width1710, 2));
-
-    double fit = (fit1320 + fit1270 + fit1525) + fit1710;
-    return fit;
-}
-
-Double_t singleBW(double *x, double *par)
-{
-    // total 11 + 3 parameters, 2 for each resonance (total 4 resonance), 3 for normalization and 3 for background
-    double mass1270 = par[0];
-    double width1270 = par[1];
-
-    double den1270 = (x[0] * x[0] - mass1270 * mass1270) * (x[0] * x[0] - mass1270 * mass1270) + mass1270 * mass1270 * width1270 * width1270;
-
-    double realnum1270 = (mass1270 * mass1270 - x[0] * x[0]) * mass1270 * TMath::Sqrt(width1270);
-
-    double imagnum1270 = mass1270 * mass1270 * width1270 * TMath::Sqrt(width1270);
-
-    // real part
-    double real = realnum1270 / den1270;
-
-    // imaginary part
-    double imag = imagnum1270 / den1270;
-
-    // cross section of first 3 BW
-    double sig1 = par[2] * (real * real + imag * imag);
-
-    return sig1;
-}
-
-Double_t BWchecks(double *x, double *par)
-{
-    // total 11 + 3 parameters, 2 for each resonance (total 4 resonance), 3 for normalization and 3 for background
-    double mass1270 = par[0];
-    double width1270 = par[1];
-    double mass1320 = par[2];
-    double width1320 = par[3];
-    double mass1525 = par[4];
-    double width1525 = par[5];
-    double mass1710 = par[6];
-    double width1710 = par[7];
-
-    double den1270 = (x[0] * x[0] - mass1270 * mass1270) * (x[0] * x[0] - mass1270 * mass1270) + mass1270 * mass1270 * width1270 * width1270;
-    double den1320 = (x[0] * x[0] - mass1320 * mass1320) * (x[0] * x[0] - mass1320 * mass1320) + mass1320 * mass1320 * width1320 * width1320;
-    double den1525 = (x[0] * x[0] - mass1525 * mass1525) * (x[0] * x[0] - mass1525 * mass1525) + mass1525 * mass1525 * width1525 * width1525;
-    double den1710 = (x[0] * x[0] - mass1710 * mass1710) * (x[0] * x[0] - mass1710 * mass1710) + mass1710 * mass1710 * width1710 * width1710;
-
-    double realnum1270 = (mass1270 * mass1270 - x[0] * x[0]) * mass1270 * TMath::Sqrt(width1270);
-    double realnum1320 = (mass1320 * mass1320 - x[0] * x[0]) * mass1320 * TMath::Sqrt(width1320);
-    double realnum1525 = (mass1525 * mass1525 - x[0] * x[0]) * mass1525 * TMath::Sqrt(width1525);
-    double realnum1710 = (mass1710 * mass1710 - x[0] * x[0]) * mass1710 * TMath::Sqrt(width1710);
-
-    double imagnum1270 = mass1270 * mass1270 * width1270 * TMath::Sqrt(width1270);
-    double imagnum1320 = mass1320 * mass1320 * width1320 * TMath::Sqrt(width1320);
-    double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
-    double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
-
-    double fit1 = -realnum1270 / den1270 + realnum1320 / den1320 + 2 * realnum1525 / den1525;
-    double fit2 = -imagnum1270 / den1270 + imagnum1320 / den1320 + 2 * imagnum1525 / den1525;
-
-    // double fit1 = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320;
-    // double fit2 = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320;
-
-    // double fit1 = realnum1270 / den1270 + realnum1320 / den1320 + realnum1525 / den1525;
-    // double fit2 = imagnum1270 / den1270 + imagnum1320 / den1320 + imagnum1525 / den1525;
-
-    // double fit1 = realnum1270 / den1270 + realnum1320 / den1320 + realnum1525 / den1525 + realnum1710 / den1710;
-    // double fit2 = imagnum1270 / den1270 + imagnum1320 / den1320 + imagnum1525 / den1525 + imagnum1710 / den1710;
-
-    double fit = (fit1 * fit1 + fit2 * fit2) + (realnum1710 * realnum1710 + imagnum1710 * imagnum1710) / (den1710 * den1710);
-    // double fit = fit1 * fit1 + fit2 * fit2;
-
-    return fit;
-}
-
-Double_t RelativisticBW1(double *x, double *par)
-{
-    return (x[0] * par[0] * par[1] / (pow((x[0] * x[0] - par[0] * par[0]), 2) + pow((par[0] * par[1]), 2)));
-}
-
-Double_t RelativisticBW2(double *x, double *par)
-{
-    return (x[0] * par[0] * par[1] * par[2] / (pow((x[0] * x[0] - par[0] * par[0]), 2) + pow((par[0] * par[1]), 2)));
-}
-
-Double_t combineBW(double *x, double *par)
-{
-    // return (RelativisticBW1(x, &par[0]) + RelativisticBW1(x, &par[2]) + RelativisticBW1(x, &par[4]));
-    // return (RelativisticBW1(x, &par[0]) + RelativisticBW1(x, &par[2]) + RelativisticBW1(x, &par[4]) + RelativisticBW1(x, &par[6]));
-    return (5 * RelativisticBW1(x, &par[0]) - 3 * RelativisticBW1(x, &par[2]));
-}
-
-int check()
-{
-    // // //checking the usage of tuple
-    // vector<tuple<int, int, int, int>> check;
-
-    // int arr1[5] = {1, 2, 3, 4, 5};      // First element of the tuple
-    // int arr2[5] = {10, 20, 30, 40, 50}; // Second element of the tuple
-    // int arr3[5] = {9, 8, 8, 2, 6};      // Third element of the tuple
-    // int arr4[5] = {5, 10, 50, 20, 25};  // Fourth element of the tuple
-
-    // // Create tuples using elements at corresponding positions in the arrays
-    // for (int i = 0; i < 5; i++)
-    // {
-    //     check.push_back(make_tuple(arr1[i], arr2[i], arr3[i], arr4[i]));
-    // }
-
-    // // sort in asceding order w.r.t to the third array i.e. chi2/NDF
-    // sort(check.begin(), check.end(),
-    //      [](const auto &a, const auto &b)
-    //      {
-    //          return std::get<3>(a) < std::get<3>(b);
-    //      });
-
-    // for (int i = 0; i < 5; i++)
-    // {
-    //     float best_ipar1 = std::get<0>(check[i]);
-    //     float best_ipar2 = std::get<1>(check[i]);
-    //     float best_ipar3 = std::get<2>(check[i]);
-    //     float best_chi2ndf = std::get<3>(check[i]);
-    //     cout << "ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ",  chi2/NDF: " << best_chi2ndf << endl;
-    // }
-
-    // checking the fitting function expol
-    TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
-    SetCanvasStyle(c1, 0.1, 0.05, 0.05, 1);
-
-    // Here we are checking with the expol function
-    //  TF1 *expol = new TF1("expol", exponential_bkg, 0, 10, 3);
-    //  expol->SetParameter(0, -1000); // This tells the curvature. Positive and negative values has opposite curvatures. Magnitude of this parameters scales the overall curve
-    //  expol->SetParameter(1, 0);
-    //  expol->SetParameter(2, -0.5); // This parameter tells the shape. Positive value means exponential decay and negative value means exponential rise. Larger the value, faster the decay or rise. 0 means flat line.
-    //  expol->Draw();
-
-    // Here we are checking with BW which has both imag and real parts taken from HERA
-    //  TF1 *coherentBW = new TF1("coherentBW", choerentBW_fitfunction_wo_bkg, 1, 2.2, 11);
-    //  double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1, 1, 1000};
-    //  // double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, 1, 10};
-    //  for (int i = 0; i < 11; i++)
-    //  {
-    //      coherentBW->FixParameter(i, parameter_temp[i]);
-    //  }
-
-    // coherentBW->Draw();
-
-    // Here we are checking with the BW function with only the magnitude TF1 *coherentBW = new TF1("coherentBW", coherentBWsum, -3, 3, 14);
-    // double parameter_temp[14] = {100, f1270Mass, f1270Width, 10, a1320Mass, a1320Width, 1, f1525Mass, f1525Width, 1, f1710Mass, f1710Width, 1, 1};
-    // for (int i = 0; i < 14; i++)
-    // {
-    //     coherentBW->SetParameter(i, parameter_temp[i]);
-    // }
-    // coherentBW->Draw();
-
-    // Here we are checking with the combinations of the BW functions using both real and imag parts (this is unsuccesful)
-    // TF1 *BWf1270_and_f1320 = new TF1("", BWchecks, 1, 2.5, 8);
-    TF1 *BWf1270_and_f1320 = new TF1("", BWsum, 1, 2.5, 12);
-    // double parameter_temp[11] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width};
-    double parameter_temp[12] = {10, f1270Mass, f1270Width, 10,  a1320Mass, a1320Width, 10, f1525Mass, f1525Width, 10, f1710Mass, f1710Width};
-    for (int i = 0; i < 12; i++)
+    gStyle->SetOptStat(0);
+    TFile *frot = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
+    TFile *fmix = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60..root", "READ");
+    if (frot->IsZombie() || fmix->IsZombie())
     {
-        BWf1270_and_f1320->SetParameter(i, parameter_temp[i]);
+        cout << "Error opening file" << endl;
+        return;
     }
-    // BWf1270_and_f1320->GetYaxis()->SetRangeUser(-30, 60);
-    BWf1270_and_f1320->Draw();
+    TH1F *hrot = (TH1F *)frot->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hmix = (TH1F *)fmix->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hrot_unsubtracted = (TH1F *)frot->Get("ksks_bkg_pt_1.0_30.0");
+    TH1F *hmix_unsubtracted = (TH1F *)fmix->Get("ksks_bkg_pt_1.0_30.0");
+    TH1F *hinvmass_raw = (TH1F *)frot->Get("ksks_invmass_pt_1.0_30.0");
+    TH1F *hrotbkg_wo_normalization = (TH1F *)frot->Get("bkg_without_normalization");
+    TH1F *hmixbkg_wo_normalization = (TH1F *)fmix->Get("bkg_without_normalization");
+    if (hrot == nullptr || hmix == nullptr || hrot_unsubtracted == nullptr || hmix_unsubtracted == nullptr || hinvmass_raw == nullptr || hrotbkg_wo_normalization == nullptr || hmixbkg_wo_normalization == nullptr)
+    {
+        cout << "Error opening histogram" << endl;
+        return;
+    }
 
-    // // //Here we are checking with the single BW functions
-    TF1 *sBW1 = new TF1("sBW1", single_BW2, 0, 3, 3);
-    sBW1->SetParameter(0, 10);
-    sBW1->SetParameter(1, f1270Mass);
-    sBW1->SetParameter(2, f1270Width);
-    // sBW1->SetParameter(2, 5);
-    sBW1->SetLineColor(1);
-    sBW1->SetLineStyle(2);
-    sBW1->Draw("same");
+    TCanvas *crot = (TCanvas *)frot->Get("ksks_invmass_withbkg_pt_1.0_30.0");
+    TCanvas *cmix = (TCanvas *)fmix->Get("ksks_invmass_withbkg_pt_1.0_30.0");
+    if (crot == nullptr || cmix == nullptr)
+    {
+        cout << "Error opening canvas" << endl;
+        return;
+    }
+    // Rename the canvases to avoid conflicts
+    crot->SetName("crot_canvas");
+    cmix->SetName("cmix_canvas");
 
-    TF1 *sBW2 = new TF1("sBW2", single_BW2, 0, 3, 3);
-    sBW2->SetParameter(0, 10);
-    sBW2->SetParameter(1, a1320Mass);
-    sBW2->SetParameter(2, a1320Width);
-    // sBW2->SetParameter(2, -3);
-    sBW2->SetLineColor(3);
-    sBW2->SetLineStyle(2);
-    sBW2->Draw("same");
+    TCanvas *c = new TCanvas("", "comparison rotated vs ME", 720, 720);
+    SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
+    SetHistoQA(hrot);
+    SetHistoQA(hmix);
+    hrot->GetXaxis()->SetRangeUser(1, 3);
+    hmix->GetXaxis()->SetRangeUser(1, 3);
+    hrot->GetYaxis()->SetRangeUser(-0.1 * 1e6, 0.5 * 1e6);
+    hrot->Draw();
+    hmix->SetMarkerColor(2);
+    hmix->SetMarkerStyle(22);
+    hmix->SetLineColor(2);
+    // hmix->Scale(2);
+    hmix->Draw("same");
 
-    TF1 *sBW3 = new TF1("sBW3", single_BW2, 0, 3, 3);
-    sBW3->SetParameter(0, 10);
-    sBW3->SetParameter(1, f1525Mass);
-    sBW3->SetParameter(2, f1525Width);
-    // sBW3->SetParameter(2, 1);
-    sBW3->SetLineColor(4);
-    sBW3->SetLineStyle(2);
-    sBW3->Draw("same");
-
-    TF1 *sBW4 = new TF1("sBW4", single_BW2, 0, 3, 3);
-    sBW4->SetParameter(0, 10);
-    sBW4->SetParameter(1, f1710Mass);
-    sBW4->SetParameter(2, f1710Width);
-    sBW4->SetLineColor(6);
-    sBW4->SetLineStyle(2);
-    sBW4->Draw("same");
-
-    TLegend *leg = new TLegend(0.65, 0.6, 0.92, 0.9);
-    leg->AddEntry(sBW1, "f1270", "l");
-    leg->AddEntry(sBW2, "a1320", "l");
-    leg->AddEntry(sBW3, "1525", "l");
-    leg->AddEntry(sBW4, "1710", "l");
-    leg->AddEntry(BWf1270_and_f1320, "Direct sum", "l");
+    TLegend *leg = new TLegend(0.20, 0.67, 0.52, 0.92);
+    leg->SetFillStyle(0);
+    leg->SetTextFont(42);
+    leg->SetTextSize(0.035);
+    leg->AddEntry(hrot, "Rotated", "lpe");
+    leg->AddEntry(hmix, "Mixed-event", "lpe");
     leg->Draw("same");
 
-    // // Here we are checking with the combinations of the BW functions using only the magnitude
-    // TF1 *BWf1270_and_f1320 = new TF1("BWf1270_and_f1320", combineBW, 1, 2.5, 8);
-    // // double parameter_temp[4] = {f1525Mass, f1525Width, f1710Mass, f1710Width};
-    // double parameter_temp[8] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width};
-    // for (int i = 0; i < 8; i++)
+    cmix->cd();
+    cmix->Draw();
+
+    // Draw on crot canvas
+    crot->cd();
+    crot->Draw();
+
+    string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/check/";
+    c->SaveAs((savepath + "compare_mix_rot_after_subtraction.png").c_str());
+    crot->SaveAs((savepath + "rotated_bkg_withsignal.png").c_str());
+    cmix->SaveAs((savepath + "mix_bkg_withsignal.png").c_str());
+
+    TCanvas *c2 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
+    SetHistoQA(hinvmass_raw);
+    SetHistoQA(hrot_unsubtracted);
+    SetHistoQA(hmix_unsubtracted);
+    hinvmass_raw->GetXaxis()->SetRangeUser(1, 3);
+    hrot_unsubtracted->GetXaxis()->SetRangeUser(1, 3);
+    hmix_unsubtracted->GetXaxis()->SetRangeUser(1, 3);
+    hinvmass_raw->Draw();
+    hrot_unsubtracted->SetMarkerColor(4);
+    hrot_unsubtracted->SetMarkerStyle(21);
+    hrot_unsubtracted->SetLineColor(4);
+    hrot_unsubtracted->Draw("same");
+    hmix_unsubtracted->SetMarkerColor(2);
+    hmix_unsubtracted->SetMarkerStyle(22);
+    hmix_unsubtracted->SetLineColor(2);
+    // hmix_unsubtracted->Scale(2);
+    hmix_unsubtracted->Draw("same");
+
+    TLegend *leg2 = new TLegend(0.52, 0.52, 0.84, 0.83);
+    leg2->SetFillStyle(0);
+    leg2->SetTextFont(42);
+    leg2->SetTextSize(0.035);
+    leg2->SetBorderSize(0);
+    leg2->AddEntry(hinvmass_raw, "Raw invariant distribution", "lpe");
+    leg2->AddEntry(hrot_unsubtracted, "Rotated", "lpe");
+    leg2->AddEntry(hmix_unsubtracted, "Mixed-event", "lpe");
+    leg2->Draw("same");
+    c2->SaveAs((savepath + "compare_mix_rot_before_subtraction.png").c_str());
+
+    TCanvas *c3 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c3, 0.14, 0.03, 0.08, 0.14);
+    double pad1Size, pad2Size;
+    canvas_style(c3, pad1Size, pad2Size);
+    c3->cd(1);
+    SetHistoQA(hrotbkg_wo_normalization);
+    SetHistoQA(hmixbkg_wo_normalization);
+    hrotbkg_wo_normalization->GetXaxis()->SetRangeUser(1, 3);
+    hmixbkg_wo_normalization->GetXaxis()->SetRangeUser(1, 3);
+    hmixbkg_wo_normalization->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    hmixbkg_wo_normalization->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    hmixbkg_wo_normalization->GetYaxis()->SetTitle("Counts");
+    hmixbkg_wo_normalization->GetYaxis()->SetTitleOffset(1.3);
+    hmixbkg_wo_normalization->Draw();
+    hmixbkg_wo_normalization->SetMarkerColor(2);
+    hmixbkg_wo_normalization->SetMarkerStyle(22);
+    hmixbkg_wo_normalization->SetLineColor(2);
+    hrotbkg_wo_normalization->Draw("same");
+
+    TLegend *leg3 = new TLegend(0.52, 0.52, 0.84, 0.83);
+    leg3->SetFillStyle(0);
+    leg3->SetTextFont(42);
+    leg3->SetTextSize(0.035 / pad1Size);
+    leg3->SetBorderSize(0);
+    leg3->AddEntry(hrotbkg_wo_normalization, "Rotated", "lpe");
+    leg3->AddEntry(hmixbkg_wo_normalization, "Mixed-event", "lpe");
+    leg3->Draw("same");
+
+    c3->cd(2);
+    TH1F *hratio = (TH1F *)hrotbkg_wo_normalization->Clone("hratio");
+    hratio->Divide(hmixbkg_wo_normalization);
+    hratio->GetYaxis()->SetTitleSize(0.04 / pad2Size);
+    hratio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    hratio->GetYaxis()->SetTitle("Rotated/ME");
+    hratio->GetYaxis()->SetTitleOffset(0.5);
+    hratio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    hratio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    hratio->GetXaxis()->SetTitle("Invariant mass (GeV/c^{2})");
+    hratio->GetYaxis()->SetNdivisions(505);
+    hratio->GetYaxis()->SetRangeUser(0.8, 1.25);
+    hratio->Draw();
+    TLine *line = new TLine(1, 1, 3, 1);
+    line->SetLineColor(4);
+    line->SetLineStyle(2);
+    line->SetLineWidth(2);
+    line->Draw("same");
+
+    c3->SaveAs((savepath + "compare_mix_rot_bkg_wo_normalization.png").c_str());
+
+    // //********************************************************************************** */
+    // //read the MC file of 13 TeV and compare with the mixed event background to check the shape
+
+    TFile *fmc = new TFile("/home/sawan/check_k892/mc/AnalysisResultsMC_KsKspp_13TeV_nopileupmother.root", "read");
+    if (fmc->IsZombie())
+    {
+        cout << "Error opening file" << endl;
+        return;
+    }
+    // // print the names of all lists in the root file
+    // TIter next(fmc->GetListOfKeys());
+    // TKey *key;
+    // cout << "The folders in the root file are: \n";
+    // while ((key = (TKey *)next()))
     // {
-    //     BWf1270_and_f1320->SetParameter(i, parameter_temp[i]);
+    //     cout << key->GetName() << endl;
     // }
-    // BWf1270_and_f1320->SetLineWidth(2);
-    // BWf1270_and_f1320->GetYaxis()->SetRangeUser(-30, 30);
-    // BWf1270_and_f1320->Draw();
 
-    // TF1 *BWf1270 = new TF1("BWf1270", RelativisticBW2, 1, 2.5, 3);
-    // BWf1270->SetParameter(0, f1270Mass);
-    // BWf1270->SetParameter(1, f1270Width);
-    // BWf1270->SetParameter(2, 5);
-    // BWf1270->SetLineColor(1);
-    // BWf1270->SetLineStyle(2);
-    // BWf1270->Draw("same");
+    TList *list = (TList *)fmc->Get("RsnOut_output2023_3.0_3.0_0.0_0.00_12.000_0_1_1_1.0_1.00_0.0_0.000_0.0");
+    if (list == nullptr)
+    {
+        cout << "Error opening list" << endl;
+        return;
+    }
 
-    // TF1 *BWf1320 = new TF1("BWf1320", RelativisticBW2, 1, 2.5, 3);
-    // BWf1320->SetParameter(0, a1320Mass);
-    // BWf1320->SetParameter(1, a1320Width);
-    // BWf1320->SetParameter(2, -3);
-    // BWf1320->SetLineColor(3);
-    // BWf1320->SetLineStyle(2);
-    // BWf1320->Draw("same");
+    // // Iterate in the list to see all objects
+    // TIter iterator2(list);
+    // TObject *obj;
 
-    // // TF1 *BWf1525 = new TF1("BWf1525",RelativisticBW1 , 1, 2.5, 2);
-    // // BWf1525->SetParameter(0, f1525Mass);
-    // // BWf1525->SetParameter(1, f1525Width);
-    // // BWf1525->SetLineColor(4);
-    // // BWf1525->SetLineStyle(2);
-    // // BWf1525->Draw("same");
+    // while ((obj = iterator2()))
+    // {
+    //     cout << "Object Name: " << obj->GetName()
+    //          << ", Object Type: " << obj->ClassName() << endl;
+    // }
 
-    // // TF1 *BWf1710 = new TF1("BWf1710",RelativisticBW1 , 1, 2.5, 2);
-    // // BWf1710->SetParameter(0, f1710Mass);
-    // // BWf1710->SetParameter(1, f1710Width);
-    // // BWf1710->SetLineColor(6);
-    // // BWf1710->SetLineStyle(2);
-    // // BWf1710->Draw("same");
+    THnSparseF *hmc1525 = (THnSparseF *)list->FindObject("RsnTaskF0_f0_MotherMCf1525_MIX");
+    if (hmc1525 == nullptr)
+    {
+        cout << "Error opening histogram" << endl;
+        return;
+    }
+    TH1F *hmc1525_proj = (TH1F *)hmc1525->Projection(0);
+    if (hmc1525_proj == nullptr)
+    {
+        cout << "Error opening histogram" << endl;
+        return;
+    }
+    TCanvas *c4 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c4, 0.14, 0.03, 0.05, 0.14);
+    hmc1525_proj->GetXaxis()->SetRangeUser(1, 3);
+    SetHistoQA(hmc1525_proj);
+    hmc1525_proj->Scale(5.4);
+    hmc1525_proj->Draw();
+    hmixbkg_wo_normalization->Draw("same");
 
-    // TLegend *leg = new TLegend(0.55, 0.6, 0.92, 0.9);
-    // leg->AddEntry(BWf1270, "f1270", "l");
-    // leg->AddEntry(BWf1320, "f1320", "l");
-    // // leg->AddEntry(BWf1525, "f1525", "l");
-    // // leg->AddEntry(BWf1710, "f1710", "l");
-    // leg->AddEntry(BWf1270_and_f1320, "f1270 - a1320", "l");
-    // leg->Draw("same");
+    TLegend *leg4 = new TLegend(0.52, 0.6, 0.84, 0.89);
+    leg4->SetFillStyle(0);
+    leg4->SetTextFont(42);
+    leg4->SetTextSize(0.035);
+    leg4->SetBorderSize(0);
+    leg4->AddEntry(hmc1525_proj, "ME pp 13 TeV MC", "lpe");
+    leg4->AddEntry(hmixbkg_wo_normalization, "ME pp13.6 TeV data", "lpe");
+    leg4->Draw("same");
 
-    // c1->SaveAs("/home/sawan/Pictures/BWchecks.png");
+    c4->SaveAs((savepath + "compare_mc_mix_bkg_wo_normalization.png").c_str());
 
-    return 0;
 }

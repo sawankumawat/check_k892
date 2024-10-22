@@ -29,29 +29,36 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
 void check()
 {
-    gStyle->SetOptStat(0);
-    TFile *frot = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ");
-    TFile *fmix = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60..root", "READ");
-    if (frot->IsZombie() || fmix->IsZombie())
+    gStyle->SetOptStat(1110);
+    TFile *frot = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_fullpt.root", "READ");
+    TFile *fmix = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60_fullpt.root", "READ");
+    TFile *frot2 = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_pt1.root", "READ");
+    TFile *fmix2 = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60_pt1.root", "READ");
+    if (frot->IsZombie() || fmix->IsZombie() || frot2->IsZombie() || fmix2->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
     }
-    TH1F *hrot = (TH1F *)frot->Get("ksks_subtracted_invmass_pt_1.0_30.0");
-    TH1F *hmix = (TH1F *)fmix->Get("ksks_subtracted_invmass_pt_1.0_30.0");
-    TH1F *hrot_unsubtracted = (TH1F *)frot->Get("ksks_bkg_pt_1.0_30.0");
-    TH1F *hmix_unsubtracted = (TH1F *)fmix->Get("ksks_bkg_pt_1.0_30.0");
-    TH1F *hinvmass_raw = (TH1F *)frot->Get("ksks_invmass_pt_1.0_30.0");
+    TH1F *hrot = (TH1F *)frot->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    TH1F *hmix = (TH1F *)fmix->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    TH1F *hrot2 = (TH1F *)frot2->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hmix2 = (TH1F *)fmix2->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hrot_unsubtracted = (TH1F *)frot->Get("ksks_bkg_pt_0.0_30.0");
+    TH1F *hmix_unsubtracted = (TH1F *)fmix->Get("ksks_bkg_pt_0.0_30.0");
+    TH1F *hrot_unsubtracted2 = (TH1F *)frot2->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hmix_unsubtracted2 = (TH1F *)fmix2->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *hinvmass_raw = (TH1F *)frot->Get("ksks_invmass_pt_0.0_30.0");
+    TH1F *hinvmass_raw2 = (TH1F *)frot2->Get("ksks_invmass_pt_1.0_30.0");
     TH1F *hrotbkg_wo_normalization = (TH1F *)frot->Get("bkg_without_normalization");
     TH1F *hmixbkg_wo_normalization = (TH1F *)fmix->Get("bkg_without_normalization");
-    if (hrot == nullptr || hmix == nullptr || hrot_unsubtracted == nullptr || hmix_unsubtracted == nullptr || hinvmass_raw == nullptr || hrotbkg_wo_normalization == nullptr || hmixbkg_wo_normalization == nullptr)
+    if (hrot == nullptr || hmix == nullptr || hrot_unsubtracted == nullptr || hmix_unsubtracted == nullptr || hinvmass_raw == nullptr || hrotbkg_wo_normalization == nullptr || hmixbkg_wo_normalization == nullptr || hrot_unsubtracted2 == nullptr || hmix_unsubtracted2 == nullptr)
     {
         cout << "Error opening histogram" << endl;
         return;
     }
 
-    TCanvas *crot = (TCanvas *)frot->Get("ksks_invmass_withbkg_pt_1.0_30.0");
-    TCanvas *cmix = (TCanvas *)fmix->Get("ksks_invmass_withbkg_pt_1.0_30.0");
+    TCanvas *crot = (TCanvas *)frot->Get("ksks_invmass_withbkg_pt_0.0_30.0");
+    TCanvas *cmix = (TCanvas *)fmix->Get("ksks_invmass_withbkg_pt_0.0_30.0");
     if (crot == nullptr || cmix == nullptr)
     {
         cout << "Error opening canvas" << endl;
@@ -225,7 +232,8 @@ void check()
     SetCanvasStyle(c4, 0.14, 0.03, 0.05, 0.14);
     hmc1525_proj->GetXaxis()->SetRangeUser(1, 3);
     SetHistoQA(hmc1525_proj);
-    hmc1525_proj->Scale(5.4);
+    // hmc1525_proj->Scale(5.4); //pt 1-30 GeV/c
+    hmc1525_proj->Scale(6.7); // pt 1-30 GeV/c
     hmc1525_proj->Draw();
     hmixbkg_wo_normalization->Draw("same");
 
@@ -240,4 +248,26 @@ void check()
 
     c4->SaveAs((savepath + "compare_mc_mix_bkg_wo_normalization.png").c_str());
 
+    TCanvas *c5 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c5, 0.14, 0.03, 0.05, 0.14);
+    hrot->Draw();
+    hrot2->GetXaxis()->SetRangeUser(1, 3);
+    SetHistoQA(hrot2);
+    hrot2->SetMarkerColor(4);
+    hrot2->SetLineColor(4);
+    hrot2->SetMarkerStyle(21);
+    hrot2->Draw("same");
+
+    TLegend *leg5 = new TLegend(0.52, 0.52, 0.84, 0.83);
+    leg5->SetFillStyle(0);
+    leg5->SetTextFont(42);
+    leg5->SetTextSize(0.035);
+    leg5->SetBorderSize(0);
+    leg5->AddEntry(hrot, "Rotated pt 0-30 GeV/c", "lpe");
+    leg5->AddEntry(hrot2, "Rotated pt 1-30 GeV/c", "lpe");
+    leg5->Draw("same");
+    c5->SaveAs((savepath + "compare_rotated_pt1.png").c_str());
+
+    // TCanvas *c6 = new TCanvas("", "", 720, 720);
+    // SetCanvasStyle(c6, 0.14, 0.03, 0.05, 0.14);
 }

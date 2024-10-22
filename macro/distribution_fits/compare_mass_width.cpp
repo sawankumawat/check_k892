@@ -27,26 +27,39 @@ void compare_mass_width()
         std::cout << "Creating folder " << save_folder << std::endl;
     }
 
-    TFile *fexpol = new TFile((fits_folder_str + "fitparams_" + kResBkg + "_expol" + ".root").c_str(), "read");
-    TFile *fBoltzman = new TFile((fits_folder_str + "fitparams_" + kResBkg + "_Boltzman" + ".root").c_str(), "read");
-    TFile *fboth[2] = {fexpol, fBoltzman};
-    if (fexpol->IsZombie() || fBoltzman->IsZombie())
-    {
-        cout << "Error opening files" << endl;
-        return;
-    }
+    // TFile *fexpol = new TFile((fits_folder_str + "fitparams_" + kResBkg + "_expol" + ".root").c_str(), "read");
+    // TFile *fBoltzman = new TFile((fits_folder_str + "fitparams_" + kResBkg + "_Boltzman" + ".root").c_str(), "read");
+    // TFile *fboth[2] = {fexpol, fBoltzman};
+    // if (fexpol->IsZombie() || fBoltzman->IsZombie())
+    // {
+    //     cout << "Error opening files" << endl;
+    //     return;
+    // }
 
-    TGraphErrors *r_mass[2];
-    TGraphErrors *r_width[2];
-    float mass_values[2][6];
-    float mass_values_errors[2][6];
-    float width_values[2][6];
-    float width_values_errors[2][6];
+    // TGraphErrors *r_mass[2];
+    // TGraphErrors *r_width[2];
+    // float mass_values[2][6];
+    // float mass_values_errors[2][6];
+    // float width_values[2][6];
+    // float width_values_errors[2][6];
 
-    // float mass_coherent[4] = {1.19, 1.33, 1.513, 1.705};
-    // float width_coherent[4] = {0.1557, 0.09088, 0.07935, 0.1705};
-    // float mass_coherent_err[4] = {0.01, 0.004, 0.001, 0.005};
-    // float width_coherent_err[4] = {0.0229, 0.00756, 0.00182, 0.0139};
+    // 3rBW + expol fit
+    float mass_expol[3] = {1.273, 1.515, 1.694};
+    float width_expol[3] = {0.19, 0.07795, 0.2054};
+    float mass_expol_err[3] = {0.002, 0.001, 0.005};
+    float width_expol_err[3] = {0.01, 0.00189, 0.0129};
+
+    // 3rBW + Boltzman fit
+    float mass_boltzman[3] = {1.297, 1.514, 1.693};
+    float width_boltzman[3] = {0.163, 0.08869, 0.1579};
+    float mass_boltzman_err[3] = {0.001, 0.001, 0.004};
+    float width_boltzman_err[3] = {0.0001, 0.0019, 0.008};
+
+    // Coherent BW sum fit
+    //  float mass_coherent[4] = {1.19, 1.33, 1.513, 1.705};
+    //  float width_coherent[4] = {0.1557, 0.09088, 0.07935, 0.1705};
+    //  float mass_coherent_err[4] = {0.01, 0.004, 0.001, 0.005};
+    //  float width_coherent_err[4] = {0.0229, 0.00756, 0.00182, 0.0139};
 
     float mass_coherent[4] = {1.19, 1.513, 1.705};
     float width_coherent[4] = {0.1557, 0.07935, 0.1705};
@@ -83,23 +96,23 @@ void compare_mass_width()
     float BESIII_width[3] = {0, 0, 0.146};
     float BESIII_width_errors[3] = {0, 0, 0.003};
 
-    for (int i = 0; i < 2; i++)
-    {
-        r_mass[i] = (TGraphErrors *)fboth[i]->Get("mass_all");
-        r_width[i] = (TGraphErrors *)fboth[i]->Get("width_all");
-        if (r_mass[i] == nullptr || r_width[i] == nullptr)
-        {
-            cout << "Error reading graphs" << endl;
-            return;
-        }
-        for (int j = 0; j < 6; j++)
-        {
-            mass_values[i][j] = r_mass[i]->GetY()[j];
-            width_values[i][j] = r_width[i]->GetY()[j];
-            mass_values_errors[i][j] = r_mass[i]->GetEY()[j];
-            width_values_errors[i][j] = r_width[i]->GetEY()[j];
-        }
-    }
+    // for (int i = 0; i < 2; i++)
+    // {
+    //     r_mass[i] = (TGraphErrors *)fboth[i]->Get("mass_all");
+    //     r_width[i] = (TGraphErrors *)fboth[i]->Get("width_all");
+    //     if (r_mass[i] == nullptr || r_width[i] == nullptr)
+    //     {
+    //         cout << "Error reading graphs" << endl;
+    //         return;
+    //     }
+    //     for (int j = 0; j < 6; j++)
+    //     {
+    //         mass_values[i][j] = r_mass[i]->GetY()[j];
+    //         width_values[i][j] = r_width[i]->GetY()[j];
+    //         mass_values_errors[i][j] = r_mass[i]->GetEY()[j];
+    //         width_values_errors[i][j] = r_width[i]->GetEY()[j];
+    //     }
+    // }
 
     // TGraphErrors *graph = new TGraphErrors(n, mass, y, massErr, yErr);
     TGraphErrors *gr_mass_expol[3];
@@ -124,7 +137,7 @@ void compare_mass_width()
     double pdgmasserrors[3] = {f1270MassErr, f1525MassErr, f1710MassErr};
     double pdgwidths[3] = {f1270Width, f1525Width, f1710Width};
     double pdgwidtherrors[3] = {f1270WidthErr, f1525WidthErr, f1710WidthErr};
-    float limits_mass[3][2] = {{1.15, 1.51}, {1.5, 1.56}, {1.66, 1.85}};
+    float limits_mass[3][2] = {{1.20, 1.42}, {1.5, 1.56}, {1.66, 1.85}};
     float limits_width[3][2] = {{0.02, 0.38}, {0.05, 0.15}, {0.06, 0.4}};
     string resonances[3] = {"f1270", "f1525", "f1710"};
     TBox *box[3];
@@ -175,35 +188,45 @@ void compare_mass_width()
         gr_L3_width[i]->SetPoint(i, L3_width[i], 2);
         gr_L3_width[i]->SetPointError(i, L3_width_errors[i], 0);
 
-        gr_BES_mass[i]->SetPoint(i, BES_mass[i], 3);
-        gr_BES_mass[i]->SetPointError(i, BES_mass_errors[i], 0);
-        gr_BES_width[i]->SetPoint(i, BES_width[i], 3);
-        gr_BES_width[i]->SetPointError(i, BES_width_errors[i], 0);
+        gr_mass_boltzman[i]->SetPoint(i, mass_boltzman[i], 3);
+        gr_mass_boltzman[i]->SetPointError(i, mass_boltzman_err[i], 0);
+        gr_width_boltzman[i]->SetPoint(i, width_boltzman[i], 3);
+        gr_width_boltzman[i]->SetPointError(i, width_boltzman_err[i], 0);
 
-        gr_WA02_mass[i]->SetPoint(i, WA02_mass[i], 4);
-        gr_WA02_mass[i]->SetPointError(i, WA02_mass_errors[i], 0);
-        gr_WA02_width[i]->SetPoint(i, WA02_width[i], 4);
-        gr_WA02_width[i]->SetPointError(i, WA02_width_errors[i], 0);
+        gr_mass_expol[i]->SetPoint(i, mass_expol[i], 4);
+        gr_mass_expol[i]->SetPointError(i, mass_expol_err[i], 0);
+        gr_width_expol[i]->SetPoint(i, width_expol[i], 4);
+        gr_width_expol[i]->SetPointError(i, width_expol_err[i], 0);
 
-        gr_BESIII_mass[i]->SetPoint(i, BESIII_mass[i], 5);
-        gr_BESIII_mass[i]->SetPointError(i, BESIII_mass_errors[i], 0);
-        gr_BESIII_width[i]->SetPoint(i, BESIII_width[i], 5);
-        gr_BESIII_width[i]->SetPointError(i, BESIII_width_errors[i], 0);
+        // gr_BES_mass[i]->SetPoint(i, BES_mass[i], 3);
+        // gr_BES_mass[i]->SetPointError(i, BES_mass_errors[i], 0);
+        // gr_BES_width[i]->SetPoint(i, BES_width[i], 3);
+        // gr_BES_width[i]->SetPointError(i, BES_width_errors[i], 0);
 
-        gr_mass_boltzman[i]->SetPoint(i, mass_values[1][i + 3], 6);
-        gr_mass_boltzman[i]->SetPointError(i, mass_values_errors[1][i + 3], 0);
-        gr_width_boltzman[i]->SetPoint(i, width_values[1][i + 3], 6);
-        gr_width_boltzman[i]->SetPointError(i, width_values_errors[1][i + 3], 0);
+        // gr_WA02_mass[i]->SetPoint(i, WA02_mass[i], 4);
+        // gr_WA02_mass[i]->SetPointError(i, WA02_mass_errors[i], 0);
+        // gr_WA02_width[i]->SetPoint(i, WA02_width[i], 4);
+        // gr_WA02_width[i]->SetPointError(i, WA02_width_errors[i], 0);
 
-        gr_mass_expol[i]->SetPoint(i, mass_values[0][i + 3], 7);
-        gr_mass_expol[i]->SetPointError(i, mass_values_errors[0][i + 3], 0);
-        gr_width_expol[i]->SetPoint(i, width_values[0][i + 3], 7);
-        gr_width_expol[i]->SetPointError(i, width_values_errors[0][i + 3], 0);
+        // gr_BESIII_mass[i]->SetPoint(i, BESIII_mass[i], 5);
+        // gr_BESIII_mass[i]->SetPointError(i, BESIII_mass_errors[i], 0);
+        // gr_BESIII_width[i]->SetPoint(i, BESIII_width[i], 5);
+        // gr_BESIII_width[i]->SetPointError(i, BESIII_width_errors[i], 0);
 
-        gr_mass_coherent[i]->SetPoint(i, mass_coherent[i], 8);
-        gr_mass_coherent[i]->SetPointError(i, mass_coherent_err[i], 0);
-        gr_width_coherent[i]->SetPoint(i, width_coherent[i], 8);
-        gr_width_coherent[i]->SetPointError(i, width_coherent_err[i], 0);
+        // gr_mass_boltzman[i]->SetPoint(i, mass_boltzman[i], 6);
+        // gr_mass_boltzman[i]->SetPointError(i, mass_boltzman_err[i], 0);
+        // gr_width_boltzman[i]->SetPoint(i, width_boltzman[i], 6);
+        // gr_width_boltzman[i]->SetPointError(i, width_boltzman_err[i], 0);
+
+        // gr_mass_expol[i]->SetPoint(i, mass_expol[i], 7);
+        // gr_mass_expol[i]->SetPointError(i, mass_expol_err[i], 0);
+        // gr_width_expol[i]->SetPoint(i, width_expol[i], 7);
+        // gr_width_expol[i]->SetPointError(i, width_expol_err[i], 0);
+
+        // gr_mass_coherent[i]->SetPoint(i, mass_coherent[i], 8);
+        // gr_mass_coherent[i]->SetPointError(i, mass_coherent_err[i], 0);
+        // gr_width_coherent[i]->SetPoint(i, width_coherent[i], 8);
+        // gr_width_coherent[i]->SetPointError(i, width_coherent_err[i], 0);
     }
 
     plot(gr_mass_expol, gr_mass_boltzman, gr_HERA_mass, gr_mass_coherent, gr_L3_mass, gr_BES_mass, gr_WA02_mass, gr_BESIII_mass, line, box, limits_mass, resonances, "Mass", pdgmasses, pdgmasserrors);
@@ -218,7 +241,7 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
     {
 
         TCanvas *c = new TCanvas("", "", 800, 600);
-        SetCanvasStyle(c, 0.24, 0.03, 0.05, 0.14);
+        SetCanvasStyle(c, 0.26, 0.03, 0.05, 0.14);
         gr_mass_expol[i]->SetTitle(Form("; %s (GeV/c)", xaxistitle.c_str()));
         gr_mass_expol[i]->SetMarkerStyle(20);
         gr_mass_expol[i]->SetMarkerColor(1);
@@ -254,18 +277,18 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
 
         gr_mass_expol[i]->Draw("AP");
         gr_mass_boltzman[i]->Draw("P SAME");
-        gr_mass_coherent[i]->Draw("P SAME");
+        // gr_mass_coherent[i]->Draw("P SAME");
         gr_HERA_mass[i]->Draw("P SAME");
         gr_mass_L3[i]->Draw("P SAME");
-        gr_mass_BES[i]->Draw("P SAME");
-        gr_mass_WA02[i]->Draw("P SAME");
-        gr_mass_BESIII[i]->Draw("P SAME");
+        // gr_mass_BES[i]->Draw("P SAME");
+        // gr_mass_WA02[i]->Draw("P SAME");
+        // gr_mass_BESIII[i]->Draw("P SAME");
 
-        line[i] = new TLine(pdg[i], 0, pdg[i], 8.5);
+        line[i] = new TLine(pdg[i], 0, pdg[i], 4.5);
         line[i]->SetLineColor(kRed);
         line[i]->SetLineWidth(2);
         line[i]->Draw("same");
-        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 8.5);
+        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 4.5);
         box[i]->SetFillColor(kYellow);
         box[i]->SetFillStyle(3001);
         box[i]->Draw("same");
@@ -273,12 +296,12 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         TLegend *leg = new TLegend(0.7, 0.35, 0.95, 0.9);
         leg->SetFillStyle(0);
         // leg->SetBorderSize(0);
-        leg->AddEntry(gr_mass_coherent[i], "Coherent fit", "lp");
+        // leg->AddEntry(gr_mass_coherent[i], "Coherent fit", "lp");
         leg->AddEntry(gr_mass_expol[i], "3BW + Expol fit", "lp");
         leg->AddEntry(gr_mass_boltzman[i], "3BW + Boltzman fit", "lp");
-        leg->AddEntry(gr_mass_BESIII[i], "BESIII expt.", "lp");
-        leg->AddEntry(gr_mass_WA02[i], "WA02 expt.", "lp");
-        leg->AddEntry(gr_mass_BES[i], "BES expt.", "lp");
+        // leg->AddEntry(gr_mass_BESIII[i], "BESIII expt.", "lp");
+        // leg->AddEntry(gr_mass_WA02[i], "WA02 expt.", "lp");
+        // leg->AddEntry(gr_mass_BES[i], "BES expt.", "lp");
         leg->AddEntry(gr_mass_L3[i], "L3 expt.", "lp");
         leg->AddEntry(gr_HERA_mass[i], "HERA expt.", "lp");
         leg->AddEntry(box[i], Form("PDG %s", resonances[i].c_str()), "f");
@@ -290,15 +313,15 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry(line[i], " ", "e");
         leg2->Draw("same");
 
         gr_mass_expol[i]->GetXaxis()->SetLimits(limits[i][0], limits[i][1]); // Set X-axis from 1 to 2 GeV/c
-        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 9);                    // Adjust Y-axis range
+        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 5);                    // Change here for y axis range
         gr_mass_expol[i]->GetYaxis()->SetNdivisions(3);
         gr_mass_expol[i]->GetYaxis()->SetBinLabel(1, "");
 
@@ -306,18 +329,21 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         double xMin = gr_mass_expol[i]->GetXaxis()->GetXmin();
 
         // Define a small offset to position the text just to the left of the y-axis
-        double offset = 0.32 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
+        double offset = 0.352 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
 
         TLatex latex;
         latex.SetTextSize(0.04);
-        latex.DrawLatex(xMin - offset, 1, "HERA Expt.");
-        latex.DrawLatex(xMin - offset, 2, "L3 Expt.");
-        latex.DrawLatex(xMin - offset, 3, "BES Expt.");
-        latex.DrawLatex(xMin - offset, 4, "WA02 Expt.");
-        latex.DrawLatex(xMin - offset, 5, "BESIII Expt.");
-        latex.DrawLatex(xMin - offset, 6, "3BW + Boltzman");
-        latex.DrawLatex(xMin - offset, 7, "3BW + Expol fit");
-        latex.DrawLatex(xMin - offset, 8, "Coherent fit");
+        latex.DrawLatex(xMin - offset, 1, "HERA Experiment");
+        latex.DrawLatex(xMin - offset, 2, "L3 Experiment");
+        // latex.DrawLatex(xMin - offset, 3, "BES Expt.");
+        // latex.DrawLatex(xMin - offset, 4, "WA02 Expt.");
+        // latex.DrawLatex(xMin - offset, 5, "BESIII Expt.");
+        // latex.DrawLatex(xMin - offset, 6, "3BW + Boltzman");
+        // latex.DrawLatex(xMin - offset, 7, "3BW + Expol fit");
+        // latex.DrawLatex(xMin - offset, 8, "Coherent fit");
+
+        latex.DrawLatex(xMin - offset, 3, "3rBW + Boltzmann");
+        latex.DrawLatex(xMin - offset, 4, "3rBW + Expol");
 
         c->SaveAs((save_folder_str + xaxistitle + resonances[i] + ".png").c_str());
     }

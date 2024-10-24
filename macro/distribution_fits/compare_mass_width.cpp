@@ -178,24 +178,24 @@ void compare_mass_width()
         SetGrapherrorStyle(gr_BESIII_mass[i]);
         SetGrapherrorStyle(gr_BESIII_width[i]);
 
-        gr_HERA_mass[i]->SetPoint(i, HERA_mass[i], 1);
-        gr_HERA_mass[i]->SetPointError(i, HERA_mass_errors[i], 0);
-        gr_HERA_width[i]->SetPoint(i, HERA_width[i], 1);
-        gr_HERA_width[i]->SetPointError(i, HERA_width_errors[i], 0);
+        // gr_HERA_mass[i]->SetPoint(i, HERA_mass[i], 1);
+        // gr_HERA_mass[i]->SetPointError(i, HERA_mass_errors[i], 0);
+        // gr_HERA_width[i]->SetPoint(i, HERA_width[i], 1);
+        // gr_HERA_width[i]->SetPointError(i, HERA_width_errors[i], 0);
 
-        gr_L3_mass[i]->SetPoint(i, L3_mass[i], 2);
-        gr_L3_mass[i]->SetPointError(i, L3_mass_errors[i], 0);
-        gr_L3_width[i]->SetPoint(i, L3_width[i], 2);
-        gr_L3_width[i]->SetPointError(i, L3_width_errors[i], 0);
+        // gr_L3_mass[i]->SetPoint(i, L3_mass[i], 2);
+        // gr_L3_mass[i]->SetPointError(i, L3_mass_errors[i], 0);
+        // gr_L3_width[i]->SetPoint(i, L3_width[i], 2);
+        // gr_L3_width[i]->SetPointError(i, L3_width_errors[i], 0);
 
-        gr_mass_boltzman[i]->SetPoint(i, mass_boltzman[i], 3);
+        gr_mass_boltzman[i]->SetPoint(i, mass_boltzman[i], 1);
         gr_mass_boltzman[i]->SetPointError(i, mass_boltzman_err[i], 0);
-        gr_width_boltzman[i]->SetPoint(i, width_boltzman[i], 3);
+        gr_width_boltzman[i]->SetPoint(i, width_boltzman[i], 1);
         gr_width_boltzman[i]->SetPointError(i, width_boltzman_err[i], 0);
 
-        gr_mass_expol[i]->SetPoint(i, mass_expol[i], 4);
+        gr_mass_expol[i]->SetPoint(i, mass_expol[i], 2);
         gr_mass_expol[i]->SetPointError(i, mass_expol_err[i], 0);
-        gr_width_expol[i]->SetPoint(i, width_expol[i], 4);
+        gr_width_expol[i]->SetPoint(i, width_expol[i], 2);
         gr_width_expol[i]->SetPointError(i, width_expol_err[i], 0);
 
         // gr_BES_mass[i]->SetPoint(i, BES_mass[i], 3);
@@ -278,22 +278,22 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         gr_mass_expol[i]->Draw("AP");
         gr_mass_boltzman[i]->Draw("P SAME");
         // gr_mass_coherent[i]->Draw("P SAME");
-        gr_HERA_mass[i]->Draw("P SAME");
-        gr_mass_L3[i]->Draw("P SAME");
+        // gr_HERA_mass[i]->Draw("P SAME");
+        // gr_mass_L3[i]->Draw("P SAME");
         // gr_mass_BES[i]->Draw("P SAME");
         // gr_mass_WA02[i]->Draw("P SAME");
         // gr_mass_BESIII[i]->Draw("P SAME");
 
-        line[i] = new TLine(pdg[i], 0, pdg[i], 4.5);
+        line[i] = new TLine(pdg[i], 0, pdg[i], 2.5);
         line[i]->SetLineColor(kRed);
         line[i]->SetLineWidth(2);
         line[i]->Draw("same");
-        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 4.5);
+        box[i] = new TBox(pdg[i] - pdgerr[i], 0, pdg[i] + pdgerr[i], 2.5);
         box[i]->SetFillColor(kYellow);
         box[i]->SetFillStyle(3001);
         box[i]->Draw("same");
 
-        TLegend *leg = new TLegend(0.7, 0.35, 0.95, 0.9);
+        TLegend *leg = new TLegend(0.7, 0.55, 0.95, 0.9);
         leg->SetFillStyle(0);
         // leg->SetBorderSize(0);
         // leg->AddEntry(gr_mass_coherent[i], "Coherent fit", "lp");
@@ -302,17 +302,17 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         // leg->AddEntry(gr_mass_BESIII[i], "BESIII expt.", "lp");
         // leg->AddEntry(gr_mass_WA02[i], "WA02 expt.", "lp");
         // leg->AddEntry(gr_mass_BES[i], "BES expt.", "lp");
-        leg->AddEntry(gr_mass_L3[i], "L3 expt.", "lp");
-        leg->AddEntry(gr_HERA_mass[i], "HERA expt.", "lp");
+        // leg->AddEntry(gr_mass_L3[i], "L3 expt.", "lp");
+        // leg->AddEntry(gr_HERA_mass[i], "HERA expt.", "lp");
         leg->AddEntry(box[i], Form("PDG %s", resonances[i].c_str()), "f");
         leg->Draw("same");
-        TLegend *leg2 = new TLegend(0.7, 0.35, 0.95, 0.9); // this is created to show line and box in the legend
+        TLegend *leg2 = new TLegend(0.7, 0.55, 0.95, 0.9); // this is created to show line and box in the legend
         leg2->SetFillStyle(0);
         leg2->SetBorderSize(0);
         leg2->AddEntry((TObject *)0, "", "");
         leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
-        leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
+        // leg2->AddEntry((TObject *)0, "", "");
         // leg2->AddEntry((TObject *)0, "", "");
         // leg2->AddEntry((TObject *)0, "", "");
         // leg2->AddEntry((TObject *)0, "", "");
@@ -321,7 +321,7 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         leg2->Draw("same");
 
         gr_mass_expol[i]->GetXaxis()->SetLimits(limits[i][0], limits[i][1]); // Set X-axis from 1 to 2 GeV/c
-        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 5);                    // Change here for y axis range
+        gr_mass_expol[i]->GetYaxis()->SetRangeUser(0, 3);                    // Change here for y axis range
         gr_mass_expol[i]->GetYaxis()->SetNdivisions(3);
         gr_mass_expol[i]->GetYaxis()->SetBinLabel(1, "");
 
@@ -333,8 +333,8 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
 
         TLatex latex;
         latex.SetTextSize(0.04);
-        latex.DrawLatex(xMin - offset, 1, "HERA Experiment");
-        latex.DrawLatex(xMin - offset, 2, "L3 Experiment");
+        // latex.DrawLatex(xMin - offset, 1, "HERA Experiment");
+        // latex.DrawLatex(xMin - offset, 2, "L3 Experiment");
         // latex.DrawLatex(xMin - offset, 3, "BES Expt.");
         // latex.DrawLatex(xMin - offset, 4, "WA02 Expt.");
         // latex.DrawLatex(xMin - offset, 5, "BESIII Expt.");
@@ -342,8 +342,8 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         // latex.DrawLatex(xMin - offset, 7, "3BW + Expol fit");
         // latex.DrawLatex(xMin - offset, 8, "Coherent fit");
 
-        latex.DrawLatex(xMin - offset, 3, "3rBW + Boltzmann");
-        latex.DrawLatex(xMin - offset, 4, "3rBW + Expol");
+        latex.DrawLatex(xMin - offset, 1, "3rBW + Boltzmann");
+        latex.DrawLatex(xMin - offset, 2, "3rBW + Expol");
 
         c->SaveAs((save_folder_str + xaxistitle + resonances[i] + ".png").c_str());
     }

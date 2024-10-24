@@ -75,12 +75,14 @@ void check()
     hrot->GetXaxis()->SetRangeUser(1, 3);
     hmix->GetXaxis()->SetRangeUser(1, 3);
     hrot->GetYaxis()->SetRangeUser(-0.1 * 1e6, 0.5 * 1e6);
-    hrot->Draw();
-    hmix->SetMarkerColor(2);
-    hmix->SetMarkerStyle(22);
-    hmix->SetLineColor(2);
+    // hrot->Draw();
+    // hmix->SetMarkerColor(2);
+    // hmix->SetMarkerStyle(22);
+    // hmix->SetLineColor(2);
     // hmix->Scale(2);
-    hmix->Draw("same");
+    // hmix->Draw("same");
+    hmix->SetMarkerSize(0.5);
+    hmix->Draw();
 
     TLegend *leg = new TLegend(0.20, 0.67, 0.52, 0.92);
     leg->SetFillStyle(0);
@@ -88,7 +90,7 @@ void check()
     leg->SetTextSize(0.035);
     leg->AddEntry(hrot, "Rotated", "lpe");
     leg->AddEntry(hmix, "Mixed-event", "lpe");
-    leg->Draw("same");
+    // leg->Draw("same");
 
     cmix->cd();
     cmix->Draw();
@@ -268,6 +270,16 @@ void check()
     leg5->Draw("same");
     c5->SaveAs((savepath + "compare_rotated_pt1.png").c_str());
 
-    // TCanvas *c6 = new TCanvas("", "", 720, 720);
-    // SetCanvasStyle(c6, 0.14, 0.03, 0.05, 0.14);
+    TCanvas *c6 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c6, 0.14, 0.03, 0.05, 0.14);
+    hinvmass_raw->SetMarkerSize(0.5);
+    hinvmass_raw->Draw();
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextFont(42);
+    lat.SetTextSize(0.04);
+    lat.DrawLatex(0.55, 0.8, "0-30 GeV/c");
+    lat.DrawLatex(0.55, 0.75, "0-100 %");
+    lat.DrawLatex(0.55, 0.7, "|y| < 0.5");
+    c6->SaveAs((savepath + "raw_invmass.png").c_str());
 }

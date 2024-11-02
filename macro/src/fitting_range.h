@@ -14,14 +14,15 @@ const int pt_end = 8;
 
 // Projection of signal in different pT bins *************************************
 
-#ifdef DATASET_LHC220_pass6_small
-const Int_t Npt = 30;
+#if defined(DATASET_LHC220_pass6_small) || defined(DATASET_LHC220_pass7)
+const Int_t Npt = 27;
 // const Int_t Npt = 1;
-double pT_bins[Npt + 1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0};
+double pT_bins[Npt + 1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
 // double pT_bins[Npt + 1] = {0.0, 30.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif
+
 
 #ifdef DATASET_LHC23_zzh_pass4
 double pT_bins[Npt + 1] = {0.6, 1.2, 1.8, 2.4, 3.0, 4.0, 6.0, 10.0};
@@ -38,7 +39,7 @@ double pT_bins[Npt + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0
 
 //******************************************************************************************************************************************************************************************************************************************************************************************************************************************//
 
-#ifdef DATASET_LHC220_pass6_small
+#if defined(DATASET_LHC220_pass6_small) || defined(DATASET_LHC220_pass7)
 // const std::vector<vector<float>> kNormRangepT = { // for train 211075 ME
 //     // run2 pT bins
 //     // 13.6 TeV
@@ -109,7 +110,7 @@ double pT_bins[Npt + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0
 //     {0.70, 1.08}, // 20.0-30.0
 // };
 
-const std::vector<vector<double>> kNormRangepT = {
+const std::vector<vector<float>> kNormRangepT = {
     // run2 pT bins
     // 13.6 TeV
     {1.10, 1.15}, // 0.0-0.1
@@ -143,7 +144,7 @@ const std::vector<vector<double>> kNormRangepT = {
     {1.20, 1.30}, // 20.0-25.0
     {1.20, 1.30}, // 25.0-30.0
 };
-const std::vector<vector<double>> kFitRange = {
+const std::vector<vector<float>> kFitRange = {
     // run2 pT bins
     // ME background
     // 13.6 TeV

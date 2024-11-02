@@ -7,35 +7,38 @@
 #include "src/initializations.h"
 #include <TSystem.h>
 #include <TString.h>
+#include <TStopwatch.h>
 
 using namespace std;
 
 void kstar_sparse()
 
 {
-    // change here ***********************************************************
+    TStopwatch timer;
+    timer.Start();
+    //*************************** change here ***************************************
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
     const string outputtype = "png"; // pdf, eps
-    const bool save_bkg_plots = 1;
-    // change here ***********************************************************
+    const bool save_bkg_plots = 1;   // save background plots
+    const float txtsize = 0.045;     // text size in the plots
+    //********************************************************************************
 
+    //*************************Create folders********************************************
     TString outputfolder = kSignalOutput + "/" + kfoldername;
+    TString output_root_folder = kSignalOutput + "/" + kfoldername + "/rootfiles";
     // Create the folder using TSystem::mkdir()
     if (gSystem->mkdir(outputfolder, kTRUE))
     {
         std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
     }
-    else
+    if (gSystem->mkdir(output_root_folder, kTRUE))
     {
-        std::cerr << "Error creating folder " << outputfolder << std::endl;
+        std::cout << "Folder " << output_root_folder << " created successfully." << std::endl;
     }
-
-    // Folder name inside the Analysis.root file *****************************************
-
-    const float txtsize = 0.045;
+    //***********************************************************************************
 
     TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
     TCanvas *cgrid2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
@@ -93,7 +96,7 @@ void kstar_sparse()
         return;
     }
 
-    TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hmult", kfoldername.c_str()));
+    TH1F *hmult = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     if (hmult == nullptr)
     {
         cerr << "Histogram not found" << endl;
@@ -104,10 +107,10 @@ void kstar_sparse()
 
     //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
 
-    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassUnlikeSign", kfoldername.c_str()));
-    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassMixed", kfoldername.c_str()));
-    THnSparseF *fHistLS = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMasslikeSign", kfoldername.c_str()));
-    THnSparseF *fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/histos/h3KstarInvMassRotated", kfoldername.c_str()));
+    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3k892invmassDS", kfoldername.c_str()));
+    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3k892invmassME", kfoldername.c_str()));
+    THnSparseF *fHistLS = (THnSparseF *)fInputFile->Get(Form("%s/h3k892invmassLS", kfoldername.c_str()));
+    THnSparseF *fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/h3K892InvMassRotation", kfoldername.c_str()));
 
     if (fHistNum == nullptr || fHistDen == nullptr || fHistLS == nullptr || fHistRotated == nullptr)
     {
@@ -118,7 +121,7 @@ void kstar_sparse()
     // cout << " THE NUMBER OF BINS IN THE HISTOGRAM IS " << fHistNum->GetNbinsZ()<<endl;
 
     gstyle(); // this is not gStyle, it is defined in the header file style.h
-    // gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
     // gStyle->SetOptFit(0);
 
     for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
@@ -205,10 +208,7 @@ void kstar_sparse()
         ptbinwidth[ip] = pT_bins[ip + 1] - pT_bins[ip];
         // cout<<"the value of pt bin width is "<<ptbinwidth[ip]<<endl;
 
-        //*****************************************************************************************************
-
-        // TF1 *fitFcn = (kbkg == "pol2") ? new TF1("fitfunc", BreitWignerpoly2, kFitRange[ip][0], kFitRange[ip][1], 6) : new TF1("fitfunc", BreitWignerpoly3, kFitRange[ip][0], kFitRange[ip][1], 7);
-        // TF1 *fitFcn1 = (kbkg == "pol2") ? new TF1("fitfunc1", polynomial2, kFitRange[ip][0], kFitRange[ip][1], 3) : new TF1("fitfunc1", polynomial3, kFitRange[ip][0], kFitRange[ip][1], 4);
+        //****************************************************************************************************
 
         TF1 *fitFcn, *fitFcn1;
 
@@ -433,7 +433,7 @@ void kstar_sparse()
         fitFcn->SetLineWidth(2);
         fitFcn1->SetLineWidth(2);
         fitFcn2->SetLineWidth(2);
-        hfsig->GetXaxis()->SetRangeUser(0.75, 1.04);
+        hfsig->GetXaxis()->SetRangeUser(0.64, 1.35);
         hfsig->SetMarkerSize(0.5);
         hfsig->Draw("e");
         fitFcn->Draw("same");
@@ -503,7 +503,7 @@ void kstar_sparse()
             cSigbkg[ip]->SaveAs(Form((koutputfolder + "/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
         cSigbkg[ip]->Close();
 
-        ////////////////////////////////////////////////////////////////////////
+        // ////////////////////////////////////////////////////////////////////////
 
     } // pt loop ends
     if (multipanel_plots == 1 && save_plots == 1)
@@ -614,4 +614,15 @@ void kstar_sparse()
     hYbincount->Write("yield_bincount");
     csig->SaveAs((koutputfolder + "/yield_bincount." + outputtype).c_str());
     csig->Close();
+
+    // Stop the stopwatch
+    timer.Stop();
+
+    // Get the elapsed time
+    Double_t realTime = timer.RealTime(); // Wall clock time in seconds
+    Double_t cpuTime = timer.CpuTime();   // CPU time used in seconds
+
+    // Print the elapsed times
+    std::cout << "Real time elapsed: " << realTime << " seconds" << std::endl;
+    std::cout << "CPU time used: " << cpuTime << " seconds" << std::endl;
 }

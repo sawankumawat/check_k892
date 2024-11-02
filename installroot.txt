@@ -1,0 +1,13 @@
+mkdir root
+cd root
+tar xzfv ~/Downloads/root_version_xxx
+cd root_version_xxx
+mkdir buildroot
+cd buildroot
+cmake -Dall=on .
+cmake -DCMAKE_INSTALL_PREFIX=~/root/root-6.26.14-install .
+make -j16
+make install
+cd ../../root/root-6.26.14-install/
+cd bin
+echo ". ~/root/root-6.26.14-install/bin/thisroot.sh" >> ~/.bashrc

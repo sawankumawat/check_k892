@@ -25,6 +25,7 @@ const int N = 1;                                          // for centrality loop
 Double_t dy = 1.0;                                        // for rapidity difference
 TFitResultPtr r;                                          // for fitting using TFitter
 TH1D *fHistTotal[Npt];                                    // for sig+bg
+TH1D *fHistTotal_anti[Npt];                               // for sig+bg_anti
 TH1D *fHistBkg[Npt];                                      // for mixedbg
 TH1D *fHistbkgLS[Npt];                                    // for like sign
 TH1D *fHistbkgLS_anti[Npt];                               // for like sign_anti

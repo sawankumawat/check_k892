@@ -4,7 +4,7 @@ using namespace std;
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
-void analyze_spectra_pythia()
+void analyze_kstar_spectra_pythia()
 {
     gStyle->SetOptStat(0);
 

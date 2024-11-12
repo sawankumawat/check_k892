@@ -111,7 +111,7 @@ void glueball_KsKs_channel()
 
     if (calculate_inv_mass)
     {
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f.", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {

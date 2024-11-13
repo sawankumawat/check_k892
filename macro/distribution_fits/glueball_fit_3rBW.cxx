@@ -36,6 +36,8 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 
 void glueball_fit_3rBW()
 {
+    ofstream file;
+    file.open("fit_params.txt");
     string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/fits/3rBW_fits";
     TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_fullpt.root", "READ"); // full pT range
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_pt1.root", "READ"); //  1-30 GeV/c pT range
@@ -69,9 +71,9 @@ void glueball_fit_3rBW()
     gStyle->SetOptFit(1111);
     vector<tuple<float, int, float, float>> fit_parameters;
 
-#define b_expol
+// #define b_expol
 // #define b_boltzman
-// #define b_expol1
+#define b_expol1
 // # define residual_subtracted
 
 // // //************************************************************************ */
@@ -79,7 +81,7 @@ void glueball_fit_3rBW()
 
 // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 #ifdef b_expol
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.00, 2.50, 13); // expol 3
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.02, 2.20, 13); // expol 3
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -134,13 +136,15 @@ void glueball_fit_3rBW()
     // BEexpol->FixParameter(1, a1320Mass);
     // BEexpol->FixParameter(2, a1320Width);
 
-    hinvMass->Fit("BEexpol", "REBMS");
+    TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+    // status codes: 4000 successful, 4 call limit, 4910 failed
+    string fitstatus = "Successfull";
+    if (fitResultptr->Status() != 4000)
+    {
+        cout << "Fit failed or call limit" << endl;
+        fitstatus = "Failed";
+    }
     cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-    // cout << "Expol parameters are: " << endl;
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     cout << BEexpol->GetParameter(size_fitparams + i) << endl;
-    // }
 
     double *obtained_parameters = BEexpol->GetParameters();
     TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -262,6 +266,16 @@ void glueball_fit_3rBW()
     // //     cout << "ipar1: " << best_ipar1 << ",  ipar2: " << best_ipar2 << ",  ipar3: " << best_ipar3 << ", chi2/NDF: " << best_chi2ndf << endl;
     // // }
 
+    TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+    // status codes: 4000 successful, 4 call limit, 4910 failed
+    string fitstatus = "Successfull";
+    if (fitResultptr->Status() != 4000)
+    {
+        cout << "Fit failed or call limit" << endl;
+        fitstatus = "Failed";
+    }
+    cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
+
     double *obtained_parameters = BEexpol->GetParameters();
     TF1 *expol = new TF1("expol", Boltzmann_bkg_1, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
     TF1 *expol_clone = new TF1("expol_clone", Boltzmann_bkg_1, BEexpol->GetXmin(), BEexpol->GetXmax(), 4); //
@@ -302,7 +316,7 @@ void glueball_fit_3rBW()
     // // // //************************************************************************ */
     // // // // **************** For BW sum with exp + pol2 as used in Charged kstar **************************
 #ifdef b_expol1
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.00, 2.20, 13); // expol 3
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.05, 2.20, 13); // expol 3
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4", "expol5"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -341,6 +355,15 @@ void glueball_fit_3rBW()
     // BEexpol->FixParameter(2, a1320Width);
 
     hinvMass->Fit("BEexpol", "REBMS");
+    TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+    // status codes: 4000 successful, 4 call limit, 4910 failed
+    string fitstatus = "Successfull";
+    // cout<<"fit status code "<<fitResultptr->Status()<<endl;
+    if (fitResultptr->Status() != 4140)
+    {
+        cout << "Fit failed or call limit !!!!!!!" << endl;
+        fitstatus = "Failed";
+    }
     cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
 
     double *obtained_parameters = BEexpol->GetParameters();
@@ -369,29 +392,30 @@ void glueball_fit_3rBW()
     onlyBW->SetLineStyle(2);
     onlyBW->Draw("same");
 
-    TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
+    TLegend *ltemp = new TLegend(0.20, 0.65, 0.52, 0.9);
     ltemp->SetFillStyle(0);
+    ltemp->SetBorderSize(0);
     ltemp->SetTextFont(42);
-    ltemp->SetTextSize(0.035);
-    ltemp->AddEntry(hinvMass, "Data", "lpe");
-    ltemp->AddEntry(BEexpol, "3rBW + expol", "l");
+    ltemp->SetTextSize(0.03);
+    ltemp->AddEntry((TObject *)0, "", "");
+    ltemp->AddEntry((TObject *)0, "", "");
+    ltemp->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
+    ltemp->AddEntry(BEexpol, "3rBW + Residual BG", "l");
     ltemp->AddEntry(onlyBW, "3rBW", "l");
-    ltemp->AddEntry(expol, "expol", "l");
+    ltemp->AddEntry(expol, "Residual BG", "l");
     ltemp->Draw("same");
+
+    TLatex lat1;
+    lat1.SetNDC();
+    lat1.SetTextSize(0.03);
+    lat1.SetTextFont(42);
+    lat1.DrawLatex(0.2, 0.89, "pp, #sqrt{s} = 13.6 TeV");
+    lat1.DrawLatex(0.2, 0.84, "FT0M (0-100%), |y|<0.5");
 #endif
 
     // // //******************************************************************************************
     // // //********************************* common for all fits ***************************************
 #ifdef residual_subtracted
-    gPad->Update();
-    TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
-    ptstats->SetX1NDC(0.5);
-    ptstats->SetX2NDC(0.99);
-    ptstats->SetY1NDC(0.4);
-    ptstats->SetY2NDC(0.92);
-    ptstats->Draw("same");
-    c->SaveAs((savepath + "/boltzmann/rBWfit_allfreeParams.png").c_str());
-
     // Now subtract the residual background and plot
     TCanvas *c2 = new TCanvas("", "", 720, 720);
     SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
@@ -440,6 +464,60 @@ void glueball_fit_3rBW()
     c2->SaveAs((savepath + "/boltzmann/rBWfit_residual_allfreeParams.png").c_str());
 
 #endif
+
+    // // //****************************common for all fits************************************
+    // // //************************** printing fit parameters in the file *******************************
+    gPad->Update();
+    TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+    ptstats->SetX1NDC(0.6);
+    ptstats->SetX2NDC(0.99);
+    ptstats->SetY1NDC(0.4);
+    ptstats->SetY2NDC(0.92);
+    ptstats->Draw("same");
+    c->SaveAs((savepath + "/boltzmann/rBWfit_allfreeParams.png").c_str());
+
+    double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
+    double fitnorm1525 = BEexpol->GetParameter(3);
+    double fitnorm1525_err = BEexpol->GetParError(3);
+    double fitnorm1710 = BEexpol->GetParameter(6);
+    double fitnorm1710_err = BEexpol->GetParError(6);
+    double fitmass1525 = BEexpol->GetParameter(4);
+    double fitmass1525_err = BEexpol->GetParError(4);
+    double fitmass1710 = BEexpol->GetParameter(7);
+    double fitmass1710_err = BEexpol->GetParError(7);
+    double fitwidth1525 = BEexpol->GetParameter(5);
+    double fitwidth1525_err = BEexpol->GetParError(5);
+    double fitwidth1710 = BEexpol->GetParameter(8);
+    double fitwidth1710_err = BEexpol->GetParError(8);
+    double fitnorm1270 = BEexpol->GetParameter(0);
+    double fitnorm1270_err = BEexpol->GetParError(0);
+    double fitmass1270 = BEexpol->GetParameter(1);
+    double fitmass1270_err = BEexpol->GetParError(1);
+    double fitwidth1270 = BEexpol->GetParameter(2);
+    double fitwidth1270_err = BEexpol->GetParError(2);
+    double fitrangelow = BEexpol->GetXmin();
+    double fitrangehigh = BEexpol->GetXmax();
+
+    file << fitstatus << endl;
+    file << std::fixed << std::setprecision(2);
+    file << fitrangelow << "  " << fitrangehigh << endl;
+    file << std::fixed << std::setprecision(1);
+    file << chi2_ndf << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1525 << " ± " << fitnorm1525_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1525 << " ± " << fitmass1525_err << endl;
+    file << fitwidth1525 << " ± " << fitwidth1525_err << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1710 << " ± " << fitmass1710_err << endl;
+    file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1270 << " ± " << fitmass1270_err << endl;
+    file << fitwidth1270 << " ± " << fitwidth1270_err << endl;
 
     // **********************************************************************************************
     // *******************subtract the resonance peaks and fit the residual background*****************

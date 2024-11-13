@@ -58,7 +58,7 @@ void residual_bkg_comparison()
     hinvMass->Draw();
     TF1 *expol = new TF1("expol", exponential_bkg_3, 1.00, 2.50, 4);
     // expol->SetParameters(5.56200e+05, -9.45594e-02, 2.56900e+00, 1.10242e+00);  //defualt fit range 1.02 - 2.20
-    // expol->SetParameters(5.62894e+05, -9.27599e-02, 2.60563e+00, 1.07645e+00); // defualt fit range 1.00 - 2.20
+    // expol->SetParameters(5.62894e+05, -9.27599e-02, 2.60563e+00, 1.07645e+00); // 1.00 - 2.20
     // expol->SetParameters(1.37543e+06, 1.47023e-01, 3.54378e+00, 8.05858e-01);  // 1.05 - 2.20
     // expol->SetParameters(1.34241e+06, 1.58099e-01, 3.49088e+00, 8.40530e-01);  // 1.10 - 2.20
     // expol->SetParameters(5.72804e+05, -8.62894e-02, 2.64582e+00, 1.09212e+00); // 1.02 - 2.30
@@ -69,10 +69,10 @@ void residual_bkg_comparison()
     expol->Draw("same");
 
     TF1 *boltzmann = new TF1("boltzmann", Boltzmann_bkg_1, 1.00, 2.50, 3);
-    // boltzmann->SetParameters(7.70718e+05, 5.92481e-01, 4.49443e+00); //defualt fit range 1.02 - 2.20
-    // boltzmann->SetParameters(8.43199e+05, 5.21042e-01, 4.55467e+00); // 1.00 - 2.20
+    // boltzmann->SetParameters(7.70718e+05, 5.92481e-01, 4.49443e+00); //defualt fit range 1.02 - 2.20 //Chi2 = 11, 
+    // boltzmann->SetParameters(8.43199e+05, 5.21042e-01, 4.55467e+00); // 1.00 - 2.20 //Chi2 = 35
     // boltzmann->SetParameters(7.08545e+05, 6.64768e-01, 4.40600e+00); // 1.05 - 2.20
-    // boltzmann->SetParameters(6.78135e+05, 7.17350e-01, 4.27840e+00); // 1.10 - 2.20
+    // boltzmann->SetParameters(6.78135e+05, 7.17350e-01, 4.27840e+00); // 1.10 - 2.20 // Chi2 = 2.86
     // boltzmann->SetParameters(7.57609e+05, 6.05557e-01, 4.59917e+00); // 1.02 - 2.30
     // boltzmann->SetParameters(7.39720e+05, 6.23074e-01, 4.75354e+00); // 1.02 - 2.40
     boltzmann->SetParameters(7.20030e+05, 6.42877e-01, 4.93774e+00); // 1.02 - 2.50

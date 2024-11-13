@@ -72,13 +72,14 @@ void glueball_fit_3rBW()
 #define b_expol
 // #define b_boltzman
 // #define b_expol1
+// # define residual_subtracted
 
 // // //************************************************************************ */
 // // // **************** For BW sum with expol HERA ****************************
 
 // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 #ifdef b_expol
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.00, 2.20, 13); // expol 3
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.00, 2.50, 13); // expol 3
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -192,7 +193,7 @@ void glueball_fit_3rBW()
 
     // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.00, 2.20, 12); // expol 3
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.04, 2.10, 12); // expol 3 //Chi2 = 2.5
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "Boltzmann1", "Boltzmann2", "Boltzmann3", "Boltzmann4"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -381,7 +382,7 @@ void glueball_fit_3rBW()
 
     // // //******************************************************************************************
     // // //********************************* common for all fits ***************************************
-
+#ifdef residual_subtracted
     gPad->Update();
     TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
     ptstats->SetX1NDC(0.5);
@@ -437,6 +438,8 @@ void glueball_fit_3rBW()
     ltemp2->AddEntry(singlefits[2], "f1710", "l");
     ltemp2->Draw("same");
     c2->SaveAs((savepath + "/boltzmann/rBWfit_residual_allfreeParams.png").c_str());
+
+#endif
 
     // **********************************************************************************************
     // *******************subtract the resonance peaks and fit the residual background*****************

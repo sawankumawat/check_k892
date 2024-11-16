@@ -44,6 +44,8 @@ void glueball_fit_3rBW()
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60_fullpt.root", "READ"); // full pT range
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.50_2.60_pt1.root", "READ"); // 1-30 GeV/c pT range
 
+    int colors[] = {4, 6, 28, 46};
+
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -67,21 +69,21 @@ void glueball_fit_3rBW()
     hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
     hinvMass->Draw();
     TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
-    gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
     gStyle->SetOptFit(1111);
     vector<tuple<float, int, float, float>> fit_parameters;
 
 // #define b_expol
 // #define b_boltzman
 #define b_expol1
-// # define residual_subtracted
+// #define residual_subtracted
 
 // // //************************************************************************ */
 // // // **************** For BW sum with expol HERA ****************************
 
 // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 #ifdef b_expol
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.02, 2.20, 13); // expol 3
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.30, 13); // expol 3
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -197,7 +199,7 @@ void glueball_fit_3rBW()
 
     // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.04, 2.10, 12); // expol 3 //Chi2 = 2.5
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.05, 2.30, 12); // Boltzmann 
     string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "Boltzmann1", "Boltzmann2", "Boltzmann3", "Boltzmann4"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
@@ -269,7 +271,8 @@ void glueball_fit_3rBW()
     TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
     // status codes: 4000 successful, 4 call limit, 4910 failed
     string fitstatus = "Successfull";
-    if (fitResultptr->Status() != 4000)
+    // cout<<"status code is "<<fitResultptr->Status()<<endl;
+    if (fitResultptr->Status() != 4070)
     {
         cout << "Fit failed or call limit" << endl;
         fitstatus = "Failed";
@@ -316,14 +319,15 @@ void glueball_fit_3rBW()
     // // // //************************************************************************ */
     // // // // **************** For BW sum with exp + pol2 as used in Charged kstar **************************
 #ifdef b_expol1
-    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.05, 2.20, 13); // expol 3
-    string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4", "expol5"};
+    TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.05, 2.20, 13); // expol 1 (charked star)
+    string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
     {
         BEexpol->SetParName(i, parnames[i].c_str());
     }
 
     double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
+    // double parameters[] = {8384, a1320Mass, a1320Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
     int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
     for (int i = 0; i < size_fitparams; i++)
@@ -331,6 +335,7 @@ void glueball_fit_3rBW()
         BEexpol->SetParameter(i, parameters[i]);
     }
     vector<vector<float>> par_limits = {{1, 3 * f1270Width}, {4, 5 * f1525Width}, {7, 20 * f1710WidthErr}};
+    // vector<vector<float>> par_limits = {{1, 3 * a1320Mass}, {4, 5 * f1525Width}, {7, 20 * f1710WidthErr}};
     int limits_size = par_limits.size();
     for (int i = 0; i < limits_size; i++)
     {
@@ -382,7 +387,6 @@ void glueball_fit_3rBW()
 
     TF1 *onlyBW = new TF1("onlyBW", BWsum, BEexpol->GetXmin(), BEexpol->GetXmax(), 9);
     TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum, BEexpol->GetXmin(), BEexpol->GetXmax(), 9);
-    onlyBW_clone->SetParNames("norm1270", "mass1270", "width1270", "norm12525", "mass1525", "width1525", "norm1710", "mass1710", "width1710");
     for (int i = 0; i < 9; i++)
     {
         onlyBW->SetParameter(i, obtained_parameters[i]);
@@ -390,9 +394,23 @@ void glueball_fit_3rBW()
     }
     onlyBW->SetLineColor(4);
     onlyBW->SetLineStyle(2);
-    onlyBW->Draw("same");
+    // onlyBW->Draw("same");
 
-    TLegend *ltemp = new TLegend(0.20, 0.65, 0.52, 0.9);
+    // // Now plot the indivial resonances
+    TF1 *singlefits[4];
+    for (int i = 0; i < 4; i++)
+    {
+        singlefits[i] = new TF1(Form("singlef%d", i), single_BW, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+        singlefits[i]->SetParameter(0, obtained_parameters[3 * i]);
+        singlefits[i]->SetParameter(1, obtained_parameters[3 * i + 1]);
+        singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
+        singlefits[i]->SetLineColor(colors[i]);
+        singlefits[i]->SetLineStyle(2);
+        singlefits[i]->SetLineWidth(2);
+        singlefits[i]->Draw("same");
+    }
+
+    TLegend *ltemp = new TLegend(0.25, 0.58, 0.55, 0.9);
     ltemp->SetFillStyle(0);
     ltemp->SetBorderSize(0);
     ltemp->SetTextFont(42);
@@ -401,20 +419,88 @@ void glueball_fit_3rBW()
     ltemp->AddEntry((TObject *)0, "", "");
     ltemp->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
     ltemp->AddEntry(BEexpol, "3rBW + Residual BG", "l");
-    ltemp->AddEntry(onlyBW, "3rBW", "l");
+    // ltemp->AddEntry(onlyBW, "4rBW", "l");
     ltemp->AddEntry(expol, "Residual BG", "l");
+    ltemp->AddEntry(singlefits[0], "f_{2}(1270)", "l");
+    ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
+    ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
     ltemp->Draw("same");
 
     TLatex lat1;
     lat1.SetNDC();
     lat1.SetTextSize(0.03);
     lat1.SetTextFont(42);
-    lat1.DrawLatex(0.2, 0.89, "pp, #sqrt{s} = 13.6 TeV");
-    lat1.DrawLatex(0.2, 0.84, "FT0M (0-100%), |y|<0.5");
+    lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
+    lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
 #endif
 
     // // //******************************************************************************************
     // // //********************************* common for all fits ***************************************
+    // // //****************************common for all fits************************************
+    // // //************************** printing fit parameters in the file *******************************
+    gPad->Update();
+    TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+    ptstats->SetX1NDC(0.6);
+    ptstats->SetX2NDC(0.99);
+    ptstats->SetY1NDC(0.4);
+    ptstats->SetY2NDC(0.92);
+    ptstats->Draw("same");
+    c->SaveAs((savepath + "/rBWfit.png").c_str());
+
+    double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
+    double fitnorm1525 = BEexpol->GetParameter(3);
+    double fitnorm1525_err = BEexpol->GetParError(3);
+    double fitnorm1710 = BEexpol->GetParameter(6);
+    double fitnorm1710_err = BEexpol->GetParError(6);
+    double fitmass1525 = BEexpol->GetParameter(4);
+    double fitmass1525_err = BEexpol->GetParError(4);
+    double fitmass1710 = BEexpol->GetParameter(7);
+    double fitmass1710_err = BEexpol->GetParError(7);
+    double fitwidth1525 = BEexpol->GetParameter(5);
+    double fitwidth1525_err = BEexpol->GetParError(5);
+    double fitwidth1710 = BEexpol->GetParameter(8);
+    double fitwidth1710_err = BEexpol->GetParError(8);
+    double fitnorm1270 = BEexpol->GetParameter(0);
+    double fitnorm1270_err = BEexpol->GetParError(0);
+    double fitmass1270 = BEexpol->GetParameter(1);
+    double fitmass1270_err = BEexpol->GetParError(1);
+    double fitwidth1270 = BEexpol->GetParameter(2);
+    double fitwidth1270_err = BEexpol->GetParError(2);
+    double fitrangelow = BEexpol->GetXmin();
+    double fitrangehigh = BEexpol->GetXmax();
+    double expol1 = BEexpol->GetParameter(9);
+    double expol2 = BEexpol->GetParameter(10);
+    double expol3 = BEexpol->GetParameter(11);
+    double expol4 = BEexpol->GetParameter(12);
+
+    file << fitstatus << endl;
+    file << std::fixed << std::setprecision(2);
+    file << fitrangelow << " - " << fitrangehigh << endl;
+    file << std::fixed << std::setprecision(1);
+    file << chi2_ndf << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1525 << " ± " << fitnorm1525_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1525 << " ± " << fitmass1525_err << endl;
+    file << fitwidth1525 << " ± " << fitwidth1525_err << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1710 << " ± " << fitmass1710_err << endl;
+    file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
+    file << std::fixed << std::setprecision(0);
+    file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
+    file << std::fixed << std::setprecision(3);
+    file << fitmass1270 << " ± " << fitmass1270_err << endl;
+    file << fitwidth1270 << " ± " << fitwidth1270_err << endl;
+    file<<endl;
+#if defined(b_expol) || defined(b_expol1)
+    file << expol1 << ", " << expol2 << ", " << expol3 << ", " << expol4 << endl;
+#endif
+#ifdef b_boltzman
+    file << expol1 << ", " << expol2 << ", " << expol3 << endl;
+#endif
+
 #ifdef residual_subtracted
     // Now subtract the residual background and plot
     TCanvas *c2 = new TCanvas("", "", 720, 720);
@@ -438,17 +524,16 @@ void glueball_fit_3rBW()
     line->Draw("same");
 
     // // Now plot the indivial resonances
-    TF1 *singlefits[3];
-    int colors[] = {4, 6, 28};
+    TF1 *singlefits1[3];
     for (int i = 0; i < 3; i++)
     {
-        singlefits[i] = new TF1(Form("singlef%d", i), single_BW, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
-        singlefits[i]->SetParameter(0, obtained_parameters2[3 * i]);
-        singlefits[i]->SetParameter(1, obtained_parameters2[3 * i + 1]);
-        singlefits[i]->SetParameter(2, obtained_parameters2[3 * i + 2]);
-        singlefits[i]->SetLineColor(colors[i]);
-        singlefits[i]->SetLineStyle(2);
-        singlefits[i]->Draw("same");
+        singlefits1[i] = new TF1(Form("singlef%d", i), single_BW, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+        singlefits1[i]->SetParameter(0, obtained_parameters2[3 * i]);
+        singlefits1[i]->SetParameter(1, obtained_parameters2[3 * i + 1]);
+        singlefits1[i]->SetParameter(2, obtained_parameters2[3 * i + 2]);
+        singlefits1[i]->SetLineColor(colors[i]);
+        singlefits1[i]->SetLineStyle(2);
+        singlefits1[i]->Draw("same");
     }
 
     TLegend *ltemp2 = new TLegend(0.20, 0.67, 0.42, 0.92);
@@ -457,67 +542,13 @@ void glueball_fit_3rBW()
     ltemp2->SetTextSize(0.035);
     ltemp2->AddEntry(hsubtracted, "Data", "lpe");
     ltemp2->AddEntry(onlyBW_clone, "3rBW", "l");
-    ltemp2->AddEntry(singlefits[0], "f1270", "l");
-    ltemp2->AddEntry(singlefits[1], "f1525", "l");
-    ltemp2->AddEntry(singlefits[2], "f1710", "l");
+    ltemp2->AddEntry(singlefits1[0], "f1270", "l");
+    ltemp2->AddEntry(singlefits1[1], "f1525", "l");
+    ltemp2->AddEntry(singlefits1[2], "f1710", "l");
     ltemp2->Draw("same");
-    c2->SaveAs((savepath + "/boltzmann/rBWfit_residual_allfreeParams.png").c_str());
+    c2->SaveAs((savepath + "/boltzmann/rBWfit_residual.png").c_str());
 
 #endif
-
-    // // //****************************common for all fits************************************
-    // // //************************** printing fit parameters in the file *******************************
-    gPad->Update();
-    TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
-    ptstats->SetX1NDC(0.6);
-    ptstats->SetX2NDC(0.99);
-    ptstats->SetY1NDC(0.4);
-    ptstats->SetY2NDC(0.92);
-    ptstats->Draw("same");
-    c->SaveAs((savepath + "/boltzmann/rBWfit_allfreeParams.png").c_str());
-
-    double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
-    double fitnorm1525 = BEexpol->GetParameter(3);
-    double fitnorm1525_err = BEexpol->GetParError(3);
-    double fitnorm1710 = BEexpol->GetParameter(6);
-    double fitnorm1710_err = BEexpol->GetParError(6);
-    double fitmass1525 = BEexpol->GetParameter(4);
-    double fitmass1525_err = BEexpol->GetParError(4);
-    double fitmass1710 = BEexpol->GetParameter(7);
-    double fitmass1710_err = BEexpol->GetParError(7);
-    double fitwidth1525 = BEexpol->GetParameter(5);
-    double fitwidth1525_err = BEexpol->GetParError(5);
-    double fitwidth1710 = BEexpol->GetParameter(8);
-    double fitwidth1710_err = BEexpol->GetParError(8);
-    double fitnorm1270 = BEexpol->GetParameter(0);
-    double fitnorm1270_err = BEexpol->GetParError(0);
-    double fitmass1270 = BEexpol->GetParameter(1);
-    double fitmass1270_err = BEexpol->GetParError(1);
-    double fitwidth1270 = BEexpol->GetParameter(2);
-    double fitwidth1270_err = BEexpol->GetParError(2);
-    double fitrangelow = BEexpol->GetXmin();
-    double fitrangehigh = BEexpol->GetXmax();
-
-    file << fitstatus << endl;
-    file << std::fixed << std::setprecision(2);
-    file << fitrangelow << "  " << fitrangehigh << endl;
-    file << std::fixed << std::setprecision(1);
-    file << chi2_ndf << endl;
-    file << std::fixed << std::setprecision(0);
-    file << fitnorm1525 << " ± " << fitnorm1525_err << endl;
-    file << std::fixed << std::setprecision(3);
-    file << fitmass1525 << " ± " << fitmass1525_err << endl;
-    file << fitwidth1525 << " ± " << fitwidth1525_err << endl;
-    file << std::fixed << std::setprecision(0);
-    file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
-    file << std::fixed << std::setprecision(3);
-    file << fitmass1710 << " ± " << fitmass1710_err << endl;
-    file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
-    file << std::fixed << std::setprecision(0);
-    file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
-    file << std::fixed << std::setprecision(3);
-    file << fitmass1270 << " ± " << fitmass1270_err << endl;
-    file << fitwidth1270 << " ± " << fitwidth1270_err << endl;
 
     // **********************************************************************************************
     // *******************subtract the resonance peaks and fit the residual background*****************

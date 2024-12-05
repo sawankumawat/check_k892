@@ -7,13 +7,18 @@
 #include "../src/common_glue.h"
 #include "../src/fitting_range_glue.h"
 
-void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TGraphErrors *gr_mass_coherent[3], TGraphErrors *gr_mass_L3[3], TGraphErrors *gr_mass_BES[3], TGraphErrors *gr_mass_WA02[3], TGraphErrors *gr_mass_BESIII[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonance[3], string xaxistitle, double *pdg, double *pdgerr);
+void plot(TGraphErrors *gr_mass_expol[4], TGraphErrors *gr_mass_boltzman[4], TGraphErrors *gr_HERA_mass[4], TGraphErrors *gr_mass_coherent[4], TGraphErrors *gr_mass_L3[4], TGraphErrors *gr_mass_BES[4], TGraphErrors *gr_mass_WA02[4], TGraphErrors *gr_mass_BESIII[4], TLine *line[4], TBox *box[4], float limits[4][2], string resonance[4], string xaxistitle, double *pdg, double *pdgerr);
 const string kResBkg = "ROTATED";
 // path to the output folder
 const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
 const string fits_folder_str = outputfolder_str + "/fits/";
 TString save_folder = fits_folder_str + "compare_mass_width/";
 const string save_folder_str = fits_folder_str + "compare_mass_width/";
+
+// total resonances to be included in the plots
+const int tot_reso = 4;
+// *************************************
+
 void compare_mass_width()
 {
 
@@ -43,58 +48,70 @@ void compare_mass_width()
     // float width_values[2][6];
     // float width_values_errors[2][6];
 
-    // 3rBW + expol fit
-    float mass_expol[3] = {1.273, 1.515, 1.694};
-    float width_expol[3] = {0.19, 0.07795, 0.2054};
-    float mass_expol_err[3] = {0.002, 0.001, 0.005};
-    float width_expol_err[3] = {0.01, 0.00189, 0.0129};
+    // // 3rBW + expol fit
+    // float mass_expol[tot_reso] = {1.273, 1.273, 1.515, 1.694};
+    // float width_expol[tot_reso] = {0.190, 0.190, 0.07795, 0.2054};
+    // float mass_expol_err[tot_reso] = {0.002, 0.002, 0.001, 0.005};
+    // float width_expol_err[tot_reso] = {0.010, 0.010, 0.00189, 0.0129};
 
-    // 3rBW + Boltzman fit
-    float mass_boltzman[3] = {1.297, 1.514, 1.693};
-    float width_boltzman[3] = {0.163, 0.08869, 0.1579};
-    float mass_boltzman_err[3] = {0.001, 0.001, 0.004};
-    float width_boltzman_err[3] = {0.0001, 0.0019, 0.008};
+    // // 3rBW + Boltzman fit
+    // float mass_boltzman[tot_reso] = {1.297, 1.297, 1.514, 1.693};
+    // float width_boltzman[tot_reso] = {0.163, 0.163, 0.08869, 0.1579};
+    // float mass_boltzman_err[tot_reso] = {0.001, 0.001, 0.001, 0.004};
+    // float width_boltzman_err[tot_reso] = {0.0001, 0.0001, 0.0019, 0.008};
+
+    // 3rBW + expol1 fit
+    float mass_boltzman[tot_reso] = {1.2799, 1.2799, 1.5136, 1.6917};
+    float width_boltzman[tot_reso] = {0.1643, 0.1643, 0.0803, 0.2131};
+    float mass_boltzman_err[tot_reso] = {0.0021, 0.0021, 0.0005, 0.0047};
+    float width_boltzman_err[tot_reso] = {0.0085, 0.0085, 0.0019, 0.0150};
+
+    // 4rBW + expol1 fit
+    float mass_expol[tot_reso] = {1.2184, 1.3048, 1.5130, 1.6936};
+    float width_expol[tot_reso] = {0.1412, 0.1043, 0.0852, 0.2027};
+    float mass_expol_err[tot_reso] = {0.0048, 0.0020, 0.0006, 0.0046};
+    float width_expol_err[tot_reso] = {0.0171, 0.0079, 0.0021, 0.0178};
 
     // Coherent BW sum fit
-    //  float mass_coherent[4] = {1.19, 1.33, 1.513, 1.705};
-    //  float width_coherent[4] = {0.1557, 0.09088, 0.07935, 0.1705};
-    //  float mass_coherent_err[4] = {0.01, 0.004, 0.001, 0.005};
-    //  float width_coherent_err[4] = {0.0229, 0.00756, 0.00182, 0.0139};
+    //  float mass_coherent[tot_reso] = {1.19, 1.33, 1.513, 1.705};
+    //  float width_coherent[tot_reso] = {0.1557, 0.09088, 0.07935, 0.1705};
+    //  float mass_coherent_err[tot_reso] = {0.01, 0.004, 0.001, 0.005};
+    //  float width_coherent_err[tot_reso] = {0.0229, 0.00756, 0.00182, 0.0139};
 
-    float mass_coherent[4] = {1.19, 1.513, 1.705};
-    float width_coherent[4] = {0.1557, 0.07935, 0.1705};
-    float mass_coherent_err[4] = {0.01, 0.001, 0.005};
-    float width_coherent_err[4] = {0.0229, 0.00182, 0.0139};
+    float mass_coherent[tot_reso] = {1.1900, 1.1900, 1.513, 1.705};
+    float width_coherent[tot_reso] = {0.1557, 0.1557, 0.07935, 0.1705};
+    float mass_coherent_err[tot_reso] = {0.0100, 0.0100, 0.001, 0.005};
+    float width_coherent_err[tot_reso] = {0.0229, 0.0229, 0.00182, 0.0139};
 
     // HERA reuslts without interference terms
-    float HERA_mass[3] = {1.304, 1.523, 1.692};
-    float HERA_mass_errors[3] = {0.006, 0.003, 0.006};
-    float HERA_width[3] = {0.061, 0.071, 0.125};
-    float HERA_width_errors[3] = {0.011, 0.005, 0.012};
+    float HERA_mass[tot_reso] = {1.304, 1.304, 1.523, 1.692};
+    float HERA_mass_errors[tot_reso] = {0.006, 0.006, 0.003, 0.006};
+    float HERA_width[tot_reso] = {0.061, 0.061, 0.071, 0.125};
+    float HERA_width_errors[tot_reso] = {0.011, 0.011, 0.005, 0.012};
 
     // L3 results without interference terms
-    float L3_mass[3] = {1.239, 1.523, 1.767};
-    float L3_mass_errors[3] = {0.006, 0.006, 0.014};
-    float L3_width[3] = {0.078, 0.1, 0.187};
-    float L3_width_errors[3] = {0.019, 0.015, 0.06};
+    float L3_mass[tot_reso] = {1.239, 1.239, 1.523, 1.767};
+    float L3_mass_errors[tot_reso] = {0.006, 0.006, 0.006, 0.014};
+    float L3_width[tot_reso] = {0.078, 0.078, 0.1, 0.187};
+    float L3_width_errors[tot_reso] = {0.019, 0.019, 0.015, 0.06};
 
     // BES results without interference terms
-    float BES_mass[3] = {1.262, 0, 1.765};
-    float BES_mass_errors[3] = {0.002, 0, 0.013};
-    float BES_width[3] = {0.175, 0, 0.145};
-    float BES_width_errors[3] = {0.006, 0, 0.069};
+    float BES_mass[tot_reso] = {1.262, 1.262, 0, 1.765};
+    float BES_mass_errors[tot_reso] = {0.002, 0.002, 0, 0.013};
+    float BES_width[tot_reso] = {0.175, 0.175, 0, 0.145};
+    float BES_width_errors[tot_reso] = {0.006, 0.006, 0, 0.069};
 
     // WA02 experiment
-    float WA02_mass[3] = {1.305, 1.515, 1.730};
-    float WA02_mass_errors[3] = {0.02, 0.015, 0.015};
-    float WA02_width[3] = {0.132, 0.070, 0.1};
-    float WA02_width_errors[3] = {0.025, 0.025, 0.025};
+    float WA02_mass[tot_reso] = {1.305, 1.305, 1.515, 1.730};
+    float WA02_mass_errors[tot_reso] = {0.02, 0.02, 0.015, 0.015};
+    float WA02_width[tot_reso] = {0.132, 0.132, 0.070, 0.1};
+    float WA02_width_errors[tot_reso] = {0.025, 0.025, 0.025, 0.025};
 
     // BESIII experiment
-    float BESIII_mass[3] = {0, 0, 1.765};
-    float BESIII_mass_errors[3] = {0, 0, 0.002};
-    float BESIII_width[3] = {0, 0, 0.146};
-    float BESIII_width_errors[3] = {0, 0, 0.003};
+    float BESIII_mass[tot_reso] = {0, 0, 0, 1.765};
+    float BESIII_mass_errors[tot_reso] = {0, 0, 0, 0.002};
+    float BESIII_width[tot_reso] = {0, 0, 0, 0.146};
+    float BESIII_width_errors[tot_reso] = {0, 0, 0, 0.003};
 
     // for (int i = 0; i < 2; i++)
     // {
@@ -115,51 +132,51 @@ void compare_mass_width()
     // }
 
     // TGraphErrors *graph = new TGraphErrors(n, mass, y, massErr, yErr);
-    TGraphErrors *gr_mass_expol[3];
-    TGraphErrors *gr_width_expol[3];
-    TGraphErrors *gr_mass_boltzman[3];
-    TGraphErrors *gr_width_boltzman[3];
-    TGraphErrors *gr_mass_coherent[3];
-    TGraphErrors *gr_width_coherent[3];
-    TGraphErrors *gr_HERA_mass[3];
-    TGraphErrors *gr_HERA_width[3];
-    TGraphErrors *gr_L3_mass[3];
-    TGraphErrors *gr_L3_width[3];
-    TGraphErrors *gr_BES_mass[3];
-    TGraphErrors *gr_BES_width[3];
-    TGraphErrors *gr_WA02_mass[3];
-    TGraphErrors *gr_WA02_width[3];
-    TGraphErrors *gr_BESIII_mass[3];
-    TGraphErrors *gr_BESIII_width[3];
-    TLine *line[3];
+    TGraphErrors *gr_mass_expol[tot_reso];
+    TGraphErrors *gr_width_expol[tot_reso];
+    TGraphErrors *gr_mass_boltzman[tot_reso];
+    TGraphErrors *gr_width_boltzman[tot_reso];
+    TGraphErrors *gr_mass_coherent[tot_reso];
+    TGraphErrors *gr_width_coherent[tot_reso];
+    TGraphErrors *gr_HERA_mass[tot_reso];
+    TGraphErrors *gr_HERA_width[tot_reso];
+    TGraphErrors *gr_L3_mass[tot_reso];
+    TGraphErrors *gr_L3_width[tot_reso];
+    TGraphErrors *gr_BES_mass[tot_reso];
+    TGraphErrors *gr_BES_width[tot_reso];
+    TGraphErrors *gr_WA02_mass[tot_reso];
+    TGraphErrors *gr_WA02_width[tot_reso];
+    TGraphErrors *gr_BESIII_mass[tot_reso];
+    TGraphErrors *gr_BESIII_width[tot_reso];
+    TLine *line[tot_reso];
 
-    double pdgmasses[3] = {f1270Mass, f1525Mass, f1710Mass};
-    double pdgmasserrors[3] = {f1270MassErr, f1525MassErr, f1710MassErr};
-    double pdgwidths[3] = {f1270Width, f1525Width, f1710Width};
-    double pdgwidtherrors[3] = {f1270WidthErr, f1525WidthErr, f1710WidthErr};
-    float limits_mass[3][2] = {{1.20, 1.42}, {1.5, 1.56}, {1.66, 1.85}};
-    float limits_width[3][2] = {{0.02, 0.38}, {0.05, 0.15}, {0.06, 0.4}};
-    string resonances[3] = {"f1270", "f1525", "f1710"};
-    TBox *box[3];
+    double pdgmasses[tot_reso] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
+    double pdgmasserrors[tot_reso] = {f1270MassErr, a1320MassErr, f1525MassErr, f1710MassErr};
+    double pdgwidths[tot_reso] = {f1270Width, a1320Width, f1525Width, f1710Width};
+    double pdgwidtherrors[tot_reso] = {f1270WidthErr, a1320WidthErr, f1525WidthErr, f1710WidthErr};
+    float limits_mass[tot_reso][2] = {{1.20, 1.379}, {1.241, 1.419}, {1.495, 1.548}, {1.63, 1.81}};
+    float limits_width[tot_reso][2] = {{0.02, 0.38}, {0.015, 0.33}, {0.05, 0.13}, {0.06, 0.4}};
+    string resonances[tot_reso] = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
+    TBox *box[tot_reso];
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < tot_reso; i++)
     {
-        gr_mass_expol[i] = new TGraphErrors(3);
-        gr_width_expol[i] = new TGraphErrors(3);
-        gr_mass_boltzman[i] = new TGraphErrors(3);
-        gr_width_boltzman[i] = new TGraphErrors(3);
-        gr_mass_coherent[i] = new TGraphErrors(3);
-        gr_width_coherent[i] = new TGraphErrors(3);
-        gr_HERA_mass[i] = new TGraphErrors(3);
-        gr_HERA_width[i] = new TGraphErrors(3);
-        gr_L3_mass[i] = new TGraphErrors(3);
-        gr_L3_width[i] = new TGraphErrors(3);
-        gr_BES_mass[i] = new TGraphErrors(3);
-        gr_BES_width[i] = new TGraphErrors(3);
-        gr_WA02_mass[i] = new TGraphErrors(3);
-        gr_WA02_width[i] = new TGraphErrors(3);
-        gr_BESIII_mass[i] = new TGraphErrors(3);
-        gr_BESIII_width[i] = new TGraphErrors(3);
+        gr_mass_expol[i] = new TGraphErrors();
+        gr_width_expol[i] = new TGraphErrors();
+        gr_mass_boltzman[i] = new TGraphErrors();
+        gr_width_boltzman[i] = new TGraphErrors();
+        gr_mass_coherent[i] = new TGraphErrors();
+        gr_width_coherent[i] = new TGraphErrors();
+        gr_HERA_mass[i] = new TGraphErrors();
+        gr_HERA_width[i] = new TGraphErrors();
+        gr_L3_mass[i] = new TGraphErrors();
+        gr_L3_width[i] = new TGraphErrors();
+        gr_BES_mass[i] = new TGraphErrors();
+        gr_BES_width[i] = new TGraphErrors();
+        gr_WA02_mass[i] = new TGraphErrors();
+        gr_WA02_width[i] = new TGraphErrors();
+        gr_BESIII_mass[i] = new TGraphErrors();
+        gr_BESIII_width[i] = new TGraphErrors();
 
         SetGrapherrorStyle(gr_mass_expol[i]);
         SetGrapherrorStyle(gr_width_expol[i]);
@@ -235,13 +252,13 @@ void compare_mass_width()
 
 } // end of main function
 
-void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGraphErrors *gr_HERA_mass[3], TGraphErrors *gr_mass_coherent[3], TGraphErrors *gr_mass_L3[3], TGraphErrors *gr_mass_BES[3], TGraphErrors *gr_mass_WA02[3], TGraphErrors *gr_mass_BESIII[3], TLine *line[3], TBox *box[3], float limits[3][2], string resonances[3], string xaxistitle, double *pdg, double *pdgerr)
+void plot(TGraphErrors *gr_mass_expol[4], TGraphErrors *gr_mass_boltzman[4], TGraphErrors *gr_HERA_mass[4], TGraphErrors *gr_mass_coherent[4], TGraphErrors *gr_mass_L3[4], TGraphErrors *gr_mass_BES[4], TGraphErrors *gr_mass_WA02[4], TGraphErrors *gr_mass_BESIII[4], TLine *line[4], TBox *box[4], float limits[4][2], string resonances[4], string xaxistitle, double *pdg, double *pdgerr)
 {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < tot_reso; i++)
     {
 
-        TCanvas *c = new TCanvas("", "", 800, 600);
-        SetCanvasStyle(c, 0.26, 0.03, 0.05, 0.14);
+        TCanvas *c = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(c, 0.15, 0.03, 0.05, 0.14);
         gr_mass_expol[i]->SetTitle(Form("; %s (GeV/c)", xaxistitle.c_str()));
         gr_mass_expol[i]->SetMarkerStyle(20);
         gr_mass_expol[i]->SetMarkerColor(1);
@@ -293,12 +310,12 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         box[i]->SetFillStyle(3001);
         box[i]->Draw("same");
 
-        TLegend *leg = new TLegend(0.7, 0.55, 0.95, 0.9);
+        TLegend *leg = new TLegend(0.60, 0.65, 0.94, 0.9);
         leg->SetFillStyle(0);
         // leg->SetBorderSize(0);
         // leg->AddEntry(gr_mass_coherent[i], "Coherent fit", "lp");
-        leg->AddEntry(gr_mass_expol[i], "3BW + Expol fit", "lp");
-        leg->AddEntry(gr_mass_boltzman[i], "3BW + Boltzman fit", "lp");
+        leg->AddEntry(gr_mass_expol[i], "4rBW + Expol 1 fit", "lp");
+        leg->AddEntry(gr_mass_boltzman[i], "3rBW + Expol 1 fit", "lp");
         // leg->AddEntry(gr_mass_BESIII[i], "BESIII expt.", "lp");
         // leg->AddEntry(gr_mass_WA02[i], "WA02 expt.", "lp");
         // leg->AddEntry(gr_mass_BES[i], "BES expt.", "lp");
@@ -306,7 +323,7 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         // leg->AddEntry(gr_HERA_mass[i], "HERA expt.", "lp");
         leg->AddEntry(box[i], Form("PDG %s", resonances[i].c_str()), "f");
         leg->Draw("same");
-        TLegend *leg2 = new TLegend(0.7, 0.55, 0.95, 0.9); // this is created to show line and box in the legend
+        TLegend *leg2 = new TLegend(0.60, 0.65, 0.94, 0.9); // this is created to show line and box in the legend
         leg2->SetFillStyle(0);
         leg2->SetBorderSize(0);
         leg2->AddEntry((TObject *)0, "", "");
@@ -329,7 +346,7 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         double xMin = gr_mass_expol[i]->GetXaxis()->GetXmin();
 
         // Define a small offset to position the text just to the left of the y-axis
-        double offset = 0.352 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
+        double offset = 0.15 * (gr_mass_expol[i]->GetXaxis()->GetXmax() - xMin);
 
         TLatex latex;
         latex.SetTextSize(0.04);
@@ -342,8 +359,8 @@ void plot(TGraphErrors *gr_mass_expol[3], TGraphErrors *gr_mass_boltzman[3], TGr
         // latex.DrawLatex(xMin - offset, 7, "3BW + Expol fit");
         // latex.DrawLatex(xMin - offset, 8, "Coherent fit");
 
-        latex.DrawLatex(xMin - offset, 1, "3rBW + Boltzmann");
-        latex.DrawLatex(xMin - offset, 2, "3rBW + Expol");
+        latex.DrawLatex(xMin - offset, 1, "3rBW");
+        latex.DrawLatex(xMin - offset, 2, "4rBW");
 
         c->SaveAs((save_folder_str + xaxistitle + resonances[i] + ".png").c_str());
     }

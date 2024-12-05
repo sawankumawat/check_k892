@@ -3,7 +3,7 @@
 #include <TFile.h>
 
 void print_keys() {
-    std::string filePath = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/269284.root"; // Default file path
+    std::string filePath = "/home/sawan/check_k892/data/glueball/LHC22o_pass7_small/294059.root"; // Default file path
 
     // // Parse command line arguments
     // int option;

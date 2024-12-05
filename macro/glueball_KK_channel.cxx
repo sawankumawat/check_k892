@@ -1,6 +1,9 @@
 
 #include <iostream>
 #include <cmath>
+#include <TKey.h>
+#include <TClass.h>
+#include <TDirectory.h>
 #include "TArrow.h"
 #include "src/style.h"
 #include "src/fitfunc.h"
@@ -9,65 +12,36 @@
 
 using namespace std;
 
-void printDirectoryContents(TDirectory *dir, int indent = 0)
-{
-    // Get a list of all keys in the directory
-    TIter next(dir->GetListOfKeys());
-    TKey *key;
-
-    // Iterate over all keys
-    while ((key = (TKey *)next()))
-    {
-        // Print the name and class of the object
-        for (int i = 0; i < indent; i++)
-        {
-            std::cout << "  ";
-        }
-        std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
-
-        // If the object is a directory, recursively print its contents
-        TClass *cl = gROOT->GetClass(key->GetClassName());
-        if (cl->InheritsFrom(TDirectory::Class()))
-        {
-            TDirectory *subdir = (TDirectory *)key->ReadObj();
-            printDirectoryContents(subdir, indent + 1);
-        }
-    }
-}
+// void printDirectoryContents(TDirectory *dir, int indent = 0);
 float parameter0(float mass, float width);
 
-void glueball_KK_channelv2()
+void glueball_KK_channel()
 {
     // change here ***********************************************************
     // const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
     const string kResBkg = "LIKE";
-    const bool makeQAplots = true;
-    const bool calculate_invmass_distributions = false;
-    const bool save_invmass_plots = false;
-    float invmasslow = 1.1;  // GeV/c^2
-    float invmasshigh = 3.0; // GeV/c^2
+    // const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
+    const bool calculate_inv_mass = true;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
     TString outputQAfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA";
     const string outputfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername;
     const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA";
-
     // Create the folder using TSystem::mkdir()
-    if (gSystem->mkdir(outputfolder, kTRUE) || gSystem->mkdir(outputQAfolder, kTRUE))
+    if (gSystem->mkdir(outputfolder, kTRUE))
     {
         std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
+    }
+    if (gSystem->mkdir(outputQAfolder, kTRUE))
+    {
         std::cout << "Folder " << outputQAfolder << " created successfully." << std::endl;
     }
-    else
-    {
-        std::cout << "Creating folder " << outputfolder << std::endl;
-        std::cout << "Creating folder " << outputQAfolder << std::endl;
-    }
     // Folder name inside the Analysis.root file *****************************************
-
-    // gStyle->SetOptFit(1111);
+    if (!save_invmass_distributions)
+        gStyle->SetOptFit(1111);
     gStyle->SetOptStat(1110);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
@@ -83,87 +57,90 @@ void glueball_KK_channelv2()
     }
 
     // showing all folders in the root file using keys
-    // TIter next(fInputFile->GetListOfKeys());
-    // TKey *key;
-    // cout << "The folders in the root file are: \n";
-    // while ((key = (TKey *)next()))
-    // {
-    //     cout << key->GetName() << endl;
-    // }
-    // showing all folders as well as their contents
-    printDirectoryContents(fInputFile);
+    TIter next(fInputFile->GetListOfKeys());
+    TKey *key;
+    cout << "The folders in the root file are: \n";
+    while ((key = (TKey *)next()))
+    {
+        cout << key->GetName() << endl;
+    }
+    // showing all the folders in the root file as well as their contents
+    // printDirectoryContents(fInputFile);
 
     TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
     double Event = hentries->GetEntries();
     cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
-    TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/hmutiplicity").c_str());
+
+    //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
+
+    THnSparseF *fHistUnlike = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
+    THnSparseF *fHistMix = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
+    THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
+    THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
+    THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
+
+    if (fHistUnlike == nullptr || fHistMix == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
+    {
+        cout << "Invariant mass histograms not found" << endl;
+        return;
+    }
+
+    cout << " The number of entries in histograms: \n"
+         << "same event: " << fHistUnlike->GetEntries() << "\n"
+         << "mixed event: " << fHistMix->GetEntries() << "\n"
+         << "rotated bkg: " << fHistRot->GetEntries() << "\n"
+         << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
+         << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
+
+    TH1D *fHistTotal[Npt];
+    TH1D *fHistME[Npt];
+    TH1D *fHistRotated[Npt];
+    TH1D *fHistLikepp[Npt];
+    TH1D *fHistLikemm[Npt];
+    TH1D *fHistLike[Npt];
+
+    int multlow = 0;
+    int multhigh = 100;
+
+    TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/hmutiplicity", kfoldername.c_str()));
     if (hmult == nullptr)
     {
         cout << "Multiplicity histogram not found" << endl;
         return;
     }
-    double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0), hmult->GetXaxis()->FindBin(100.0));
+    double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
-    if (calculate_invmass_distributions)
+    if (calculate_inv_mass)
     {
-
-        //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
-
-        THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassUnlikeSign", kfoldername.c_str()));
-        THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassMixed", kfoldername.c_str()));
-        THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassRotation", kfoldername.c_str()));
-        THnSparseF *fHistLike_pp = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignPP", kfoldername.c_str()));
-        THnSparseF *fHistLike_mm = (THnSparseF *)fInputFile->Get(Form("%s/h3PhiInvMassLikeSignMM", kfoldername.c_str()));
-
-        if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr || fHistLike_pp == nullptr || fHistLike_mm == nullptr)
-        {
-            cout << "Invariant mass histograms not found" << endl;
-            return;
-        }
-
-        cout << " The number of entries in histograms: \n"
-             << "same event: " << fHistNum->GetEntries() << "\n"
-             << "mixed event: " << fHistDen->GetEntries() << "\n"
-             << "rotated bkg: " << fHistRot->GetEntries() << "\n"
-             << "like sign pp: " << fHistLike_pp->GetEntries() << "\n"
-             << "like sign mm: " << fHistLike_mm->GetEntries() << endl;
-
-        TH1D *fHistTotal[Npt];
-        TH1D *fHistME[Npt];
-        TH1D *fHistRotated[Npt];
-        TH1D *fHistLikepp[Npt];
-        TH1D *fHistLikemm[Npt];
-        TH1D *fHistLike[Npt];
-
-        int multlow = 0;
-        int multhigh = 100;
+        TFile *fileInvDistPair;
+        fileInvDistPair = (Npt > 1) ? new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1]) + "_allpt" + ".root").c_str(), "RECREATE") : new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1]) + Form("_pt_%.1f_%.1f", pT_bins[0], pT_bins[1]) + ".root").c_str(), "RECREATE");
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
 
             float lowpt = pT_bins[ip];
             float highpt = pT_bins[ip + 1];
-            int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-5);
-            int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-5);
+            int lbin = fHistUnlike->GetAxis(1)->FindBin(lowpt + 1e-5);
+            int hbin = fHistUnlike->GetAxis(1)->FindBin(highpt - 1e-5);
 
-            fHistNum->GetAxis(1)->SetRange(lbin, hbin);
-            fHistDen->GetAxis(1)->SetRange(lbin, hbin);
+            fHistUnlike->GetAxis(1)->SetRange(lbin, hbin);
+            fHistMix->GetAxis(1)->SetRange(lbin, hbin);
             fHistRot->GetAxis(1)->SetRange(lbin, hbin);
             fHistLike_pp->GetAxis(1)->SetRange(lbin, hbin);
             fHistLike_mm->GetAxis(1)->SetRange(lbin, hbin);
 
-            int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-5);
-            int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-5);
+            int lbinmult = fHistUnlike->GetAxis(0)->FindBin(multlow + 1e-5);
+            int hbinmult = fHistUnlike->GetAxis(0)->FindBin(multhigh - 1e-5);
 
-            fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
-            fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
+            fHistUnlike->GetAxis(0)->SetRange(lbinmult, hbinmult);
+            fHistMix->GetAxis(0)->SetRange(lbinmult, hbinmult);
             fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
             fHistLike_pp->GetAxis(0)->SetRange(lbinmult, hbinmult);
             fHistLike_mm->GetAxis(0)->SetRange(lbinmult, hbinmult);
 
-            fHistTotal[ip] = fHistNum->Projection(2, "E");
-            fHistME[ip] = fHistDen->Projection(2, "E");
+            fHistTotal[ip] = fHistUnlike->Projection(2, "E");
+            fHistME[ip] = fHistMix->Projection(2, "E");
             fHistRotated[ip] = fHistRot->Projection(2, "E");
             fHistLikepp[ip] = fHistLike_pp->Projection(2, "E");
             fHistLikemm[ip] = fHistLike_mm->Projection(2, "E");
@@ -173,6 +150,7 @@ void glueball_KK_channelv2()
             fHistLikepp[ip]->SetName(Form("fHistLikepp_%d", ip));
             fHistLikemm[ip]->SetName(Form("fHistLikemm_%d", ip));
             fHistLike[ip] = (TH1D *)fHistLikepp[ip]->Clone();
+
             for (int ibin = 0; ibin < fHistLikepp[ip]->GetNbinsX(); ibin++)
             {
                 fHistLike[ip]->SetBinContent(ibin + 1, 2 * TMath::Sqrt(fHistLikepp[ip]->GetBinContent(ibin + 1) * fHistLikemm[ip]->GetBinContent(ibin + 1))); // direct sum of like sign pairs
@@ -192,25 +170,36 @@ void glueball_KK_channelv2()
             TH1D *hfbkg;
 
             //*****************************************************************************************************************************
-            if (kResBkg == "MIX")
+            if (kResBkg == "MIX" || kResBkg == "ROTATED")
             {
                 auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
                 auto bkg_integral = (fHistME[ip]->Integral(fHistME[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistME[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
-                auto normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
-                cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
-                hfbkg = (TH1D *)fHistME[ip]->Clone();
+                auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
 
-                hfbkg->Scale(normfactor);
+                auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
+                auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
+                cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
+                if (kResBkg == "MIX")
+                {
+                    hfbkg = (TH1D *)fHistME[ip]->Clone();
+                    hfbkg->Write("bkg_without_normalization");
+                    hfbkg->Scale(normfactor);
+                }
+                else
+                {
+                    hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+                    hfbkg->Write("bkg_without_normalization");
+                    hfbkg->Scale(normfactor_rotated);
+                }
+
                 hfbkg->Rebin(kRebin[ip]);
                 hfsig->Rebin(kRebin[ip]);
 
                 hfsig->Add(hfbkg, -1);
             }
-            else if (kResBkg == "ROTATED" || kResBkg == "LIKE")
+            else if (kResBkg == "LIKE")
             {
-                hfbkg = (kResBkg == "ROTATED") ? (TH1D *)fHistRotated[ip]->Clone() : (TH1D *)fHistLike[ip]->Clone();
-                if (kResBkg == "ROTATED")
-                    hfbkg->Scale(0.5);
+                hfbkg = (TH1D *)fHistLike[ip]->Clone();
                 hfbkg->Rebin(kRebin[ip]);
                 hfsig->Rebin(kRebin[ip]);
                 hfsig->Add(hfbkg, -1);
@@ -219,21 +208,23 @@ void glueball_KK_channelv2()
             fHistTotal[ip]->Rebin(kRebin[ip]);
 
             //*****************************************************************************************************
-            TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_%.1f_%.1f.root", pT_bins[ip], pT_bins[ip + 1])).c_str(), "RECREATE");
             TCanvas *c1 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
             SetHistoQA(hfsig);
             hfsig->SetTitle(0);
             hfsig->SetMarkerStyle(8);
+            hfsig->SetMarkerSize(0.5);
             hfsig->GetYaxis()->SetMaxDigits(3);
-            hfsig->GetYaxis()->SetTitleOffset(1.4);
+            hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
             hfsig->SetLineColor(kBlack);
-            hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
-            hfsig->GetYaxis()->SetTitle("Counts");
-            hfsig->GetXaxis()->SetRangeUser(invmasslow, invmasshigh);
+            hfsig->GetXaxis()->SetTitle("m_{K^{#pm}K^{#mp}} (GeV/c^{2})");
+            hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            hfsig->GetXaxis()->SetRangeUser(1.0, 2.8);
+            hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
+            hfsig->SetMaximum(2.9e6);
             hfsig->Draw("e");
-            hfsig->Write("ksks_invmass");
+            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             // gPad->Update();
             // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
             // if (ps)
@@ -247,8 +238,10 @@ void glueball_KK_channelv2()
             // }
             // gPad->Modified(); // Necessary to update the canvas with the new text size
             // gPad->Update();
-            if (save_invmass_plots)
-                c1->SaveAs((outputfolder_str + "/hglueball_bkg_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+            if (save_invmass_distributions)
+            {
+                c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+            }
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
@@ -259,7 +252,6 @@ void glueball_KK_channelv2()
             hbkg_nopeak->SetLineColor(kRed);
             hbkg_nopeak->SetMarkerColor(kRed);
             hbkg_nopeak->SetFillColor(kRed);
-            hbkg_nopeak->SetLineColor(kRed);
             hbkg_nopeak->SetFillStyle(3001);
             for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
             {
@@ -271,20 +263,24 @@ void glueball_KK_channelv2()
 
             fHistTotal[ip]->SetMarkerStyle(8);
             fHistTotal[ip]->SetMarkerColor(kBlack);
+            fHistTotal[ip]->SetMarkerSize(0.5);
             hfbkg->SetMarkerStyle(8);
+            hfbkg->SetMarkerSize(0.5);
             hfbkg->SetMarkerColor(kRed);
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
-            fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.4);
+            fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
+            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
             fHistTotal[ip]->Draw("E");
-            fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
-            fHistTotal[ip]->GetXaxis()->SetTitle("m_{KK} (GeV/c^{2})");
-            if (save_invmass_plots)
+            fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
+            hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
+            if (save_invmass_distributions)
             {
-                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + koutputtype).c_str());
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", pT_bins[ip], pT_bins[ip + 1]) + koutputtype).c_str());
             }
             hfbkg->Draw("E same");
-            if (kResBkg == "MIX")
+            if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 hbkg_nopeak->Draw("BAR same");
 
             TLegend *leg = new TLegend(0.2451253, 0.2054598, 0.5445682, 0.3908046);
@@ -293,16 +289,26 @@ void glueball_KK_channelv2()
             leg->SetTextFont(42);
             leg->SetTextSize(0.04);
             leg->AddEntry(fHistTotal[ip], "Signal", "lpe");
-            string bkgname = (kResBkg == "MIX") ? "Mixed event" : (kResBkg == "ROTATED") ? "Rotated bkg"
-                                                                                         : "Like sign bkg";
+            string bkgname = (kResBkg == "MIX") ? "Mixed event" : (kResBkg == "LIKE") ? "Like-sign bkg"
+                                                                                      : "Rotated bkg";
             leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
             if (kResBkg == "MIX")
                 leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
             leg->Draw();
             t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            if (save_invmass_distributions)
+            {
+                c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+            }
+            c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
 
-            if (save_invmass_plots)
-                c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("_%d.", ip) + koutputtype).c_str());
+            // cdivide->cd(ip + 1);
+            // fHistTotal[ip]->Draw("E");
+            // hfbkg->Draw("E same");
+            // if (kResBkg == "MIX" || kResBkg == "ROTATED")
+            //     hbkg_nopeak->Draw("BAR same");
+            // leg->Draw();
+            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
         } // pt bin loop end here
     }
     ////////////////////////////////////////////////////////////////////////
@@ -508,3 +514,28 @@ float parameter0(float mass, float width)
     double norm = 2.8284 * mass * width * gamma / (3.14 * TMath::Sqrt(mass * mass + gamma));
     return norm;
 }
+// void printDirectoryContents(TDirectory *dir, int indent = 0)
+// {
+//     // Get a list of all keys in the directory
+//     TIter next(dir->GetListOfKeys());
+//     TKey *key;
+
+//     // Iterate over all keys
+//     while ((key = (TKey *)next()))
+//     {
+//         // Print the name and class of the object
+//         for (int i = 0; i < indent; i++)
+//         {
+//             std::cout << "  ";
+//         }
+//         std::cout << key->GetName() << " (" << key->GetClassName() << ")" << std::endl;
+
+//         // If the object is a directory, recursively print its contents
+//         TClass *cl = gROOT->GetClass(key->GetClassName());
+//         if (cl->InheritsFrom(TDirectory::Class()))
+//         {
+//             TDirectory *subdir = (TDirectory *)key->ReadObj();
+//             printDirectoryContents(subdir, indent + 1);
+//         }
+//     }
+// }

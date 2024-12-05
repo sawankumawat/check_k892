@@ -69,6 +69,7 @@
         "c.C": "cpp",
         "optional": "cpp",
         "fstream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "c1_n2_withtick.C": "cpp"
     }
 }

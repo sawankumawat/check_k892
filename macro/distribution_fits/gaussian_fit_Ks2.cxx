@@ -24,7 +24,7 @@ void perform_fit(TF1 *&fit, TH1 *h, bool mainfit = false);
 void gaussian_fit_Ks2()
 {
     // configurables *********************
-    bool saveplots = true;
+    bool saveplots = false;
     bool showpt_study = true;
     gStyle->SetOptStat(1110);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits

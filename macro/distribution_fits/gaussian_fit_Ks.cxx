@@ -19,10 +19,12 @@ void gaussian_fit_Ks()
 {
     // configurables *********************
     bool saveplots = true;
-    bool showpt_study = true;
-    gStyle->SetOptStat(1110);
+    bool showpt_study = false;
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
-    gStyle->SetOptFit(1111);
+    // gStyle->SetOptFit(1111);
+    gStyle->SetOptFit(11);
 
     int rebin = 1;
     // configurables *********************
@@ -58,15 +60,16 @@ void gaussian_fit_Ks()
     cout << "Bin width: " << binwidth << endl;
 
     TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
-    double pad1Size, pad2Size;
-    canvas_style(c1, pad1Size, pad2Size);
-    c1->cd(1);
+    SetCanvasStyle(c1, 0.14, 0.03, 0.05, 0.13);
+    // double pad1Size, pad2Size;
+    // canvas_style(c1, pad1Size, pad2Size);
+    // c1->cd(1);
     SetHistoStyle_temp(hInvMass, 1, 20, binwidth);
-    hInvMass->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-    hInvMass->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    hInvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hInvMass->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    hInvMass->GetYaxis()->SetTitleOffset(1.2);
+    // hInvMass->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    // hInvMass->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    // hInvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    // hInvMass->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    hInvMass->GetYaxis()->SetTitleOffset(1.5);
     hInvMass->SetMinimum(-100);
     hInvMass->Draw("pe");
     auto noofevents = hInvMass->Integral();
@@ -110,14 +113,14 @@ void gaussian_fit_Ks()
     fit2->SetLineWidth(2);
     // fit2->Draw("SAME");
     // legend
-    TLegend *lp3 = DrawLegend(0.17, 0.25, 0.52, 0.64);
+    TLegend *lp3 = DrawLegend(0.17, 0.4, 0.52, 0.70);
     lp3->SetFillStyle(0);
     lp3->SetTextFont(42);
     lp3->AddEntry(hInvMass, "Data", "pe");
     lp3->AddEntry(hInvMassClone1, "Signal", "f");
     // lp3->AddEntry(fit3, "CB + pol2 fit", "l");
 
-    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.04); // double crystal ball with pol2 fit
+    TF1 *fit3 = doubleCBpol2(hInvMass, parameters2, true, lp3, 0.035); // double crystal ball with pol2 fit
     fit3->Draw("SAME");
     // TF1 *fit3 = doubleCBpol1(hInvMass, parameters); // double crystal ball with pol1 fit
     cout << "The value and error of alpha Left is: " << fit3->GetParameter(3) << " " << fit3->GetParError(3) << endl;
@@ -135,23 +138,24 @@ void gaussian_fit_Ks()
          << "No. and percentage of Ks in +- 4 sigma: " << Npairs4sigma << " " << Npairs4sigma / allks << "\n"
          << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n";
 
-    TLegend *lp2 = DrawLegend(0.16, 0.68, 0.42, 0.85);
-    lp2->SetTextSize(0.04);
+    TLegend *lp2 = DrawLegend(0.16, 0.72, 0.42, 0.91);
+    lp2->SetTextSize(0.035);
     lp2->SetTextFont(42);
     lp2->SetFillStyle(0);
     lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
     lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+    lp2->AddEntry((TObject *)0, "p_{T}: 0-30 GeV/#it{c}", "");
     lp2->Draw("same");
 
-    gPad->Modified();
-    gPad->Update();
-    TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");
-    st->SetX1NDC(0.6); // 0.60
-    st->SetX2NDC(0.95);
-    st->SetY1NDC(0.3); // 0.78
-    st->SetY2NDC(0.95);
-    st->Draw("same");
+    // gPad->Modified();
+    // gPad->Update();
+    // TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");
+    // st->SetX1NDC(0.6); // 0.60
+    // st->SetX2NDC(0.95);
+    // st->SetY1NDC(0.3); // 0.78
+    // st->SetY2NDC(0.95);
+    // st->Draw("same");
 
     TLegend *lp1 = DrawLegend(0.52, 0.35, 0.9, 0.45);
     lp1->SetFillStyle(0);
@@ -161,29 +165,30 @@ void gaussian_fit_Ks()
     lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2), fit3->GetParError(2)), "");
     // lp1->Draw("same");
 
-    // lets calculate the fit to the data ratio
-    c1->cd(2);
-    TH1F *hInvMassRatio = (TH1F *)hInvMass->Clone("hInvMassRatio");
-    // for (int i = 0; i < hInvMass->GetNbinsX(); i++)
-    // {
-    //     hInvMassRatio->SetBinContent(i + 1, hInvMass->GetBinContent(i + 1) / fit3->Eval(hInvMass->GetBinCenter(i + 1)));
-    //     hInvMassRatio->SetBinError(i + 1, hInvMass->GetBinError(i + 1) / fit3->Eval(hInvMass->GetBinCenter(i + 1)));
-    // }
-    hInvMassRatio->Divide(fit3);
+    // // lets calculate the fit to the data ratio
+    // c1->cd(2);
+    // TH1F *hInvMassRatio = (TH1F *)hInvMass->Clone("hInvMassRatio");
+    // // for (int i = 0; i < hInvMass->GetNbinsX(); i++)
+    // // {
+    // //     hInvMassRatio->SetBinContent(i + 1, hInvMass->GetBinContent(i + 1) / fit3->Eval(hInvMass->GetBinCenter(i + 1)));
+    // //     hInvMassRatio->SetBinError(i + 1, hInvMass->GetBinError(i + 1) / fit3->Eval(hInvMass->GetBinCenter(i + 1)));
+    // // }
+    // hInvMassRatio->Divide(fit3);
 
-    SetHistoStyle_temp(hInvMassRatio, 1, 20, binwidth);
-    hInvMassRatio->SetMarkerSize(0.5);
-    hInvMassRatio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    hInvMassRatio->GetYaxis()->SetTitleSize(0.04 / pad2Size);
-    hInvMassRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hInvMassRatio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    hInvMassRatio->GetYaxis()->SetRangeUser(0.6, 1.39);
-    hInvMassRatio->GetYaxis()->SetTitle("Data/Fit");
-    hInvMassRatio->GetYaxis()->SetTitleOffset(0.5);
-    hInvMassRatio->GetXaxis()->SetTitleOffset(1.15);
-    hInvMassRatio->GetYaxis()->SetNdivisions(505);
-    hInvMassRatio->SetStats(0);
-    hInvMassRatio->Draw("pe");
+    // SetHistoStyle_temp(hInvMassRatio, 1, 20, binwidth);
+    // hInvMassRatio->SetMarkerSize(0.5);
+    // hInvMassRatio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    // hInvMassRatio->GetYaxis()->SetTitleSize(0.04 / pad2Size);
+    // hInvMassRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    // hInvMassRatio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    // hInvMassRatio->GetYaxis()->SetRangeUser(0.6, 1.39);
+    // hInvMassRatio->GetYaxis()->SetTitle("Data/Fit");
+    // hInvMassRatio->GetYaxis()->SetTitleOffset(0.5);
+    // hInvMassRatio->GetXaxis()->SetTitleOffset(1.15);
+    // hInvMassRatio->GetYaxis()->SetNdivisions(505);
+    // hInvMassRatio->SetStats(0);
+    // hInvMassRatio->Draw("pe");
+    // // c1->Close();
 
     TFile *foutput = new TFile(Form("saved/output_rebin%d.root", rebin), "recreate");
     if (saveplots)
@@ -379,7 +384,8 @@ void gaussian_fit_Ks()
             double total_yield_error = fitpt3->IntegralError(0.2, 0.8) / (binwidth * ptbinwidth * noofevents);
             cout << "Yield from functional integration: " << total_yield << endl;
             cout << "Error in yield from functional integration: " << total_yield_error << endl;
-            if(total_yield_error > total_yield){
+            if (total_yield_error > total_yield)
+            {
                 total_yield_error = 0;
             }
             hpTwise_yield_int->SetBinContent(ipt + 1, total_yield);
@@ -389,7 +395,7 @@ void gaussian_fit_Ks()
             auto bin_max = hInvMassPt[ipt]->FindBin(ksmass + 2 * 0.01);
             double bc_error;
             double Yield_bincount_hist = hInvMassPt[ipt]->IntegralAndError(bin_min, bin_max, bc_error);
-            cout<<"bc_error is "<<bc_error<<endl;
+            cout << "bc_error is " << bc_error << endl;
 
             double bkgvalue = pol2_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
             double Integral_BW_withsigma = double_CB_fit->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_min), hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1));
@@ -404,11 +410,11 @@ void gaussian_fit_Ks()
             // cout<<"Error in function integration yield: "<<double_CB_fit->IntegralError(ksmass - 3 * 0.01, ksmass + 3 * 0.01) / binwidth<<endl;
 
             auto Tail_correction_plusm = (fitFcn2_plusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_plusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
-            cout<<"Tail_correction_plusm: "<<Tail_correction_plusm<<endl;
+            cout << "Tail_correction_plusm: " << Tail_correction_plusm << endl;
             auto Tail_correction_minusm = (fitFcn2_minusm->Integral(0.2, hInvMassPt[ipt]->GetBinLowEdge(bin_min)) + (fitFcn2_minusm->Integral(hInvMassPt[ipt]->GetBinLowEdge(bin_max + 1), 0.8))) / binwidth;
-            cout<<"Tail_correction_minusm: "<<Tail_correction_minusm<<endl;
+            cout << "Tail_correction_minusm: " << Tail_correction_minusm << endl;
             auto Error_2 = (Tail_correction_plusm - Tail_correction_minusm) / 2;
-            cout<<"Error_2: "<<Error_2<<endl;
+            cout << "Error_2: " << Error_2 << endl;
             // auto Final_pro_error = sqrt(pow(bc_error, 2) + pow(Error_2, 2)) / (ptbinwidth * noofevents);
             auto Final_pro_error = sqrt(pow(bc_error, 2)) / (ptbinwidth * noofevents);
             cout << "Final_pro_error: " << Final_pro_error << endl;
@@ -467,55 +473,55 @@ void gaussian_fit_Ks()
             c4->SaveAs(Form("saved/gaussfit_Ks_width_rebin%d.png", rebin));
         }
 
-        TCanvas *c5 = new TCanvas("", "", 720, 720);
-        SetCanvasStyle(c5, 0.3, 0.03, 0.03, 0.2);
-        canvas_style(c5, pad1Size, pad2Size);
-        c5->cd(1);
-        c5->SetLogy();
-        gPad->SetLogy();
-        SetHistoQA(hpTwise_yield_int);
-        SetHistoQA(hpTwise_yield_bin);
-        SetHistoStyle(hpTwise_yield_int, 1, 20, 1, 0.04 / pad1Size, 0.04 / pad1Size, 0.04 / pad1Size, 0.04 / pad1Size, 1.3, 1.3);
-        hpTwise_yield_int->SetMarkerSize(1);
-        hpTwise_yield_bin->SetMarkerSize(1);
-        hpTwise_yield_int->SetMarkerStyle(21);
-        hpTwise_yield_int->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-        hpTwise_yield_int->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hpTwise_yield_int->GetYaxis()->SetMaxDigits(3);
-        hpTwise_yield_int->GetYaxis()->SetTitleOffset(1.15);
-        hpTwise_yield_int->SetStats(0);
-        hpTwise_yield_int->Draw("pe");
-        hpTwise_yield_bin->SetMarkerColor(kRed);
-        hpTwise_yield_bin->SetLineColor(kRed);
-        hpTwise_yield_bin->Draw("pe same");
-        hpTwise_yield_int->Write("ks_yield_int");
-        hpTwise_yield_bin->Write("ks_yield_bin");
-        TLegend *lp5 = DrawLegend(0.4, 0.75, 0.7, 0.85);
-        lp5->SetFillStyle(0);
-        lp5->SetTextFont(42);
-        lp5->SetTextSize(0.04);
-        lp5->AddEntry(hpTwise_yield_int, "Functional integration", "lpe");
-        lp5->AddEntry(hpTwise_yield_bin, "Bin counting", "lpe");
-        lp5->Draw("same");
+        // TCanvas *c5 = new TCanvas("", "", 720, 720);
+        // SetCanvasStyle(c5, 0.3, 0.03, 0.03, 0.2);
+        // canvas_style(c5, pad1Size, pad2Size);
+        // c5->cd(1);
+        // c5->SetLogy();
+        // gPad->SetLogy();
+        // SetHistoQA(hpTwise_yield_int);
+        // SetHistoQA(hpTwise_yield_bin);
+        // SetHistoStyle(hpTwise_yield_int, 1, 20, 1, 0.04 / pad1Size, 0.04 / pad1Size, 0.04 / pad1Size, 0.04 / pad1Size, 1.3, 1.3);
+        // hpTwise_yield_int->SetMarkerSize(1);
+        // hpTwise_yield_bin->SetMarkerSize(1);
+        // hpTwise_yield_int->SetMarkerStyle(21);
+        // hpTwise_yield_int->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+        // hpTwise_yield_int->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hpTwise_yield_int->GetYaxis()->SetMaxDigits(3);
+        // hpTwise_yield_int->GetYaxis()->SetTitleOffset(1.15);
+        // hpTwise_yield_int->SetStats(0);
+        // hpTwise_yield_int->Draw("pe");
+        // hpTwise_yield_bin->SetMarkerColor(kRed);
+        // hpTwise_yield_bin->SetLineColor(kRed);
+        // hpTwise_yield_bin->Draw("pe same");
+        // hpTwise_yield_int->Write("ks_yield_int");
+        // hpTwise_yield_bin->Write("ks_yield_bin");
+        // TLegend *lp5 = DrawLegend(0.4, 0.75, 0.7, 0.85);
+        // lp5->SetFillStyle(0);
+        // lp5->SetTextFont(42);
+        // lp5->SetTextSize(0.04);
+        // lp5->AddEntry(hpTwise_yield_int, "Functional integration", "lpe");
+        // lp5->AddEntry(hpTwise_yield_bin, "Bin counting", "lpe");
+        // lp5->Draw("same");
 
-        TH1F *hratios = (TH1F *)hpTwise_yield_int->Clone("hratios");
-        hratios->Divide(hpTwise_yield_bin);
+        // TH1F *hratios = (TH1F *)hpTwise_yield_int->Clone("hratios");
+        // hratios->Divide(hpTwise_yield_bin);
 
-        c5->cd(2);
-        gPad->SetLogy(0);
-        SetHistoStyle(hratios, 1, 53, 1, 0.04 / pad2Size, 0.04 / pad2Size, 0.04 / pad2Size, 0.04 / pad2Size, 1.13, 1.8);
-        hratios->GetYaxis()->SetTitle("FI / BC");
-        hratios->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hratios->GetYaxis()->SetTitleOffset(0.55);
-        hratios->GetXaxis()->SetTitleOffset(1.1);
-        hratios->GetYaxis()->SetRangeUser(0.9, 1.1);
-        hratios->GetYaxis()->SetNdivisions(505);
-        hratios->Draw("pe");
+        // c5->cd(2);
+        // gPad->SetLogy(0);
+        // SetHistoStyle(hratios, 1, 53, 1, 0.04 / pad2Size, 0.04 / pad2Size, 0.04 / pad2Size, 0.04 / pad2Size, 1.13, 1.8);
+        // hratios->GetYaxis()->SetTitle("FI / BC");
+        // hratios->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hratios->GetYaxis()->SetTitleOffset(0.55);
+        // hratios->GetXaxis()->SetTitleOffset(1.1);
+        // hratios->GetYaxis()->SetRangeUser(0.9, 1.1);
+        // hratios->GetYaxis()->SetNdivisions(505);
+        // hratios->Draw("pe");
 
-        if (saveplots)
-        {
-            c5->SaveAs(Form("saved/gaussfit_Ks_yield_rebin%d.png", rebin));
-        }
+        // if (saveplots)
+        // {
+        //     c5->SaveAs(Form("saved/gaussfit_Ks_yield_rebin%d.png", rebin));
+        // }
     }
 }
 
@@ -752,7 +758,7 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullp
         {
             SetLegendStyle(leg);
             leg->SetTextSize(legendsize);
-            leg->AddEntry(fit, "Double CB + pol2", "l");
+            leg->AddEntry(fit, "CB + pol2", "l");
             leg->AddEntry(fitCBleft, "Left CB", "l");
             leg->AddEntry(fitCBright, "Right CB", "l");
             leg->AddEntry(fitpol2, "Polynomial 2", "l");

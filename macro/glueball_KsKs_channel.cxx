@@ -21,7 +21,7 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
+    const bool makeQAplots = true;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -42,7 +42,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(1110);
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -202,7 +203,7 @@ void glueball_KsKs_channel()
             hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
             hfsig->SetLineColor(kBlack);
-            hfsig->GetXaxis()->SetTitle("m_{K_{s}K_{s}} (GeV/c^{2})");
+            hfsig->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
             hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
             hfsig->Draw("e");
@@ -255,6 +256,7 @@ void glueball_KsKs_channel()
             fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
             fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
+            fHistTotal[ip]->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
             fHistTotal[ip]->Draw("E");
             fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
             hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
@@ -316,7 +318,7 @@ void glueball_KsKs_channel()
         SetHistoQA(kshortmass_before);
         kshortpt_before->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         kshortpt_before->GetYaxis()->SetTitle("Counts");
-        kshortmass_before->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        kshortmass_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
         kshortmass_before->GetYaxis()->SetTitle("Counts");
         kshortmass_before->GetXaxis()->SetRangeUser(0.2, 0.8);
         kshortpt_before->Draw("HIST");
@@ -339,7 +341,7 @@ void glueball_KsKs_channel()
         SetHistoQA(kshortmass_after);
         kshortpt_after->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         kshortpt_after->GetYaxis()->SetTitle("Counts");
-        kshortmass_after->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        kshortmass_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
         kshortmass_after->GetYaxis()->SetTitle("Counts");
         kshortmass_after->GetXaxis()->SetRangeUser(0.2, 0.8);
         kshortpt_after->Draw("HIST");
@@ -390,8 +392,8 @@ void glueball_KsKs_channel()
         // c3->Clear();
         // SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
         // SetHistoQA(hmasscorr);
-        // hmasscorr->GetYaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
-        // hmasscorr->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
+        // hmasscorr->GetYaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        // hmasscorr->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
         // hmasscorr->GetXaxis()->SetRangeUser(0.475, 0.52);
         // hmasscorr->GetYaxis()->SetRangeUser(0.475, 0.52);
         // hmasscorr->GetXaxis()->SetMaxDigits(3);
@@ -807,44 +809,6 @@ void glueball_KsKs_channel()
         hTPCenergyloss->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
 
-        // Mass correlation between lambda and Kshort
-        gPad->SetLogx(0);
-        gPad->SetLogz(0);
-        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_before").c_str());
-        if (hMassCorr_ks_lambda_before == nullptr)
-        {
-            cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        SetHistoQA(hMassCorr_ks_lambda_before);
-        hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
-        hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.3);
-        hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
-        hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
-        hMassCorr_ks_lambda_before->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
-
-        // Mass correlation between lambda and Kshort after the cut
-        TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after").c_str());
-        if (hMassCorr_ks_lambda_after == nullptr)
-        {
-            cout << "Mass correlation plot between lambda and Kshort after the cut not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        SetHistoQA(hMassCorr_ks_lambda_after);
-        hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
-        hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("m_{K_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.3);
-        hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
-        hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
-        hMassCorr_ks_lambda_after->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
-
         // Number of ks produced in an event plot
         gPad->SetLogy();
         TH1F *hNofKshort = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/NksProduced").c_str());
@@ -880,6 +844,44 @@ void glueball_KsKs_channel()
         hMult_FT0M->GetXaxis()->SetNdivisions(505);
         hMult_FT0M->Draw();
         c3->SaveAs((outputQAfolder_str + "/mult_FT0M." + koutputtype).c_str());
+
+        // Mass correlation between lambda and Kshort
+        gPad->SetLogx(0);
+        gPad->SetLogz(0);
+        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_before").c_str());
+        if (hMassCorr_ks_lambda_before == nullptr)
+        {
+            cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetHistoQA(hMassCorr_ks_lambda_before);
+        hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
+        hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_before->Draw("colz");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
+
+        // Mass correlation between lambda and Kshort after the cut
+        TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after10").c_str());
+        if (hMassCorr_ks_lambda_after == nullptr)
+        {
+            cout << "Mass correlation plot between lambda and Kshort after the cut not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetHistoQA(hMassCorr_ks_lambda_after);
+        hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
+        hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_after->Draw("colz");
+        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
 
         // Events check histogram
         gPad->SetLogy(0);

@@ -61,9 +61,6 @@ const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 
 #ifdef DATASET_LHC22o_pass7_small
-// const string kDataFilename_temp2 = "240457.root"; // data file (small)
-// const string kDataFilename_temp2 = "240361.root"; // data file (medium)
-// const string kDataFilename_temp2 = "244178.root"; // data file (medium)
 // const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
 // const string kDataFilename_temp2 = "250337.root"; // Medium data file (fixed rotation bkg and competing cascade cuts) (only 2 out of 4 run numbers)
 // const string kDataFilename_temp2 = "248760.root"; // Small data file (fixed different entries in the pi- and pi+ daughters, multiplicity distribution, number of Ks produced per event)
@@ -71,7 +68,8 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "253148.root"; // Medium data file (2-6 ks mass cuts, KK channel not present)
 // const string kDataFilename_temp2 = "254232.root"; // Medium data file (mult dist, dE/dx tpc, pileup rejection)
 const string kDataFilename_temp2 = "260782.root"; // Full dataset (corrected mass correlation plot)
-const string kMCFilename_temp = "211346.root";    // MC file
+// const string kDataFilename_temp2 = "294059.root"; // Medium (1 run number only)
+const string kMCFilename_temp = "211346.root";    // MC file // temporary since injected MC is not available
 #endif
 
 // final dataset name

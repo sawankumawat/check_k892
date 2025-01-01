@@ -4,8 +4,10 @@ using namespace std;
 
 void plots()
 {
-    TFile *f = new TFile("f1710.root", "read");
-    // TFile *f = new TFile("f1525.root", "read");
+    gStyle->SetOptStat(1110);
+    gStyle->SetOptTitle(0);
+    // TFile *f = new TFile("f1710.root", "read");
+    TFile *f = new TFile("f1525.root", "read");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -23,8 +25,8 @@ void plots()
         cout << "Error reading histogram" << endl;
         return;
     }
-    vector<string> histnames = {"Gen p_{T} f_{0}(1710)", "Gen Mass f_{0}(1710)", "Multiplicity", "Multiplicity after event selection", "Rec f_{0}(1710) p_{T}", "Rec f_{0}(1710) p_{T}", "Rec f_{0}(1710) Mass"};
-    // vector<string> histnames = {"Gen p_{T} f_{2}(1525)", "Gen Mass f_{2}(1525)", "Multiplicity", "Multiplicity after event selection", "Rec f_{2}(1525) p_{T}", "Rec f_{2}(1525) p_{T}", "Rec f_{2}(1525) Mass"};
+    // vector<string> histnames = {"Gen p_{T} f_{0}(1710)", "Gen Mass f_{0}(1710)", "Multiplicity", "Multiplicity after event selection", "Rec f_{0}(1710) p_{T}", "Rec f_{0}(1710) p_{T}", "Rec f_{0}(1710) Mass"};
+    vector<string> histnames = {"Gen p_{T} f_{2}(1525)", "Gen Mass f_{2}(1525)", "Multiplicity", "Multiplicity after event selection", "Rec f_{2}(1525) p_{T}", "Rec f_{2}(1525) p_{T}", "Rec f_{2}(1525) Mass"};
     vector<TH1F *> hists = {GenpT, GenMass, MC_mult, MC_mult_sel, recpt1, recpt2, recMass};
     int counter = 0;
     for (auto hist : hists)
@@ -33,7 +35,12 @@ void plots()
         hist->SetTitle(histnames[counter].c_str());
         hist->GetYaxis()->SetTitle("Counts");
         TCanvas *c = new TCanvas("", "", 720, 720);
-        SetCanvasStyle(c, 0.15, 0.05, 0.08, 0.15);
+        SetCanvasStyle(c, 0.15, 0.05, 0.05, 0.15);
+        // hist->Rebin(4);
+        hist->GetXaxis()->SetRangeUser(0, 22);
+        // hist->GetXaxis()->SetRangeUser(1.433, 2.033);
+        // hist->GetXaxis()->SetRangeUser(0, 130);
+        // hist->GetXaxis()->SetTitle("Multiplicity %");
         hist->Draw();
 
         std::string filename = Form("plots/%s.png", histnames[counter].c_str());

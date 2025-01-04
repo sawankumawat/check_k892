@@ -50,6 +50,8 @@ void glueball_fit_4rBW()
 
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/294059/KK_Channel/kaonkaonAnalysisRun3/hglue_LIKE_norm_2.50_2.60_pt_0.0_30.0.root", "READ"); // KK channel, like-sign
 
+    TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
+
     int colors[] = {4, 6, 28, 46};
 
     if (f->IsZombie())
@@ -58,7 +60,7 @@ void glueball_fit_4rBW()
         return;
     }
 
-    // #define b_expol
+    // #define b_exponential
     // #define b_boltzman
 #define b_expol1
 #define residual_subtracted
@@ -81,6 +83,7 @@ void glueball_fit_4rBW()
         hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
         hinvMass->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
         hinvMass->Draw();
+        TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
         TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
         // gStyle->SetOptStat(1110);
         gStyle->SetOptStat(0);
@@ -91,7 +94,7 @@ void glueball_fit_4rBW()
 // // // // **************** For BW sum with expol HERA ****************************
 
 // // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
-#ifdef b_expol
+#ifdef b_exponential
 
         TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.03, 2.20, 16); // expol 3
         string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
@@ -526,12 +529,12 @@ void glueball_fit_4rBW()
         // Now subtract the residual background and plot
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
-        TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
         expol_clone->SetRange(0.99, 2.99);
         hsubtracted->Add(expol_clone, -1);
         hsubtracted->GetXaxis()->SetRangeUser(1.0, 2.5);
         hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.5);
         hsubtracted->Draw();
+        hsubtracted->Write("3BW");
         // for (int i = 0; i < limits_size; i++)
         // {
         //     int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
@@ -600,7 +603,8 @@ void glueball_fit_4rBW()
         hinvMass->SetStats(0);
         hinvMass->SetMinimum(-100);
         hinvMass->SetMaximum(0.9e6);
-        // hinvMass->GetYaxis()->SetMaxDigits(10);
+        hinvMass->GetYaxis()->SetMaxDigits(4);
+        hinvMass->GetYaxis()->SetNdivisions(506);
         hinvMass->Draw("pe");
         expol->Draw("same");
         onlyBW->SetLineWidth(0);
@@ -660,7 +664,7 @@ void glueball_fit_4rBW()
         text4->SetNDC();
         text4->SetTextSize(0.06);
         text4->SetTextFont(42);
-        text4->Draw("same");
+        // text4->Draw("same");
 
         c1->cd(2);
         gPad->SetTickx(1);
@@ -687,7 +691,7 @@ void glueball_fit_4rBW()
             singlefits1[i]->Draw("same");
         }
         c1->Update();
-        c1->SaveAs("/home/sawan/Music/rBWfit_doublepanel.pdf");
+        c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
 
 #endif
 
@@ -718,6 +722,7 @@ void glueball_fit_4rBW()
         // // cout << "Yield 1525: " << yield1525 << " +- " << yield1525_err << endl;
         // // cout << "Yield 1710: " << yield1710 << " +- " << yield1710_err << endl;
     }
+    // plots_4BW->Close();
 }
 // end of main program
 

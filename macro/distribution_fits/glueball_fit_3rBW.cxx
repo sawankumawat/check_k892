@@ -7,6 +7,8 @@
 #include "../src/style.h"
 using namespace std;
 
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
+
 Double_t single_BW_hera(double *x, double *par);
 Double_t single_BW(double *x, double *par);
 Double_t BWsum_hera(double *x, double *par);
@@ -45,6 +47,7 @@ void glueball_fit_3rBW()
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60.root", "READ");        // pT differential range
 
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/294059/KK_Channel/kaonkaonAnalysisRun3/hglue_LIKE_norm_2.50_2.60_pt_0.0_30.0.root", "READ"); // KK channel
+    TFile *plots_3BW = new TFile("root_files/3rBW_plots_expol.root", "RECREATE");
 
     int colors[] = {4, 6, 28, 46};
     TLatex *t2 = new TLatex();
@@ -58,10 +61,11 @@ void glueball_fit_3rBW()
         return;
     }
 
-    // #define b_expol
+// #define b_exponential
 // #define b_boltzman
 #define b_expol1
-    // #define residual_subtracted
+#define residual_subtracted
+    #define doublepanelplot
 
     for (int ipt = 0; ipt < Npt; ipt++)
     {
@@ -81,7 +85,9 @@ void glueball_fit_3rBW()
         hinvMass->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
         hinvMass->Draw();
         // t2->DrawLatex(0.29, 0.96, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+        TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
         TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
+
         gStyle->SetOptStat(0);
         gStyle->SetOptFit(1111);
         vector<tuple<float, int, float, float>> fit_parameters;
@@ -90,7 +96,7 @@ void glueball_fit_3rBW()
 // // // **************** For BW sum with expol HERA ****************************
 
 // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
-#ifdef b_expol
+#ifdef b_exponential
         TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.30, 13); // expol 3
         string parnames[] = {"norm1270", "mass1270", "width1270", "norm1525", "mass1525", "width1525", "norm1710", "mass1710", "width1710", "expol1", "expol2", "expol3", "expol4"};
         for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
@@ -327,7 +333,7 @@ void glueball_fit_3rBW()
         // // // //************************************************************************ */
         // // // // **************** For BW sum with exp + pol2 as used in Charged kstar **************************
 #ifdef b_expol1
-        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.03, 2.20, 13); // expol 1 (charked star)
+        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, 1.05, 2.30, 13); // expol 1 (charked star)
         string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
         for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
         {
@@ -510,7 +516,7 @@ void glueball_fit_3rBW()
         file << fitmass1270 << " ± " << fitmass1270_err << endl;
         file << fitwidth1270 << " ± " << fitwidth1270_err << endl;
         file << endl;
-#if defined(b_expol) || defined(b_expol1)
+#if defined(b_exponential) || defined(b_expol1)
         file << expol1 << ", " << expol2 << ", " << expol3 << ", " << expol4 << endl;
 #endif
 #ifdef b_boltzman
@@ -532,12 +538,14 @@ void glueball_fit_3rBW()
         // Now subtract the residual background and plot
         TCanvas *c2 = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
-        TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
         expol_clone->SetRange(0.99, 2.99);
         hsubtracted->Add(expol_clone, -1);
         hsubtracted->GetXaxis()->SetRangeUser(1.0, 2.5);
         hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.5);
         hsubtracted->Draw();
+        TH1F *hsubtracted_clone = (TH1F *)hsubtracted->Clone("hsubtracted_clone");
+        hsubtracted_clone->Write("3BW");
+
         for (int i = 0; i < limits_size; i++)
         {
             int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
@@ -573,7 +581,120 @@ void glueball_fit_3rBW()
         ltemp2->AddEntry(singlefits1[1], "f1525", "l");
         ltemp2->AddEntry(singlefits1[2], "f1710", "l");
         ltemp2->Draw("same");
-        c2->SaveAs((savepath + "/boltzmann/rBWfit_residual.png").c_str());
+        c2->SaveAs((savepath + "/rBWfit_residual.png").c_str());
+
+#endif
+
+#ifdef doublepanelplot
+        // gStyle->SetOptFit(0);
+        TCanvas *c1 = new TCanvas("", "", 720, 720);
+        double pad1Size, pad2Size;
+        canvas_style(c1, pad1Size, pad2Size);
+        c1->cd(1);
+        gPad->SetTickx(1);
+        hinvMass->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+        hinvMass->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+        hinvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+        hinvMass->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+        hinvMass->GetXaxis()->SetTitleOffset(1.02);
+        hinvMass->GetYaxis()->SetTitleOffset(0.8);
+        hinvMass->GetYaxis()->CenterTitle(0);
+        // hinvMass->SetMarkerStyle(22);
+        hinvMass->SetMarkerSize(0.8);
+        hinvMass->SetLineColor(1);
+        hinvMass->SetMarkerColor(1);
+        hinvMass->SetStats(0);
+        hinvMass->SetMinimum(-100);
+        hinvMass->SetMaximum(0.9e6);
+        hinvMass->GetYaxis()->SetMaxDigits(4);
+        hinvMass->GetYaxis()->SetNdivisions(505);
+        hinvMass->Draw("pe");
+        expol->Draw("same");
+        onlyBW->SetLineWidth(0);
+        onlyBW->SetFillColor(4);
+        onlyBW->SetFillStyle(1001);
+        onlyBW->Draw("same");
+        onlyBW->SetNpx(1000);
+        gPad->Update();
+
+        TArrow *arrow = new TArrow(0.2994429, 0.6609195, 0.2994429, 0.4482759, 0.02, "|>");
+        arrow->SetNDC();
+        // arrow->SetLineColor(1); // Set arrow color
+        // arrow->SetFillColor(1); // Set arrow fill color
+        arrow->SetLineWidth(2); // Set arrow width
+        arrow->Draw();
+
+        TLatex *text1 = new TLatex(0.2994429, 0.6609195 + 0.05, "f_{2}(1270)");
+        text1->SetNDC();
+        text1->SetTextSize(0.05);
+        text1->SetTextAlign(22);
+        text1->Draw("same");
+
+        TArrow *arrow2 = new TArrow(0.4256128, 0.5747126, 0.4256128, 0.3649425, 0.02, "|>");
+        arrow2->SetNDC();
+        arrow2->SetLineWidth(2);
+        arrow2->Draw();
+
+        TLatex *text2 = new TLatex(0.4256128, 0.5747126 + 0.05, "f'_{2}(1525)");
+        text2->SetNDC();
+        text2->SetTextSize(0.05);
+        text2->SetTextAlign(22);
+        text2->Draw("same");
+
+        TArrow *arrow3 = new TArrow(0.5473538, 0.4712644, 0.5473538, 0.2614943, 0.02, "|>");
+        arrow3->SetNDC();
+        arrow3->SetLineWidth(2);
+        arrow3->Draw();
+
+        TLatex *text3 = new TLatex(0.5473538, 0.4712644 + 0.05, "f_{0}(1710)");
+        text3->SetNDC();
+        text3->SetTextSize(0.05);
+        text3->SetTextAlign(22);
+        text3->Draw("same");
+
+        TLegend *leg = new TLegend(0.65, 0.47, 0.99, 0.77);
+        leg->SetFillStyle(0);
+        leg->SetTextFont(42);
+        leg->SetTextSize(0.06);
+        leg->SetBorderSize(0);
+        leg->AddEntry(hinvMass, "pp #sqrt{s} = 13.6 TeV", "lpe");
+        leg->AddEntry(BEexpol, "3 BW + Residual BG", "l");
+        leg->AddEntry(onlyBW, "Signal", "f");
+        leg->AddEntry(expol, "Residual BG", "l");
+        leg->Draw("same");
+
+        TLatex *text4 = new TLatex(0.65, 0.80, "ALICE work in progress");
+        text4->SetNDC();
+        text4->SetTextSize(0.06);
+        text4->SetTextFont(42);
+        text4->Draw("same");
+
+        c1->cd(2);
+        gPad->SetTickx(1);
+        hsubtracted->GetYaxis()->SetTitleSize(0.04 / pad2Size);
+        hsubtracted->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+        hsubtracted->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+        hsubtracted->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+        hsubtracted->GetYaxis()->SetNdivisions(504);
+        hsubtracted->SetStats(0);
+        hsubtracted->SetMinimum(0);
+        hsubtracted->SetMaximum(0.13e6);
+        hsubtracted->SetMarkerSize(0.8);
+        // hsubtracted->GetYaxis()->SetMaxDigits(10);
+        hsubtracted->Draw("pe");
+
+        TLatex *text5 = new TLatex(0.55, 0.80, "Residual background subtraction");
+        text5->SetNDC();
+        text5->SetTextSize(0.06);
+        text5->SetTextFont(42);
+        text5->Draw("same");
+
+        for (int i = 0; i < 4; i++)
+        {
+            singlefits1[i]->Draw("same");
+        }
+        c1->Update();
+        c1->SaveAs("/home/sawan/Music/r3BWfit_doublepanel.png");
 
 #endif
 
@@ -604,6 +725,7 @@ void glueball_fit_3rBW()
         // // cout << "Yield 1525: " << yield1525 << " +- " << yield1525_err << endl;
         // // cout << "Yield 1710: " << yield1710 << " +- " << yield1710_err << endl;
     }
+    plots_3BW->Close();
 }
 // end of main program
 
@@ -795,4 +917,25 @@ Double_t BWsum_boltzman_2(double *x, double *par)
 Double_t BWsum_expol_chkstar(double *x, double *par)
 {
     return (BWsum(x, par) + expol_chkstar(x, &par[9]));
+}
+
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
+{
+    // SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
+    c->Divide(1, 2, 0, 0);
+    TPad *pad1 = (TPad *)c->GetPad(1); // top pad
+    TPad *pad2 = (TPad *)c->GetPad(2); // bottom pad
+    pad2Size = 0.5;                    // Size of the first pad
+    pad1Size = 1 - pad2Size;
+
+    pad1->SetPad(0, 0.5, 1, 1); // x1, y1, x2, y2
+    pad2->SetPad(0, 0, 1, 0.5);
+    pad1->SetRightMargin(0.009);
+    pad2->SetRightMargin(0.009);
+    pad2->SetBottomMargin(0.23);
+    pad1->SetLeftMargin(0.125);
+    pad2->SetLeftMargin(0.125);
+    pad1->SetTopMargin(0.1);
+    pad1->SetBottomMargin(0);
+    pad2->SetTopMargin(0);
 }

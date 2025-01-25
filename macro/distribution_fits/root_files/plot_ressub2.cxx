@@ -36,7 +36,7 @@ Double_t single_BW_boltzman_2(double *x, double *par);
 Double_t BWsum_boltzman_1(double *x, double *par);
 Double_t BWsum_boltzman_2(double *x, double *par);
 
-void plot_ressub()
+void plot_ressub2()
 {
 
     ofstream outfile("fit_results.txt");
@@ -67,75 +67,47 @@ void plot_ressub()
 
     TCanvas *c2 = new TCanvas("", "", 720, 720);
 
-    // // Now lets fit the distribution
-    // TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum, 1.05, 2.20, 9);
-    // onlyBW_clone->SetParameters(6646, 1.281, 0.156, 7547, 1.514, 0.080, 4553, 1.692, 0.211); // expol 1
-    // // onlyBW_clone->SetParameters(14233, 1.283, 0.211, 9206, 1.512, 0.090, 8208, 1.683, 0.266); // Boltzmann
-    // onlyBW_clone->SetLineStyle(2);
-    // hsubtracted1->Fit("onlyBW_clone", "REBMS");
-    // double chi2ndf1 = onlyBW_clone->GetChisquare() / onlyBW_clone->GetNDF();
-    // cout << "Chi2/NDF1 is " << chi2ndf1 << endl;
-    // outfile << "Boltzmann fitting parameters" << endl;
-    // for (int i = 0; i < 9; i++)
-    // {
-    //     if (i == 0 || i == 3 || i == 6)
-    //     {
-    //         outfile << std::fixed << std::setprecision(0);
-    //     }
-    //     else
-    //     {
-    //         outfile << std::fixed << std::setprecision(3);
-    //     }
-    //     outfile << onlyBW_clone->GetParameter(i) << " ± " << onlyBW_clone->GetParError(i) << endl;
-    // }
-    // outfile << "Expol fitting parameters" << endl;
-    // onlyBW_clone->SetLineColor(kBlue);
-    // hsubtracted2->Fit("onlyBW_clone", "REBMS");
-    // double chi2ndf2 = onlyBW_clone->GetChisquare() / onlyBW_clone->GetNDF();
-    // cout << "Chi2/NDF2 is " << chi2ndf2 << endl;
-    // for (int i = 0; i < 9; i++)
-    // {
-    //     if (i == 0 || i == 3 || i == 6)
-    //     {
-    //         outfile << std::fixed << std::setprecision(0);
-    //     }
-    //     else
-    //     {
-    //         outfile << std::fixed << std::setprecision(3);
-    //     }
-    //     outfile << onlyBW_clone->GetParameter(i) << " ± " << onlyBW_clone->GetParError(i) << endl;
-    // }
-
     // Now lets fit the distribution
-    TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum2, 1.05, 2.20, 12);
+    TF1 *fit3BW = new TF1("fit3BW", BWsum, 1.05, 2.20, 9);
+    fit3BW->SetParameters(6646, 1.281, 0.156, 7547, 1.514, 0.080, 4553, 1.692, 0.211); // expol 1
+    // fit3BW->SetParameters(14233, 1.283, 0.211, 9206, 1.512, 0.090, 8208, 1.683, 0.266); // Boltzmann
+    fit3BW->SetLineStyle(2);
+    hsubtracted1->Fit("fit3BW", "REBMS");
+
+    double chi2ndf1 = fit3BW->GetChisquare() / fit3BW->GetNDF();
+    cout << "Chi2/NDF1 is " << chi2ndf1 << endl;
+    outfile << "Boltzmann fitting parameters" << endl;
+    for (int i = 0; i < 9; i++)
+    {
+        if (i == 0 || i == 3 || i == 6)
+        {
+            outfile << std::fixed << std::setprecision(0);
+        }
+        else
+        {
+            outfile << std::fixed << std::setprecision(3);
+        }
+        outfile << fit3BW->GetParameter(i) << " ± " << fit3BW->GetParError(i) << endl;
+    }
+
+    // fit3BW->SetLineColor(kBlue);
+    // hsubtracted2->Fit("fit3BW", "REBMS");
+    outfile << "Expol fitting parameters" << endl;
+    TF1 *fit4BW = new TF1("fit4BW", BWsum2, 1.05, 2.20, 12);
+    // fit4BW->SetParameters(3312, 1.218, 0.141, 3959, 1.305, 0.104, 8233, 1.513, 0.085, 4431, 1.694, 0.203); // expol 1
     vector<float> parameters = {3312, 1.218, 0.141, 3959, 1.305, 0.104, 8233, 1.513, 0.085, 4431, 1.694, 0.203};
     for (int i = 0; i < 12; i++)
     {
-        onlyBW_clone->SetParameter(i, parameters[i]);
-    }
-    onlyBW_clone->SetLineStyle(2);
-    hsubtracted1->Fit("onlyBW_clone", "REBMS");
-    double chi2ndf1 = onlyBW_clone->GetChisquare() / onlyBW_clone->GetNDF();
-    cout << "Chi2/NDF1 is " << chi2ndf1 << endl;
-    outfile << "Boltzmann fitting parameters" << endl;
-    for (int i = 0; i < 12; i++)
-    {
-        if (i == 0 || i == 3 || i == 6 || i == 9)
-        {
-            outfile << std::fixed << std::setprecision(0);
-        }
-        else
-        {
-            outfile << std::fixed << std::setprecision(3);
-        }
-        outfile << onlyBW_clone->GetParameter(i) << " ± " << onlyBW_clone->GetParError(i) << endl;
+        fit4BW->SetParameter(i, parameters[i]);
     }
 
-    outfile << "Expol fitting parameters" << endl;
-    onlyBW_clone->SetLineColor(kBlue);
-    hsubtracted2->Fit("onlyBW_clone", "REBMS");
-    double chi2ndf2 = onlyBW_clone->GetChisquare() / onlyBW_clone->GetNDF();
+    fit4BW->SetLineStyle(2);
+    fit4BW->SetLineColor(kBlue);
+    hsubtracted2->Fit("fit4BW", "REBMS");
+
+    double chi2ndf2 = fit4BW->GetChisquare() / fit4BW->GetNDF();
     cout << "Chi2/NDF2 is " << chi2ndf2 << endl;
+
     for (int i = 0; i < 12; i++)
     {
         if (i == 0 || i == 3 || i == 6 || i == 9)
@@ -146,10 +118,8 @@ void plot_ressub()
         {
             outfile << std::fixed << std::setprecision(3);
         }
-        outfile << onlyBW_clone->GetParameter(i) << " ± " << onlyBW_clone->GetParError(i) << endl;
+        outfile << fit4BW->GetParameter(i) << " ± " << fit4BW->GetParError(i) << endl;
     }
-
-    TF1 *clone2 = (TF1 *)onlyBW_clone->Clone("clone2");
 
     TCanvas *c = new TCanvas("", "", 720, 720);
     SetCanvasStyle(c, 0.145, 0.03, 0.05, 0.14);
@@ -167,12 +137,12 @@ void plot_ressub()
     hsubtracted2->SetMarkerSize(1.0);
     hsubtracted2->SetStats(0);
     hsubtracted2->Draw("pe SAME");
-    hsubtracted3->SetLineColor(kGreen);
-    hsubtracted3->SetMarkerColor(kGreen);
-    hsubtracted3->SetStats(0);
+    // hsubtracted3->SetLineColor(kGreen);
+    // hsubtracted3->SetMarkerColor(kGreen);
+    // hsubtracted3->SetStats(0);
     // hsubtracted3->Draw("pe SAME");
 
-    TLegend *leg = new TLegend(0.45, 0.55, 0.9, 0.75);
+    TLegend *leg = new TLegend(0.5, 0.55, 0.9, 0.75);
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
     leg->SetTextFont(42);
@@ -181,10 +151,8 @@ void plot_ressub()
     // leg->AddEntry(hsubtracted2, "3rBW + Expol1", "lpe");
     leg->AddEntry(hsubtracted1, "3rBW + Expol1", "lpe");
     leg->AddEntry(hsubtracted2, "4rBW + Expol1", "lpe");
-    clone2->SetLineColor(kRed);
-    leg->AddEntry(clone2, Form("#chi^{2}/ndf = %.2f", chi2ndf1), "l");
-    onlyBW_clone->SetLineColor(kBlue);
-    leg->AddEntry(onlyBW_clone, Form("#chi^{2}/ndf = %.2f", chi2ndf2), "l");
+    leg->AddEntry(fit3BW, Form("#chi^{2}/ndf = %.2f", chi2ndf1), "l");
+    leg->AddEntry(fit4BW, Form("#chi^{2}/ndf = %.2f", chi2ndf2), "l");
     leg->Draw("same");
 
     TLegend *leg2 = new TLegend(0.25, 0.75, 0.9, 0.90);

@@ -56,25 +56,25 @@ void residual_bkg_comparison()
     hinvMass->SetMarkerSize(0.62);
     hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
     hinvMass->Draw();
-    float fitrange_low = 1.05;
-    float fitrange_high = 2.30;
-    TF1 *expol = new TF1("expol", exponential_bkg_3, fitrange_low, fitrange_high, 4);
-    // expol->SetParameters(617042.324, -0.069, 2.709, 1.027); // 1.02 - 2.20
-    // expol->SetParameters(1375426.548, 0.147, 3.544, 0.806); // 1.05 - 2.20
-    expol->SetParameters(904279.119, 0.047, 3.135, 0.941); // 1.05 - 2.30
-    // expol->SetParameters(5.62894e+05, -9.27599e-02, 2.60563e+00, 1.07645e+00); // 1.00 - 2.20
-    // expol->SetParameters(1.34241e+06, 1.58099e-01, 3.49088e+00, 8.40530e-01);  // 1.10 - 2.20
-    // expol->SetParameters(5.72804e+05, -8.62894e-02, 2.64582e+00, 1.09212e+00); // 1.02 - 2.30
-    // expol->SetParameters(5.38386e+05, -1.01490e-01, 2.60553e+00, 1.15508e+00); // 1.02 - 2.40
-    // expol->SetParameters(5.13488e+05, -1.12616e-01, 2.68930e+00, 1.22087e+00); // 1.02 - 2.50
-    expol->SetLineWidth(2);
-    // expol->SetLineStyle(2);
-    expol->Draw("same");
+    float fitrange_low = 1.02;
+    float fitrange_high = 2.20;
+    // TF1 *expol = new TF1("expol", exponential_bkg_3, fitrange_low, fitrange_high, 4);
+    // // expol->SetParameters(617042.324, -0.069, 2.709, 1.027); // 1.02 - 2.20
+    // // expol->SetParameters(1375426.548, 0.147, 3.544, 0.806); // 1.05 - 2.20
+    // expol->SetParameters(904279.119, 0.047, 3.135, 0.941); // 1.05 - 2.30
+    // // expol->SetParameters(5.62894e+05, -9.27599e-02, 2.60563e+00, 1.07645e+00); // 1.00 - 2.20
+    // // expol->SetParameters(1.34241e+06, 1.58099e-01, 3.49088e+00, 8.40530e-01);  // 1.10 - 2.20
+    // // expol->SetParameters(5.72804e+05, -8.62894e-02, 2.64582e+00, 1.09212e+00); // 1.02 - 2.30
+    // // expol->SetParameters(5.38386e+05, -1.01490e-01, 2.60553e+00, 1.15508e+00); // 1.02 - 2.40
+    // // expol->SetParameters(5.13488e+05, -1.12616e-01, 2.68930e+00, 1.22087e+00); // 1.02 - 2.50
+    // expol->SetLineWidth(2);
+    // // expol->SetLineStyle(2);
+    // expol->Draw("same");
 
     TF1 *boltzmann = new TF1("boltzmann", Boltzmann_bkg_1, fitrange_low, fitrange_high, 3);
-    // boltzmann->SetParameters(770718.278, 0.592, 4.494); // 1.02 - 2.20
+    boltzmann->SetParameters(770718.278, 0.592, 4.494); // 1.02 - 2.20
     // boltzmann->SetParameters(708544.710, 0.665, 4.406); // 1.05 - 2.20
-    boltzmann->SetParameters(690831.678, 0.685, 4.536); // 1.05 - 2.30
+    // boltzmann->SetParameters(690831.678, 0.685, 4.536); // 1.05 - 2.30
     // boltzmann->SetParameters(8.43199e+05, 5.21042e-01, 4.55467e+00); // 1.00 - 2.20
     // boltzmann->SetParameters(6.78135e+05, 7.17350e-01, 4.27840e+00); // 1.10 - 2.20
     // boltzmann->SetParameters(7.57609e+05, 6.05557e-01, 4.59917e+00); // 1.02 - 2.30
@@ -86,15 +86,15 @@ void residual_bkg_comparison()
     boltzmann->Draw("same");
 
     TF1 *expol_pol1 = new TF1("expol_pol1", expol_chkstar, fitrange_low, fitrange_high, 4);
-    // expol_pol1->SetParameters(385.461, -0.059, 10.158, -2.758); // 1.02 - 2.20
+    expol_pol1->SetParameters(385.461, -0.059, 10.158, -2.758); // 1.02 - 2.20
     // expol_pol1->SetParameters(440.224, -0.007, 10.301, -2.882); // 1.05 - 2.20
-    expol_pol1->SetParameters(460.899, 0.004, 10.356, -2.952); // 1.05 - 2.30
+    // expol_pol1->SetParameters(460.899, 0.004, 10.356, -2.952); // 1.05 - 2.30
     // expol_pol1->SetParameters(3.65735e+02, -7.73484e-02, 1.01066e+01, -2.71538e+00); // 1.00 - 2.20
     // expol_pol1->SetParameters(4.09960e+02, -3.82645e-02, 1.02214e+01, -2.81221e+00); // 1.10 - 2.20
     // expol_pol1->SetParameters(4.01343e+02, -5.58932e-02, 1.01986e+01, -2.82765e+00); // 1.02 - 2.30
     // expol_pol1->SetParameters(4.40388e+02, -4.88387e-02, 1.03002e+01, -2.99961e+00); // 1.02 - 2.40
     // expol_pol1->SetParameters(5.01609e+02, -3.62839e-02, 1.04606e+01, -3.24896e+00); // 1.02 - 2.50
-    expol_pol1->SetLineColor(8);
+    expol_pol1->SetLineColor(2);
     expol_pol1->SetLineWidth(2);
     // expol_pol1->SetLineStyle(4);
     expol_pol1->Draw("same");
@@ -106,7 +106,7 @@ void residual_bkg_comparison()
     leg->SetBorderSize(0);
     leg->AddEntry((TObject *)0, Form("Fit range: %.2f - %.2f GeV/c^{2}", fitrange_low, fitrange_high), "");
     leg->AddEntry(hinvMass, "Data", "lpe");
-    leg->AddEntry(expol, "Exponential function", "l");
+    // leg->AddEntry(expol, "Exponential function", "l");
     leg->AddEntry(boltzmann, "Boltzmann function", "l");
     leg->AddEntry(expol_pol1, "Expol 1 function", "l");
     leg->Draw("same");

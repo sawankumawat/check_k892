@@ -315,11 +315,11 @@ void kstar()
 
         //**Calculation of significance and storing chi2 and sig in respective histograms*****************************************************
 
-        bmin = hfsig->GetXaxis()->FindBin(masspdg - 2 * widthpdg);
-        bmax = hfsig->GetXaxis()->FindBin(masspdg + 2 * widthpdg);
+        bmin = hfsig->GetXaxis()->FindBin(masspdg - 3 * widthpdg);
+        bmax = hfsig->GetXaxis()->FindBin(masspdg + 3 * widthpdg);
 
+        significance_num = (fitFcn2->Integral(masspdg - 3 * widthpdg, masspdg + 3 * widthpdg)) / (binwidth_file);
         significance_den = TMath::Sqrt(fHistTotal[ip]->Integral(bmin, bmax));
-        significance_num = (fitFcn2->Integral(masspdg - 2 * widthpdg, masspdg + 2 * widthpdg)) / (binwidth_file);
 
         ratio = significance_num / significance_den; // significance of signal
 

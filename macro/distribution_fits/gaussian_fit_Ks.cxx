@@ -24,7 +24,8 @@ void gaussian_fit_Ks()
     gStyle->SetOptStat(0);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     // gStyle->SetOptFit(1111);
-    gStyle->SetOptFit(11);
+    // gStyle->SetOptFit(11);
+    gStyle->SetOptFit(0);
 
     int rebin = 1;
     // configurables *********************
@@ -65,6 +66,8 @@ void gaussian_fit_Ks()
     // canvas_style(c1, pad1Size, pad2Size);
     // c1->cd(1);
     SetHistoStyle_temp(hInvMass, 1, 20, binwidth);
+    hInvMass->GetYaxis()->SetMaxDigits(3);
+
     // hInvMass->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     // hInvMass->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     // hInvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
@@ -113,7 +116,8 @@ void gaussian_fit_Ks()
     fit2->SetLineWidth(2);
     // fit2->Draw("SAME");
     // legend
-    TLegend *lp3 = DrawLegend(0.17, 0.4, 0.52, 0.70);
+    // TLegend *lp3 = DrawLegend(0.17, 0.4, 0.52, 0.70);
+    TLegend *lp3 = DrawLegend(0.65, 0.60, 0.92, 0.92);
     lp3->SetFillStyle(0);
     lp3->SetTextFont(42);
     lp3->AddEntry(hInvMass, "Data", "pe");
@@ -126,19 +130,20 @@ void gaussian_fit_Ks()
     cout << "The value and error of alpha Left is: " << fit3->GetParameter(3) << " " << fit3->GetParError(3) << endl;
     cout << "The value and error of alpha right is : " << fit3->GetParameter(5) << " " << fit3->GetParError(5) << endl;
 
-    // lets calculate the no. of Ks pairs in the signal region in +- 2 sigma, 3 sigma, 4 sigma, and 5 sigma
-    cout << "binwidth: " << binwidth << "\n";
-    double allks = hInvMass->Integral();
-    double Npairs2sigma = fit3->Integral(ksmass - 2 * kswidth, ksmass + 2 * kswidth) / binwidth;
-    double Npairs3sigma = fit3->Integral(ksmass - 3 * kswidth, ksmass + 3 * kswidth) / binwidth;
-    double Npairs4sigma = fit3->Integral(ksmass - 4 * kswidth, ksmass + 4 * kswidth) / binwidth;
-    double Npairs5sigma = fit3->Integral(ksmass - 5 * kswidth, ksmass + 5 * kswidth) / binwidth;
-    cout << "No. and percentage of Ks in +- 2 sigma: " << Npairs2sigma << " " << Npairs2sigma / allks << "\n"
-         << "No. and percentage of Ks in +- 3 sigma: " << Npairs3sigma << " " << Npairs3sigma / allks << "\n"
-         << "No. and percentage of Ks in +- 4 sigma: " << Npairs4sigma << " " << Npairs4sigma / allks << "\n"
-         << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n";
+    // // lets calculate the no. of Ks pairs in the signal region in +- 2 sigma, 3 sigma, 4 sigma, and 5 sigma
+    // cout << "binwidth: " << binwidth << "\n";
+    // double allks = hInvMass->Integral();
+    // double Npairs2sigma = fit3->Integral(ksmass - 2 * kswidth, ksmass + 2 * kswidth) / binwidth;
+    // double Npairs3sigma = fit3->Integral(ksmass - 3 * kswidth, ksmass + 3 * kswidth) / binwidth;
+    // double Npairs4sigma = fit3->Integral(ksmass - 4 * kswidth, ksmass + 4 * kswidth) / binwidth;
+    // double Npairs5sigma = fit3->Integral(ksmass - 5 * kswidth, ksmass + 5 * kswidth) / binwidth;
+    // cout << "No. and percentage of Ks in +- 2 sigma: " << Npairs2sigma << " " << Npairs2sigma / allks << "\n"
+    //      << "No. and percentage of Ks in +- 3 sigma: " << Npairs3sigma << " " << Npairs3sigma / allks << "\n"
+    //      << "No. and percentage of Ks in +- 4 sigma: " << Npairs4sigma << " " << Npairs4sigma / allks << "\n"
+    //      << "No. and percentage of Ks in +- 5 sigma: " << Npairs5sigma << " " << Npairs5sigma / allks << "\n";
 
-    TLegend *lp2 = DrawLegend(0.16, 0.72, 0.42, 0.91);
+    // TLegend *lp2 = DrawLegend(0.16, 0.72, 0.42, 0.91);
+    TLegend *lp2 = DrawLegend(0.16, 0.62, 0.42, 0.91);
     lp2->SetTextSize(0.035);
     lp2->SetTextFont(42);
     lp2->SetFillStyle(0);
@@ -157,13 +162,14 @@ void gaussian_fit_Ks()
     // st->SetY2NDC(0.95);
     // st->Draw("same");
 
-    TLegend *lp1 = DrawLegend(0.52, 0.35, 0.9, 0.45);
+    TLegend *lp1 = DrawLegend(0.48, 0.49, 0.9, 0.6);
     lp1->SetFillStyle(0);
+    lp1->SetBorderSize(0);
     lp1->SetTextFont(42);
-    lp1->SetTextSize(0.03);
+    lp1->SetTextSize(0.033);
     lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1), fit3->GetParError(1)), "");
     lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2), fit3->GetParError(2)), "");
-    // lp1->Draw("same");
+    lp1->Draw("same");
 
     // // lets calculate the fit to the data ratio
     // c1->cd(2);
@@ -193,7 +199,7 @@ void gaussian_fit_Ks()
     TFile *foutput = new TFile(Form("saved/output_rebin%d.root", rebin), "recreate");
     if (saveplots)
     {
-        c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.png", rebin));
+        c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.pdf", rebin));
     }
     c1->Write("ks_fit");
 
@@ -585,12 +591,14 @@ TF1 *fitgauspol2(TH1 *h, double ksmass, double kswidth)
 
 TF1 *CB(TH1 *h, double ksmass, double kswidth)
 {
-    TF1 *fit = new TF1("fit", CrystalBall, ksmass - 2.5 * kswidth, ksmass + 3.0 * kswidth, 5);
+    TF1 *fit = new TF1("fit", CrystalBall, ksmass - 2.5 * kswidth, ksmass + 3.5 * kswidth, 5);
     fit->SetParNames("Norm", "Mean", "Sigma", "Alpha", "n");
-    fit->SetParameter(0, 8.1e7);
+    fit->SetParameter(0, 6.9e8);
     fit->SetParameter(1, ksmass);
     fit->SetParameter(2, kswidth);
-    fit->SetLineColor(1);
+    fit->SetParameter(3, 1.5);
+    fit->SetParameter(4, 5.0);
+    fit->SetLineColor(2);
     fit->SetLineWidth(2);
     h->Fit(fit, "REBMS0");
     // fit->Draw("SAME");

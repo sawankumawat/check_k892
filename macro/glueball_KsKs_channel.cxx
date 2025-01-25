@@ -21,7 +21,7 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -207,7 +207,7 @@ void glueball_KsKs_channel()
             hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
             hfsig->Draw("e");
-            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
             // gPad->Update();
             // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
@@ -222,6 +222,17 @@ void glueball_KsKs_channel()
             // }
             // gPad->Modified(); // Necessary to update the canvas with the new text size
             // gPad->Update();
+            TLegend *lp2 = DrawLegend(0.6, 0.63, 0.92, 0.91);
+            lp2->SetTextSize(0.035);
+            lp2->SetTextFont(42);
+            lp2->SetFillStyle(0);
+            lp2->AddEntry((TObject *)0, "ALICE", "");
+            lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+            lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
+            lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+            lp2->AddEntry((TObject *)0, Form("#it{p}_{T}: %.0f - %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
+            lp2->Draw("same");
+
             if (save_invmass_distributions)
             {
                 c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
@@ -268,18 +279,20 @@ void glueball_KsKs_channel()
             if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 hbkg_nopeak->Draw("BAR same");
 
-            TLegend *leg = new TLegend(0.2451253, 0.2054598, 0.5445682, 0.3908046);
+            TLegend *leg = new TLegend(0.1851253, 0.2454598, 0.5445682, 0.3908046);
             leg->SetFillStyle(0);
             leg->SetBorderSize(0);
             leg->SetTextFont(42);
-            leg->SetTextSize(0.04);
-            leg->AddEntry(fHistTotal[ip], "Signal", "lpe");
-            string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Rotated bkg";
+            leg->SetTextSize(0.035);
+            leg->AddEntry(fHistTotal[ip], "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
+            string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same event rotational background";
             leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
             if (kResBkg == "MIX")
                 leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
             leg->Draw();
-            t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            lp2->Draw("same");
+
+            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             if (save_invmass_distributions)
             {
                 c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", pT_bins[ip], pT_bins[ip + 1], kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
@@ -367,20 +380,20 @@ void glueball_KsKs_channel()
         hmult->Draw();
         c3->SaveAs((outputQAfolder_str + "/hglueball_multiplicity_percentile." + koutputtype).c_str());
 
-        // // vtz distribution plot
-        // TH1F *hvtz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hVertexZRec").c_str());
-        // if (hvtz == nullptr)
-        // {
-        //     cout << "Vertex Z distribution not found" << endl;
-        //     return;
-        // }
-        // c3->Clear();
-        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        // SetHistoQA(hvtz);
-        // hvtz->GetYaxis()->SetTitle("Counts");
-        // hvtz->GetXaxis()->SetTitle("Vertex Z (cm)");
-        // hvtz->Draw();
-        // c3->SaveAs((outputQAfolder_str + "/hglueball_vtz." + koutputtype).c_str());
+        // vtz distribution plot
+        TH1F *hvtz = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hVertexZRec").c_str());
+        if (hvtz == nullptr)
+        {
+            cout << "Vertex Z distribution not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hvtz);
+        hvtz->GetYaxis()->SetTitle("Counts");
+        hvtz->GetXaxis()->SetTitle("Vertex Z (cm)");
+        hvtz->Draw();
+        c3->SaveAs((outputQAfolder_str + "/hglueball_vtz." + koutputtype).c_str());
 
         // // mass correlation plot
         // TH2F *hmasscorr = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/hmasscorrelation").c_str());
@@ -791,8 +804,8 @@ void glueball_KsKs_channel()
         c3->SaveAs((outputQAfolder_str + "/kshort_rapidity." + koutputtype).c_str());
 
         // TPC dE/dx plot
-        gPad->SetLogx();
-        gPad->SetLogz();
+        // gPad->SetLogx();
+        // gPad->SetLogz();
         TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
         if (hTPCenergyloss == nullptr)
         {
@@ -810,7 +823,7 @@ void glueball_KsKs_channel()
         c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
 
         // Number of ks produced in an event plot
-        gPad->SetLogy();
+        // gPad->SetLogy();
         TH1F *hNofKshort = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/NksProduced").c_str());
         if (hNofKshort == nullptr)
         {
@@ -818,14 +831,16 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
+        gPad->SetLogy();
         SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
         SetHistoQA(hNofKshort);
+        // hNofKshort->Scale(1.0 / hNofKshort->Integral());
         hNofKshort->GetYaxis()->SetTitle("Counts");
-        hNofKshort->GetXaxis()->SetTitle("N_{K_{s}}/Event");
+        hNofKshort->GetXaxis()->SetTitle("Number of K^{0}_{s} produced");
         hNofKshort->GetYaxis()->SetMaxDigits(3);
-        hNofKshort->SetMaximum(100 * hNofKshort->GetMaximum());
+        hNofKshort->SetMaximum(hNofKshort->GetMaximum() * 100);
         hNofKshort->Draw("HIST text");
-        cout << "Percentage of events in which > 1 Ks are produced " << hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100 << endl;
+        // cout << "Percentage of events in which > 1 Ks are produced " << hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100 << endl;
         c3->SaveAs((outputQAfolder_str + "/NKs_produced." + koutputtype).c_str());
 
         // multiplicity distribution FT0M
@@ -855,11 +870,11 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetCanvasStyle(c3, 0.16, 0.12, 0.05, 0.15);
         SetHistoQA(hMassCorr_ks_lambda_before);
         hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
         hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.6);
         hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
         hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
         hMassCorr_ks_lambda_before->Draw("colz");
@@ -873,11 +888,11 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
+        SetCanvasStyle(c3, 0.16, 0.12, 0.05, 0.15);
         SetHistoQA(hMassCorr_ks_lambda_after);
         hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
         hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.3);
+        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.6);
         hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
         hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
         hMassCorr_ks_lambda_after->Draw("colz");

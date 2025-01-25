@@ -4,12 +4,14 @@
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
-const string koutputtype = "png"; // pdf, eps
+const string koutputtype = "pdf"; // pdf, eps
 ////********************************************************************************************
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "strangeness_tutorial";
+// const string kfoldername_temp = "higher-mass-resonances";
 const string kvariation = ""; // change the variation here
+// const string kvariation = "_6SigmaKs"; // change the variation here
 // const string kvariation = "_mass_correlation"; // change the variation here
 // const string kvariation = "_pileup_cut"; // change the variation here
 // const string kvariation = "_ks_masscut3"; // change the variation here
@@ -68,7 +70,7 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "253148.root"; // Medium data file (2-6 ks mass cuts, KK channel not present)
 // const string kDataFilename_temp2 = "254232.root"; // Medium data file (mult dist, dE/dx tpc, pileup rejection)
 const string kDataFilename_temp2 = "260782.root"; // Full dataset (corrected mass correlation plot)
-// const string kDataFilename_temp2 = "294059.root"; // Medium (1 run number only)
+// const string kDataFilename_temp2 = "328575.root"; // Small (for check only)
 const string kMCFilename_temp = "211346.root";    // MC file // temporary since injected MC is not available
 #endif
 
@@ -90,6 +92,9 @@ const int kcanvasdivide[2] = {klowerpad, kupperpad};
 float masspdg = 0.895;  // in GeV/c^2
 float widthpdg = 0.047; // in 1 sigma GeV/c^2
 
+float f980Mass = 0.990;
+float f980MassErr = 0.020;
+float f980Width = 0.055;
 float f1270Mass = 1.275;
 float f1270MassErr = 8e-4;
 float f1270Width = 0.187;

@@ -25,7 +25,7 @@ void gaussian_fit_Ks2()
 {
     // configurables *********************
     bool saveplots = false;
-    bool showpt_study = true;
+    bool showpt_study = false;
     gStyle->SetOptStat(1110);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     gStyle->SetOptFit(1111);
@@ -635,11 +635,13 @@ TF1 *fitgauspol2(TH1 *h, double ksmass, double kswidth)
 
 TF1 *CB(TH1 *h, double ksmass, double kswidth)
 {
-    TF1 *fit = new TF1("fit", CrystalBall, ksmass - 2.5 * kswidth, ksmass + 3.0 * kswidth, 5);
+    TF1 *fit = new TF1("fit", CrystalBall, ksmass - 2.5 * kswidth, ksmass + 3.5 * kswidth, 5);
     fit->SetParNames("Norm", "Mean", "Sigma", "Alpha", "n");
-    fit->SetParameter(0, 5e8); // if rebin == 3, then 5e8 else 8e7
+    fit->SetParameter(0, 6.9e9); // if rebin == 3, then 5e8 else 8e7
     fit->SetParameter(1, ksmass);
     fit->SetParameter(2, kswidth);
+    fit->SetParameter(3, 1.5);
+    fit->SetParameter(4, 5.0);
     fit->SetLineColor(1);
     fit->SetLineWidth(2);
     h->Fit(fit, "REBMS0");

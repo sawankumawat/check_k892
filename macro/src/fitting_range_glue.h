@@ -47,7 +47,7 @@ const int pt_end = Npt;
 #ifdef KsKschannel
 const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV
-    // {2.20, 2.30}, // 0.0-30.0 GeV/c
+    {2.20, 2.30}, // 0.0-30.0 GeV/c
     // {1.00, 1.10}, // 0.0-1.0 GeV/c
     {2.50, 2.60}, // 1.0-2.0 GeV/c
     {2.50, 2.60}, // 2.0-3.0 GeV/c

@@ -63,13 +63,13 @@ void glueball_fit_4rBW()
         cout << "Error opening file" << endl;
         return;
     }
-
-// #define b_exponential
 // #define b_boltzman
-#define b_massdepwidth
-// #define b_expol1
-#define residual_subtracted
-#define doublepanelplot
+// #define b_modified_Boltzmann
+    #define b_massdepwidth
+    // #define b_expol1
+
+    // #define residual_subtracted
+    // #define doublepanelplot
 
     for (int ipt = 0; ipt < Npt; ipt++)
     {
@@ -86,8 +86,8 @@ void glueball_fit_4rBW()
         hinvMass->Rebin(2);
         double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
         hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
-        hinvMass->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
-        hinvMass->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/c^{2}", binwidthfile));
+        hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
+        hinvMass->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/#it{c}^{2}", binwidthfile));
         hinvMass->Draw();
         TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
         TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
@@ -100,14 +100,14 @@ void glueball_fit_4rBW()
 // // // // **************** For BW sum with expol HERA ****************************
 
 // // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
-#ifdef b_exponential
+#ifdef b_modified_Boltzmann
 
-        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.20, 16); // expol 3
-        string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
-        // for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
-        // {
-        //     BEexpol->SetParName(i, parnames[i].c_str());
-        // }
+        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.25, 16); // expol 3
+        string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
+        for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
+        {
+            BEexpol->SetParName(i, parnames[i].c_str());
+        }
 
         // double parameters[] = {8384, f1270Mass, f1270Width, 8000, a1320Mass, a1320Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
         double parameters[] = {6000, f1270Mass, f1270Width, 6000, a1320Mass, a1320Width, 8000, f1525Mass, f1525Width, 6000, f1710Mass, f1710Width};
@@ -140,11 +140,13 @@ void glueball_fit_4rBW()
         // BEexpol->SetParameter(size_fitparams + 3, 0.9221);   // 1.098     // Free
 
         // BEexpol->FixParameter(1, f1270Mass);
-        // BEexpol->FixParameter(2, f1270Width);
         // BEexpol->FixParameter(4, a1320Mass);
-        // BEexpol->FixParameter(5, a1320Width);
         // BEexpol->FixParameter(7, f1525Mass);
+
+        // BEexpol->FixParameter(2, f1270Width);
+        // BEexpol->FixParameter(5, a1320Width);
         // BEexpol->FixParameter(8, f1525Width);
+
         // BEexpol->FixParameter(10, f1710Mass);
         // BEexpol->FixParameter(11, f1710Width);
 
@@ -157,7 +159,7 @@ void glueball_fit_4rBW()
         //     cout << "Fit failed or call limit !!!!!!!" << endl;
         //     fitstatus = "Failed";
         // }
-        fitResultptr->Print("V");
+        // fitResultptr->Print("V");
 
         double *obtained_parameters = BEexpol->GetParameters();
         TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -209,7 +211,7 @@ void glueball_fit_4rBW()
             singlefits[i]->Draw("same");
         }
 
-          TLegend *ltemp = new TLegend(0.25, 0.55, 0.55, 0.87);
+        TLegend *ltemp = new TLegend(0.25, 0.55, 0.55, 0.87);
         ltemp->SetFillStyle(0);
         ltemp->SetBorderSize(0);
         ltemp->SetTextFont(42);
@@ -217,10 +219,10 @@ void glueball_fit_4rBW()
         ltemp->AddEntry((TObject *)0, "", "");
         ltemp->AddEntry((TObject *)0, "", "");
         ltemp->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
-        ltemp->AddEntry(BEexpol, "3rBW + Residual BG", "l");
+        ltemp->AddEntry(BEexpol, "4rBW + Residual BG", "l");
         ltemp->AddEntry(expol, "Residual BG", "l");
         ltemp->AddEntry(singlefits[0], "f_{2}(1270)", "l");
-        ltemp->AddEntry(singlefits[2], "a_{2}^{0}(1710)", "l");
+        ltemp->AddEntry(singlefits[2], "a_{2}^{0}(1320)", "l");
         ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
         ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
         ltemp->Draw("same");
@@ -254,9 +256,9 @@ void glueball_fit_4rBW()
         // TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.20, 16); // expol 3
         // TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_expol1, 1.05, 2.20, 16); // expol 3
 
-        TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.20, 16); // expol 3
+        TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.25, 16); // expol 3
 
-        string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
+        string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
         for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
         {
             BEexpol->SetParName(i, parnames[i].c_str());
@@ -288,12 +290,14 @@ void glueball_fit_4rBW()
         BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Fix
         BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
 
-        // BEexpol->FixParameter(1, f1270Mass);
-        // BEexpol->FixParameter(2, f1270Width);
-        // BEexpol->FixParameter(4, a1320Mass);
-        // BEexpol->FixParameter(5, a1320Width);
-        // BEexpol->FixParameter(7, f1525Mass);
-        // BEexpol->FixParameter(8, f1525Width);
+        BEexpol->FixParameter(1, f1270Mass);
+        BEexpol->FixParameter(4, a1320Mass);
+        BEexpol->FixParameter(7, f1525Mass);
+
+        BEexpol->FixParameter(2, f1270Width);
+        BEexpol->FixParameter(5, a1320Width);
+        BEexpol->FixParameter(8, f1525Width);
+
         // BEexpol->FixParameter(10, f1710Mass);
         // BEexpol->FixParameter(11, f1710Width);
 
@@ -307,7 +311,7 @@ void glueball_fit_4rBW()
         //     cout << "Fit failed or call limit !!!!!!!" << endl;
         //     fitstatus = "Failed";
         // }
-        fitResultptr->Print("V");
+        // fitResultptr->Print("V");
 
         double *obtained_parameters = BEexpol->GetParameters();
         TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -672,7 +676,7 @@ void glueball_fit_4rBW()
         ptstats->SetY1NDC(0.4);
         ptstats->SetY2NDC(0.92);
         ptstats->Draw("same");
-        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f.pdf", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
+        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f.png", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
 
         double fitnorm1525 = BEexpol->GetParameter(6);
         double fitnorm1525_err = BEexpol->GetParError(6);
@@ -724,30 +728,37 @@ void glueball_fit_4rBW()
         file << std::fixed << std::setprecision(1);
         file << fitmass1525 * 1000.0 << " \\pm " << fitmass1525_err * 1000.0 << endl;
         file << fitwidth1525 * 1000.0 << " \\pm " << fitwidth1525_err * 1000.0 << endl;
+
+        // f0(1710) resonance
+        file << endl;
+        file << std::fixed << std::setprecision(1);
+        file << "Chi2/NDF" << endl;
+        file << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
         file << std::fixed << std::setprecision(0);
-        file << fitnorm1710 << " \\pm " << fitnorm1710_err << endl;
+        file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
         file << std::fixed << std::setprecision(1);
-        file << fitmass1710 * 1000.0 << " \\pm " << fitmass1710_err * 1000.0 << endl;
-        file << fitwidth1710 * 1000.0 << " \\pm " << fitwidth1710_err * 1000.0 << endl;
-        file << std::fixed << std::setprecision(1);
-        file << significance << endl;
-        file << chi2ndf << endl;
-        file << endl;
-        file << endl;
-        file << "residual bkg parameters" << endl;
-        file << std::fixed << std::setprecision(3);
-        file << resdual_bkg_par1 << ", " << resdual_bkg_par2 << ", " << resdual_bkg_par3 << ", " << resdual_bkg_par4 << endl;
-        file << endl;
-        file << endl;
-        file << std::fixed << std::setprecision(4);
-        file << "fit masses" << endl;
-        file << fitmass1270 << ", " << fitmass1320 << ", " << fitmass1525 << ", " << fitmass1710 << endl;
-        file << "fit masses errors" << endl;
-        file << fitmass1270_err << ", " << fitmass1320_err << ", " << fitmass1525_err << ", " << fitmass1710_err << endl;
-        file << "fit widths" << endl;
-        file << fitwidth1270 << ", " << fitwidth1320 << ", " << fitwidth1525 << ", " << fitwidth1710 << endl;
-        file << "fit widths errors" << endl;
-        file << fitwidth1270_err << ", " << fitwidth1320_err << ", " << fitwidth1525_err << ", " << fitwidth1710_err << endl;
+        file << fitmass1710 * 1000.0 << " ± " << fitmass1710_err * 1000.0 << endl;
+        file << fitwidth1710 * 1000.0 << " ± " << fitwidth1710_err * 1000.0 << endl;
+
+        // file << std::fixed << std::setprecision(1);
+        // file << significance << endl;
+        // file << chi2ndf << endl;
+        // file << endl;
+        // file << endl;
+        // file << "residual bkg parameters" << endl;
+        // file << std::fixed << std::setprecision(3);
+        // file << resdual_bkg_par1 << ", " << resdual_bkg_par2 << ", " << resdual_bkg_par3 << ", " << resdual_bkg_par4 << endl;
+        // file << endl;
+        // file << endl;
+        // file << std::fixed << std::setprecision(4);
+        // file << "fit masses" << endl;
+        // file << fitmass1270 << ", " << fitmass1320 << ", " << fitmass1525 << ", " << fitmass1710 << endl;
+        // file << "fit masses errors" << endl;
+        // file << fitmass1270_err << ", " << fitmass1320_err << ", " << fitmass1525_err << ", " << fitmass1710_err << endl;
+        // file << "fit widths" << endl;
+        // file << fitwidth1270 << ", " << fitwidth1320 << ", " << fitwidth1525 << ", " << fitwidth1710 << endl;
+        // file << "fit widths errors" << endl;
+        // file << fitwidth1270_err << ", " << fitwidth1320_err << ", " << fitwidth1525_err << ", " << fitwidth1710_err << endl;
 
 #ifdef residual_subtracted
         // Now subtract the residual background and plot
@@ -803,7 +814,7 @@ void glueball_fit_4rBW()
         lat2.SetTextFont(42);
         // lat2.DrawLatex(0.20, 0.89, "KsKs unlike sign pairs");
         // lat2.DrawLatex(0.20, 0.85, "Residual background subtracted");
-        c2->SaveAs((savepath + "/rBWfit_residual_allfreeParams.pdf").c_str());
+        c2->SaveAs((savepath + "/rBWfit_residual_allfreeParams.png").c_str());
         // c2->Close();
 #endif
 
@@ -821,12 +832,12 @@ void glueball_fit_4rBW()
         hinvMass->GetXaxis()->SetTitleOffset(1.02);
         hinvMass->GetYaxis()->SetTitleOffset(0.8);
         hinvMass->GetYaxis()->CenterTitle(0);
-        // hinvMass->SetMarkerStyle(22);
+        hinvMass->GetXaxis()->SetRangeUser(1, 2.15);
         hinvMass->SetMarkerSize(0.8);
         hinvMass->SetLineColor(1);
         hinvMass->SetMarkerColor(1);
         hinvMass->SetStats(0);
-        hinvMass->SetMinimum(-100);
+        hinvMass->SetMinimum(-40000);
         hinvMass->SetMaximum(0.9e6);
         hinvMass->GetYaxis()->SetMaxDigits(4);
         hinvMass->GetYaxis()->SetNdivisions(506);
@@ -839,36 +850,36 @@ void glueball_fit_4rBW()
         onlyBW->SetNpx(1000);
         gPad->Update();
 
-        TArrow *arrow = new TArrow(0.2994429, 0.6609195, 0.2994429, 0.4482759, 0.02, "|>");
+        TArrow *arrow = new TArrow(0.3537604, 0.6235632, 0.3537604, 0.4137931, 0.02, "|>");
         arrow->SetNDC();
         // arrow->SetLineColor(1); // Set arrow color
         // arrow->SetFillColor(1); // Set arrow fill color
         arrow->SetLineWidth(2); // Set arrow width
         arrow->Draw();
 
-        TLatex *text1 = new TLatex(0.2994429, 0.6609195 + 0.05, "f_{2}(1270)/a_{2}^{0}(1320)");
+        TLatex *text1 = new TLatex(0.362117, 0.6724138, "f_{2}(1270)/a_{2}^{0}(1320)");
         text1->SetNDC();
         text1->SetTextSize(0.05);
         text1->SetTextAlign(22);
         text1->Draw("same");
 
-        TArrow *arrow2 = new TArrow(0.4256128, 0.5747126, 0.4256128, 0.3649425, 0.02, "|>");
+        TArrow *arrow2 = new TArrow(0.5125348, 0.5360345, 0.5125348, 0.3262644, 0.02, "|>");
         arrow2->SetNDC();
         arrow2->SetLineWidth(2);
         arrow2->Draw();
 
-        TLatex *text2 = new TLatex(0.4256128, 0.5747126 + 0.05, "f'_{2}(1525)");
+        TLatex *text2 = new TLatex(0.5097493, 0.5977011, "f'_{2}(1525)");
         text2->SetNDC();
         text2->SetTextSize(0.05);
         text2->SetTextAlign(22);
         text2->Draw("same");
 
-        TArrow *arrow3 = new TArrow(0.5473538, 0.4712644, 0.5473538, 0.2614943, 0.02, "|>");
+        TArrow *arrow3 = new TArrow(0.6601671, 0.3965517, 0.6601671, 0.1867816, 0.02, "|>");
         arrow3->SetNDC();
         arrow3->SetLineWidth(2);
         arrow3->Draw();
 
-        TLatex *text3 = new TLatex(0.5473538, 0.4712644 + 0.05, "f_{0}(1710)");
+        TLatex *text3 = new TLatex(0.6587744, 0.4281609, "f_{0}(1710)");
         text3->SetNDC();
         text3->SetTextSize(0.05);
         text3->SetTextAlign(22);
@@ -879,17 +890,23 @@ void glueball_fit_4rBW()
         leg->SetTextFont(42);
         leg->SetTextSize(0.06);
         leg->SetBorderSize(0);
-        leg->AddEntry(hinvMass, "pp #sqrt{s} = 13.6 TeV", "lpe");
+        leg->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
         leg->AddEntry(BEexpol, "4 BW + Residual BG", "l");
         leg->AddEntry(onlyBW, "Signal", "f");
         leg->AddEntry(expol, "Residual BG", "l");
         leg->Draw("same");
 
-        TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
-        text4->SetNDC();
-        text4->SetTextSize(0.06);
-        text4->SetTextFont(42);
-        text4->Draw("same");
+        // TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
+        // text4->SetNDC();
+        // text4->SetTextSize(0.06);
+        // text4->SetTextFont(42);
+        // text4->Draw("same");
+
+        TLatex lat4;
+        lat4.SetNDC();
+        lat4.SetTextSize(0.06);
+        lat4.SetTextFont(42);
+        lat4.DrawLatex(0.65, 0.80, "ALICE, work in progress");
 
         c1->cd(2);
         gPad->SetTickx(1);
@@ -898,6 +915,7 @@ void glueball_fit_4rBW()
         hsubtracted->GetXaxis()->SetLabelSize(0.04 / pad2Size);
         hsubtracted->GetYaxis()->SetLabelSize(0.04 / pad2Size);
         hsubtracted->GetYaxis()->SetNdivisions(504);
+        hsubtracted->GetXaxis()->SetRangeUser(1.0, 2.15);
         hsubtracted->SetStats(0);
         hsubtracted->SetMinimum(0);
         hsubtracted->SetMaximum(0.13e6);
@@ -905,19 +923,28 @@ void glueball_fit_4rBW()
         // hsubtracted->GetYaxis()->SetMaxDigits(10);
         hsubtracted->Draw("pe");
 
-        TLatex *text5 = new TLatex(0.55, 0.80, "Residual background subtraction");
-        text5->SetNDC();
-        text5->SetTextSize(0.06);
-        text5->SetTextFont(42);
-        text5->Draw("same");
+        // TLatex *text5 = new TLatex(0.55, 0.80, "Residual background subtraction");
+        // text5->SetNDC();
+        // text5->SetTextSize(0.06);
+        // text5->SetTextFont(42);
+        // text5->Draw("same");
+
+        TLatex lat5;
+        lat5.SetNDC();
+        lat5.SetTextSize(0.06);
+        lat5.SetTextFont(42);
+        lat5.DrawLatex(0.59, 0.80, "Residual background subtraction");
+        lat5.DrawLatex(0.69, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
+        lat5.DrawLatex(0.69, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
+        lat5.DrawLatex(0.69, 0.50, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
 
         for (int i = 0; i < 4; i++)
         {
             singlefits1[i]->Draw("same");
         }
         c1->Update();
-        // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.pdf");
-        c1->SaveAs((savepath + Form("/rBWfit_doublepanel_pt_%.2f_%.2f.pdf", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
+        // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
+        c1->SaveAs((savepath + Form("/rBWfit_doublepanel_pt_%.2f_%.2f.png", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
 
 #endif
 

@@ -114,10 +114,9 @@ void SetHistoQA(TH1 *h)
     h->GetXaxis()->SetTitleSize(0.05);
     h->GetXaxis()->SetTickLength(0.04);
     h->GetXaxis()->SetTitleOffset(1.2);
-    h->GetYaxis()->SetTitleOffset(1.7);
+    h->GetYaxis()->SetTitleOffset(1.3);
     // h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.015);
-    h->GetYaxis()->SetTitleOffset(0.8);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.045);
     h->GetYaxis()->SetTickLength(0.04);
@@ -125,6 +124,7 @@ void SetHistoQA(TH1 *h)
     h->GetYaxis()->SetTitleFont(42);
     h->GetXaxis()->CenterTitle(1);
     h->GetYaxis()->CenterTitle(1);
+    h->GetYaxis()->SetMaxDigits(3);
 }
 
 void SetGrapherrorStyle(TGraphErrors *gr)

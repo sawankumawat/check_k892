@@ -291,8 +291,8 @@ void kstar_sparse()
         bmin = hfsig->GetXaxis()->FindBin(masspdg - 2 * widthpdg);
         bmax = hfsig->GetXaxis()->FindBin(masspdg + 2 * widthpdg);
 
-        significance_den = TMath::Sqrt(fHistTotal[ip]->Integral(bmin, bmax));
         significance_num = (fitFcn2->Integral(masspdg - 2 * widthpdg, masspdg + 2 * widthpdg)) / (binwidth_file);
+        significance_den = TMath::Sqrt(fHistTotal[ip]->Integral(bmin, bmax));
 
         ratio = significance_num / significance_den; // significance of signal
 

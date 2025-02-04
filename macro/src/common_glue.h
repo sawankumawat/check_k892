@@ -4,7 +4,7 @@
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
-const string koutputtype = "pdf"; // pdf, eps
+const string koutputtype = "png"; // pdf, eps
 ////********************************************************************************************
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";

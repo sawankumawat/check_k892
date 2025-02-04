@@ -117,7 +117,8 @@ void gaussian_fit_Ks()
     // fit2->Draw("SAME");
     // legend
     // TLegend *lp3 = DrawLegend(0.17, 0.4, 0.52, 0.70);
-    TLegend *lp3 = DrawLegend(0.65, 0.60, 0.92, 0.92);
+    // TLegend *lp3 = DrawLegend(0.65, 0.60, 0.92, 0.92);
+    TLegend *lp3 = DrawLegend(0.6, 0.65, 0.9, 0.92);
     lp3->SetFillStyle(0);
     lp3->SetTextFont(42);
     lp3->AddEntry(hInvMass, "Data", "pe");
@@ -162,14 +163,14 @@ void gaussian_fit_Ks()
     // st->SetY2NDC(0.95);
     // st->Draw("same");
 
-    TLegend *lp1 = DrawLegend(0.48, 0.49, 0.9, 0.6);
+    TLegend *lp1 = DrawLegend(0.48, 0.52, 0.9, 0.63);
     lp1->SetFillStyle(0);
     lp1->SetBorderSize(0);
     lp1->SetTextFont(42);
     lp1->SetTextSize(0.033);
-    lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1), fit3->GetParError(1)), "");
-    lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2), fit3->GetParError(2)), "");
-    lp1->Draw("same");
+    lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1)*1000.0, fit3->GetParError(1)*1000.0), "");
+    lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2)*1000.0, fit3->GetParError(2)*1000.0), "");
+    // lp1->Draw("same");
 
     // // lets calculate the fit to the data ratio
     // c1->cd(2);
@@ -199,7 +200,7 @@ void gaussian_fit_Ks()
     TFile *foutput = new TFile(Form("saved/output_rebin%d.root", rebin), "recreate");
     if (saveplots)
     {
-        c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.pdf", rebin));
+        c1->SaveAs(Form("saved/gaussfit_Ks_rebin%d.png", rebin));
     }
     c1->Write("ks_fit");
 
@@ -757,8 +758,8 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullp
             fitpol2->SetLineStyle(2);
             fitpol2->SetLineWidth(2);
         }
-        fitCBleft->Draw("SAME");
-        fitCBright->Draw("SAME");
+        // fitCBleft->Draw("SAME");
+        // fitCBright->Draw("SAME");
         fitpol2->Draw("SAME");
 
         // TLegend *leg = new TLegend(0.17, 0.75, 0.5, 0.93);
@@ -766,9 +767,9 @@ TF1 *doubleCBpol2(TH1 *h, double *parameters, bool mainfit, TLegend *leg = nullp
         {
             SetLegendStyle(leg);
             leg->SetTextSize(legendsize);
-            leg->AddEntry(fit, "CB + pol2", "l");
-            leg->AddEntry(fitCBleft, "Left CB", "l");
-            leg->AddEntry(fitCBright, "Right CB", "l");
+            leg->AddEntry(fit, "Double CB + pol2", "l");
+            // leg->AddEntry(fitCBleft, "Left CB", "l");
+            // leg->AddEntry(fitCBright, "Right CB", "l");
             leg->AddEntry(fitpol2, "Polynomial 2", "l");
             leg->Draw("same");
         }

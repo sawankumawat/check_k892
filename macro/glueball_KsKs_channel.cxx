@@ -21,9 +21,9 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
-    const bool calculate_inv_mass = false;
-    const bool save_invmass_distributions = false;
+    const bool makeQAplots = false;
+    const bool calculate_inv_mass = true;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -42,8 +42,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    // gStyle->SetOptStat(1110);
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
+    // gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -197,8 +197,8 @@ void glueball_KsKs_channel()
             SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
             SetHistoQA(hfsig);
             hfsig->SetTitle(0);
-            hfsig->SetMarkerStyle(8);
-            hfsig->SetMarkerSize(0.5);
+            hfsig->SetMarkerStyle(20);
+            hfsig->SetMarkerSize(0.8);
             hfsig->GetYaxis()->SetMaxDigits(3);
             hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
@@ -256,11 +256,11 @@ void glueball_KsKs_channel()
                 }
             }
 
-            fHistTotal[ip]->SetMarkerStyle(8);
+            fHistTotal[ip]->SetMarkerStyle(20);
             fHistTotal[ip]->SetMarkerColor(kBlack);
-            fHistTotal[ip]->SetMarkerSize(0.5);
-            hfbkg->SetMarkerStyle(8);
-            hfbkg->SetMarkerSize(0.5);
+            fHistTotal[ip]->SetMarkerSize(0.8);
+            hfbkg->SetMarkerStyle(20);
+            hfbkg->SetMarkerSize(0.8);
             hfbkg->SetMarkerColor(kRed);
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
@@ -863,20 +863,22 @@ void glueball_KsKs_channel()
         // Mass correlation between lambda and Kshort
         gPad->SetLogx(0);
         gPad->SetLogz(0);
-        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_before").c_str());
+        gPad->SetLogy(0);
+        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after9").c_str());
         if (hMassCorr_ks_lambda_before == nullptr)
         {
             cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
             return;
         }
         c3->Clear();
-        SetCanvasStyle(c3, 0.16, 0.12, 0.05, 0.15);
+        SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
         SetHistoQA(hMassCorr_ks_lambda_before);
         hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
         hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
         hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.6);
         hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
         hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_before->GetZaxis()->SetMaxDigits(3);
         hMassCorr_ks_lambda_before->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
 
@@ -888,13 +890,14 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
-        SetCanvasStyle(c3, 0.16, 0.12, 0.05, 0.15);
+        SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
         SetHistoQA(hMassCorr_ks_lambda_after);
         hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
         hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
         hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.6);
         hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
         hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
+        hMassCorr_ks_lambda_after->GetZaxis()->SetMaxDigits(3);
         hMassCorr_ks_lambda_after->Draw("colz");
         c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
 

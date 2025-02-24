@@ -69,9 +69,9 @@ void glueball_fit_4rBW_interference()
         return;
     }
 
-// #define b_boltzman
-// #define b_modified_Boltzmann
-    #define b_massdepwidth
+    // #define b_boltzman
+    // #define b_modified_Boltzmann
+#define b_massdepwidth
     // #define b_expol1
 
     // #define residual_subtracted
@@ -146,7 +146,6 @@ void glueball_fit_4rBW_interference()
         BEexpol->FixParameter(1, f1270Width);
         BEexpol->FixParameter(3, a1320Width);
         BEexpol->FixParameter(5, f1525Width);
-
 
         // BEexpol->FixParameter(6, f1710Mass);
         // BEexpol->FixParameter(7, f1710Width);
@@ -248,14 +247,14 @@ void glueball_fit_4rBW_interference()
 
 #ifdef b_massdepwidth
 
-        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3_hera_mass_dep, 1.05, 2.20, 14); // expol 3
-        string parnames[] = {"f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "B", "a", "b", "c", "d"};
+        TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3_hera_mass_dep, 1.05, 2.20, 17); // expol 3
+        string parnames[] = {"f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "B", "amp1", "amp2", "amp3", "a", "b", "c", "d"};
         for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
         {
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1190, 1404};
+        double parameters[] = {f1270Mass, f1270Width, a1320Mass, a1320Width, f1525Mass, f1525Width, f1710Mass, f1710Width, 1190, 1404, 5, 3, 2};
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
         for (int i = 0; i < size_fitparams; i++)
@@ -315,10 +314,10 @@ void glueball_fit_4rBW_interference()
         expol_clone->SetLineStyle(2);
         expol->Draw("same");
 
-        TF1 *onlyBW = new TF1("onlyBW", BWsum_hera_mass_dep, BEexpol->GetXmin(), BEexpol->GetXmax(), 10);
-        TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum_hera_mass_dep, BEexpol->GetXmin(), BEexpol->GetXmax(), 10);
-        string parameter_names[] = {"mass1270", "width1270", "mass1320", "width1320", "mass1525", "width1525", "mass1710", "width1710", "A", "B"};
-        for (int i = 0; i < 10; i++)
+        TF1 *onlyBW = new TF1("onlyBW", BWsum_hera_mass_dep, BEexpol->GetXmin(), BEexpol->GetXmax(), 13);
+        TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum_hera_mass_dep, BEexpol->GetXmin(), BEexpol->GetXmax(), 13);
+        string parameter_names[] = {"mass1270", "width1270", "mass1320", "width1320", "mass1525", "width1525", "mass1710", "width1710", "A", "B", "norm1", "norm2", "norm3"};
+        for (int i = 0; i < 13; i++)
         {
             onlyBW->SetParameter(i, obtained_parameters[i]);
             onlyBW_clone->SetParameter(i, obtained_parameters[i]);
@@ -990,19 +989,31 @@ Double_t BWsum_hera_mass_dep(double *x, double *par) // taken 4 resonances here
     double n1 = (2.0 * j1 + 1.0) / 2.0;
     double n2 = (2.0 * j2 + 1.0) / 2.0;
 
+    // double mass1270 = par[0];
+    // double width1270 = par[1] * (TMath::Power(par[0] / x[0], 1.0)) * TMath::Power((npart1) / (dpart1), n1);
+    // double mass1320 = par[2];
+    // double width1320 = par[3] * (TMath::Power(par[2] / x[0], 1.0)) * TMath::Power((npart1) / (dpart2), n1);
+    // double mass1525 = par[4];
+    // double width1525 = par[5] * (TMath::Power(par[4] / x[0], 1.0)) * TMath::Power((npart1) / (dpart3), n1);
+    // double mass1710 = par[6];
+    // double width1710 = par[7] * (TMath::Power(par[6] / x[0], 1.0)) * TMath::Power((npart1) / (dpart4), n2);
+
     double mass1270 = par[0];
-    double width1270 = par[1] * (TMath::Power(par[0] / x[0], 1.0)) * TMath::Power((npart1) / (dpart1), n1);
+    double width1270 = par[1];
     double mass1320 = par[2];
-    double width1320 = par[3] * (TMath::Power(par[2] / x[0], 1.0)) * TMath::Power((npart1) / (dpart2), n1);
+    double width1320 = par[3];
     double mass1525 = par[4];
-    double width1525 = par[5] * (TMath::Power(par[4] / x[0], 1.0)) * TMath::Power((npart1) / (dpart3), n1);
+    double width1525 = par[5];
     double mass1710 = par[6];
-    double width1710 = par[7] * (TMath::Power(par[6] / x[0], 1.0)) * TMath::Power((npart1) / (dpart4), n2);
+    double width1710 = par[7];
     double a0 = par[8];
     double a1 = par[9];
     double norm1 = par[10];
     double norm2 = par[11];
     double norm3 = par[12];
+    // double norm1 = 5;
+    // double norm2 = -3;
+    // double norm3 = 2;
 
     double den1270 = (x[0] * x[0] - mass1270 * mass1270) * (x[0] * x[0] - mass1270 * mass1270) + mass1270 * mass1270 * width1270 * width1270;
     double den1320 = (x[0] * x[0] - mass1320 * mass1320) * (x[0] * x[0] - mass1320 * mass1320) + mass1320 * mass1320 * width1320 * width1320;
@@ -1019,9 +1030,9 @@ Double_t BWsum_hera_mass_dep(double *x, double *par) // taken 4 resonances here
     double imagnum1525 = mass1525 * mass1525 * width1525 * TMath::Sqrt(width1525);
     double imagnum1710 = mass1710 * mass1710 * width1710 * TMath::Sqrt(width1710);
 
-    double real3BW = 5 * realnum1270 / den1270 - 3 * realnum1320 / den1320 + 2 * realnum1525 / den1525;
+    double real3BW = norm1 * realnum1270 / den1270 + norm2 * realnum1320 / den1320 + norm3 * realnum1525 / den1525;
 
-    double imag3BW = 5 * imagnum1270 / den1270 - 3 * imagnum1320 / den1320 + 2 * imagnum1525 / den1525;
+    double imag3BW = norm1 * imagnum1270 / den1270 + norm2 * imagnum1320 / den1320 + norm3 * imagnum1525 / den1525;
 
     double sig1 = (real3BW * real3BW + imag3BW * imag3BW);
 
@@ -1176,7 +1187,7 @@ Double_t BWsum_expol3_hera(double *x, double *par)
 }
 Double_t BWsum_expol3_hera_mass_dep(double *x, double *par)
 {
-    return (BWsum_hera_mass_dep(x, par) + exponential_bkg_3(x, &par[10]));
+    return (BWsum_hera_mass_dep(x, par) + exponential_bkg_3(x, &par[13]));
 }
 
 // Now we will define the functions for the sum of the Breit-Wigner and the Boltzmann background

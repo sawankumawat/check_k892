@@ -8,16 +8,13 @@ const string koutputtype = "png"; // pdf, eps
 ////********************************************************************************************
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
-const string kfoldername_temp = "strangeness_tutorial";
-// const string kfoldername_temp = "higher-mass-resonances";
-const string kvariation = ""; // change the variation here
-// const string kvariation = "_6SigmaKs"; // change the variation here
-// const string kvariation = "_mass_correlation"; // change the variation here
-// const string kvariation = "_pileup_cut"; // change the variation here
-// const string kvariation = "_ks_masscut3"; // change the variation here
-// const string kvariation = "_mix_rot_10_varbin"; // for 10 mixed events and total rotations
-// const string kvariation = "_full_ks_distribution"; // change the variation here
-// const string kvariation = "_old_cuts"; // change the variation here
+// const string kfoldername_temp = "strangeness_tutorial";
+const string kfoldername_temp = "higher-mass-resonances";
+
+// const string kvariation = ""; // change the variation here
+// const string kvariation = "_all_tight"; // change the variation here
+// const string kvariation = "_PID3"; // change the variation here
+const string kvariation = "_3sigmaKs"; // change the variation here
 #endif
 ////********************************************************************************************
 #ifdef KKchannel
@@ -63,14 +60,14 @@ const string kMCFilename_temp = "211346.root";    // MC file
 #endif
 
 #ifdef DATASET_LHC22o_pass7_small
-// const string kDataFilename_temp2 = "247473.root"; // Medium data file medium (fixed the tpc energy loss and multiplicity distribution)
-// const string kDataFilename_temp2 = "250337.root"; // Medium data file (fixed rotation bkg and competing cascade cuts) (only 2 out of 4 run numbers)
-// const string kDataFilename_temp2 = "248760.root"; // Small data file (fixed different entries in the pi- and pi+ daughters, multiplicity distribution, number of Ks produced per event)
-// const string kDataFilename_temp2 = "251575.root"; // Medium data file (Full statistics, does not containt KK channel)
-// const string kDataFilename_temp2 = "253148.root"; // Medium data file (2-6 ks mass cuts, KK channel not present)
-// const string kDataFilename_temp2 = "254232.root"; // Medium data file (mult dist, dE/dx tpc, pileup rejection)
-const string kDataFilename_temp2 = "260782.root"; // Full dataset (corrected mass correlation plot)
-// const string kDataFilename_temp2 = "328575.root"; // Small (for check only)
+// const string kDataFilename_temp2 = "260782.root"; // Full dataset (corrected mass correlation plot)
+// const string kDataFilename_temp2 = "340845.root"; // Medium dataset (for check only)
+// const string kDataFilename_temp2 = "341909.root"; // small dataset (for check only)
+// const string kDataFilename_temp2 = "341913.root"; // Full dataset (2 run numbers missing)
+// const string kDataFilename_temp2 = "356242.root"; // Medium dataset (with and without tighter cuts)
+// const string kDataFilename_temp2 = "351470.root"; // LHC23 pass4 thin (largest dataset)
+const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
+
 const string kMCFilename_temp = "211346.root";    // MC file // temporary since injected MC is not available
 #endif
 

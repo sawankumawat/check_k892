@@ -11,10 +11,10 @@ const string kchannel = "KsKs_Channel";
 // const string kfoldername_temp = "strangeness_tutorial";
 const string kfoldername_temp = "higher-mass-resonances";
 
-// const string kvariation = ""; // change the variation here
+const string kvariation = ""; // change the variation here
 // const string kvariation = "_all_tight"; // change the variation here
 // const string kvariation = "_PID3"; // change the variation here
-const string kvariation = "_3sigmaKs"; // change the variation here
+// const string kvariation = "_3sigmaKs"; // change the variation here
 #endif
 ////********************************************************************************************
 #ifdef KKchannel
@@ -66,7 +66,8 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "341913.root"; // Full dataset (2 run numbers missing)
 // const string kDataFilename_temp2 = "356242.root"; // Medium dataset (with and without tighter cuts)
 // const string kDataFilename_temp2 = "351470.root"; // LHC23 pass4 thin (largest dataset)
-const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
+// const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
+const string kDataFilename_temp2 = "359454.root"; // Medium dataset for angular cut (hard process removal)
 
 const string kMCFilename_temp = "211346.root";    // MC file // temporary since injected MC is not available
 #endif

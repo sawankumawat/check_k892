@@ -42,8 +42,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(1110);
-    // gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -68,30 +68,6 @@ void glueball_KsKs_channel()
     // showing all the folders in the root file as well as their contents
     // printDirectoryContents(fInputFile);
 
-    TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
-    double Event = hentries->GetEntries();
-    cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
-
-    //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
-
-    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassDS", kfoldername.c_str()));
-    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassME", kfoldername.c_str()));
-    THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassRot", kfoldername.c_str()));
-
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr)
-    {
-        cout << "Invariant mass histograms not found" << endl;
-        return;
-    }
-    cout << " The number of entries in histograms: \n"
-         << "same event: " << fHistNum->GetEntries() << "\n"
-         << "mixed event: " << fHistDen->GetEntries() << "\n"
-         << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << endl;
-
-    TH1D *fHistTotal[Npt];
-    TH1D *fHistBkg[Npt];
-    TH1D *fHistRotated[Npt];
-
     TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
     if (hmult == nullptr)
     {
@@ -103,20 +79,47 @@ void glueball_KsKs_channel()
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
 
-    // if (Npt > 1)
-    // {
-    // TCanvas *cdivide = new TCanvas("", "all_bins", 1440, 720);
-    // SetCanvasStyle(cdivide, 0.15, 0.03, 0.05, 0.15);
-    // cdivide->Divide(3, 2);
-    // }
-
     if (calculate_inv_mass)
     {
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
+        TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
+        double Event = hentries->GetEntries();
+        cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
+
+        //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
+
+        THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassDS", kfoldername.c_str()));
+        THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassME", kfoldername.c_str()));
+        THnSparseF *fHistRot = (THnSparseF *)fInputFile->Get(Form("%s/hglueball/h3glueInvMassRot", kfoldername.c_str()));
+
+        if (fHistNum == nullptr || fHistDen == nullptr || fHistRot == nullptr)
+        {
+            cout << "Invariant mass histograms not found" << endl;
+            return;
+        }
+        cout << " The number of entries in histograms: \n"
+             << "same event: " << fHistNum->GetEntries() << "\n"
+             << "mixed event: " << fHistDen->GetEntries() << "\n"
+             << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << endl;
+
+        TH1D *fHistTotal[Npt];
+        TH1D *fHistBkg[Npt];
+        TH1D *fHistRotated[Npt];
+
+        // if (Npt > 1)
+        // {
+        // TCanvas *cdivide = new TCanvas("", "all_bins", 1440, 720);
+        // SetCanvasStyle(cdivide, 0.15, 0.03, 0.05, 0.15);
+        // cdivide->Divide(3, 2);
+        // }
+
+        TH1D *hbkg_temp[Npt];
+        TH1D *hbkg_nopeak_temp[Npt];
+        TH1D *hsig_temp[Npt];
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
 
+            TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_pt_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1], pT_bins[ip], pT_bins[ip + 1]) + ".root").c_str(), "RECREATE");
             float lowpt = pT_bins[ip];
             float highpt = pT_bins[ip + 1];
             cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
@@ -306,7 +309,101 @@ void glueball_KsKs_channel()
             //     hbkg_nopeak->Draw("BAR same");
             // leg->Draw();
             // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            hbkg_temp[ip] = (TH1D *)hfbkg->Clone();
+            hbkg_nopeak_temp[ip] = (TH1D *)hbkg_nopeak->Clone();
+            hsig_temp[ip] = (TH1D *)hfsig->Clone();
         } // pt bin loop end here
+
+        // TCanvas *cbkg = new TCanvas("", "", 1080, 720);
+        // cbkg->Divide(2, 2);
+        // SetCanvasStyle(cbkg, 0.18, 0.03, 0.03, 0.15);
+
+        // for (Int_t ip = pt_start; ip < pt_end - 1; ip++) // start pt bin loop
+        // {
+        //     cbkg->cd(ip + 1);
+        //     gPad->SetLeftMargin(0.15);
+        //     gPad->SetRightMargin(0.03);
+        //     gPad->SetTopMargin(0.05);
+        //     gPad->SetBottomMargin(0.15);
+        //     fHistTotal[ip]->SetMaximum(1.1 * fHistTotal[ip]->GetMaximum());
+        //     fHistTotal[ip]->Draw("E");
+        //     hbkg_temp[ip]->Draw("E same");
+        //     if (kResBkg == "MIX" || kResBkg == "ROTATED")
+        //         hbkg_nopeak_temp[ip]->Draw("BAR same");
+        //     TLegend *leg = new TLegend(0.1851253, 0.2454598, 0.5445682, 0.3908046);
+        //     leg->SetFillStyle(0);
+        //     leg->SetBorderSize(0);
+        //     leg->SetTextFont(42);
+        //     leg->SetTextSize(0.055);
+        //     leg->AddEntry(fHistTotal[ip], "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
+        //     leg->AddEntry(hbkg_temp[ip], "Mixed event K^{0}_{s}K^{0}_{s} pair", "lpe");
+        //     leg->AddEntry(hbkg_nopeak_temp[ip], "Norm. region", "f");
+        //     if (ip == 0)
+        //     {
+        //         leg->Draw();
+        //     }
+
+        //     TLegend *lp2 = DrawLegend(0.6, 0.56, 0.92, 0.91);
+        //     lp2->SetTextSize(0.055);
+        //     lp2->SetTextFont(42);
+        //     lp2->SetFillStyle(0);
+        //     lp2->SetBorderSize(0);
+        //     if (ip == 0)
+        //     {
+        //         lp2->AddEntry((TObject *)0, "ALICE WIP", "");
+        //         lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+        //         lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
+        //         lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+        //     }
+        //     lp2->AddEntry((TObject *)0, Form("#it{p}_{T}: %.0f - %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
+
+        //     lp2->Draw("same");
+
+        //     // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+        // }
+        // cbkg->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());
+
+        // TCanvas *csignal = new TCanvas("", "", 1080, 720);
+        // csignal->Divide(2, 2);
+        // SetCanvasStyle(csignal, 0.18, 0.03, 0.03, 0.15);
+
+        // for (Int_t ip = pt_start; ip < pt_end - 1; ip++) // start pt bin loop
+        // {
+        //     csignal->cd(ip + 1);
+        //     gPad->SetLeftMargin(0.15);
+        //     gPad->SetRightMargin(0.03);
+        //     gPad->SetTopMargin(0.05);
+
+        //     gPad->SetBottomMargin(0.15);
+        //     hsig_temp[ip]->SetMaximum(1.1 * hsig_temp[ip]->GetMaximum());
+        //     hsig_temp[ip]->Draw("E");
+        //     // draw a line at counts 0
+        //     TLine *line = new TLine(1.1, 0, 2.3, 0);
+        //     line->SetLineColor(kRed);
+        //     line->SetLineWidth(2);
+        //     line->SetLineStyle(2);
+        //     line->Draw("same");
+
+        //     TLegend *leg = new TLegend(0.1851253, 0.5454598, 0.5445682, 0.6408046);
+        //     leg->SetFillStyle(0);
+        //     leg->SetBorderSize(0);
+        //     leg->SetTextFont(42);
+        //     leg->SetTextSize(0.055);
+        //     leg->AddEntry(hsig_temp[ip], "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
+        //     if (ip == 0)
+        //     {
+        //         leg->Draw();
+        //     }
+
+        //     TLegend *lp2 = DrawLegend(0.2, 0.56, 0.62, 0.91);
+        //     lp2->SetTextSize(0.055);
+        //     lp2->SetTextFont(42);
+        //     lp2->SetFillStyle(0);
+        //     lp2->SetBorderSize(0);
+        //     lp2->AddEntry((TObject *)0, Form("#it{p}_{T}: %.0f - %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
+        //     lp2->Draw("same");
+        // }
+        // csignal->SaveAs((outputfolder_str + "/hglueball_invmass_allbins_signal." + kResBkg + ".png").c_str());
     }
 
     // cdivide->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());
@@ -395,26 +492,33 @@ void glueball_KsKs_channel()
         hvtz->Draw();
         c3->SaveAs((outputQAfolder_str + "/hglueball_vtz." + koutputtype).c_str());
 
-        // // mass correlation plot
-        // TH2F *hmasscorr = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/hglueball/hmasscorrelation").c_str());
-        // if (hmasscorr == nullptr)
-        // {
-        //     cout << "Mass correlation plot not found" << endl;
-        //     return;
-        // }
-        // c3->Clear();
-        // SetCanvasStyle(c3, 0.15, 0.12, 0.05, 0.15);
-        // SetHistoQA(hmasscorr);
-        // hmasscorr->GetYaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        // hmasscorr->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        // hmasscorr->GetXaxis()->SetRangeUser(0.475, 0.52);
-        // hmasscorr->GetYaxis()->SetRangeUser(0.475, 0.52);
-        // hmasscorr->GetXaxis()->SetMaxDigits(3);
-        // hmasscorr->GetYaxis()->SetMaxDigits(3);
-        // hmasscorr->GetXaxis()->SetNdivisions(505);
-        // hmasscorr->GetYaxis()->SetNdivisions(505);
-        // hmasscorr->Draw("colz");
-        // c3->SaveAs((outputQAfolder_str + "/hglueball_masscorrelation." + koutputtype).c_str());
+        // mass correlation plot between two Ks
+        TH2F *hmasscorr = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hMasscorrelationbefore").c_str());
+        if (hmasscorr == nullptr)
+        {
+            cout << "Mass correlation plot not found" << endl;
+            return;
+        }
+        c3->Clear();
+        SetCanvasStyle(c3, 0.15, 0.14, 0.05, 0.15);
+        SetHistoQA(hmasscorr);
+        hmasscorr->GetYaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        hmasscorr->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        hmasscorr->GetXaxis()->SetTitleOffset(3.0);
+        hmasscorr->GetYaxis()->SetTitleOffset(3.0);
+        hmasscorr->GetXaxis()->SetTitleSize(0.04);
+        hmasscorr->GetYaxis()->SetTitleSize(0.04);
+        hmasscorr->GetZaxis()->SetTitle(Form("Counts/%.0f MeV/c^{2}", hmasscorr->GetXaxis()->GetBinWidth(1)*1000));
+        hmasscorr->GetZaxis()->SetTitleSize(0.04);
+        hmasscorr->GetZaxis()->SetTitleOffset(2.0);
+        hmasscorr->GetXaxis()->SetRangeUser(0.475, 0.52);
+        hmasscorr->GetYaxis()->SetRangeUser(0.475, 0.52);
+        hmasscorr->GetXaxis()->SetMaxDigits(3);
+        hmasscorr->GetYaxis()->SetMaxDigits(3);
+        hmasscorr->GetXaxis()->SetNdivisions(505);
+        hmasscorr->GetYaxis()->SetNdivisions(505);
+        hmasscorr->Draw("surf1");
+        c3->SaveAs((outputQAfolder_str + "/ksks_mass_correlation." + koutputtype).c_str());
 
         // kshort selection plots
         // Armenteros alpha plot

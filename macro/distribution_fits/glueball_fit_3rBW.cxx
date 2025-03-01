@@ -46,14 +46,18 @@ void glueball_fit_3rBW()
     ofstream file;
     file.open("fit_params.txt");
     // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/fits/3rBW_fits";
-    string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/fits/3rBW_fits";
+    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/fits/3rBW_fits";
     // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/fits/3rBW_fits";
+
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs";
+    string savepath = path + "/fits/3rBw_fits";
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_fullpt.root", "READ"); // full pT range
-    TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/hglue_ROTATED_norm_2.50_2.60.root", "READ");
+    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/hglue_ROTATED_norm_2.50_2.60.root", "READ");
     // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/hglue_ROTATED_norm_2.50_2.60.root", "READ");
+    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.30_2.40.root").c_str(), "READ");
 
     int colors[] = {4, 6, 28, 46};
     double masses[] = {f1270Mass, f1525Mass, f1710Mass};
@@ -120,8 +124,7 @@ void glueball_fit_3rBW()
         }
 
         // double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
-        double parameters[] = {6200, f1270Mass, f1270Width, 7700, f1525Mass, f1525Width, 2500, f1710Mass, f1710Width}; // for preview presentation
-        // double parameters[] = {1700, f1270Mass, f1270Width, 2300, f1525Mass, f1525Width, 500, f1710Mass, f1710Width};
+        double parameters[] = {2500, f1270Mass, f1270Width, 7000, f1525Mass, f1525Width, 2500, f1710Mass, f1710Width}; // for preview presentation
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
         for (int i = 0; i < size_fitparams; i++)
@@ -138,14 +141,12 @@ void glueball_fit_3rBW()
         }
 
         // for rotational bkg with pt range 0-30 GeV/c , // 3BW/3BWAmp + expol/exponential1, 3BWAmp + expol, 3BWAmp + exponential3
-        double initial_param_bkg[] = {5.562e5, -0.09379, 2.569, 1.0982}; // rotational 1-30 GeV/c (KsKs channel)
-        // double initial_param_bkg[] = {2.062e5, -0.05379, 2.769, 1.1982}; // rotational 1-30 GeV/c (KsKs channel) // other file
+        double initial_param_bkg[] = {4.1562e5, -0.09379, 3.869, 1.30982}; // rotational 1-30 GeV/c (KsKs channel)
 
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // 206 //5.845e5
         BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  // 0.04316 //-0.07378
         BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // 11.48 //2.685
         BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // -3.149 //1.176
-        // BEexpol->SetParLimits(size_fitparams + 3, 0.99, 1.01);
 
         // // for rotational bkg with pt range 1-30 GeV/c
         // BEexpol->FixParameter(size_fitparams + 0, 5.927e5);  // 5.562e5   // Fix
@@ -161,16 +162,17 @@ void glueball_fit_3rBW()
         // BEexpol->SetParameter(size_fitparams + 3, 2.8);      // 1.098     // Free
 
         // BEexpol->FixParameter(1, f1270Mass);
-        // BEexpol->FixParameter(2, f1270Width);
-
         // BEexpol->FixParameter(4, f1525Mass);
-        // BEexpol->FixParameter(5, f1525Width);
 
-        // BEexpol->FixParameter(1, a1320Mass);
-        // BEexpol->FixParameter(2, a1320Width);
+        BEexpol->FixParameter(2, f1270Width);
+        BEexpol->FixParameter(5, f1525Width);
+
 
         // BEexpol->FixParameter(7, f1710Mass);
         // BEexpol->FixParameter(8, f1710Width);
+
+        // BEexpol->FixParameter(1, a1320Mass);
+        // BEexpol->FixParameter(2, a1320Width);
 
         TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
         // status codes: 4000 successful, 4 call limit, 4910 failed

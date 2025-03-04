@@ -1,6 +1,6 @@
 // The variables that can be chaged are here ****************************************************
 // #define KKchannel   // for Kaon Kaon channel
-#define KsKschannel  //for Kshort Kshort channel
+#define KsKschannel // for Kshort Kshort channel
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
@@ -11,11 +11,40 @@ const string kchannel = "KsKs_Channel";
 // const string kfoldername_temp = "strangeness_tutorial";
 const string kfoldername_temp = "higher-mass-resonances";
 
-const string kvariation = ""; // change the variation here
+// const string kvariation = ""; // change the variation here
+// const string kvariation = "_angsep_2"; // change the variation here
 // const string kvariation = "_all_tight"; // change the variation here
 // const string kvariation = "_PID3"; // change the variation here
 // const string kvariation = "_3sigmaKs"; // change the variation here
+//****************systematics train*******************************
+// const string kvariation = "_id24937"; // first four are same
+// const string kvariation = "_id24938";
+// const string kvariation = "_id24939";
+// const string kvariation = "_id24940";
+
+// const string kvariation = "_DCA0p04_id24940";
+// const string kvariation = "_DCA0p06_id24940";
+// const string kvariation = "_DCAv0dau0p3_id24938";
+// const string kvariation = "_DCAv0dau1_id24938";
+// const string kvariation = "_Ks_selection4_id24939";
+// const string kvariation = "_Ks_selection5_id24939";
+// const string kvariation = "_TPCPID3_id24937";
+// const string kvariation = "_TPCPID4_id24937";
+// const string kvariation = "_TPCPID6_id24937";
+// const string kvariation = "_TPCcr100_id24937";
+// const string kvariation = "_TPCcr120_id24937";
+// const string kvariation = "_TPCcrfc0p9_id24940";
+// const string kvariation = "_TPCcrfc1p0_id24940";
+// const string kvariation = "_cospa0p95_id24938";
+// const string kvariation = "_cospa0p99_id24938";
+// const string kvariation = "_decay_rad0p4_id24938";
+// const string kvariation = "_decay_rad0p6_id24938";
+// const string kvariation = "_lambda_rej4_id24939";
+// const string kvariation = "_lambda_rej6_id24939";
+// const string kvariation = "_lifetime15_id24939";
+const string kvariation = "_lifetime25_id24939";
 #endif
+
 ////********************************************************************************************
 #ifdef KKchannel
 const string kchannel = "KK_Channel";
@@ -56,7 +85,7 @@ const string kMCDataset = "../mc/LHC24b1b/";
 const string kDataFilename_temp2 = "230281.root"; // Medium data file (with larger pT range upto 30 GeV/c)
 // const string kDataFilename_temp2 = "245896.root"; // Medium data file (Included  mulitiplicity distribution, dE/dx tpc plots)
 // const string kDataFilename_temp2 = "248997.root"; // Small data file (Increased mult dist x axis range upto 70k, corrected the different entries in the pi- and pi+ daughters)
-const string kMCFilename_temp = "211346.root";    // MC file
+const string kMCFilename_temp = "211346.root"; // MC file
 #endif
 
 #ifdef DATASET_LHC22o_pass7_small
@@ -67,9 +96,10 @@ const string kMCFilename_temp = "211346.root";    // MC file
 // const string kDataFilename_temp2 = "356242.root"; // Medium dataset (with and without tighter cuts)
 // const string kDataFilename_temp2 = "351470.root"; // LHC23 pass4 thin (largest dataset)
 // const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
-const string kDataFilename_temp2 = "359454.root"; // Medium dataset for angular cut (hard process removal)
+// const string kDataFilename_temp2 = "359454.root"; // Medium dataset angular cut (wrong cut used)
+const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
 
-const string kMCFilename_temp = "211346.root";    // MC file // temporary since injected MC is not available
+const string kMCFilename_temp = "211346.root"; // MC file // temporary since injected MC is not available
 #endif
 
 // final dataset name

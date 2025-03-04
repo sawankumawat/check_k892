@@ -16,7 +16,6 @@ using namespace std;
 float parameter0(float mass, float width);
 
 void glueball_KsKs_channel()
-
 {
     // change here ***********************************************************
     // const string kResBkg = "MIX";
@@ -42,8 +41,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    // gStyle->SetOptStat(1110);
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
+    // gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -116,10 +115,19 @@ void glueball_KsKs_channel()
         TH1D *hbkg_nopeak_temp[Npt];
         TH1D *hsig_temp[Npt];
 
+        TFile *fileInvDistPair;
+        if (Npt == 1)
+        {
+            fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_pt_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1], pT_bins[0], pT_bins[1]) + ".root").c_str(), "RECREATE");
+        }
+        else
+        {
+            fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_all_pT", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
+        }
+
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         {
 
-            TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_pt_%.2f_%.2f", kNormRangepT[0][0], kNormRangepT[0][1], pT_bins[ip], pT_bins[ip + 1]) + ".root").c_str(), "RECREATE");
             float lowpt = pT_bins[ip];
             float highpt = pT_bins[ip + 1];
             cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
@@ -508,7 +516,7 @@ void glueball_KsKs_channel()
         hmasscorr->GetYaxis()->SetTitleOffset(3.0);
         hmasscorr->GetXaxis()->SetTitleSize(0.04);
         hmasscorr->GetYaxis()->SetTitleSize(0.04);
-        hmasscorr->GetZaxis()->SetTitle(Form("Counts/%.0f MeV/c^{2}", hmasscorr->GetXaxis()->GetBinWidth(1)*1000));
+        hmasscorr->GetZaxis()->SetTitle(Form("Counts/%.0f MeV/c^{2}", hmasscorr->GetXaxis()->GetBinWidth(1) * 1000));
         hmasscorr->GetZaxis()->SetTitleSize(0.04);
         hmasscorr->GetZaxis()->SetTitleOffset(2.0);
         hmasscorr->GetXaxis()->SetRangeUser(0.475, 0.52);

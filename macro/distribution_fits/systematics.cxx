@@ -12,26 +12,41 @@
 
 // systematic studies (signal extraction) ****************************
 // A. fit range: Default: 1.05-2.20 GeV/c^2, Variation1: 1.02-2.20 GeV/c^2, Variation2: 1.05-2.30 GeV/c^2, Variation3: 1.08-2.15 GeV/c^2, Variation4: 1.02-2.30 GeV/c^2
-// B. Norm range: Default: 2.30-2.40 GeV/c^2, Variation1: 2.20-2.30 GeV/c^2, Variation2: 2.40-2.50 GeV/c^2
-// C. Fit function: Default: 4rBW with mass dependent width + modified Boltzmann, Variation1: 4rBW with constant width + Modified Boltzmann, 4rBW with mass dependent width + Expol1, 4rBW with mass dependent width + Boltzmann
+// B. Norm range: Default: 2.50-2.60 GeV/c^2, Variation1: 2.40-2.50 GeV/c^2, Variation2: 2.60-2.70 GeV/c^2
+// C. Residual bkg Fit function: Default: 4rBW with mass dependent width + modified Boltzmann, 4rBW with mass dependent width + Expol1, 4rBW with mass dependent width + Boltzmann
 // D. Fit paramters: Default: Width of spin-2 resonances fixed to PDG, Variation1: Width of spin-2 resonances free, Variation2: Both mass and width of spin-2 resonances fixed to PDG, Variation3: Width of f1710 fixed to PDG, Variation4: Mass of f1710 fixed to PDG
-// E. Combinatorial background: Default: Rotational, Variation1: Mixed
+// E. Combinatorial background: Default: Rotational, Variation1: Mixed (Not considered)
+
+// systematic studies (Track selection) ****************************
+// TrA. DCA track to PV: Deafult: 0.05 cm, Variation1: 0.04 cm, Variation2: 0.06 cm
+// TrB. TPC PID: Default: 3sigma, Variation1: 4sigma, Variation2: 5sigma
+// TrC. TPC crossed rows: Default 70, Variation1: 100, Variation2: 120
+// TrD. TPC crossed rows over findable clusters: Default: 0.8, Variation1: 0.9, Variation2: 1.0
+
+// systematic studies (Topological selection) ****************************
+// ToA. Cosine PA: Default: 0.97, Variation1: 0.95, Variation2: 0.99
+// ToB. Transeverse radius: Default: 0.5 cm, Variation1: 0.4 cm, Variation2: 0.6 cm
+// ToC. DCA b/w V0 daughters: Default: 0.5 cm, Variation1: 0.3 cm, Variation2: 1.0 cm
+// ToD. Lifetime: Default: 20 cm, Variation1: 15 cm, Variation2: 25 cm
+// ToE. Competing V0 rejection: Default: 5 MeV, Variation1: 4, Variation2: 6
+// ToF. Ks mass window: Default: 3sigma, Variation1: 4sigma, Variation2: 5sigma
 
 using namespace std;
 
 void systematics()
 {
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs/fits/4rBw_fits/systematics_onlywidthfixed/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs/fits/4rBw_fits/systematics_onlywidthfixed/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup/";
     ifstream file;
 
     int colors[] = {4, 6, 28, 46};
 
     // Mapping variations to sources
-    int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5, 5};
-    int variationsNumber[] = {1, 4, 2, 3, 4}; // Number of variations for each source
+    int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 5, 5, 5, 5};
+    int variationsNumber[] = {1, 4, 2, 2, 4}; // Number of variations for each source
 
     vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2",
-                            "varC1", "varC2", "varC3", "varE1", "varE2", "varE3", "varE4"};
+                            "varC1", "varC2", "varD1", "varD2", "varD3", "varD4"};
 
     // Vectors to store fit parameters and their uncertainties
     vector<vector<double>> allparams_mass(5), allparams_width(5);

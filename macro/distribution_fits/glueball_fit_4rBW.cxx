@@ -43,36 +43,74 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 
 void glueball_fit_4rBW()
 {
-
     // systematic studies (signal extraction) ****************************
     // A. fit range: Default: 1.05-2.20 GeV/c^2, Variation1: 1.02-2.20 GeV/c^2, Variation2: 1.05-2.30 GeV/c^2, Variation3: 1.08-2.15 GeV/c^2, Variation4: 1.02-2.30 GeV/c^2
-    // B. Norm range: Default: 2.30-2.40 GeV/c^2, Variation1: 2.20-2.30 GeV/c^2, Variation2: 2.40-2.50 GeV/c^2
-    // C. Fit function: Default: 4rBW with mass dependent width + modified Boltzmann, Variation1: 4rBW with constant width + Modified Boltzmann, 4rBW with mass dependent width + Expol1, 4rBW with mass dependent width + Boltzmann
+    // B. Norm range: Default: 2.50-2.60 GeV/c^2, Variation1: 2.40-2.50 GeV/c^2, Variation2: 2.60-2.70 GeV/c^2
+    // C. Residual bkg Fit function: Default: 4rBW with mass dependent width + modified Boltzmann, 4rBW with mass dependent width + Expol1, 4rBW with mass dependent width + Boltzmann
     // D. Fit paramters: Default: Width of spin-2 resonances fixed to PDG, Variation1: Width of spin-2 resonances free, Variation2: Both mass and width of spin-2 resonances fixed to PDG, Variation3: Width of f1710 fixed to PDG, Variation4: Mass of f1710 fixed to PDG
-    // E. Combinatorial background: Default: Rotational, Variation1: Mixed
+    // E. Combinatorial background: Default: Rotational, Variation1: Mixed (Not considered)
 
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351470/KsKs_Channel/higher-mass-resonances";
+    // systematic studies (Track selection) ****************************
+    // TrA. DCA track to PV: Deafult: 0.05 cm, Variation1: 0.04 cm, Variation2: 0.06 cm
+    // TrB. TPC PID: Default: 3sigma, Variation1: 4sigma, Variation2: 5sigma
+    // TrC. TPC crossed rows: Default 70, Variation1: 100, Variation2: 120
+    // TrD. TPC crossed rows over findable clusters: Default: 0.8, Variation1: 0.9, Variation2: 1.0
+
+    // systematic studies (Topological selection) ****************************
+    // ToA. Cosine PA: Default: 0.97, Variation1: 0.95, Variation2: 0.99
+    // ToB. Transeverse radius: Default: 0.5 cm, Variation1: 0.4 cm, Variation2: 0.6 cm
+    // ToC. DCA b/w V0 daughters: Default: 0.5 cm, Variation1: 0.3 cm, Variation2: 1.0 cm
+    // ToD. Lifetime: Default: 20 cm, Variation1: 15 cm, Variation2: 25 cm
+    // ToE. Competing V0 rejection: Default: 5 MeV, Variation1: 4, Variation2: 6
+    // ToF. Ks mass window: Default: 3sigma, Variation1: 4sigma, Variation2: 5sigma
+
     string sysvar = "default";
 
-    ofstream file;
-    file.open((path + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
+    //****************systematics train*******************************
+    //Defaults
+    const string kvariation1 = "_id24937"; // first four are same
+    // const string kvariation1 = "_id24938";
+    // const string kvariation1 = "_id24939";
+    // const string kvariation1 = "_id24940";
 
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/fits/4rBw_fits";
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits";
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/fits/4rBw_fits";
-    string savepath = path + "/fits/4rBw_fits";
+    //Track selections
+    // const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
+    // const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
+    // const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
+    // const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
+    // const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
+    // const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
+    // const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
+    // const string kvariation1 = "_TPCcrfc0p9_id24940"; //TPC crossed rows over findable clusters
+    // const string kvariation1 = "_TPCcrfc1p0_id24940"; //TPC crossed rows over findable clusters
+
+    //Topological selections
+    // const string kvariation1 = "_cospa0p95_id24938"; //Cosine PA
+    // const string kvariation1 = "_cospa0p99_id24938";
+    // const string kvariation1 = "_decay_rad0p4_id24938"; //Transverse radius
+    // const string kvariation1 = "_decay_rad0p6_id24938";
+    // const string kvariation1 = "_DCAv0dau0p3_id24938"; //DCA b/w V0 daughters
+    // const string kvariation1 = "_DCAv0dau1_id24938";
+    // const string kvariation1 = "_lifetime15_id24939"; //Lifetime
+    // const string kvariation1 = "_lifetime25_id24939";
+    // const string kvariation1 = "_lambda_rej4_id24939";
+    // const string kvariation1 = "_lambda_rej6_id24939";
+    // const string kvariation1 = "_Ks_selection4_id24939";
+    // const string kvariation1 = "_Ks_selection5_id24939";
+
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
+    string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
+
+    ofstream file;
+    file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
+
+    string savepath = path2 + "/fits/4rBw_fits";
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_fullpt.root", "READ"); // full pT range
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/hglue_ROTATED_norm_2.50_2.60.root", "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/hglue_ROTATED_norm_2.50_2.60.root", "READ");
-
-    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.30_2.40_pt_1.00_10.00.root").c_str(), "READ"); // default
-    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.20_2.30.root").c_str(), "READ");
-    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.40_2.50.root").c_str(), "READ");
-    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.20_2.30_pt_1.00_10.00.root").c_str(), "READ");
+    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
     TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
 
@@ -89,8 +127,8 @@ void glueball_fit_4rBW()
     }
     // #define b_boltzman
     // #define b_modified_Boltzmann
-    #define b_massdepwidth
-// #define b_expol1
+#define b_massdepwidth
+    // #define b_expol1
 
 #define residual_subtracted
     // #define doublepanelplot
@@ -138,7 +176,7 @@ void glueball_fit_4rBW()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {2500, f1270Mass, f1270Width, 500, a1320Mass, a1320Width, 3500, f1525Mass, f1525Width, 2000, f1710Mass, f1710Width}; // default
+        double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
         // double parameters[] = {8000, f1270Mass, f1270Width, 6000, a1320Mass, a1320Width, 23000, f1525Mass, f1525Width, 6000, f1710Mass, f1710Width}; // LHC23_thin
 
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
@@ -156,13 +194,11 @@ void glueball_fit_4rBW()
             BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
         }
 
-        // double initial_param_bkg[] = {541339.09321, 0.02053, 3.01167, 1.04864};
+        // double initial_param_bkg[] = {9.07518e5, -0.2044, 4.077, 1.64}; // LHC23_thin
 
         // //********systematic studies*************
-        double initial_param_bkg[] = {1.7518e5, -0.162044, 3.71167, 1.354864}; // 1-10 GeV/c, 3sigma signal extraction (train number 351471) DEFAULT, fit range 1.05-2.20 GeV/c^2
-        // double initial_param_bkg[] = {2.7518e5, -0.162044, 3.71167, 1.354864}; // Variation B2
-        // double initial_param_bkg[] = {9.07518e5, -0.2044, 4.077, 1.64}; // LHC23_thin
-        // double initial_param_bkg[] = {3.7518e5, -0.144, 3.77, 1.34}; // Rebin(2)
+        double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
+        // double initial_param_bkg[] = {3.37518e5, -0.0134, 3.071167, 1.064}; // 0-30 GeV/c, 3sigma
 
         // Initial parameters for background
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
@@ -298,7 +334,7 @@ void glueball_fit_4rBW()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {3500, f1270Mass, f1270Width, 500, a1320Mass, a1320Width, 3500, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // default
+        double parameters[] = {3500, f1270Mass, f1270Width, 600, a1320Mass, a1320Width, 4000, f1525Mass, f1525Width, 1700, f1710Mass, f1710Width}; // default
 
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -314,12 +350,12 @@ void glueball_fit_4rBW()
             BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
         }
 
-        double initial_param_bkg[] = {2.31791e5, -0.11, 3.602, 1.101}; // rotational 0-30 GeV/c (KsKs channel)
+        double initial_param_bkg[] = {3.173e5, 0.02878, 2.757, 1.03}; // rotational 0-30 GeV/c (KsKs channel)
 
         // Initial parameters for background
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5
         BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379
-        BEexpol->FixParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569
+        BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569
         BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098
 
         BEexpol->FixParameter(2, f1270Width);
@@ -336,13 +372,6 @@ void glueball_fit_4rBW()
         TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
         cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
         string fitstatus = "Successfull";
-        // cout<<"fit status code "<<fitResultptr->Status()<<endl;
-        // if (fitResultptr->Status() != 4140)
-        // {
-        //     cout << "Fit failed or call limit !!!!!!!" << endl;
-        //     fitstatus = "Failed";
-        // }
-        // fitResultptr->Print("V");
 
         double *obtained_parameters = BEexpol->GetParameters();
         TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -374,8 +403,8 @@ void glueball_fit_4rBW()
         onlyBW_clone->FixParameter(2, f1270Width);
         onlyBW_clone->FixParameter(5, a1320Width);
         onlyBW_clone->FixParameter(8, f1525Width);
-        // onlyBW_clone->FixParameter(11, f1710Width);
 
+        // onlyBW_clone->FixParameter(11, f1710Width);
         // onlyBW_clone->FixParameter(1, f1270Mass);
         // onlyBW_clone->FixParameter(4, a1320Mass);
         // onlyBW_clone->FixParameter(7, f1525Mass);
@@ -538,7 +567,7 @@ void glueball_fit_4rBW()
 
         onlyBW->SetLineColor(4);
         onlyBW->SetLineStyle(2);
-        onlyBW->Draw("same");
+        // onlyBW->Draw("same");
 
         // // Now plot the indivial resonances
         TF1 *singlefits[4];
@@ -604,7 +633,7 @@ void glueball_fit_4rBW()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {3500, f1270Mass, f1270Width, 500, a1320Mass, a1320Width, 3500, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width};
+        double parameters[] = {2000, f1270Mass, f1270Width, 1500, a1320Mass, a1320Width, 4000, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width};
 
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -612,6 +641,7 @@ void glueball_fit_4rBW()
         {
             BEexpol->SetParameter(i, parameters[i]);
         }
+        BEexpol->SetParLimits(9, 1400, 1600); // this is to constrain the width of f1710
 
         vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 10 * f1710WidthErr}};
 
@@ -622,7 +652,7 @@ void glueball_fit_4rBW()
             BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
         }
 
-        double initial_param_bkg[] = {2.5e5, 0.7029, 5.54};
+        double initial_param_bkg[] = {3.274e5, 0.7029, 4.391};
 
         // Initial parameters for background
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5

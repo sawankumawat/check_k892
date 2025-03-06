@@ -18,6 +18,7 @@ Double_t BWsumMassDepWidth_exponential(double *x, double *par);
 Double_t BWsumMassDepWidth_expol1(double *x, double *par);
 Double_t single_BW_mass_dep_spin0(double *x, double *par);
 Double_t single_BW_mass_dep_spin2(double *x, double *par);
+Double_t BWsumMassDepWidth_simple_exponential(double *x, double *par);
 
 Double_t exponential_bkg_1(double *x, double *par); // 3 parameters
 Double_t exponential_bkg_2(double *x, double *par); // 3 parameters
@@ -30,6 +31,8 @@ Double_t Boltzmann_bkg_1(double *x, double *par); // 3 parameters
 Double_t Boltzmann_bkg_2(double *x, double *par); // 4 parameters
 Double_t expol_chkstar(double *x, double *par);   // 4 parameters
 Double_t BWsum_expol_chkstar(double *x, double *par);
+
+Double_t simple_exponential(double *x, double *par); // 2 parameters
 
 Double_t single_BW_expol3(double *x, double *par);
 Double_t single_BW_expol3_hera(double *x, double *par);
@@ -64,39 +67,39 @@ void glueball_fit_4rBW()
     // ToE. Competing V0 rejection: Default: 5 MeV, Variation1: 4, Variation2: 6
     // ToF. Ks mass window: Default: 3sigma, Variation1: 4sigma, Variation2: 5sigma
 
-    string sysvar = "default";
+    string sysvar = "default"; // default
 
     //****************systematics train*******************************
-    //Defaults
+    // Defaults
     const string kvariation1 = "_id24937"; // first four are same
     // const string kvariation1 = "_id24938";
     // const string kvariation1 = "_id24939";
     // const string kvariation1 = "_id24940";
 
-    //Track selections
-    // const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
-    // const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
-    // const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
-    // const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
-    // const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
-    // const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
-    // const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
-    // const string kvariation1 = "_TPCcrfc0p9_id24940"; //TPC crossed rows over findable clusters
-    // const string kvariation1 = "_TPCcrfc1p0_id24940"; //TPC crossed rows over findable clusters
+    // Track selections
+    //  const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
+    //  const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
+    //  const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
+    //  const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
+    //  const string kvariation1 = "_TPCcrfc0p9_id24940"; //TPC crossed rows over findable clusters
+    //  const string kvariation1 = "_TPCcrfc1p0_id24940"; //TPC crossed rows over findable clusters
 
-    //Topological selections
-    // const string kvariation1 = "_cospa0p95_id24938"; //Cosine PA
-    // const string kvariation1 = "_cospa0p99_id24938";
-    // const string kvariation1 = "_decay_rad0p4_id24938"; //Transverse radius
-    // const string kvariation1 = "_decay_rad0p6_id24938";
-    // const string kvariation1 = "_DCAv0dau0p3_id24938"; //DCA b/w V0 daughters
-    // const string kvariation1 = "_DCAv0dau1_id24938";
-    // const string kvariation1 = "_lifetime15_id24939"; //Lifetime
-    // const string kvariation1 = "_lifetime25_id24939";
-    // const string kvariation1 = "_lambda_rej4_id24939";
-    // const string kvariation1 = "_lambda_rej6_id24939";
-    // const string kvariation1 = "_Ks_selection4_id24939";
-    // const string kvariation1 = "_Ks_selection5_id24939";
+    // Topological selections
+    //  const string kvariation1 = "_cospa0p95_id24938"; //Cosine PA
+    //  const string kvariation1 = "_cospa0p99_id24938";
+    //  const string kvariation1 = "_decay_rad0p4_id24938"; //Transverse radius
+    //  const string kvariation1 = "_decay_rad0p6_id24938";
+    //  const string kvariation1 = "_DCAv0dau0p3_id24938"; //DCA b/w V0 daughters
+    //  const string kvariation1 = "_DCAv0dau1_id24938";
+    //  const string kvariation1 = "_lifetime15_id24939"; //Lifetime
+    //  const string kvariation1 = "_lifetime25_id24939";
+    //  const string kvariation1 = "_lambda_rej4_id24939";
+    //  const string kvariation1 = "_lambda_rej6_id24939";
+    //  const string kvariation1 = "_Ks_selection4_id24939";
+    //  const string kvariation1 = "_Ks_selection5_id24939";
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances";
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
@@ -109,7 +112,8 @@ void glueball_fit_4rBW()
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
     // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
     TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
@@ -127,8 +131,9 @@ void glueball_fit_4rBW()
     }
     // #define b_boltzman
     // #define b_modified_Boltzmann
-#define b_massdepwidth
+    // #define b_massdepwidth
     // #define b_expol1
+#define b_HERAexponential
 
 #define residual_subtracted
     // #define doublepanelplot
@@ -208,11 +213,11 @@ void glueball_fit_4rBW()
 
         BEexpol->FixParameter(2, f1270Width);
         BEexpol->FixParameter(5, a1320Width);
-        BEexpol->FixParameter(8, f1525Width);
+        BEexpol->FixParameter(8, f1525Width); // Free of varTrA2
 
         // BEexpol->FixParameter(1, f1270Mass);
         // BEexpol->FixParameter(4, a1320Mass);
-        // BEexpol->FixParameter(7, f1525Mass);
+        // BEexpol->FixParameter(7, f1525Mass); // Fixed for varTrA1
 
         // BEexpol->FixParameter(10, f1710Mass);
         // BEexpol->FixParameter(11, f1710Width);
@@ -233,6 +238,151 @@ void glueball_fit_4rBW()
         TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
         TF1 *expol_clone = new TF1("expol_clone", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4); //
         for (int i = 0; i < 4; i++)
+        {
+            expol->SetParameter(i, obtained_parameters[size_fitparams + i]);
+            expol_clone->SetParameter(i, obtained_parameters[size_fitparams + i]);
+        }
+        expol->SetLineColor(3);
+        expol->SetLineStyle(2);
+        expol_clone->SetLineColor(3);
+        expol_clone->SetLineStyle(2);
+        expol->Draw("same");
+
+        TF1 *onlyBW = new TF1("onlyBW", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+        TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+        string parameter_names[] = {"norm1270", "mass1270", "width1270", "norm1320", "mass1320", "width1320", "norm12525", "mass1525", "width1525", "norm1710", "mass1710", "width1710"};
+        for (int i = 0; i < 12; i++)
+        {
+            onlyBW->SetParameter(i, obtained_parameters[i]);
+            onlyBW_clone->SetParameter(i, obtained_parameters[i]);
+            onlyBW_clone->SetParName(i, parameter_names[i].c_str());
+        }
+        for (int i = 0; i < limits_size; i++)
+        {
+            int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+            onlyBW->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+            onlyBW_clone->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+        }
+
+        onlyBW_clone->FixParameter(2, f1270Width);
+        onlyBW_clone->FixParameter(5, a1320Width);
+        onlyBW_clone->FixParameter(8, f1525Width);
+
+        // onlyBW_clone->FixParameter(1, f1270Mass);
+        // onlyBW_clone->FixParameter(4, a1320Mass);
+        // onlyBW_clone->FixParameter(7, f1525Mass);
+
+        // onlyBW_clone->FixParameter(11, f1710Width);
+        // onlyBW_clone->FixParameter(10, f1710Mass);
+
+        onlyBW->SetLineColor(4);
+        onlyBW->SetLineStyle(2);
+        // onlyBW->Draw("same");
+
+        // // Now plot the indivial resonances
+        TF1 *singlefits[4];
+        for (int i = 0; i < 4; i++)
+        {
+            singlefits[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, BEexpol->GetXmin(), BEexpol->GetXmax(), 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+            singlefits[i]->SetParameter(0, obtained_parameters[3 * i]);
+            singlefits[i]->SetParameter(1, obtained_parameters[3 * i + 1]);
+            singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
+            singlefits[i]->SetLineColor(colors[i]);
+            singlefits[i]->SetLineStyle(2);
+            singlefits[i]->Draw("same");
+        }
+
+        TLegend *ltemp = new TLegend(0.25, 0.52, 0.55, 0.87);
+        ltemp->SetFillStyle(0);
+        ltemp->SetBorderSize(0);
+        ltemp->SetTextFont(42);
+        ltemp->SetTextSize(0.03);
+        ltemp->AddEntry((TObject *)0, "", "");
+        ltemp->AddEntry((TObject *)0, "", "");
+        ltemp->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
+        ltemp->AddEntry(BEexpol, "4rBW + Residual BG", "l");
+        ltemp->AddEntry(expol, "Residual BG", "l");
+        ltemp->AddEntry(singlefits[0], "f_{2}(1270)", "l");
+        ltemp->AddEntry(singlefits[1], "a_{2}(1320)^{0}", "l");
+        ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
+        ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
+        ltemp->Draw("same");
+
+        TLatex lat1;
+        lat1.SetNDC();
+        lat1.SetTextSize(0.03);
+        lat1.SetTextFont(42);
+        lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
+        lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
+        lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+
+        for (int i = 0; i < 4; i++)
+        {
+            double significance_num = singlefits[i]->Integral(masses[i] - 3 * widths[i], masses[i] + 3 * widths[i]) / binwidthfile;
+            int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
+            int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
+            double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
+            significance = significance_num / significance_den;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
+            purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
+            cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
+        }
+#endif
+
+        // **********simple exponential HERA*********************
+
+#ifdef b_HERAexponential
+
+        TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_simple_exponential, 1.05, 2.20, 15);
+
+        string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b"};
+        for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
+        {
+            BEexpol->SetParName(i, parnames[i].c_str());
+        }
+
+        double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
+
+        int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
+
+        for (int i = 0; i < size_fitparams; i++)
+        {
+            BEexpol->SetParameter(i, parameters[i]);
+        }
+        vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}};
+        int limits_size = par_limits.size();
+        for (int i = 0; i < limits_size; i++)
+        {
+            int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+            BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+        }
+
+        double initial_param_bkg[] = {9.4e6, 0.47, 3.4}; // 0-30 GeV/c, 3sigma
+
+        // Initial parameters for background
+        BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]);
+        BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]);
+        BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]);
+
+        BEexpol->FixParameter(2, f1270Width);
+        BEexpol->FixParameter(5, a1320Width);
+        BEexpol->FixParameter(8, f1525Width);
+
+        BEexpol->FixParameter(1, f1270Mass);
+        BEexpol->FixParameter(4, a1320Mass);
+        BEexpol->FixParameter(7, f1525Mass);
+
+        BEexpol->FixParameter(10, f1710Mass);
+        BEexpol->FixParameter(11, f1710Width);
+
+        TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+        chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
+        cout << "chi2/ndf is " << chi2ndf << endl;
+
+        double *obtained_parameters = BEexpol->GetParameters();
+        TF1 *expol = new TF1("expol", simple_exponential, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);             //
+        TF1 *expol_clone = new TF1("expol_clone", simple_exponential, BEexpol->GetXmin(), BEexpol->GetXmax(), 3); //
+        for (int i = 0; i < 3; i++)
         {
             expol->SetParameter(i, obtained_parameters[size_fitparams + i]);
             expol_clone->SetParameter(i, obtained_parameters[size_fitparams + i]);
@@ -1232,6 +1382,11 @@ Double_t BWsumMassDepWidth(double *x, double *par)
 
 // Now we will define the functions for the exponential background
 
+Double_t simple_exponential(double *x, double *par) // 2 parameters
+{
+    return (par[0] * pow(x[0], par[1]) * TMath::Exp(-par[2] * x[0]));
+}
+
 Double_t exponential_bkg_1(double *x, double *par) // 3 parameters
 {
     return (par[0] * pow((x[0] - 2.0 * 0.497), par[1]) * TMath::Exp(-par[2] * (x[0] - 2.0 * 0.497)));
@@ -1340,6 +1495,11 @@ Double_t BWsumMassDepWidth_exponential(double *x, double *par)
 {
     // return (BWsumMassDepWidth(x, par) + expol_chkstar(x, &par[12]));
     return (BWsumMassDepWidth(x, par) + exponential_bkg_3(x, &par[12]));
+}
+
+Double_t BWsumMassDepWidth_simple_exponential(double *x, double *par)
+{
+    return (BWsumMassDepWidth(x, par) + simple_exponential(x, &par[12]));
 }
 
 Double_t BWsumMassDepWidth_expol1(double *x, double *par)

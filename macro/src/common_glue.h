@@ -11,7 +11,7 @@ const string kchannel = "KsKs_Channel";
 // const string kfoldername_temp = "strangeness_tutorial";
 const string kfoldername_temp = "higher-mass-resonances";
 
-// const string kvariation = ""; // change the variation here
+const string kvariation = ""; // change the variation here
 // const string kvariation = "_angsep_2"; // change the variation here
 // const string kvariation = "_all_tight"; // change the variation here
 // const string kvariation = "_PID3"; // change the variation here
@@ -42,7 +42,7 @@ const string kfoldername_temp = "higher-mass-resonances";
 // const string kvariation = "_lambda_rej4_id24939";
 // const string kvariation = "_lambda_rej6_id24939";
 // const string kvariation = "_lifetime15_id24939";
-const string kvariation = "_lifetime25_id24939";
+// const string kvariation = "_lifetime25_id24939";
 #endif
 
 ////********************************************************************************************
@@ -97,7 +97,9 @@ const string kMCFilename_temp = "211346.root"; // MC file
 // const string kDataFilename_temp2 = "351470.root"; // LHC23 pass4 thin (largest dataset)
 // const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
 // const string kDataFilename_temp2 = "359454.root"; // Medium dataset angular cut (wrong cut used)
-const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
+// const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
+// const string kDataFilename_temp2 = "363021.root"; // small train (ks mass cuts and angular separation cuts)
+const string kDataFilename_temp2 = "363594.root"; // medium train (ks mass cuts)
 
 const string kMCFilename_temp = "211346.root"; // MC file // temporary since injected MC is not available
 #endif

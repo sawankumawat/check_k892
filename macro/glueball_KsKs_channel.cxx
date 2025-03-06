@@ -21,8 +21,8 @@ void glueball_KsKs_channel()
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
-    const bool calculate_inv_mass = true;
-    const bool save_invmass_distributions = true;
+    const bool calculate_inv_mass = false;
+    const bool save_invmass_distributions = false;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -528,51 +528,51 @@ void glueball_KsKs_channel()
         hmasscorr->Draw("surf1");
         c3->SaveAs((outputQAfolder_str + "/ksks_mass_correlation." + koutputtype).c_str());
 
-        // kshort selection plots
-        // Armenteros alpha plot
-        TH1F *hArmenteros = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/halpha").c_str());
-        if (hArmenteros == nullptr)
-        {
-            cout << "Armenteros alpha plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hArmenteros);
-        hArmenteros->GetYaxis()->SetTitle("Counts");
-        hArmenteros->GetXaxis()->SetTitle("#alpha");
-        hArmenteros->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_alpha." + koutputtype).c_str());
+        // // kshort selection plots
+        // // Armenteros alpha plot
+        // TH1F *hArmenteros = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/halpha").c_str());
+        // if (hArmenteros == nullptr)
+        // {
+        //     cout << "Armenteros alpha plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hArmenteros);
+        // hArmenteros->GetYaxis()->SetTitle("Counts");
+        // hArmenteros->GetXaxis()->SetTitle("#alpha");
+        // hArmenteros->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_alpha." + koutputtype).c_str());
 
-        // DCA negative daughter to PV
-        TH1F *hDCAneg = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCAnegtopv").c_str());
-        if (hDCAneg == nullptr)
-        {
-            cout << "DCA negative daughter to PV plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hDCAneg);
-        hDCAneg->GetYaxis()->SetTitle("Counts");
-        hDCAneg->GetXaxis()->SetTitle("DCA neg. daughter to PV (cm)");
-        hDCAneg->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_DCAnegtopv." + koutputtype).c_str());
+        // // DCA negative daughter to PV
+        // TH1F *hDCAneg = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCAnegtopv").c_str());
+        // if (hDCAneg == nullptr)
+        // {
+        //     cout << "DCA negative daughter to PV plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hDCAneg);
+        // hDCAneg->GetYaxis()->SetTitle("Counts");
+        // hDCAneg->GetXaxis()->SetTitle("DCA neg. daughter to PV (cm)");
+        // hDCAneg->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_DCAnegtopv." + koutputtype).c_str());
 
-        // DCA positive daughter to PV
-        TH1F *hDCApos = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCApostopv").c_str());
-        if (hDCApos == nullptr)
-        {
-            cout << "DCA positive daughter to PV plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hDCApos);
-        hDCApos->GetYaxis()->SetTitle("Counts");
-        hDCApos->GetXaxis()->SetTitle("DCA pos. daughter to PV (cm)");
-        hDCApos->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_DCApostopv." + koutputtype).c_str());
+        // // DCA positive daughter to PV
+        // TH1F *hDCApos = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCApostopv").c_str());
+        // if (hDCApos == nullptr)
+        // {
+        //     cout << "DCA positive daughter to PV plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hDCApos);
+        // hDCApos->GetYaxis()->SetTitle("Counts");
+        // hDCApos->GetXaxis()->SetTitle("DCA pos. daughter to PV (cm)");
+        // hDCApos->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_DCApostopv." + koutputtype).c_str());
 
         // DCA daughters
         TH1F *hDCAdaughters = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hDCAV0Daughters").c_str());
@@ -693,20 +693,20 @@ void glueball_KsKs_channel()
         gPad->SetLogz(0);
         gPad->SetLogy(0);
 
-        // psi pair angle plot
-        TH1F *hPsiPair = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hpsipair").c_str());
-        if (hPsiPair == nullptr)
-        {
-            cout << "Psi pair angle plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hPsiPair);
-        hPsiPair->GetYaxis()->SetTitle("Counts");
-        hPsiPair->GetXaxis()->SetTitle("#Psi_{pair} (rad)");
-        hPsiPair->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_psiPair." + koutputtype).c_str());
+        // // psi pair angle plot
+        // TH1F *hPsiPair = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hpsipair").c_str());
+        // if (hPsiPair == nullptr)
+        // {
+        //     cout << "Psi pair angle plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hPsiPair);
+        // hPsiPair->GetYaxis()->SetTitle("Counts");
+        // hPsiPair->GetXaxis()->SetTitle("#Psi_{pair} (rad)");
+        // hPsiPair->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_psiPair." + koutputtype).c_str());
 
         // v0 cos PA
         TH1F *hV0CosPA = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hV0CosPA").c_str());
@@ -723,21 +723,21 @@ void glueball_KsKs_channel()
         hV0CosPA->Draw();
         c3->SaveAs((outputQAfolder_str + "/kshort_v0CosPA." + koutputtype).c_str());
 
-        // v0 radius
-        TH1F *hV0Radius = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hv0radius").c_str());
-        if (hV0Radius == nullptr)
-        {
-            cout << "V0 radius plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hV0Radius);
-        hV0Radius->GetYaxis()->SetTitle("Counts");
-        hV0Radius->GetXaxis()->SetTitle("V0 radius (cm)");
-        hV0Radius->GetXaxis()->SetRangeUser(0, 60);
-        hV0Radius->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_v0Radius." + koutputtype).c_str());
+        // // v0 radius
+        // TH1F *hV0Radius = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/hv0radius").c_str());
+        // if (hV0Radius == nullptr)
+        // {
+        //     cout << "V0 radius plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hV0Radius);
+        // hV0Radius->GetYaxis()->SetTitle("Counts");
+        // hV0Radius->GetXaxis()->SetTitle("V0 radius (cm)");
+        // hV0Radius->GetXaxis()->SetRangeUser(0, 60);
+        // hV0Radius->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_v0Radius." + koutputtype).c_str());
 
         // // negative daughter eta
         // TH1F *hNegDaughterEta = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_eta").c_str());
@@ -799,37 +799,37 @@ void glueball_KsKs_channel()
         // hPosDaughterPhi->Draw();
         // c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPhi." + koutputtype).c_str());
 
-        // negative daughter pT
-        gPad->SetLogy();
-        TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
-        if (hNegDaughterPt == nullptr)
-        {
-            cout << "Negative daughter pT plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hNegDaughterPt);
-        hNegDaughterPt->GetYaxis()->SetTitle("Counts");
-        hNegDaughterPt->GetXaxis()->SetTitle("Neg. daughter p_{T} (GeV/c)");
-        hNegDaughterPt->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPt." + koutputtype).c_str());
+        // // negative daughter pT
+        // gPad->SetLogy();
+        // TH1F *hNegDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_pt").c_str());
+        // if (hNegDaughterPt == nullptr)
+        // {
+        //     cout << "Negative daughter pT plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hNegDaughterPt);
+        // hNegDaughterPt->GetYaxis()->SetTitle("Counts");
+        // hNegDaughterPt->GetXaxis()->SetTitle("Neg. daughter p_{T} (GeV/c)");
+        // hNegDaughterPt->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_negDaughterPt." + koutputtype).c_str());
 
-        // positive daughter pT
-        TH1F *hPosDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_pt").c_str());
-        if (hPosDaughterPt == nullptr)
-        {
-            cout << "Positive daughter pT plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hPosDaughterPt);
-        hPosDaughterPt->GetYaxis()->SetTitle("Counts");
-        hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
-        hPosDaughterPt->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
-        gPad->SetLogy(0);
+        // // positive daughter pT
+        // TH1F *hPosDaughterPt = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/positive_pt").c_str());
+        // if (hPosDaughterPt == nullptr)
+        // {
+        //     cout << "Positive daughter pT plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hPosDaughterPt);
+        // hPosDaughterPt->GetYaxis()->SetTitle("Counts");
+        // hPosDaughterPt->GetXaxis()->SetTitle("Pos. daughter p_{T} (GeV/c)");
+        // hPosDaughterPt->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterPt." + koutputtype).c_str());
+        // gPad->SetLogy(0);
 
         // // negative daughter rapidity
         // TH1F *hNegDaughterRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/negative_y").c_str());
@@ -861,78 +861,78 @@ void glueball_KsKs_channel()
         // hPosDaughterRapidity->Draw();
         // c3->SaveAs((outputQAfolder_str + "/kshort_posDaughterRapidity." + koutputtype).c_str());
 
-        // Lambda mass
-        TH1F *hLambdaMass = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/Mass_lambda").c_str());
-        if (hLambdaMass == nullptr)
-        {
-            cout << "Lambda mass plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hLambdaMass);
-        hLambdaMass->GetYaxis()->SetTitle("Counts");
-        hLambdaMass->GetXaxis()->SetTitle("m_{#pi^{-}p} (GeV/c^{2})");
-        hLambdaMass->GetXaxis()->SetRangeUser(1.0, 1.25);
-        hLambdaMass->Draw();
-        TLine *pdgmass_lambda = new TLine(1.115683, 0, 1.115683, hLambdaMass->GetMaximum());
-        pdgmass_lambda->SetLineColor(kRed);
-        pdgmass_lambda->SetLineStyle(2);
-        pdgmass_lambda->SetLineWidth(2);
-        pdgmass_lambda->Draw("same");
-        c3->SaveAs((outputQAfolder_str + "/lambda_mass." + koutputtype).c_str());
+        // // Lambda mass
+        // TH1F *hLambdaMass = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/Mass_lambda").c_str());
+        // if (hLambdaMass == nullptr)
+        // {
+        //     cout << "Lambda mass plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hLambdaMass);
+        // hLambdaMass->GetYaxis()->SetTitle("Counts");
+        // hLambdaMass->GetXaxis()->SetTitle("m_{#pi^{-}p} (GeV/c^{2})");
+        // hLambdaMass->GetXaxis()->SetRangeUser(1.0, 1.25);
+        // hLambdaMass->Draw();
+        // TLine *pdgmass_lambda = new TLine(1.115683, 0, 1.115683, hLambdaMass->GetMaximum());
+        // pdgmass_lambda->SetLineColor(kRed);
+        // pdgmass_lambda->SetLineStyle(2);
+        // pdgmass_lambda->SetLineWidth(2);
+        // pdgmass_lambda->Draw("same");
+        // c3->SaveAs((outputQAfolder_str + "/lambda_mass." + koutputtype).c_str());
 
-        // Anti-Lambda mass
-        TH1F *hAntiLambdaMass = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_AntiLambda").c_str());
-        if (hAntiLambdaMass == nullptr)
-        {
-            cout << "Anti-Lambda mass plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hAntiLambdaMass);
-        hAntiLambdaMass->GetYaxis()->SetTitle("Counts");
-        // hAntiLambdaMass->GetXaxis()->SetTitle("m_{#bar{#Lambda}} (GeV/c^{2})");
-        hAntiLambdaMass->GetXaxis()->SetTitle("m_{#pi^{+}#bar{p}} (GeV/c^{2})");
-        hAntiLambdaMass->GetXaxis()->SetRangeUser(1.0, 1.25);
-        hAntiLambdaMass->Draw();
-        pdgmass_lambda->Draw("same");
-        c3->SaveAs((outputQAfolder_str + "/antilambda_mass." + koutputtype).c_str());
+        // // Anti-Lambda mass
+        // TH1F *hAntiLambdaMass = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_AntiLambda").c_str());
+        // if (hAntiLambdaMass == nullptr)
+        // {
+        //     cout << "Anti-Lambda mass plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hAntiLambdaMass);
+        // hAntiLambdaMass->GetYaxis()->SetTitle("Counts");
+        // // hAntiLambdaMass->GetXaxis()->SetTitle("m_{#bar{#Lambda}} (GeV/c^{2})");
+        // hAntiLambdaMass->GetXaxis()->SetTitle("m_{#pi^{+}#bar{p}} (GeV/c^{2})");
+        // hAntiLambdaMass->GetXaxis()->SetRangeUser(1.0, 1.25);
+        // hAntiLambdaMass->Draw();
+        // pdgmass_lambda->Draw("same");
+        // c3->SaveAs((outputQAfolder_str + "/antilambda_mass." + koutputtype).c_str());
 
-        // rapidity updated plot
-        TH1F *hRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/rapidity").c_str());
-        if (hRapidity == nullptr)
-        {
-            cout << "Rapidity plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hRapidity);
-        hRapidity->GetYaxis()->SetTitle("Counts");
-        hRapidity->GetXaxis()->SetTitle("K_{s}^{0} rapidity");
-        hRapidity->Draw();
-        c3->SaveAs((outputQAfolder_str + "/kshort_rapidity." + koutputtype).c_str());
+        // // rapidity updated plot
+        // TH1F *hRapidity = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/rapidity").c_str());
+        // if (hRapidity == nullptr)
+        // {
+        //     cout << "Rapidity plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hRapidity);
+        // hRapidity->GetYaxis()->SetTitle("Counts");
+        // hRapidity->GetXaxis()->SetTitle("K_{s}^{0} rapidity");
+        // hRapidity->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/kshort_rapidity." + koutputtype).c_str());
 
-        // TPC dE/dx plot
-        // gPad->SetLogx();
-        // gPad->SetLogz();
-        TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
-        if (hTPCenergyloss == nullptr)
-        {
-            cout << "TPC energy loss plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.14, 0.05, 0.15);
-        SetHistoQA(hTPCenergyloss);
-        hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
-        hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
-        hTPCenergyloss->SetStats(0);
-        hTPCenergyloss->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
+        // // TPC dE/dx plot
+        // // gPad->SetLogx();
+        // // gPad->SetLogz();
+        // TH2F *hTPCenergyloss = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/dE_by_dx_TPC").c_str());
+        // if (hTPCenergyloss == nullptr)
+        // {
+        //     cout << "TPC energy loss plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.14, 0.05, 0.15);
+        // SetHistoQA(hTPCenergyloss);
+        // hTPCenergyloss->GetYaxis()->SetTitle("TPC dE/dx (a.u.)");
+        // hTPCenergyloss->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        // hTPCenergyloss->GetXaxis()->SetRangeUser(0.1, 50);
+        // hTPCenergyloss->SetStats(0);
+        // hTPCenergyloss->Draw("colz");
+        // c3->SaveAs((outputQAfolder_str + "/kshort_TPCdEdx." + koutputtype).c_str());
 
         // Number of ks produced in an event plot
         // gPad->SetLogy();
@@ -955,44 +955,44 @@ void glueball_KsKs_channel()
         // cout << "Percentage of events in which > 1 Ks are produced " << hNofKshort->Integral(3, hNofKshort->GetNbinsX()) / hNofKshort->Integral(2, hNofKshort->GetNbinsX()) * 100 << endl;
         c3->SaveAs((outputQAfolder_str + "/NKs_produced." + koutputtype).c_str());
 
-        // multiplicity distribution FT0M
-        TH1F *hMult_FT0M = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/multdist_FT0M").c_str());
-        if (hMult_FT0M == nullptr)
-        {
-            cout << "Multiplicity distribution FT0M plot not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
-        SetHistoQA(hMult_FT0M);
-        hMult_FT0M->GetYaxis()->SetTitle("Counts");
-        hMult_FT0M->GetXaxis()->SetTitle("Multiplicity FT0M");
-        hMult_FT0M->GetXaxis()->SetRangeUser(-10000, 45000);
-        hMult_FT0M->GetXaxis()->SetNdivisions(505);
-        hMult_FT0M->Draw();
-        c3->SaveAs((outputQAfolder_str + "/mult_FT0M." + koutputtype).c_str());
+        // // multiplicity distribution FT0M
+        // TH1F *hMult_FT0M = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/multdist_FT0M").c_str());
+        // if (hMult_FT0M == nullptr)
+        // {
+        //     cout << "Multiplicity distribution FT0M plot not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.15, 0.03, 0.05, 0.15);
+        // SetHistoQA(hMult_FT0M);
+        // hMult_FT0M->GetYaxis()->SetTitle("Counts");
+        // hMult_FT0M->GetXaxis()->SetTitle("Multiplicity FT0M");
+        // hMult_FT0M->GetXaxis()->SetRangeUser(-10000, 45000);
+        // hMult_FT0M->GetXaxis()->SetNdivisions(505);
+        // hMult_FT0M->Draw();
+        // c3->SaveAs((outputQAfolder_str + "/mult_FT0M." + koutputtype).c_str());
 
-        // Mass correlation between lambda and Kshort
-        gPad->SetLogx(0);
-        gPad->SetLogz(0);
-        gPad->SetLogy(0);
-        TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after9").c_str());
-        if (hMassCorr_ks_lambda_before == nullptr)
-        {
-            cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
-            return;
-        }
-        c3->Clear();
-        SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
-        SetHistoQA(hMassCorr_ks_lambda_before);
-        hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
-        hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.6);
-        hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
-        hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
-        hMassCorr_ks_lambda_before->GetZaxis()->SetMaxDigits(3);
-        hMassCorr_ks_lambda_before->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
+        // // Mass correlation between lambda and Kshort
+        // gPad->SetLogx(0);
+        // gPad->SetLogz(0);
+        // gPad->SetLogy(0);
+        // TH2F *hMassCorr_ks_lambda_before = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after9").c_str());
+        // if (hMassCorr_ks_lambda_before == nullptr)
+        // {
+        //     cout << "Mass correlation plot between lambda and Kshort before the cut not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
+        // SetHistoQA(hMassCorr_ks_lambda_before);
+        // hMassCorr_ks_lambda_before->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        // hMassCorr_ks_lambda_before->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        // hMassCorr_ks_lambda_before->GetYaxis()->SetTitleOffset(1.6);
+        // hMassCorr_ks_lambda_before->GetXaxis()->SetRangeUser(0.25, 0.78);
+        // hMassCorr_ks_lambda_before->GetYaxis()->SetRangeUser(1.05, 1.5);
+        // hMassCorr_ks_lambda_before->GetZaxis()->SetMaxDigits(3);
+        // hMassCorr_ks_lambda_before->Draw("colz");
+        // c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
 
         // Mass correlation between lambda and Kshort after the cut
         TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after10").c_str());

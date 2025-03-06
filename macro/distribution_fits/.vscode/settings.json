@@ -2,6 +2,10 @@
     "files.associations": {
         "c1_n2.C": "cpp",
         "ostream": "cpp",
-        "c1_n3.C": "cpp"
+        "c1_n3.C": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
     }
 }

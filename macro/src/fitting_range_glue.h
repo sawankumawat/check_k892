@@ -2,26 +2,6 @@
 
 // Projection of signal in different pT bins *************************************
 
-#ifdef DATASET_LHC220_pass6_small
-#ifdef KsKschannel
-const Int_t Npt = 1;
-// const Int_t Npt = 5;
-double pT_bins[Npt + 1] = {0.0, 30.0};
-// float pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 6.0, 12.0};
-// float pT_bins[Npt + 1] = {0.0, 12.0};
-const int pt_start = 0;
-const int pt_end = Npt;
-#endif
-#ifdef KKchannel
-const Int_t Npt = 1;
-// const Int_t Npt = 8;
-double pT_bins[Npt + 1] = {0.0, 30.0};
-// float pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 10.0, 20.0, 30.0};
-const int pt_start = 0;
-const int pt_end = Npt;
-#endif
-#endif
-
 #ifdef DATASET_LHC22o_pass7_small
 #ifdef KsKschannel
 const Int_t Npt = 1;
@@ -46,7 +26,7 @@ const int pt_end = Npt;
 #ifdef KsKschannel
 const std::vector<vector<float>> kNormRangepT = {
     // 13.6 TeV
-    // {2.60, 2.70}, // 0.0-30.0 GeV/c
+    // {2.20, 2.30}, // 0.0-30.0 GeV/c
     // {2.80, 2.90}, // 0.0-1.0 GeV/c
     {2.50, 2.60}, // 1.0-2.0 GeV/c
     {2.20, 2.30}, // 2.0-3.0 GeV/c

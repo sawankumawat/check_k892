@@ -21,11 +21,11 @@ void gaussian_fit_Ks()
     bool saveplots = true;
     bool showpt_study = false;
     // gStyle->SetOptStat(1110);
-    gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(0);
     gStyle->SetFitFormat("7.7g"); // 6 significant digits
     // gStyle->SetOptFit(1111);
     // gStyle->SetOptFit(11);
-    gStyle->SetOptFit(0);
+    // gStyle->SetOptFit(0);
 
     int rebin = 1;
     // configurables *********************
@@ -82,7 +82,7 @@ void gaussian_fit_Ks()
     hInvMassClone1->SetLineColor(0);
     hInvMassClone1->SetLineWidth(0);
     hInvMassClone1->SetFillColor(5);
-    hInvMassClone1->GetXaxis()->SetRangeUser(ksmass - 4.3 * kswidth, ksmass + 4 * kswidth);
+    hInvMassClone1->GetXaxis()->SetRangeUser(ksmass - 3.0 * kswidth, ksmass + 3.0 * kswidth);
     hInvMassClone1->Draw("E3 hist same");
     hInvMassClone2->Draw("pe same");
     // // TF1 *fit = fitgaus(hInvMass, ksmass, kswidth);

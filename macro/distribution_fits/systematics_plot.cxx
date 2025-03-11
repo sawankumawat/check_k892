@@ -72,6 +72,11 @@ void systematics_plot()
     hWidth->LabelsOption("d", "X");
     // make the x axis labels left aligned
 
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.035);
+    lat.SetTextFont(42);
+   
     TCanvas *c1 = new TCanvas("c1", "Relative Uncertainty Mass", 720, 720);
     SetCanvasStyle(c1, 0.18, 0.12, 0.05, 0.14);
     SetHistoQA(hMass);
@@ -82,7 +87,11 @@ void systematics_plot()
     hMassTotal->SetLineColor(4);
     hMassTotal->SetLineWidth(3);
     hMassTotal->Draw("same");
-    c1->SaveAs("/home/sawan/Music/fract_uncert_mass.png");
+    lat.DrawLatex(0.25, 0.88, "ALICE");
+    lat.DrawLatex(0.25, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.25, 0.76, "FT0M (0-100%), |#it{y}|<0.5");
+    lat.DrawLatex(0.25, 0.70, "f_{0}(1710) Mass");
+    c1->SaveAs("/home/sawan/Videos/fract_uncert_mass.png");
 
     TCanvas *c2 = new TCanvas("c2", "Relative Uncertainty Width", 720, 720);
     SetCanvasStyle(c2, 0.18, 0.12, 0.05, 0.14);
@@ -94,5 +103,9 @@ void systematics_plot()
     hWidthTotal->SetLineColor(4);
     hWidthTotal->SetLineWidth(3);
     hWidthTotal->Draw("same");
-    c2->SaveAs("/home/sawan/Music/fract_uncert_width.png");
+    lat.DrawLatex(0.25, 0.88, "ALICE");
+    lat.DrawLatex(0.25, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.25, 0.76, "FT0M (0-100%), |#it{y}|<0.5");
+    lat.DrawLatex(0.25, 0.70, "f_{0}(1710) Width");
+    c2->SaveAs("/home/sawan/Videos/fract_uncert_width.png");
 }

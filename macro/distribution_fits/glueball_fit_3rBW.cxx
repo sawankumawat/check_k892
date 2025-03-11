@@ -43,21 +43,75 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 
 void glueball_fit_3rBW()
 {
-    ofstream file;
-    file.open("fit_params.txt");
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/fits/3rBW_fits";
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/fits/3rBW_fits";
-    // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/fits/3rBW_fits";
 
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs";
-    string savepath = path + "/fits/3rBw_fits";
+    //****************systematics train*******************************
+    // Defaults
+    const string kvariation1 = "_id24937"; // first four are same
+    // const string kvariation1 = "_id24938";
+    // const string kvariation1 = "_id24939";
+    // const string kvariation1 = "_id24940";
+
+    // Track selections
+    //  const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
+    //  const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
+    //  const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
+    //  const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
+    //  const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
+    //  const string kvariation1 = "_TPCcrfc0p9_id24940"; //TPC crossed rows over findable clusters
+    //  const string kvariation1 = "_TPCcrfc1p0_id24940"; //TPC crossed rows over findable clusters
+
+    // Topological selections
+    //  const string kvariation1 = "_cospa0p95_id24938"; //Cosine PA
+    //  const string kvariation1 = "_cospa0p99_id24938";
+    //  const string kvariation1 = "_decay_rad0p4_id24938"; //Transverse radius
+    //  const string kvariation1 = "_decay_rad0p6_id24938";
+    //  const string kvariation1 = "_DCAv0dau0p3_id24938"; //DCA b/w V0 daughters
+    //  const string kvariation1 = "_DCAv0dau1_id24938";
+    //  const string kvariation1 = "_lifetime15_id24939"; //Lifetime
+    //  const string kvariation1 = "_lifetime25_id24939";
+    //  const string kvariation1 = "_lambda_rej4_id24939";
+    //  const string kvariation1 = "_lambda_rej6_id24939";
+    //  const string kvariation1 = "_Ks_selection4_id24939";
+    //  const string kvariation1 = "_Ks_selection5_id24939";
+
+    // *******************variations for Ks cuts and angular separation************************
+    ////Defaults
+    // const string kvariation1 = "_id24794";
+    // const string kvariation1 = "_id25081";
+    ////Variations
+    // const string kvariation1 = "_1Kscut_id24794";
+    // const string kvariation1 = "_1p5Kscut_id24794";
+    // const string kvariation1 = "_2Kscut_id24794";
+    // const string kvariation1 = "_4Kscut_id24794";
+    // const string kvariation1 = "_angsep_0p5_id25081";
+    // const string kvariation1 = "_angsep_1_id25081";
+    // const string kvariation1 = "_angsep_1p5_id25081";
+    // const string kvariation1 = "_angsep_2_id25081";
+    // const string kvariation1 = "_angsep_3_id25081";
+
+    //*********for systematics and default study with full train ************************
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351470/KsKs_Channel/higher-mass-resonances_PID3";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
+    string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
+
+    // //*********for temporary study with angular separation cuts************************
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
+    // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
+
+    string sysvar = "varC2"; // default
+
+    ofstream file;
+    file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
+
+    string savepath = path2 + "/fits/3rBw_fits";
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60_fullpt.root", "READ"); // full pT range
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances/hglue_ROTATED_norm_2.50_2.60.root", "READ");
-    // TFile *f = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/341913/KsKs_Channel/higher-mass-resonances_twoKsOnly4sigma/hglue_ROTATED_norm_2.50_2.60.root", "READ");
-    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.30_2.40.root").c_str(), "READ");
+    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
     int colors[] = {4, 6, 28, 46};
     double masses[] = {f1270Mass, f1525Mass, f1710Mass};
@@ -166,7 +220,6 @@ void glueball_fit_3rBW()
 
         BEexpol->FixParameter(2, f1270Width);
         BEexpol->FixParameter(5, f1525Width);
-
 
         // BEexpol->FixParameter(7, f1710Mass);
         // BEexpol->FixParameter(8, f1710Width);
@@ -865,33 +918,41 @@ void glueball_fit_3rBW()
         double expol3 = BEexpol->GetParameter(11);
         double expol4 = BEexpol->GetParameter(12);
 
-        // file << fitstatus << endl;
-        file << std::fixed << std::setprecision(2);
-        file << fitrangelow << " - " << fitrangehigh << endl;
-        file << std::fixed << std::setprecision(1);
-        file << chi2_ndf << endl;
-        file << std::fixed << std::setprecision(0);
-        file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
-        file << std::fixed << std::setprecision(1);
-        file << fitmass1270 * 1000.0 << " ± " << fitmass1270_err * 1000.0 << endl;
-        file << fitwidth1270 * 1000.0 << " ± " << fitwidth1270_err * 1000.0 << endl;
-        file << std::fixed << std::setprecision(0);
-        file << fitnorm1525 << " ± " << fitnorm1525_err << endl;
-        file << std::fixed << std::setprecision(1);
-        file << fitmass1525 * 1000.0 << " ± " << fitmass1525_err * 1000.0 << endl;
-        file << fitwidth1525 * 1000.0 << " ± " << fitwidth1525_err * 1000.0 << endl;
+        // // file << fitstatus << endl;
+        // file << std::fixed << std::setprecision(2);
+        // file << fitrangelow << " - " << fitrangehigh << endl;
+        // file << std::fixed << std::setprecision(1);
+        // file << chi2_ndf << endl;
+        // file << std::fixed << std::setprecision(0);
+        // file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
+        // file << std::fixed << std::setprecision(1);
+        // file << fitmass1270 * 1000.0 << " ± " << fitmass1270_err * 1000.0 << endl;
+        // file << fitwidth1270 * 1000.0 << " ± " << fitwidth1270_err * 1000.0 << endl;
+        // file << std::fixed << std::setprecision(0);
+        // file << fitnorm1525 << " ± " << fitnorm1525_err << endl;
+        // file << std::fixed << std::setprecision(1);
+        // file << fitmass1525 * 1000.0 << " ± " << fitmass1525_err * 1000.0 << endl;
+        // file << fitwidth1525 * 1000.0 << " ± " << fitwidth1525_err * 1000.0 << endl;
 
-        // f0(1710)
-        file << endl;
-        file << std::fixed << std::setprecision(1);
-        file << "Chi2/ndf " << endl;
-        file << chi2_ndf << endl;
-        file << std::fixed << std::setprecision(0);
+        // // f0(1710)
+        // file << endl;
+        // file << std::fixed << std::setprecision(1);
+        // file << "Chi2/ndf " << endl;
+        // file << chi2_ndf << endl;
+        // file << std::fixed << std::setprecision(0);
+        // file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
+        // file << std::fixed << std::setprecision(1);
+        // file << fitmass1710 * 1000.0 << " ± " << fitmass1710_err * 1000.0 << endl;
+        // file << fitwidth1710 * 1000.0 << " ± " << fitwidth1710_err * 1000.0 << endl;
+        // file << endl;
+
+        file << "Norm range " << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << endl;
+        file << "Fit range " << fitrangelow << " - " << fitrangehigh << endl;
+        file << "Fit function used " << BEexpol->GetName() << endl;
+        file << "Fit parameters of f1710 " << endl;
         file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
-        file << std::fixed << std::setprecision(1);
-        file << fitmass1710 * 1000.0 << " ± " << fitmass1710_err * 1000.0 << endl;
-        file << fitwidth1710 * 1000.0 << " ± " << fitwidth1710_err * 1000.0 << endl;
-        file << endl;
+        file << fitmass1710 << " ± " << fitmass1710_err << endl;
+        file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
 
         // #if defined(b_exponential) || defined(b_modfied_boltzmann)
         //         file << expol1 << ", " << expol2 << ", " << expol3 << ", " << expol4 << endl;
@@ -988,6 +1049,7 @@ void glueball_fit_3rBW()
         hinvMass->GetXaxis()->SetTitleOffset(1.02);
         hinvMass->GetYaxis()->SetTitleOffset(0.8);
         hinvMass->GetYaxis()->CenterTitle(0);
+        hinvMass->GetXaxis()->SetRangeUser(1.05, 2.15);
         // hinvMass->SetMarkerStyle(22);
         hinvMass->SetMarkerSize(0.8);
         hinvMass->SetLineColor(1);
@@ -995,7 +1057,7 @@ void glueball_fit_3rBW()
         hinvMass->SetStats(0);
         hinvMass->SetMinimum(-100);
         // hinvMass->SetMaximum(0.9e6);
-        hinvMass->SetMaximum(0.9e6);
+        hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.1);
         hinvMass->GetYaxis()->SetMaxDigits(4);
         hinvMass->GetYaxis()->SetNdivisions(505);
         hinvMass->Draw("pe");
@@ -1007,40 +1069,39 @@ void glueball_fit_3rBW()
         onlyBW->SetNpx(1000);
         gPad->Update();
 
-        TArrow *arrow = new TArrow(0.2994429, 0.6609195, 0.2994429, 0.4482759, 0.02, "|>");
+        TArrow *arrow = new TArrow(0.3259053, 0.7255747, 0.3259053, 0.5158046, 0.02, "|>");
+        arrow->SetFillColor(1);
+        arrow->SetFillStyle(1001);
+        arrow->SetLineWidth(2);
         arrow->SetNDC();
-        // arrow->SetLineColor(1); // Set arrow color
-        // arrow->SetFillColor(1); // Set arrow fill color
-        arrow->SetLineWidth(2); // Set arrow width
         arrow->Draw();
-
-        TLatex *text1 = new TLatex(0.2994429, 0.6609195 + 0.05, "f_{2}(1270)");
-        text1->SetNDC();
-        text1->SetTextSize(0.05);
-        text1->SetTextAlign(22);
-        text1->Draw("same");
-
-        TArrow *arrow2 = new TArrow(0.4256128, 0.5747126, 0.4256128, 0.3649425, 0.02, "|>");
-        arrow2->SetNDC();
-        arrow2->SetLineWidth(2);
-        arrow2->Draw();
-
-        TLatex *text2 = new TLatex(0.4256128, 0.5747126 + 0.05, "f'_{2}(1525)");
-        text2->SetNDC();
-        text2->SetTextSize(0.05);
-        text2->SetTextAlign(22);
-        text2->Draw("same");
-
-        TArrow *arrow3 = new TArrow(0.5473538, 0.4712644, 0.5473538, 0.2614943, 0.02, "|>");
-        arrow3->SetNDC();
-        arrow3->SetLineWidth(2);
-        arrow3->Draw();
-
-        TLatex *text3 = new TLatex(0.5473538, 0.4712644 + 0.05, "f_{0}(1710)");
-        text3->SetNDC();
-        text3->SetTextSize(0.05);
-        text3->SetTextAlign(22);
-        text3->Draw("same");
+        TLatex *tex = new TLatex(0.3356546, 0.7816092, "f_{2}(1270)");
+        tex->SetNDC();
+        tex->SetTextAlign(22);
+        tex->SetLineWidth(2);
+        tex->Draw();
+        arrow = new TArrow(0.5, 0.6048851, 0.5, 0.3951149, 0.02, "|>");
+        arrow->SetFillColor(1);
+        arrow->SetFillStyle(1001);
+        arrow->SetLineWidth(2);
+        arrow->SetNDC();
+        arrow->Draw();
+        tex = new TLatex(0.4916435, 0.6522989, "f'_{2}(1525)");
+        tex->SetNDC();
+        tex->SetTextAlign(22);
+        tex->SetLineWidth(2);
+        tex->Draw();
+        arrow = new TArrow(0.6420613, 0.4109195, 0.6420613, 0.2011494, 0.02, "|>");
+        arrow->SetFillColor(1);
+        arrow->SetFillStyle(1001);
+        arrow->SetLineWidth(2);
+        arrow->SetNDC();
+        arrow->Draw();
+        tex = new TLatex(0.6448468, 0.4511494, "f_{0}(1710)");
+        tex->SetNDC();
+        tex->SetTextAlign(22);
+        tex->SetLineWidth(2);
+        tex->Draw();
 
         TLegend *leg = new TLegend(0.65, 0.47, 0.99, 0.77);
         leg->SetFillStyle(0);
@@ -1048,9 +1109,9 @@ void glueball_fit_3rBW()
         leg->SetTextSize(0.06);
         leg->SetBorderSize(0);
         leg->AddEntry(hinvMass, "pp #sqrt{s} = 13.6 TeV", "lpe");
-        leg->AddEntry(BEexpol, "3 BW + Expol1", "l");
+        leg->AddEntry(BEexpol, "3 BW + Residual BG", "l");
         leg->AddEntry(onlyBW, "Signal", "f");
-        leg->AddEntry(expol, "Expol1", "l");
+        leg->AddEntry(expol, "Residual BG", "l");
         leg->Draw("same");
 
         TLatex *text4 = new TLatex(0.65, 0.80, "ALICE work in progress");
@@ -1067,6 +1128,7 @@ void glueball_fit_3rBW()
         hsubtracted->GetYaxis()->SetLabelSize(0.04 / pad2Size);
         hsubtracted->GetYaxis()->SetNdivisions(504);
         hsubtracted->GetYaxis()->SetMaxDigits(4);
+        hsubtracted->GetXaxis()->SetRangeUser(1.05, 2.15);
         hsubtracted->SetStats(0);
         hsubtracted->SetMinimum(0);
         // hsubtracted->SetMaximum(0.13e6);
@@ -1075,18 +1137,22 @@ void glueball_fit_3rBW()
         // hsubtracted->GetYaxis()->SetMaxDigits(10);
         hsubtracted->Draw("pe");
 
-        TLatex *text5 = new TLatex(0.55, 0.80, "Residual background subtraction");
-        text5->SetNDC();
-        text5->SetTextSize(0.06);
-        text5->SetTextFont(42);
-        text5->Draw("same");
+        TLatex lat5;
+        lat5.SetNDC();
+        lat5.SetTextSize(0.06);
+        lat5.SetTextFont(42);
+        lat5.DrawLatex(0.59, 0.80, "Residual background subtraction");
+        lat5.DrawLatex(0.69, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
+        lat5.DrawLatex(0.69, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
+        lat5.DrawLatex(0.69, 0.50, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
         {
             singlefits1[i]->Draw("same");
         }
         c1->Update();
-        c1->SaveAs("/home/sawan/Music/r3BWfit_doublepanel.pdf");
+        // c1->SaveAs("/home/sawan/Music/r3BWfit_doublepanel.pdf");
+        c1->SaveAs((savepath + Form("/rBWfit_doublepanel_pt_%.2f_%.2f.png", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
 
 #endif
 

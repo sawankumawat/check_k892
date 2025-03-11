@@ -12,6 +12,7 @@ void toy_model()
 {
     TRandom3 randGen(0); // Random seed
 
+    gStyle->SetOptStat(0);
     // Define masses (GeV/c^2)
     double m_mother = 1.713;    // Mass of f1710
     double m_daughter1 = 0.493; //  daughter 1 (Ks mass)
@@ -19,10 +20,10 @@ void toy_model()
 
     // Histogram for decay product pT
     TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
-    TH1F *h_angdist = new TH1F("h_angdist", "Angular distribution of daughter particles; Angular separation (rad); Events", 500, 0, 3 * TMath::Pi());
+    TH1F *h_angdist = new TH1F("h_angdist", "Angular distribution of daughter particles; Angular separation (rad); Events", 400, 0, 4);
 
     // Loop over multiple decay events
-    int nEvents = 1e6;
+    int nEvents = 1e8;
     TLorentzVector lvmother;
     for (int i = 0; i < nEvents; i++)
     {
@@ -69,4 +70,5 @@ void toy_model()
     SetHistoQA(h_angdist);
     h_angdist->GetYaxis()->SetMaxDigits(3);
     h_angdist->Draw();
+    c2->SaveAs("angular_separation.png");
 }

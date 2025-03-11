@@ -21,8 +21,8 @@ void glueball_KsKs_channel()
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
-    const bool calculate_inv_mass = false;
-    const bool save_invmass_distributions = false;
+    const bool calculate_inv_mass = true;
+    const bool save_invmass_distributions = true;
     // change here ***********************************************************
 
     TString outputfolder = kSignalOutput + "/" + kchannel + "/" + kfoldername;
@@ -77,6 +77,8 @@ void glueball_KsKs_channel()
     int multhigh = 100;
     double realevents = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
     cout << "*******number of events from the multiplicity histogram is *******:" << realevents << endl;
+
+    // const string tempfoldername = "higher-mass-resonances_id25081"; // for common rotational background
 
     if (calculate_inv_mass)
     {
@@ -216,8 +218,13 @@ void glueball_KsKs_channel()
             hfsig->SetLineColor(kBlack);
             hfsig->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
             hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
-            hfsig->GetXaxis()->SetRangeUser(1.1, 2.3);
+            hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
             hfsig->Draw("e");
+            TLine *linesig = new TLine(1.1, 0, 2.3, 0);
+            linesig->SetLineColor(kRed);
+            linesig->SetLineStyle(2);
+            linesig->SetLineWidth(2);
+            // linesig->Draw("same");
             // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
             // gPad->Update();
@@ -1002,6 +1009,8 @@ void glueball_KsKs_channel()
             return;
         }
         c3->Clear();
+        gPad->SetLogy(0);
+        gPad->SetLogz();
         SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
         SetHistoQA(hMassCorr_ks_lambda_after);
         hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");

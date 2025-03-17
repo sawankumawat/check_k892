@@ -1,21 +1,242 @@
+   ------------------------------------------------------------------
+  | Welcome to ROOT 6.26/14                        https://root.cern |
+  | (c) 1995-2021, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Nov 28 2023, 00:39:39                 |
+  | From tags/v6-26-14@v6-26-14                                      |
+  | With c++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0                   |
+  | Try '.help', '.demo', '.license', '.credits', '.quit'/'.q'       |
+   ------------------------------------------------------------------
 
-Correlation Matrix:
 
-          p0          p1          p2          p3          p4          p5          p6          p7          p8          p9         p10         p11         p12         p13         p14         p15
-p0            1     0.33912  -0.0024418    -0.24129     0.21925     -0.2644     0.20962   -0.020066     0.18991    0.042478 -0.00071616    0.017448   -0.043796   -0.064205   -0.023156  -0.0049741
-p1      0.33912           1  -0.0015153    -0.81685    -0.28278    -0.76151     -0.3396    -0.06671    -0.24407    -0.34687     0.13101    -0.23992     -0.1778    -0.12449    -0.24272     0.30555
-p2   -0.0024418  -0.0015153           1  0.00042156  2.4122e-06  0.00034155   4.548e-05  1.9498e-05  2.5152e-05  8.3281e-05 -3.1268e-05  6.0325e-05  0.00019906  0.00020681  0.00019344 -0.00016074
-p3     -0.24129    -0.81685  0.00042156           1     0.67449     0.97792     0.62031     0.10808     0.45648     0.62493    -0.21746     0.43152     0.59745     0.54255     0.66095    -0.70741
-p4      0.21925    -0.28278  2.4122e-06     0.67449           1     0.71163     0.60452      0.1002     0.44412     0.61523    -0.20723     0.42559     0.68743     0.65151     0.72769    -0.74415
-p5      -0.2644    -0.76151  0.00034155     0.97792     0.71163           1     0.55752     0.10977       0.402     0.59868     -0.2128     0.41583     0.58456      0.5338     0.64239    -0.68524
-p6      0.20962     -0.3396   4.548e-05     0.62031     0.60452     0.55752           1     0.28218      0.9098      0.4655    0.043868      0.2367     0.71634     0.68142     0.76574    -0.76608
-p7    -0.020066    -0.06671  1.9498e-05     0.10808      0.1002     0.10977     0.28218           1     0.38205    -0.16469     0.29519    -0.22435    0.087727    0.083628    0.093512   -0.093347
-p8      0.18991    -0.24407  2.5152e-05     0.45648     0.44412       0.402      0.9098     0.38205           1     0.26911     0.14686    0.095625     0.55011     0.52392     0.59275    -0.58426
-p9     0.042478    -0.34687  8.3281e-05     0.62493     0.61523     0.59868      0.4655    -0.16469     0.26911           1    -0.41878     0.88575     0.62007     0.59503     0.69185    -0.63963
-p10 -0.00071616     0.13101 -3.1268e-05    -0.21746    -0.20723     -0.2128    0.043868     0.29519     0.14686    -0.41878           1     -0.4489    -0.21665    -0.20543    -0.22095     0.23899
-p11    0.017448    -0.23992  6.0325e-05     0.43152     0.42559     0.41583      0.2367    -0.22435    0.095625     0.88575     -0.4489           1     0.41162      0.3959     0.47384      -0.417
-p12   -0.043796     -0.1778  0.00019906     0.59745     0.68743     0.58456     0.71634    0.087727     0.55011     0.62007    -0.21665     0.41162           1     0.99626     0.99066    -0.97946
-p13   -0.064205    -0.12449  0.00020681     0.54255     0.65151      0.5338     0.68142    0.083628     0.52392     0.59503    -0.20543      0.3959     0.99626           1     0.98046    -0.95927
-p14   -0.023156    -0.24272  0.00019344     0.66095     0.72769     0.64239     0.76574    0.093512     0.59275     0.69185    -0.22095     0.47384     0.99066     0.98046           1    -0.98097
-p15   -0.0049741     0.30555 -0.00016074    -0.70741    -0.74415    -0.68524    -0.76608   -0.093347    -0.58426    -0.63963     0.23899      -0.417    -0.97946    -0.95927    -0.98097           1
+Processing syschecks.cxx...
+default
+significance is 19.74
+statSignificance is 8.49
+chi2ndf is 2.04
+fit mass 1709.10 ± 4.20
+fit width 145.56 ± 15.07
+
+varA1
+significance is 16.36
+statSignificance is 8.47
+chi2ndf is 2.40
+fit mass 1711.98 ± 4.30
+fit width 130.38 ± 14.19
+
+varA2
+significance is 22.00
+statSignificance is 7.73
+chi2ndf is 2.58
+fit mass 1711.77 ± 4.18
+fit width 161.56 ± 18.35
+
+varA3
+significance is 18.04
+statSignificance is 7.92
+chi2ndf is 2.08
+fit mass 1709.16 ± 4.31
+fit width 137.21 ± 14.73
+
+varA4
+significance is 18.21
+statSignificance is 8.09
+chi2ndf is 2.80
+fit mass 1713.92 ± 4.23
+fit width 143.20 ± 16.33
+
+varB1
+significance is 22.11
+statSignificance is 8.42
+chi2ndf is 2.09
+fit mass 1709.13 ± 4.11
+fit width 155.88 ± 16.03
+
+varB2
+significance is 17.45
+statSignificance is 8.46
+chi2ndf is 2.00
+fit mass 1709.11 ± 4.32
+fit width 135.14 ± 14.24
+
+varC1
+significance is 28.87
+statSignificance is 9.01
+chi2ndf is 2.14
+fit mass 1694.48 ± 4.25
+fit width 179.26 ± 15.97
+
+varC2
+significance is 18.94
+statSignificance is 8.68
+chi2ndf is 2.65
+fit mass 1711.16 ± 4.13
+fit width 141.55 ± 14.69
+
+varC3
+significance is 21.68
+statSignificance is 12.10
+chi2ndf is 2.09
+fit mass 1706.53 ± 3.97
+fit width 152.68 ± 12.66
+
+varC4
+significance is 27.94
+statSignificance is 66.65
+chi2ndf is 4.01
+fit mass 1696.52 ± 3.53
+fit width 161.81 ± 6.08
+
+varD1
+significance is 20.00
+statSignificance is 7.26
+chi2ndf is 2.05
+fit mass 1706.79 ± 4.53
+fit width 149.49 ± 16.57
+
+varD2
+significance is 18.94
+statSignificance is 9.34
+chi2ndf is 2.22
+fit mass 1711.29 ± 4.00
+fit width 139.71 ± 13.77
+
+varD3
+significance is 19.25
+statSignificance is 8.75
+chi2ndf is 2.03
+fit mass 1709.10 ± 4.20
+fit width 142.40 ± 14.54
+
+varD4
+significance is 20.26
+statSignificance is 16.58
+chi2ndf is 2.02
+fit mass 1708.81 ± 4.10
+fit width 145.56 ± 15.07
+
+varTrB1
+significance is 21.56
+statSignificance is 7.95
+chi2ndf is 2.11
+fit mass 1706.10 ± 4.78
+fit width 161.22 ± 17.19
+
+varTrB2
+significance is 21.38
+statSignificance is 9.20
+chi2ndf is 1.81
+fit mass 1708.03 ± 4.01
+fit width 145.42 ± 13.90
+
+varTrC1
+significance is 21.33
+statSignificance is 8.88
+chi2ndf is 1.78
+fit mass 1710.42 ± 4.02
+fit width 143.53 ± 14.57
+
+varTrC2
+significance is 19.70
+statSignificance is 8.25
+chi2ndf is 2.24
+fit mass 1712.83 ± 4.73
+fit width 141.68 ± 15.44
+
+varTrD1
+significance is 19.71
+statSignificance is 8.49
+chi2ndf is 2.04
+fit mass 1709.09 ± 4.21
+fit width 145.59 ± 15.09
+
+varTrD2
+significance is 17.84
+statSignificance is 8.41
+chi2ndf is 1.86
+fit mass 1712.31 ± 4.00
+fit width 130.89 ± 14.41
+
+varToA1
+significance is 18.30
+statSignificance is 8.62
+chi2ndf is 1.91
+fit mass 1706.08 ± 4.27
+fit width 136.52 ± 14.04
+
+varToA2
+significance is 19.64
+statSignificance is 9.14
+chi2ndf is 2.17
+fit mass 1705.40 ± 4.08
+fit width 137.32 ± 13.35
+
+varToB1
+significance is 18.50
+statSignificance is 9.28
+chi2ndf is 1.86
+fit mass 1711.75 ± 3.69
+fit width 128.28 ± 12.70
+
+varToB2
+significance is 21.43
+statSignificance is 8.26
+chi2ndf is 2.27
+fit mass 1715.83 ± 4.19
+fit width 151.93 ± 16.46
+
+varToC1
+significance is 22.00
+statSignificance is 8.45
+chi2ndf is 1.77
+fit mass 1710.04 ± 4.60
+fit width 160.80 ± 16.38
+
+varToC2
+significance is 20.18
+statSignificance is 8.29
+chi2ndf is 1.93
+fit mass 1711.67 ± 4.23
+fit width 142.31 ± 15.51
+
+varToD1
+significance is 20.36
+statSignificance is 8.31
+chi2ndf is 1.78
+fit mass 1709.98 ± 4.31
+fit width 150.15 ± 15.82
+
+varToD2
+significance is 19.29
+statSignificance is 8.77
+chi2ndf is 1.99
+fit mass 1710.46 ± 3.96
+fit width 135.10 ± 13.99
+
+varToE1
+significance is 19.53
+statSignificance is 8.23
+chi2ndf is 2.05
+fit mass 1713.62 ± 4.43
+fit width 143.77 ± 15.63
+
+varToE2
+significance is 23.63
+statSignificance is 7.49
+chi2ndf is 1.80
+fit mass 1714.10 ± 4.89
+fit width 175.11 ± 19.72
+
+varToF1
+significance is 21.06
+statSignificance is 8.72
+chi2ndf is 1.84
+fit mass 1709.82 ± 4.25
+fit width 151.76 ± 15.15
+
+varToF2
+significance is 19.66
+statSignificance is 8.01
+chi2ndf is 1.46
+fit mass 1713.01 ± 4.37
+fit width 144.26 ± 16.17
 

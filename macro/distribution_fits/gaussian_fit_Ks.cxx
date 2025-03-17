@@ -40,9 +40,16 @@ void gaussian_fit_Ks()
     t2->SetTextSize(0.05);
     t2->SetTextFont(42);
 
-    //********************************************************************
-    const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA"; // path for root file
-    TFile *f = new TFile(("../" + outputQAfolder_str + "/KsInvMass.root").c_str(), "read");
+    // //********************************************************************
+    // const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + kfoldername + "/QA"; // path for root file
+    // TFile *f = new TFile(("../" + outputQAfolder_str + "/KsInvMass.root").c_str(), "read");
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_100SigmaKs/QA/KsInvMass.root";
+    TFile *f = new TFile(path.c_str(), "read");
+    if (f == nullptr)
+    {
+        cout << "File not found" << endl;
+        return;
+    }
     THnSparseF *hsparse = (THnSparseF *)f->Get("kshort_2dsparse");
     if (hsparse == nullptr)
     {
@@ -168,8 +175,8 @@ void gaussian_fit_Ks()
     lp1->SetBorderSize(0);
     lp1->SetTextFont(42);
     lp1->SetTextSize(0.033);
-    lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1)*1000.0, fit3->GetParError(1)*1000.0), "");
-    lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2)*1000.0, fit3->GetParError(2)*1000.0), "");
+    lp1->AddEntry((TObject *)0, Form("Mean = %.3f #pm %.2e", fit3->GetParameter(1) * 1000.0, fit3->GetParError(1) * 1000.0), "");
+    lp1->AddEntry((TObject *)0, Form("Sigma = %.3f #pm %.2e", fit3->GetParameter(2) * 1000.0, fit3->GetParError(2) * 1000.0), "");
     // lp1->Draw("same");
 
     // // lets calculate the fit to the data ratio

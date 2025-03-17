@@ -40,26 +40,27 @@ void systematics()
 {
     gStyle->SetOptStat(0);
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs/fits/4rBw_fits/systematics_onlywidthfixed/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup2/";
     ifstream file;
 
     // int colors[] = {kBlue, kRed, kGreen + 3, kOrange + 7, kMagenta + 2, kCyan + 2, kBlack};
-    vector<int> colors = {kBlue, kRed, kGreen + 3, kOrange + 7, kMagenta + 2, kCyan + 2, kBlack};
+    vector<int> colors = {kBlue, kRed, kGreen + 3, kOrange - 7, kMagenta + 2, kCyan + 2, kBlack};
     int markers[] = {20, 21, 22, 23, 24, 25, 26};
 
     ofstream sysfile;
-    sysfile.open(path + "temp.txt");
 
     // string all_variations[] = {"Signal extraction", "PID", "Track selection", "Topological selection"};
 
     // // // // Mapping variations to sources
     // // *********************signal extraction*******************************
     // int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
-    // int variationsNumber[] = {1, 4, 2, 4, 4};                                                                                                                         // Number of variations for each source
+    // int variationsNumber[] = {1, 4, 2, 4, 4};
+    // // Number of variations for each source
     // vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2", "varC1", "varC2", "varC3", "varC4", "varD1", "varD2", "varD3", "varD4"}; // signal extraction
     // vector<string> varNames = {"Fit range", "Normalization range", "Fit function", "Fit parameters"};                                                                 // signal extraction
     // vector<vector<string>> individual_sources{{"1.05-2.20 GeV/c^{2} (def)", "1.02-2.20 GeV/c^{2}", "1.05-2.30 GeV/c^{2}", "1.08-2.15 GeV/c^{2}", "1.02-2.30 GeV/c^{2}"}, {"2.50-2.60 GeV/c^{2} (def)", "2.40-2.50 GeV/c^{2}", "2.60-2.70 GeV/c^{2}"}, {"Fit 1 (def)", "Fit 2", "Fit 3", "Fit 4", "Fit 5"}, {"#Gamma fix to PDG (spin-2) (def)", "All parameter free", "#Gamma & M fixed (spin-2)", "#Gamma f_{0}(1710) fix to PDG", "M f_{0} fix to PDG"}};
     // string combinedName = "Signal Extraction";
+    // sysfile.open(path + "sys_signal.txt");
 
     // // *****************PID********************************
     // int variations[] = {1, 2, 2};
@@ -68,14 +69,17 @@ void systematics()
     // vector<string> varNames = {"TPC PID"};                    // PID
     // vector<vector<string>> individual_sources{{"3#sigma (def)", "4#sigma", "5#sigma"}};
     // string combinedName = "PID";
+    // sysfile.open(path + "sys_PID.txt");
 
-    // // //*****************Track selection**************************
-    // int variations[] = {1, 2, 2, 3, 3, 4, 4};
-    // int variationsNumber[] = {1, 2, 2, 2};
-    // vector<string> names = {"default", "varTrA1", "varTrA2", "varTrC1", "varTrC2", "varTrD1", "varTrD2"};         // Track selection
-    // vector<string> varNames = {"DCA track to PV", "TPC crossed rows", "TPC crossed rows over findable clusters"}; // Track selection
-    // vector<vector<string>> individual_sources{{"0.05 cm (def)", "0.04 cm", "0.06 cm"}, {"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}};
-    // string combinedName = "Track Selection";
+    // //*****************Track selection & PID**************************
+    int variations[] = {1, 2, 2, 3, 3, 4, 4};
+    int variationsNumber[] = {1, 2, 2, 2};
+    vector<string> names = {"default", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varTrB1", "varTrB2"}; // Track selection
+    vector<string> varNames = {"TPC crossed rows", "TPC crossed rows over findable clusters", "TPC PID"}; // Track selection
+    vector<vector<string>> individual_sources{{"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // Track selection
+    string combinedName = "Track Selection";
+    // //sysfile.open(path + "sys_TrkSel.txt");
+    sysfile.open(path + "test.txt");
 
     // // // ***************Topological selection***************
     // int variations[] = {1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7};
@@ -84,14 +88,15 @@ void systematics()
     // vector<string> varNames = {"Cosine PA", "Transverse radius", "DCA b/w V0 daughters", "Lifetime", "Competing V0 rejection", "Ks mass window"};                           // Topological selection
     // vector<vector<string>> individual_sources{{"0.97 (def)", "0.95", "0.99"}, {"0.5 cm (def)", "0.4 cm", "0.6 cm"}, {"0.5 cm (def)", "0.3 cm", "1.0 cm"}, {"20 cm (def)", "15 cm", "25 cm"}, {"5 MeV (def)", "4", "6"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // Topological selection
     // string combinedName = "Topological Selection";
+    // sysfile.open(path + "sys_TopSel.txt");
 
-    // // ********All sources******************
-    int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15};
-    int variationsNumber[] = {1, 4, 2, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
-    vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2", "varC1", "varC2", "varC3", "varC4", "varD1", "varD2", "varD3", "varD4", "varTrB1", "varTrB2", "varTrA1", "varTrA2", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varToA1", "varToA2", "varToB1", "varToB2", "varToC1", "varToC2", "varToD1", "varToD2", "varToE1", "varToE2", "varToF1", "varToF2"}; // All sources
-    vector<string> varNames = {"Fit range", "Normalization range", "Fit function", "Fit parameters", "TPC PID", "DCA track to PV", "TPC crossed rows", "TPC RowsClusters", "Cosine PA", "Transverse Radius", "DCA V0 Daughters", "Lifetime", "Competing V0 Rejection", "Ks Mass Window"};
-    vector<vector<string>> individual_sources{{"1.05-2.20 GeV/c^{2} (def)", "1.02-2.20 GeV/c^{2}", "1.05-2.30 GeV/c^{2}", "1.08-2.15 GeV/c^{2}", "1.02-2.30 GeV/c^{2}"}, {"2.50-2.60 GeV/c^{2} (def)", "2.40-2.50 GeV/c^{2}", "2.60-2.70 GeV/c^{2}"}, {"Fit 1 (def)", "Fit 2", "Fit 3", "Fit 4", "Fit 5"}, {"#Gamma fix to PDG (spin-2) (def)", "All parameter free", "#Gamma & M fixed (spin-2)", "#Gamma f_{0}(1710) fix to PDG", "M f_{0} fix to PDG"}, {"3#sigma (def)", "4#sigma", "5#sigma"}, {"0.05 cm (def)", "0.04 cm", "0.06 cm"}, {"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}, {"0.97 (def)", "0.95", "0.99"}, {"0.5 cm (def)", "0.4 cm", "0.6 cm"}, {"0.5 cm (def)", "0.3 cm", "1.0 cm"}, {"20 cm (def)", "15 cm", "25 cm"}, {"5 MeV (def)", "4", "6"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // All sources
-    string combinedName = "All Sources";
+    // // // ********All sources******************
+    // int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15};
+    // int variationsNumber[] = {1, 4, 2, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
+    // vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2", "varC1", "varC2", "varC3", "varC4", "varD1", "varD2", "varD3", "varD4", "varTrB1", "varTrB2", "varTrA1", "varTrA2", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varToA1", "varToA2", "varToB1", "varToB2", "varToC1", "varToC2", "varToD1", "varToD2", "varToE1", "varToE2", "varToF1", "varToF2"}; // All sources
+    // vector<string> varNames = {"Fit range", "Normalization range", "Fit function", "Fit parameters", "TPC PID", "DCA track to PV", "TPC crossed rows", "TPC RowsClusters", "Cosine PA", "Transverse Radius", "DCA V0 Daughters", "Lifetime", "Competing V0 Rejection", "Ks Mass Window"};
+    // vector<vector<string>> individual_sources{{"1.05-2.20 GeV/c^{2} (def)", "1.02-2.20 GeV/c^{2}", "1.05-2.30 GeV/c^{2}", "1.08-2.15 GeV/c^{2}", "1.02-2.30 GeV/c^{2}"}, {"2.50-2.60 GeV/c^{2} (def)", "2.40-2.50 GeV/c^{2}", "2.60-2.70 GeV/c^{2}"}, {"Fit 1 (def)", "Fit 2", "Fit 3", "Fit 4", "Fit 5"}, {"#Gamma fix to PDG (spin-2) (def)", "All parameter free", "#Gamma & M fixed (spin-2)", "#Gamma f_{0}(1710) fix to PDG", "M f_{0} fix to PDG"}, {"3#sigma (def)", "4#sigma", "5#sigma"}, {"0.05 cm (def)", "0.04 cm", "0.06 cm"}, {"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}, {"0.97 (def)", "0.95", "0.99"}, {"0.5 cm (def)", "0.4 cm", "0.6 cm"}, {"0.5 cm (def)", "0.3 cm", "1.0 cm"}, {"20 cm (def)", "15 cm", "25 cm"}, {"5 MeV (def)", "4", "6"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // All sources
+    // string combinedName = "All Sources";
 
     const int size = varNames.size();
     // Vectors to store fit parameters and their uncertainties
@@ -135,7 +140,7 @@ void systematics()
             cout << names[ivars] << ": "
                  << Form("%.2f", values[values.size() - 2] * 1000) << " ± " << Form("%.2f", uncertainties[values.size() - 2] * 1000) << " & "
                  << Form("%.2f", values[values.size() - 1] * 1000) << " ± " << Form("%.2f", uncertainties[values.size() - 1] * 1000) << endl;
-            
+
             // Store the second-last value and its uncertainty
             int varIndex = variations[ivars] - 1;
             allparams_mass[varIndex].push_back(values[values.size() - 2]);
@@ -201,12 +206,12 @@ void systematics()
     total_uncertainty_width = sqrt(total_uncertainty_width);
     cout << "Total Quadrature Sum Uncertainty (Width): " << total_uncertainty_width << endl;
 
-    sysfile << "Total Quadrature Sum Uncertainty (Mass): " << total_uncertainty_mass << endl;
-    sysfile << "Total Quadrature Sum Uncertainty (Width): " << total_uncertainty_width << endl;
+    sysfile << total_uncertainty_mass << endl;
+    sysfile << total_uncertainty_width << endl;
     sysfile.close();
 
     // plots***********************
-    /*
+    // /*
 
     // // now lets plot the the variations
     gStyle->SetOptStat(0);
@@ -226,7 +231,7 @@ void systematics()
         hmass_width[i]->SetLineColor(colors[i]);
         hmass_var[i]->SetLineWidth(4);
         hmass_var[i]->SetLineStyle(2);
-        hmass_var[i]->GetYaxis()->SetRangeUser(0, 0.0151);
+        hmass_var[i]->GetYaxis()->SetRangeUser(0.0, 0.0129);
         hmass_var[i]->GetYaxis()->SetTitleOffset(1.8);
         hmass_var[i]->GetYaxis()->SetTitle("Fractional Uncertainty (Mass)");
         hmass_var[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -263,7 +268,7 @@ void systematics()
         hwidth_var[i]->SetLineColor(colors[i]);
         hwidth_var[i]->SetLineWidth(4);
         hwidth_var[i]->SetLineStyle(2);
-        hwidth_var[i]->GetYaxis()->SetRangeUser(0, 0.351);
+        hwidth_var[i]->GetYaxis()->SetRangeUser(0.0, 0.251);
         hwidth_var[i]->GetYaxis()->SetTitleOffset(1.8);
         hwidth_var[i]->GetYaxis()->SetTitle("Fractional Uncertainty (Width)");
         hwidth_var[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
@@ -274,7 +279,7 @@ void systematics()
     SetHistoQA(hwidth_total);
     hwidth_total->SetLineColor(1);
     hwidth_total->SetLineWidth(4);
-    hwidth_total->GetYaxis()->SetRangeUser(0, 0.351);
+    hwidth_total->GetYaxis()->SetRangeUser(0.00, 0.331);
     hwidth_total->Draw("same");
 
     TLegend *l2 = new TLegend(0.25, 0.60, 0.55, 0.91);
@@ -290,8 +295,8 @@ void systematics()
     l2->AddEntry(hwidth_total, "Total", "l");
     l2->Draw("same");
 
-    c1->SaveAs(("/home/sawan/Videos/systematic_mass_" + combinedName + ".png").c_str());
-    c2->SaveAs(("/home/sawan/Videos/systematic_width_" + combinedName + ".png").c_str());
+    // c1->SaveAs(("/home/sawan/Videos/systematic_mass_" + combinedName + ".png").c_str());
+    // c2->SaveAs(("/home/sawan/Videos/systematic_width_" + combinedName + ".png").c_str());
 
     TCanvas *c3 = new TCanvas("c", "", 720, 720);
     SetCanvasStyle(c3, 0.18, 0.03, 0.001, 0.08);
@@ -340,7 +345,7 @@ void systematics()
 
     TPad *padfullarea = new TPad("padfullarea", "", 0.0, 0.0, 1.0, 1.0);
     padfullarea->SetFillStyle(0);
-    c3->cd();          // Go back to the main canvas
+    c3->cd(); // Go back to the main canvas
     padfullarea->Draw();
     padfullarea->cd(); // Activate the full canvas pad
 
@@ -358,7 +363,7 @@ void systematics()
     l3->AddEntry(hmass_total, "Total", "l");
     l3->Draw(); // No need for "same"
 
-    c3->SaveAs(("/home/sawan/Videos/systematic_mass_width_doublepanel_" + combinedName + ".png").c_str());
+    c3->SaveAs(("/home/sawan/Videos/systematic_mass_width_doublepanel_" + combinedName + ".pdf").c_str());
 
     // // make double panel plots for the ratios
     // TH1F *mass_default = new TH1F("mass_default", "", 1, 0, 30);
@@ -524,7 +529,7 @@ void systematics()
     //     cwidthvar->SaveAs(Form("/home/sawan/Videos/width_var_%s_%d.png", combinedName.c_str(), i));
     // }
 
-    */
+    // */
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

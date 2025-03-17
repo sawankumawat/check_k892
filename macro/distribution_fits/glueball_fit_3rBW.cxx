@@ -100,10 +100,10 @@ void glueball_fit_3rBW()
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
     // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
 
-    string sysvar = "varC2"; // default
+    string sysvar = "temp"; // default
 
     ofstream file;
-    file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
+    file.open((path2 + "/fits/3rBw_fits/fit_params_" + sysvar + ".txt").c_str());
 
     string savepath = path2 + "/fits/3rBw_fits";
 
@@ -117,7 +117,7 @@ void glueball_fit_3rBW()
     double masses[] = {f1270Mass, f1525Mass, f1710Mass};
     double widths[] = {f1270Width, f1525Width, f1710Width};
     string resonance_names[] = {"f_{2}(1270)", "f'_{2}(1525)", "f_{0}(1710)"};
-    double purity, significance[3], chi2ndf, chi2, ndf;
+    double purity, significance, chi2ndf, chi2, ndf, statSignificance;
     TLatex *t2 = new TLatex();
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.04);
@@ -129,11 +129,11 @@ void glueball_fit_3rBW()
         return;
     }
 
-// #define b_boltzman_pure
-// #define b_boltzmann_pure_massdepwidth
-// #define b_modfied_boltzmann
-// #define b_expol
-#define b_massdepwidth
+    // #define b_modfied_boltzmann
+    #define b_massdepwidth
+    // #define b_expol
+    // #define b_boltzman_pure
+    // #define b_boltzmann_pure_massdepwidth
 #define residual_subtracted
     // #define doublepanelplot
 
@@ -142,6 +142,12 @@ void glueball_fit_3rBW()
 
         // TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", 0.0, 30.0));
         TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", pT_bins[ipt], pT_bins[ipt + 1]));
+        TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_pt_%.1f_%.1f", pT_bins[ipt], pT_bins[ipt + 1]));
+        if (hinvMass == nullptr)
+        {
+            cout << "Error opening histogram" << endl;
+            return;
+        }
 
         if (hinvMass == nullptr)
         {
@@ -150,7 +156,7 @@ void glueball_fit_3rBW()
         }
         TCanvas *c = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
-        hinvMass->Rebin(2);
+        // hinvMass->Rebin(2);
         double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
         hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
         hinvMass->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
@@ -185,8 +191,8 @@ void glueball_fit_3rBW()
         {
             BEexpol->SetParameter(i, parameters[i]);
         }
-        // vector<vector<float>> par_limits = {{1, 3 * f1270Width}, {2, 50*f1270WidthErr}, {4, 5 * f1525Width}, {7, 10 * f1710WidthErr}};
-        vector<vector<float>> par_limits = {{2, 10 * f1270WidthErr}};
+        vector<vector<float>> par_limits = {{1, 3 * f1270Width}, {4, 3 * f1525Width}, {10, 3 * f1710Width}};
+        // vector<vector<float>> par_limits = {{2, 10 * f1270WidthErr}};
         int limits_size = par_limits.size();
         for (int i = 0; i < limits_size; i++)
         {
@@ -264,6 +270,8 @@ void glueball_fit_3rBW()
         onlyBW->SetLineColor(4);
         onlyBW->SetLineStyle(2);
         // onlyBW->Draw("same");
+        onlyBW_clone->FixParameter(2, f1270Width);
+        onlyBW_clone->FixParameter(5, f1525Width);
 
         // TLegend *ltemp = new TLegend(0.20, 0.67, 0.52, 0.92);
         // ltemp->SetFillStyle(0);
@@ -315,13 +323,16 @@ void glueball_fit_3rBW()
         for (int i = 0; i < 3; i++)
         {
             double significance_num = singlefits[i]->Integral(masses[i] - 3 * widths[i], masses[i] + 3 * widths[i]) / binwidthfile;
-            int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
-            int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
-            double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
-            significance[i] = significance_num / significance_den;
-            cout << "Significance of " << resonance_names[i] << " is " << significance[i] << endl;
-            purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
-            cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
+            int binlow = hraw->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
+            int binhigh = hraw->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
+            double significance_den = TMath::Sqrt(hraw->Integral(binlow, binhigh));
+            significance = significance_num / significance_den;
+            cout << "numerator " << significance_num << " denominator " << significance_den << endl;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
+            double amplitude = obtained_parameters[3 * i];
+            double amplitude_err = BEexpol->GetParError(3 * i);
+            statSignificance = amplitude / amplitude_err;
+            cout << "Statistical significance of " << resonance_names[i] << " is " << statSignificance << endl;
         }
 #endif
 
@@ -443,8 +454,8 @@ void glueball_fit_3rBW()
             int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
             int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
             double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
-            significance[i] = significance_num / significance_den;
-            cout << "Significance of " << resonance_names[i] << " is " << significance[i] << endl;
+            significance = significance_num / significance_den;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
             purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
             cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
         }
@@ -569,8 +580,8 @@ void glueball_fit_3rBW()
             int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
             int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
             double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
-            significance[i] = significance_num / significance_den;
-            cout << "Significance of " << resonance_names[i] << " is " << significance[i] << endl;
+            significance = significance_num / significance_den;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
             purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
             cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
         }
@@ -585,7 +596,7 @@ void glueball_fit_3rBW()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
+        double parameters[] = {4000, f1270Mass, f1270Width, 3758, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width};
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
         for (int i = 0; i < size_fitparams; i++)
@@ -602,7 +613,7 @@ void glueball_fit_3rBW()
             BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
         }
 
-        double initial_param_bkg[] = {5.562e5, -0.09379, 2.569, 1.0982}; // rotational 1-30 GeV/c (KsKs channel)
+        double initial_param_bkg[] = {3.562e5, -0.009379, 2.9, 1.0982}; // rotational 1-30 GeV/c (KsKs channel)
 
         // for rotational bkg with pt range 0-30 GeV/c (KsKs channel)
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Fix
@@ -610,11 +621,11 @@ void glueball_fit_3rBW()
         BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Fix
         BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
 
+        BEexpol->FixParameter(2, f1270Width);
+        BEexpol->FixParameter(5, f1525Width);
+
         // BEexpol->FixParameter(1, f1270Mass);
         // BEexpol->FixParameter(4, f1525Mass);
-
-        // BEexpol->FixParameter(2, f1270Width);
-        // BEexpol->FixParameter(5, f1525Width);
 
         // BEexpol->FixParameter(7, f1710Mass);
         // BEexpol->FixParameter(8, f1710Width);
@@ -710,8 +721,8 @@ void glueball_fit_3rBW()
             int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
             int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
             double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
-            significance[i] = significance_num / significance_den;
-            cout << "Significance of " << resonance_names[i] << " is " << significance[i] << endl;
+            significance = significance_num / significance_den;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
             purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
             cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
         }
@@ -870,8 +881,8 @@ void glueball_fit_3rBW()
             int binlow = hinvMass->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
             int binhigh = hinvMass->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
             double significance_den = TMath::Sqrt(hinvMass->Integral(binlow, binhigh));
-            significance[i] = significance_num / significance_den;
-            cout << "Significance of " << resonance_names[i] << " is " << significance[i] << endl;
+            significance = significance_num / significance_den;
+            cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
             purity = significance_num * 100 / hinvMass->Integral(binlow, binhigh);
             cout << "Purity of " << resonance_names[i] << " is " << purity << endl;
         }
@@ -890,7 +901,7 @@ void glueball_fit_3rBW()
         ptstats->Draw("same");
         // hinvMass->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
         // hinvMass->SetMaximum(1.5 * hinvMass->GetMaximum());
-        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f.png", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
+        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f.pdf", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
 
         double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
         double fitnorm1525 = BEexpol->GetParameter(3);
@@ -948,8 +959,10 @@ void glueball_fit_3rBW()
 
         file << "Norm range " << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << endl;
         file << "Fit range " << fitrangelow << " - " << fitrangehigh << endl;
-        file << "Fit function used " << BEexpol->GetName() << endl;
+        file << "Significance " << significance << endl;
+        file << "StatSignificance " << statSignificance << endl;
         file << "Fit parameters of f1710 " << endl;
+        file << "Chi2NDF " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
         file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
         file << fitmass1710 << " ± " << fitmass1710_err << endl;
         file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
@@ -984,7 +997,7 @@ void glueball_fit_3rBW()
         SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
         expol_clone->SetRange(0.99, 2.99);
         hsubtracted->Add(expol_clone, -1);
-        hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin() + 0.01, BEexpol->GetXmax() - 0.01);
+        hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
         hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.5);
         hsubtracted->Draw();
         TH1F *hsubtracted_clone = (TH1F *)hsubtracted->Clone("hsubtracted_clone");
@@ -995,6 +1008,7 @@ void glueball_fit_3rBW()
             int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
             onlyBW_clone->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
         }
+        onlyBW_clone->SetNpx(1000);
         hsubtracted->Fit("onlyBW_clone", "REBMS");
         double *obtained_parameters2 = onlyBW_clone->GetParameters();
         TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
@@ -1031,7 +1045,7 @@ void glueball_fit_3rBW()
         ltemp2->AddEntry(singlefits[1], "f'_{2}(1525)", "l");
         ltemp2->AddEntry(singlefits[2], "f_{0}(1710)", "l");
         ltemp2->Draw("same");
-        c2->SaveAs((savepath + "/rBWfit_residual.png").c_str());
+        c2->SaveAs((savepath + "/rBWfit_residual.pdf").c_str());
 
 #endif
 
@@ -1049,7 +1063,8 @@ void glueball_fit_3rBW()
         hinvMass->GetXaxis()->SetTitleOffset(1.02);
         hinvMass->GetYaxis()->SetTitleOffset(0.8);
         hinvMass->GetYaxis()->CenterTitle(0);
-        hinvMass->GetXaxis()->SetRangeUser(1.05, 2.15);
+        hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin() + 0.01, BEexpol->GetXmax() - 0.01);
+
         // hinvMass->SetMarkerStyle(22);
         hinvMass->SetMarkerSize(0.8);
         hinvMass->SetLineColor(1);

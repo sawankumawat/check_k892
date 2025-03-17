@@ -41,8 +41,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(1110);
-    // gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -220,7 +220,7 @@ void glueball_KsKs_channel()
             hfsig->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
             hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
             hfsig->Draw("e");
-            TLine *linesig = new TLine(1.1, 0, 2.3, 0);
+            TLine *linesig = new TLine(1.0, 0, 2.50, 0);
             linesig->SetLineColor(kRed);
             linesig->SetLineStyle(2);
             linesig->SetLineWidth(2);
@@ -305,8 +305,8 @@ void glueball_KsKs_channel()
             leg->AddEntry(fHistTotal[ip], "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
             string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same event rotational background";
             leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
-            if (kResBkg == "MIX")
-                leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
+            // if (kResBkg == "MIX")
+            leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
             leg->Draw();
             lp2->Draw("same");
 
@@ -365,7 +365,7 @@ void glueball_KsKs_channel()
         //     lp2->SetBorderSize(0);
         //     if (ip == 0)
         //     {
-        //         lp2->AddEntry((TObject *)0, "ALICE WIP", "");
+        //         lp2->AddEntry((TObject *)0, "ALICE", "");
         //         lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
         //         lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
         //         lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
@@ -376,7 +376,7 @@ void glueball_KsKs_channel()
 
         //     // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
         // }
-        // cbkg->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());
+        // cbkg->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".pdf").c_str());
 
         // TCanvas *csignal = new TCanvas("", "", 1080, 720);
         // csignal->Divide(2, 2);
@@ -393,7 +393,7 @@ void glueball_KsKs_channel()
         //     hsig_temp[ip]->SetMaximum(1.1 * hsig_temp[ip]->GetMaximum());
         //     hsig_temp[ip]->Draw("E");
         //     // draw a line at counts 0
-        //     TLine *line = new TLine(1.1, 0, 2.3, 0);
+        //     TLine *line = new TLine(1.0, 0, 2.5, 0);
         //     line->SetLineColor(kRed);
         //     line->SetLineWidth(2);
         //     line->SetLineStyle(2);
@@ -418,7 +418,7 @@ void glueball_KsKs_channel()
         //     lp2->AddEntry((TObject *)0, Form("#it{p}_{T}: %.0f - %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
         //     lp2->Draw("same");
         // }
-        // csignal->SaveAs((outputfolder_str + "/hglueball_invmass_allbins_signal." + kResBkg + ".png").c_str());
+        // csignal->SaveAs((outputfolder_str + "/hglueball_invmass_allbins_signal." + kResBkg + ".pdf").c_str());
     }
 
     // cdivide->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());

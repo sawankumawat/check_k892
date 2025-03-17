@@ -71,6 +71,10 @@
         "fstream": "cpp",
         "sstream": "cpp",
         "c1_n2_withtick.C": "cpp",
-        "c1_n3.C": "cpp"
+        "c1_n3.C": "cpp",
+        "Results.C": "cpp",
+        "Systematics.C": "cpp",
+        "YieldMeanK892.C": "cpp",
+        "Signal_th3f.C": "cpp"
     }
 }

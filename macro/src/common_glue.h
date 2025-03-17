@@ -4,7 +4,7 @@
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
-const string koutputtype = "png"; // pdf, eps
+const string koutputtype = "pdf"; // pdf, eps
 ////********************************************************************************************
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
@@ -13,7 +13,7 @@ const string kfoldername_temp = "higher-mass-resonances";
 
 
 // const string kvariation = ""; // change the variation here
-// const string kvariation = "_angsep_2"; // change the variation here
+// const string kvariation = "_lambda_7"; // change the variation here
 // const string kvariation = "_all_tight"; // change the variation here
 // const string kvariation = "_PID3"; // change the variation here
 // const string kvariation = "_3sigmaKs"; // change the variation here
@@ -117,6 +117,7 @@ const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
 // const string kDataFilename_temp2 = "363021.root"; // small train (ks mass cuts and angular separation cuts)
 // const string kDataFilename_temp2 = "363594.root"; // medium train (ks mass cuts)
 // const string kDataFilename_temp2 = "362701.root"; // medium train (angular separation cuts)
+// const string kDataFilename_temp2 = "370825.root"; // LHC23_thin_small (competing cascade rejection cuts)
 
 const string kMCFilename_temp = "211346.root"; // MC file // temporary since injected MC is not available
 #endif

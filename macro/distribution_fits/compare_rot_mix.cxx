@@ -6,144 +6,94 @@
 #include "../src/style.h"
 using namespace std;
 
-void DrawAndSaveComparison(TGraphErrors *graph_mix, TGraphErrors *graph_rot, double pdgValue, const string &outputfilename, const string &title)
-{
-    TCanvas *canvas = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(canvas, 0.15, 0.03, 0.05, 0.14);
-
-    graph_mix->SetMarkerColor(kRed);
-    graph_mix->SetLineColor(kRed);
-    graph_mix->SetMarkerStyle(20);
-    graph_mix->SetMarkerSize(1.5);
-    if (title == "Width f1270" || title == "Width f1525")
-    {
-        graph_mix->SetMinimum(0.0);
-        graph_mix->SetMaximum(0.3);
-    }
-    if (title == "yield1270" || title == "yield1525" || title == "yield1710")
-    {
-        gPad->SetLogy();
-
-        (title == "yield1270") ? graph_mix->SetMaximum(1.5) : graph_mix->SetMaximum(0.5);
-    }
-    graph_mix->Draw("AP");
-
-    graph_rot->SetMarkerColor(kBlue);
-    graph_rot->SetLineColor(kBlue);
-    graph_rot->SetMarkerStyle(21);
-    graph_rot->SetMarkerSize(1.5);
-    graph_rot->Draw("P SAME");
-
-    TLine *linepdg = new TLine(0, pdgValue, 12, pdgValue);
-    linepdg->SetLineStyle(2);
-    linepdg->SetLineColor(kBlack);
-    linepdg->SetLineWidth(2);
-    if (!(title == "yield1270" || title == "yield1525" || title == "yield1710"))
-        linepdg->Draw();
-
-    TLegend *legend = new TLegend(0.6, 0.79, 0.92, 0.93);
-    SetLegendStyle(legend);
-    legend->SetTextSize(0.04);
-    legend->AddEntry(graph_mix, "MIX", "lpe");
-    legend->AddEntry(graph_rot, "ROTATED", "lpe");
-    if (title == "yield1270" || title == "yield1525" || title == "yield1710")
-    {
-        legend->AddEntry((TObject *)0, (title).c_str(), "");
-    }
-    else
-    {
-        legend->AddEntry(linepdg, ("PDG " + title).c_str(), "l");
-    }
-    legend->Draw();
-
-    canvas->SaveAs(outputfilename.c_str());
-}
-
 void compare_rot_mix()
 {
     gStyle->SetOptStat(0);
-    string bkgmix = "MIX";
-    string bkgrot = "ROTATED";
-    const string outputfolder_str = "../" + kSignalOutput + "/" + kchannel + "/" + kfoldername;
-    const string fits_folder_str = outputfolder_str + "/fits/";
-    vector<string> param_names = {"massf1270", "widthf1270", "massf1525", "widthf1525", "massf1710", "widthf1710", "yield1270", "yield1525", "yield1710"};
-    vector<double> pdgValues = {f1270Mass, f1270Width, f1525Mass, f1525Width, f1710Mass};
-    vector<string> titles = {"Mass f1270", "Width f1270", "Mass f1525", "Width f1525", "Mass f1710", "widthf1710", "yield1270", "yield1525", "yield1710"};
 
-    TFile *fmix = new TFile((fits_folder_str + "fitparams_" + bkgmix + ".root").c_str(), "READ");
-    TFile *frot = new TFile((fits_folder_str + "fitparams_" + bkgrot + ".root").c_str(), "READ");
-
-    if (fmix->IsZombie() || frot->IsZombie())
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
+    TFile *frot = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); //
+    TFile *fmix = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ");     //
+    if (frot->IsZombie() || fmix->IsZombie())
     {
         cout << "Files not found" << endl;
         return;
     }
 
-    vector<TGraphErrors *> graphs_mix;
-    vector<TGraphErrors *> graphs_rot;
+    TH1F *hsignal = (TH1F *)frot->Get("ksks_invmass_pt_3.0_5.0");
+    TH1F *hrot = (TH1F *)frot->Get("ksks_bkg_pt_3.0_5.0");
+    TH1F *hmix = (TH1F *)fmix->Get("ksks_bkg_pt_3.0_5.0");
+    TH1F *hrot_signal = (TH1F *)frot->Get("ksks_subtracted_invmass_pt_3.0_5.0");
+    TH1F *hmix_signal = (TH1F *)fmix->Get("ksks_subtracted_invmass_pt_3.0_5.0");
 
-    for (const auto &name : param_names)
+    if (hsignal == nullptr || hrot == nullptr || hmix == nullptr)
     {
-        TGraphErrors *graph_mix = (TGraphErrors *)fmix->Get(name.c_str());
-        TGraphErrors *graph_rot = (TGraphErrors *)frot->Get(name.c_str());
-
-        if (graph_mix == nullptr || graph_rot == nullptr)
-        {
-            cout << "Graph " << name << " not found" << endl;
-            return;
-        }
-        SetGrapherrorStyle(graph_mix);
-        SetGrapherrorStyle(graph_rot);
-        graphs_mix.push_back(graph_mix);
-        graphs_rot.push_back(graph_rot);
+        cout << "Histogram not found" << endl;
+        return;
     }
 
-    for (size_t i = 0; i < param_names.size(); i++)
-    {
-        string outputfilename = outputfolder_str + "/fits/compare_" + param_names[i] + ".png";
-        DrawAndSaveComparison(graphs_mix[i], graphs_rot[i], pdgValues[i], outputfilename, titles[i]);
-    }
+    TCanvas *c = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c, 0.15, 0.03, 0.05, 0.14);
+    hsignal->GetXaxis()->SetRangeUser(1.00, 2.60);
+    SetHistoQA(hsignal);
+    hsignal->Draw("pe");
 
-    // // // Compare invariant mass after ME subtraction in pass 6 and pass 7, also comparison of ME and Rot background
-    // // TFile *fpass7 = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.20_2.30..root", "READ");
-    // // TFile *fpass6 = new TFile("/home/sawan/check_k892/output/glueball/LHC220_pass6_small/230281/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.20_2.30..root", "READ");
-    // TFile *fpass7 = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_MIX_norm_2.20_2.30..root", "READ");     // actually this is mix
-    // TFile *fpass6 = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/hglue_ROTATED_norm_2.50_2.60..root", "READ"); // actually this is rotated
-    // if (fpass7->IsZombie() || fpass6->IsZombie())
-    // {
-    //     cout << "Files not found" << endl;
-    //     return;
-    // }
-    // TH1F *hinvpass7 = (TH1F *)fpass7->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *hinvpass6 = (TH1F *)fpass6->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // if (hinvpass7 == nullptr || hinvpass6 == nullptr)
-    // {
-    //     cout << "Histogram not found" << endl;
-    //     return;
-    // }
-    // TCanvas *canvas = new TCanvas("", "", 720, 720);
-    // SetCanvasStyle(canvas, 0.15, 0.03, 0.05, 0.14);
-    // SetHistoQA(hinvpass7);
-    // hinvpass7->SetMarkerColor(kRed);
-    // hinvpass7->SetLineColor(kRed);
-    // hinvpass7->SetMarkerStyle(20);
-    // hinvpass7->GetYaxis()->SetRangeUser(-4000, 50000);
-    // hinvpass7->GetXaxis()->SetRangeUser(1.0, 2.8);
-    // hinvpass7->Draw("EP");
-    // SetHistoQA(hinvpass6);
-    // hinvpass6->SetMarkerColor(kBlue);
-    // hinvpass6->SetLineColor(kBlue);
-    // hinvpass6->SetMarkerStyle(22);
-    // hinvpass6->GetXaxis()->SetRangeUser(1.0, 2.8);
-    // hinvpass6->Draw("EP SAME");
+    SetHistoQA(hrot);
+    hrot->GetXaxis()->SetRangeUser(1.00, 2.60);
+    hrot->SetMarkerSize(1.0);
+    hrot->SetMarkerColor(kBlue);
+    hrot->SetLineColor(kBlue);
+    hrot->SetMarkerStyle(23);
+    hrot->Draw("same");
 
-    // TLegend *leg = new TLegend(0.6, 0.7, 0.9, 0.9);
-    // SetLegendStyle(leg);
-    // // leg->AddEntry(hinvpass7, "Pass 7", "lpe");
-    // // leg->AddEntry(hinvpass6, "Pass 6", "lpe");
-    // leg->AddEntry(hinvpass6, "Rotational", "lpe");
-    // leg->AddEntry(hinvpass7, "Mixed-event", "lpe");
-    // leg->Draw();
-    // // // canvas->SaveAs("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/250337/KsKs_Channel/strangeness_tutorial/compare_pass6_7.png");
-    // canvas->SaveAs("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/253148/KsKs_Channel/strangeness_tutorial/compare_rot_mix.png");
+    SetHistoQA(hmix);
+    hmix->GetXaxis()->SetRangeUser(1.00, 2.60);
+    hmix->SetMarkerSize(0.8);
+    hmix->SetMarkerColor(kRed);
+    hmix->SetLineColor(kRed);
+    hmix->SetMarkerStyle(21);
+    hmix->Draw("same");
+
+    TLegend *leg = new TLegend(0.55, 0.62, 0.92, 0.92);
+    SetLegendStyle(leg);
+    leg->SetHeader("3.0 < #it{p}_{T} < 5.0 GeV/c");
+    leg->AddEntry(hsignal, "Raw K^{0}_{s}K^{0}_{s} invariant mass", "lpe");
+    leg->AddEntry(hrot, "Rotational background", "lpe");
+    leg->AddEntry(hmix, "Mixed-event background", "lpe");
+    leg->Draw("same");
+
+    c->SaveAs("/home/sawan/Music/compare_rot_mix.png");
+
+    TCanvas *c2 = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.14);
+    hrot_signal->GetXaxis()->SetRangeUser(1.00, 2.60);
+    SetHistoQA(hrot_signal);
+    hrot_signal->SetLineColor(kBlue);
+    hrot_signal->SetMarkerColor(kBlue);
+    hrot_signal->SetMarkerStyle(23);
+    hrot_signal->SetMarkerSize(1.0);
+    // hrot_signal->SetMinimum(-40000);
+    hrot_signal->Draw("pe");
+
+    SetHistoQA(hmix_signal);
+    hmix_signal->GetXaxis()->SetRangeUser(1.00, 2.60);
+    hmix_signal->SetMarkerSize(0.8);
+    hmix_signal->SetMarkerColor(kRed);
+    hmix_signal->SetLineColor(kRed);
+    hmix_signal->SetMarkerStyle(21);
+    hmix_signal->Draw("same");
+
+    TLine *line = new TLine(1.00, 0, 2.60, 0);
+    line->SetLineStyle(2);
+    line->SetLineColor(kBlack);
+    line->SetLineWidth(2);
+    line->Draw();
+
+    TLegend *leg2 = new TLegend(0.30, 0.70, 0.92, 0.92);
+    SetLegendStyle(leg2);
+    leg2->SetHeader("3.0 < #it{p}_{T} < 5.0 GeV/c");
+    leg2->AddEntry(hrot_signal, "Rotational background subtraction", "lpe");
+    leg2->AddEntry(hmix_signal, "Mixed-event background subtraction", "lpe");
+    leg2->Draw("same");
+
+    c2->SaveAs("/home/sawan/Music/compare_rot_mix_subtracted.png");
 }

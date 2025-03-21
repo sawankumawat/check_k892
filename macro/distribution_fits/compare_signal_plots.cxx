@@ -8,11 +8,11 @@ using namespace std;
 
 void compare_signal_plots()
 {
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/370825/KsKs_Channel/higher-mass-resonances";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/370825/KsKs_Channel/higher-mass-resonances";
     gStyle->SetOptStat(0);
-    int colors[] = {2, 4, 6, 28, kViolet + 1, kGreen + 1};
+    int colors[] = {2, 4, 6, 28, kGreen + 2, kBlue -7};
     int markers[] = {20, 21, 22, 23, 26, 27};
 
     // string path1 = path + "_2sigmaKs/";
@@ -41,19 +41,26 @@ void compare_signal_plots()
     // const string path2 = path + "_TPCPID4_id24937/";
     // const string path3 = path + "_TPCPID6_id24937/";
 
-    const string path1 = path + "_no_lambda_cut/";
-    const string path2 = path + "_lambda_4/";
-    const string path3 = path + "/";
-    const string path4 = path + "_lambda_6/";
-    const string path5 = path + "_lambda_7/";
+    // const string path1 = path + "_no_lambda_cut/";
+    // const string path2 = path + "_lambda_4/";
+    // const string path3 = path + "/";
+    // const string path4 = path + "_lambda_6/";
+    // const string path5 = path + "_lambda_7/";
 
+    const string path1 = path + "_id24937/";
 
     TFile *file1 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    TFile *file2 = new TFile((path2 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    TFile *file3 = new TFile((path3 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    TFile *file4 = new TFile((path4 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    TFile *file5 = new TFile((path5 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    // TFile *file6 = new TFile((path6 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    TFile *file2 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.50_30.00.root").c_str(), "READ");
+    TFile *file3 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_1.00_30.00.root").c_str(), "READ");
+    TFile *file4 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_2.00_30.00.root").c_str(), "READ");
+    TFile *file5 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_10.00.root").c_str(), "READ");
+
+    // TFile *file1 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // TFile *file2 = new TFile((path2 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // TFile *file3 = new TFile((path3 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // TFile *file4 = new TFile((path4 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // TFile *file5 = new TFile((path5 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // // TFile *file6 = new TFile((path6 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
 
     // TFile *file1temp = new TFile((path1 + "backup/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
     // TFile *file2temp = new TFile((path2 + "backup/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
@@ -68,39 +75,39 @@ void compare_signal_plots()
         return;
     }
 
-    // TH1F *h1 = (TH1F *)file1->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *h2 = (TH1F *)file2->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *h3 = (TH1F *)file3->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *h4 = (TH1F *)file4->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *h5 = (TH1F *)file5->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    // TH1F *h6 = (TH1F *)file6->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    TH1F *h1 = (TH1F *)file1->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    TH1F *h2 = (TH1F *)file2->Get("ksks_subtracted_invmass_pt_0.5_30.0");
+    TH1F *h3 = (TH1F *)file3->Get("ksks_subtracted_invmass_pt_1.0_30.0");
+    TH1F *h4 = (TH1F *)file4->Get("ksks_subtracted_invmass_pt_2.0_30.0");
+    TH1F *h5 = (TH1F *)file5->Get("ksks_subtracted_invmass_pt_0.0_10.0");
 
-    TH1F *h1 = (TH1F *)file1->Get("ksks_invmass_pt_0.0_30.0");
-    TH1F *h2 = (TH1F *)file2->Get("ksks_invmass_pt_0.0_30.0");
-    TH1F *h3 = (TH1F *)file3->Get("ksks_invmass_pt_0.0_30.0");
-    TH1F *h4 = (TH1F *)file4->Get("ksks_invmass_pt_0.0_30.0");
-    TH1F *h5 = (TH1F *)file5->Get("ksks_invmass_pt_0.0_30.0");
+
+    // TH1F *h1 = (TH1F *)file1->Get("ksks_invmass_pt_0.0_30.0");
+    // TH1F *h2 = (TH1F *)file2->Get("ksks_invmass_pt_0.0_30.0");
+    // TH1F *h3 = (TH1F *)file3->Get("ksks_invmass_pt_0.0_30.0");
+    // TH1F *h4 = (TH1F *)file4->Get("ksks_invmass_pt_0.0_30.0");
+    // TH1F *h5 = (TH1F *)file5->Get("ksks_invmass_pt_0.0_30.0");
     // TH1F *h6 = (TH1F *)file6->Get("ksks_invmass_pt_0.0_30.0");
 
-    h1->Rebin(2);
-    h2->Rebin(2);
-    h3->Rebin(2);
-    h4->Rebin(2);
-    h5->Rebin(2);
-    // h6->Rebin(2);
+    // h1->Rebin(2);
+    // h2->Rebin(2);
+    // h3->Rebin(2);
+    // h4->Rebin(2);
+    // h5->Rebin(2);
+    // // h6->Rebin(2);
 
-    TH1F *hbkg1 = (TH1F *)file1->Get("ksks_bkg_pt_0.0_30.0");
-    TH1F *hbkg2 = (TH1F *)file2->Get("ksks_bkg_pt_0.0_30.0");
-    TH1F *hbkg3 = (TH1F *)file3->Get("ksks_bkg_pt_0.0_30.0");
-    TH1F *hbkg4 = (TH1F *)file4->Get("ksks_bkg_pt_0.0_30.0");
-    TH1F *hbkg5 = (TH1F *)file5->Get("ksks_bkg_pt_0.0_30.0");
+    // TH1F *hbkg1 = (TH1F *)file1->Get("ksks_bkg_pt_0.0_30.0");
+    // TH1F *hbkg2 = (TH1F *)file2->Get("ksks_bkg_pt_0.0_30.0");
+    // TH1F *hbkg3 = (TH1F *)file3->Get("ksks_bkg_pt_0.0_30.0");
+    // TH1F *hbkg4 = (TH1F *)file4->Get("ksks_bkg_pt_0.0_30.0");
+    // TH1F *hbkg5 = (TH1F *)file5->Get("ksks_bkg_pt_0.0_30.0");
     // TH1F *hbkg6 = (TH1F *)file6->Get("ksks_bkg_pt_0.0_30.0");
 
-    hbkg1->Rebin(2);
-    hbkg2->Rebin(2);
-    hbkg3->Rebin(2);
-    hbkg4->Rebin(2);
-    hbkg5->Rebin(2);
+    // hbkg1->Rebin(2);
+    // hbkg2->Rebin(2);
+    // hbkg3->Rebin(2);
+    // hbkg4->Rebin(2);
+    // hbkg5->Rebin(2);
     // hbkg6->Rebin(2);
 
     // TH1F *hbkg1 = (TH1F *)file1->Get("bkg_without_normalization");
@@ -133,7 +140,7 @@ void compare_signal_plots()
     h1->SetMarkerStyle(markers[0]);
     h1->GetYaxis()->SetTitleOffset(1.6);
     h1->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/c^{2}", h1->GetXaxis()->GetBinWidth(1)));
-    h1->SetMinimum(0);
+    h1->SetMinimum(-10000);
     h1->SetMaximum(h1->GetMaximum() * 1.2);
     h1->Draw();
     SetHistoQA(h2);
@@ -170,10 +177,11 @@ void compare_signal_plots()
     // h6->SetMarkerStyle(markers[5]);
     // h6->Draw("same");
 
-    TLegend *leg = new TLegend(0.55, 0.62, 0.92, 0.92);
+    // TLegend *leg = new TLegend(0.55, 0.62, 0.92, 0.92);
+    TLegend *leg = new TLegend(0.4, 0.55, 0.92, 0.92);
     leg->SetFillStyle(0);
     leg->SetTextFont(42);
-    leg->SetTextSize(0.04);
+    leg->SetTextSize(0.035);
     leg->SetBorderSize(0);
     // leg->SetHeader("Normalization ranges");
     // leg->SetHeader("K^{0}_{s} selection mass window");
@@ -184,21 +192,31 @@ void compare_signal_plots()
     // leg->AddEntry(h4, "1.5", "lpe");
     // leg->AddEntry(h5, "1.0", "lpe");
     // leg->AddEntry(h6, "0.5", "lpe");
+
     // leg->AddEntry(h1, "1#sigma", "lpe");
     // leg->AddEntry(h2, "1.5#sigma", "lpe");
     // leg->AddEntry(h3, "2#sigma", "lpe");
     // leg->AddEntry(h4, "3#sigma", "lpe");
     // leg->AddEntry(h5, "4#sigma", "lpe");
-    leg->SetHeader("Lambda rejection");
-    leg->AddEntry(h1, "No cut", "lpe");
-    leg->AddEntry(h2, "4 MeV/c^{2}", "lpe");
-    leg->AddEntry(h3, "5 MeV/c^{2}", "lpe");
-    leg->AddEntry(h4, "6 MeV/c^{2}", "lpe");
-    leg->AddEntry(h5, "7 MeV/c^{2}", "lpe");
+
+    // leg->SetHeader("Lambda rejection");
+    // leg->AddEntry(h1, "No cut", "lpe");
+    // leg->AddEntry(h2, "4 MeV/c^{2}", "lpe");
+    // leg->AddEntry(h3, "5 MeV/c^{2}", "lpe");
+    // leg->AddEntry(h4, "6 MeV/c^{2}", "lpe");
+    // leg->AddEntry(h5, "7 MeV/c^{2}", "lpe");
+
     // leg->SetHeader("TPC PID");
     // leg->AddEntry(h1, "3 #sigma", "lpe");
     // leg->AddEntry(h2, "4 #sigma", "lpe");
     // leg->AddEntry(h3, "5 #sigma", "lpe");
+
+    leg->SetHeader("p_{T} ranges (statistics lost)");
+    leg->AddEntry(h1, Form("0.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h1->GetEntries()) * 100 / h1->GetEntries()), "lpe");
+    leg->AddEntry(h2, Form("0.5 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h2->GetEntries()) * 100 / h1->GetEntries()), "lpe");
+    leg->AddEntry(h3, Form("1.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h3->GetEntries()) * 100 / h1->GetEntries()), "lpe");
+    leg->AddEntry(h4, Form("2.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h4->GetEntries()) * 100 / h1->GetEntries()), "lpe");
+    leg->AddEntry(h5, Form("0.0 - 10.0 GeV/c (%.1f %)", (h1->GetEntries() - h5->GetEntries()) * 100 / h1->GetEntries()), "lpe");
     leg->Draw("same");
 
     // cout << "entries in h1 " << h1->GetEntries() << endl;
@@ -208,84 +226,84 @@ void compare_signal_plots()
     // cout << "entries in h5 " << h5->GetEntries() << endl;
 
     // // // c->SaveAs((path1 + "compare_norm_ranges.png").c_str());
-    c->SaveAs("/home/sawan/Music/compare_LambdarejSignal.png");
+    c->SaveAs("/home/sawan/Music/compare_rotpt.png");
     // c->SaveAs("/home/sawan/Music/compare_TPCPIDSignal.png");
 
-    TCanvas *c2 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
-    hbkg1->GetXaxis()->SetRangeUser(1.00, 2.60);
-    SetHistoQA(hbkg1);
-    hbkg1->SetMarkerSize(0.8);
-    hbkg1->SetMarkerColor(colors[0]);
-    hbkg1->SetLineColor(colors[0]);
-    hbkg1->SetMarkerStyle(markers[0]);
-    hbkg1->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/c^{2}", hbkg1->GetXaxis()->GetBinWidth(1)));
-    hbkg1->SetMinimum(0);
-    hbkg1->SetMaximum(hbkg1->GetMaximum() * 1.4);
-    hbkg1->Draw();
-    SetHistoQA(hbkg2);
-    hbkg2->GetXaxis()->SetRangeUser(1.00, 2.60);
-    hbkg2->SetMarkerSize(0.8);
-    hbkg2->SetMarkerColor(colors[1]);
-    hbkg2->SetLineColor(colors[1]);
-    hbkg2->SetMarkerStyle(markers[1]);
-    hbkg2->Draw("same");
-    SetHistoQA(hbkg3);
-    hbkg3->GetXaxis()->SetRangeUser(1.00, 2.60);
-    hbkg3->SetMarkerSize(0.8);
-    hbkg3->SetMarkerColor(colors[2]);
-    hbkg3->SetLineColor(colors[2]);
-    hbkg3->SetMarkerStyle(markers[2]);
-    hbkg3->Draw("same");
-    SetHistoQA(hbkg4);
-    hbkg4->GetXaxis()->SetRangeUser(1.00, 2.60);
-    hbkg4->SetMarkerSize(0.8);
-    hbkg4->SetMarkerColor(colors[3]);
-    hbkg4->SetLineColor(colors[3]);
-    hbkg4->SetMarkerStyle(markers[3]);
-    hbkg4->Draw("same");
-    SetHistoQA(hbkg5);
-    hbkg5->GetXaxis()->SetRangeUser(1.00, 2.60);
-    hbkg5->SetMarkerColor(colors[4]);
-    hbkg5->SetLineColor(colors[4]);
-    hbkg5->SetMarkerStyle(markers[4]);
-    hbkg5->Draw("same");
-    // SetHistoQA(hbkg6);
-    // hbkg6->GetXaxis()->SetRangeUser(1.00, 2.60);
-    // hbkg6->SetMarkerColor(colors[5]);
-    // hbkg6->SetLineColor(colors[5]);
-    // hbkg6->SetMarkerStyle(markers[5]);
-    // hbkg6->Draw("same");
+    // TCanvas *c2 = new TCanvas("", "", 720, 720);
+    // SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
+    // hbkg1->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // SetHistoQA(hbkg1);
+    // hbkg1->SetMarkerSize(0.8);
+    // hbkg1->SetMarkerColor(colors[0]);
+    // hbkg1->SetLineColor(colors[0]);
+    // hbkg1->SetMarkerStyle(markers[0]);
+    // hbkg1->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/c^{2}", hbkg1->GetXaxis()->GetBinWidth(1)));
+    // hbkg1->SetMinimum(0);
+    // hbkg1->SetMaximum(hbkg1->GetMaximum() * 1.4);
+    // hbkg1->Draw();
+    // SetHistoQA(hbkg2);
+    // hbkg2->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // hbkg2->SetMarkerSize(0.8);
+    // hbkg2->SetMarkerColor(colors[1]);
+    // hbkg2->SetLineColor(colors[1]);
+    // hbkg2->SetMarkerStyle(markers[1]);
+    // hbkg2->Draw("same");
+    // SetHistoQA(hbkg3);
+    // hbkg3->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // hbkg3->SetMarkerSize(0.8);
+    // hbkg3->SetMarkerColor(colors[2]);
+    // hbkg3->SetLineColor(colors[2]);
+    // hbkg3->SetMarkerStyle(markers[2]);
+    // hbkg3->Draw("same");
+    // SetHistoQA(hbkg4);
+    // hbkg4->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // hbkg4->SetMarkerSize(0.8);
+    // hbkg4->SetMarkerColor(colors[3]);
+    // hbkg4->SetLineColor(colors[3]);
+    // hbkg4->SetMarkerStyle(markers[3]);
+    // hbkg4->Draw("same");
+    // SetHistoQA(hbkg5);
+    // hbkg5->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // hbkg5->SetMarkerColor(colors[4]);
+    // hbkg5->SetLineColor(colors[4]);
+    // hbkg5->SetMarkerStyle(markers[4]);
+    // hbkg5->Draw("same");
+    // // SetHistoQA(hbkg6);
+    // // hbkg6->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // // hbkg6->SetMarkerColor(colors[5]);
+    // // hbkg6->SetLineColor(colors[5]);
+    // // hbkg6->SetMarkerStyle(markers[5]);
+    // // hbkg6->Draw("same");
 
-    TLegend *leg2 = new TLegend(0.50, 0.62, 0.92, 0.92);
-    leg2->SetFillStyle(0);
-    leg2->SetTextFont(42);
-    leg2->SetTextSize(0.04);
-    leg2->SetBorderSize(0);
-    // leg2->SetHeader("Normalization ranges");
-    // leg2->SetHeader("K^{0}_{s} selection mass window");
-    // leg2->SetHeader("Angular separation cut");
+    // TLegend *leg2 = new TLegend(0.50, 0.62, 0.92, 0.92);
+    // leg2->SetFillStyle(0);
+    // leg2->SetTextFont(42);
+    // leg2->SetTextSize(0.04);
+    // leg2->SetBorderSize(0);
+    // // leg2->SetHeader("Normalization ranges");
+    // // leg2->SetHeader("K^{0}_{s} selection mass window");
+    // // leg2->SetHeader("Angular separation cut");
+    // // leg2->AddEntry(hbkg1, "No cut", "lpe");
+    // // leg2->AddEntry(hbkg2, "3.0", "lpe");
+    // // leg2->AddEntry(hbkg3, "2.0", "lpe");
+    // // leg2->AddEntry(hbkg4, "1.5", "lpe");
+    // // leg2->AddEntry(hbkg5, "1.0", "lpe");
+    // // leg2->AddEntry(hbkg6, "0.5", "lpe");
+    // // leg2->AddEntry(hbkg1, "1#sigma", "lpe");
+    // // leg2->AddEntry(hbkg2, "1.5#sigma", "lpe");
+    // // leg2->AddEntry(hbkg3, "2#sigma", "lpe");
+    // // leg2->AddEntry(hbkg4, "3#sigma", "lpe");
+    // // leg2->AddEntry(hbkg5, "4#sigma", "lpe");
+    // leg2->SetHeader("Lambda rejection");
     // leg2->AddEntry(hbkg1, "No cut", "lpe");
-    // leg2->AddEntry(hbkg2, "3.0", "lpe");
-    // leg2->AddEntry(hbkg3, "2.0", "lpe");
-    // leg2->AddEntry(hbkg4, "1.5", "lpe");
-    // leg2->AddEntry(hbkg5, "1.0", "lpe");
-    // leg2->AddEntry(hbkg6, "0.5", "lpe");
-    // leg2->AddEntry(hbkg1, "1#sigma", "lpe");
-    // leg2->AddEntry(hbkg2, "1.5#sigma", "lpe");
-    // leg2->AddEntry(hbkg3, "2#sigma", "lpe");
-    // leg2->AddEntry(hbkg4, "3#sigma", "lpe");
-    // leg2->AddEntry(hbkg5, "4#sigma", "lpe");
-    leg2->SetHeader("Lambda rejection");
-    leg2->AddEntry(hbkg1, "No cut", "lpe");
-    leg2->AddEntry(hbkg2, "4 MeV/c^{2}", "lpe");
-    leg2->AddEntry(hbkg3, "5 MeV/c^{2}", "lpe");
-    leg2->AddEntry(hbkg4, "6 MeV/c^{2}", "lpe");
-    leg2->AddEntry(hbkg5, "7 MeV/c^{2}", "lpe");
-    leg2->Draw("same");
+    // leg2->AddEntry(hbkg2, "4 MeV/c^{2}", "lpe");
+    // leg2->AddEntry(hbkg3, "5 MeV/c^{2}", "lpe");
+    // leg2->AddEntry(hbkg4, "6 MeV/c^{2}", "lpe");
+    // leg2->AddEntry(hbkg5, "7 MeV/c^{2}", "lpe");
+    // leg2->Draw("same");
 
-    // // c2->SaveAs((path1 + "compare_norm_ranges_bkg.png").c_str());
-    c2->SaveAs("/home/sawan/Music/compare_LambdarejBkg.png");
+    // // // c2->SaveAs((path1 + "compare_norm_ranges_bkg.png").c_str());
+    // c2->SaveAs("/home/sawan/Music/compare_LambdarejBkg.png");
 
     // TCanvas *call = new TCanvas("", "", 1440, 720);
     // SetCanvasStyle(call, 0.14, 0.03, 0.05, 0.14);

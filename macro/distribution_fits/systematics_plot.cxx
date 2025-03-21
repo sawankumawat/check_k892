@@ -11,7 +11,8 @@ using namespace std;
 void systematics_plot()
 {
     gStyle->SetOptStat(0);
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup2/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup2/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/";
     std::vector<std::string> filenames = {"sys_signal.txt", "sys_PID.txt", "sys_TrkSel.txt", "sys_TopSel.txt"};
     std::vector<std::string> binLabels = {"Signal extraction", "PID", "Track Sel.", "Topological Sel."};
     
@@ -91,8 +92,9 @@ void systematics_plot()
     lat.DrawLatex(0.25, 0.88, "ALICE");
     lat.DrawLatex(0.25, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV");
     lat.DrawLatex(0.25, 0.76, "FT0M (0-100%), |#it{y}|<0.5");
-    lat.DrawLatex(0.25, 0.70, "f_{0}(1710) Mass");
-    c1->SaveAs("/home/sawan/Videos/fract_uncert_mass.pdf");
+    lat.DrawLatex(0.25, 0.70, "3.0 < #it{p}_{T} < 5.0 GeV/#it{c}");
+    lat.DrawLatex(0.25, 0.64, "f_{0}(1710) Mass");
+    c1->SaveAs("/home/sawan/Videos/fract_uncert_mass_highpt1.png");
 
     TCanvas *c2 = new TCanvas("c2", "Relative Uncertainty Width", 720, 720);
     SetCanvasStyle(c2, 0.18, 0.12, 0.05, 0.14);
@@ -107,6 +109,7 @@ void systematics_plot()
     lat.DrawLatex(0.25, 0.88, "ALICE");
     lat.DrawLatex(0.25, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV");
     lat.DrawLatex(0.25, 0.76, "FT0M (0-100%), |#it{y}|<0.5");
-    lat.DrawLatex(0.25, 0.70, "f_{0}(1710) Width");
-    c2->SaveAs("/home/sawan/Videos/fract_uncert_width.pdf");
+    lat.DrawLatex(0.25, 0.70, "3.0 < #it{p}_{T} < 5.0 GeV/#it{c}");
+    lat.DrawLatex(0.25, 0.64, "f_{0}(1710) Width");
+    c2->SaveAs("/home/sawan/Videos/fract_uncert_width_highpt1.png");
 }

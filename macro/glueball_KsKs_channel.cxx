@@ -18,8 +18,8 @@ float parameter0(float mass, float width);
 void glueball_KsKs_channel()
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -41,8 +41,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    // gStyle->SetOptStat(1110);
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
+    // gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -514,6 +514,7 @@ void glueball_KsKs_channel()
             cout << "Mass correlation plot not found" << endl;
             return;
         }
+        hmasscorr->Write("ksks_mass_correlation");
         c3->Clear();
         SetCanvasStyle(c3, 0.15, 0.14, 0.05, 0.15);
         SetHistoQA(hmasscorr);
@@ -1001,26 +1002,26 @@ void glueball_KsKs_channel()
         // hMassCorr_ks_lambda_before->Draw("colz");
         // c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_before." + koutputtype).c_str());
 
-        // Mass correlation between lambda and Kshort after the cut
-        TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after10").c_str());
-        if (hMassCorr_ks_lambda_after == nullptr)
-        {
-            cout << "Mass correlation plot between lambda and Kshort after the cut not found" << endl;
-            return;
-        }
-        c3->Clear();
-        gPad->SetLogy(0);
-        gPad->SetLogz();
-        SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
-        SetHistoQA(hMassCorr_ks_lambda_after);
-        hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
-        hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
-        hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.6);
-        hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
-        hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
-        hMassCorr_ks_lambda_after->GetZaxis()->SetMaxDigits(3);
-        hMassCorr_ks_lambda_after->Draw("colz");
-        c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
+        // // Mass correlation between lambda and Kshort after the cut
+        // TH2F *hMassCorr_ks_lambda_after = (TH2F *)fInputFile->Get((kfoldername_temp + kvariation + "/kzeroShort/mass_lambda_kshort_after10").c_str());
+        // if (hMassCorr_ks_lambda_after == nullptr)
+        // {
+        //     cout << "Mass correlation plot between lambda and Kshort after the cut not found" << endl;
+        //     return;
+        // }
+        // c3->Clear();
+        // gPad->SetLogy(0);
+        // gPad->SetLogz();
+        // SetCanvasStyle(c3, 0.16, 0.13, 0.05, 0.15);
+        // SetHistoQA(hMassCorr_ks_lambda_after);
+        // hMassCorr_ks_lambda_after->GetYaxis()->SetTitle("m_{#Lambda} (GeV/c^{2})");
+        // hMassCorr_ks_lambda_after->GetXaxis()->SetTitle("M_{K^{0}_{s}} (GeV/c^{2})");
+        // hMassCorr_ks_lambda_after->GetYaxis()->SetTitleOffset(1.6);
+        // hMassCorr_ks_lambda_after->GetXaxis()->SetRangeUser(0.25, 0.78);
+        // hMassCorr_ks_lambda_after->GetYaxis()->SetRangeUser(1.05, 1.5);
+        // hMassCorr_ks_lambda_after->GetZaxis()->SetMaxDigits(3);
+        // hMassCorr_ks_lambda_after->Draw("colz");
+        // c3->SaveAs((outputQAfolder_str + "/kshort_mass_correlation_lambda_ks_after." + koutputtype).c_str());
 
         // Events check histogram
         gPad->SetLogy(0);

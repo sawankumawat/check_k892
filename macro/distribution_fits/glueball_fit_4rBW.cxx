@@ -142,9 +142,10 @@ void glueball_fit_4rBW()
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
 
-        string sysvar = "default"; // default
+        string sysvar = "test"; // default
 
         ofstream file;
+        // file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".csv").c_str());
         file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
 
         string savepath = path2 + "/fits/4rBw_fits";
@@ -152,7 +153,7 @@ void glueball_fit_4rBW()
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
         TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
-        // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
+        // TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
         // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
@@ -161,7 +162,7 @@ void glueball_fit_4rBW()
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
         double widths[] = {f1270Width, a1320Width, f1525Width, f1710Width};
         string resonance_names[] = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
-        double purity, significance, chi2ndf, statSignificance;
+        double purity, significance, chi2ndf, statSignificance, signal_counts, background_counts;
 
         if (f->IsZombie())
         {
@@ -170,13 +171,13 @@ void glueball_fit_4rBW()
         }
 
         // #define b_boltzman
-        #define b_modified_Boltzmann // without mass dependent width
-// #define b_massdepwidth
+        // #define b_modified_Boltzmann // without mass dependent width
+#define b_massdepwidth
         // #define b_expol1
         // #define b_HERAexponential
 
-#define residual_subtracted
-// #define doublepanelplot
+        // #define residual_subtracted
+        // #define doublepanelplot
 
         for (int ipt = 0; ipt < Npt; ipt++)
         {
@@ -209,7 +210,7 @@ void glueball_fit_4rBW()
             hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
             hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
             hinvMass->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/#it{c}^{2}", binwidthfile));
-            hinvMass->SetMaximum(1.3 * hinvMass->GetMaximum());
+            hinvMass->SetMaximum(1.6 * hinvMass->GetMaximum());
             hinvMass->Draw("pe");
             TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
             TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
@@ -238,6 +239,7 @@ void glueball_fit_4rBW()
             // double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
             // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 800, f1710Mass, f1710Width}; // medium train
             // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
+            // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -262,6 +264,9 @@ void glueball_fit_4rBW()
             // double initial_param_bkg[] = {2.12518e6, -0.0234, 2.82, 1.03}; // pass_4_thin
             // double initial_param_bkg[] = {2.57518e5, 0.0424, 3.171167, 0.964}; // 0-30 GeV/c, 3sigma
             // double initial_param_bkg[] = {4.8e4, -0.107, 3.51167, 1.4}; //pt range 3-5, 5-8 GeV/c
+            // double initial_param_bkg[] = {7.0e4, -0.17, 3.867, 1.8}; // pt range 3-5, 5-8 GeV/c (rebin 2)
+            // double initial_param_bkg[] = {3.7e5, 0.07, 3.7, 0.94}; //rot range 1 - 30
+            // double initial_param_bkg[] = {1.1e5, -0.17, 4.00, 1.4}; //rot range 2 - 30
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
@@ -376,11 +381,14 @@ void glueball_fit_4rBW()
 
             for (int i = 0; i < 4; i++)
             {
-                double significance_num = singlefits[i]->Integral(masses[i] - 3 * widths[i], masses[i] + 3 * widths[i]) / binwidthfile;
-                int binlow = hraw->GetXaxis()->FindBin(masses[i] - 3 * widths[i]);
-                int binhigh = hraw->GetXaxis()->FindBin(masses[i] + 3 * widths[i]);
+                double significance_num = singlefits[i]->Integral(masses[i] - 1 * widths[i], masses[i] + 1 * widths[i]) / binwidthfile;
+                int binlow = hraw->GetXaxis()->FindBin(masses[i] - 1 * widths[i]);
+                int binhigh = hraw->GetXaxis()->FindBin(masses[i] + 1 * widths[i]);
                 double significance_den = TMath::Sqrt(hraw->Integral(binlow, binhigh));
                 significance = significance_num / significance_den;
+                signal_counts = significance_num;
+                background_counts = hraw->Integral(binlow, binhigh) - signal_counts;
+
                 cout << "numerator " << significance_num << " denominator " << significance_den << endl;
                 cout << "Significance of " << resonance_names[i] << " is " << significance << endl;
                 double amplitude = obtained_parameters[3 * i];
@@ -538,14 +546,15 @@ void glueball_fit_4rBW()
 // // // Default fitting range is 1.02 to 2.20. Four types of fitting range variations: extend left (1.0), extend right (2.50), large range (1.0 to 2.50), small range (1.05 to 2.15)
 #ifdef b_modified_Boltzmann
 
-            TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.02, 2.15, 16); // expol 3
+            TF1 *BEexpol = new TF1("BEexpol", BWsum_expol3, 1.05, 2.20, 16); // expol 3
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
             for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
             {
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {2263, f1270Mass, f1270Width, 1580, a1320Mass, a1320Width, 3800, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // default
+            // double parameters[] = {2263, f1270Mass, f1270Width, 1580, a1320Mass, a1320Width, 3800, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // default
+            double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 750, f1710Mass, f1710Width}; // pt 3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -553,7 +562,7 @@ void glueball_fit_4rBW()
             {
                 BEexpol->SetParameter(i, parameters[i]);
             }
-            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 5 * f1710WidthErr}};
+            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 2 * f1710Width}, {11, 5 * f1710WidthErr}};
             int limits_size = par_limits.size();
             for (int i = 0; i < limits_size; i++)
             {
@@ -561,7 +570,8 @@ void glueball_fit_4rBW()
                 BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             }
 
-            double initial_param_bkg[] = {3.073e5, -0.04378, 2.727, 1.011}; // rotational 0-30 GeV/c (KsKs channel)
+            // double initial_param_bkg[] = {3.073e5, -0.04378, 2.727, 1.011}; // rotational 0-30 GeV/c (KsKs channel)
+            double initial_param_bkg[] = {5.1e4, -0.593, 1.6, 3.781}; // 3-5 GeV/c rebin twice
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5
@@ -695,7 +705,8 @@ void glueball_fit_4rBW()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {2200, f1270Mass, f1270Width, 1800, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // KsKs channel
+            // double parameters[] = {2200, f1270Mass, f1270Width, 1800, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // KsKs channel
+            double parameters[] = {1000, f1270Mass, f1270Width, 1160, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 850, f1710Mass, f1710Width}; // 3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -704,7 +715,7 @@ void glueball_fit_4rBW()
                 BEexpol->SetParameter(i, parameters[i]);
             }
 
-            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 10 * f1710WidthErr}};
+            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 2 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 10 * f1710WidthErr}};
 
             int limits_size = par_limits.size();
             for (int i = 0; i < limits_size; i++)
@@ -713,7 +724,8 @@ void glueball_fit_4rBW()
                 BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             }
 
-            double initial_param_bkg[] = {370.9, 0.0741322, 11.6184, -4.395450};
+            // double initial_param_bkg[] = {370.9, 0.0741322, 11.6184, -4.395450}; //default
+            double initial_param_bkg[] = {250.9, 0.22, 11.24, -4.395450}; //3-5 GeV/c rebin twice
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Fix
@@ -842,7 +854,7 @@ void glueball_fit_4rBW()
             // // // **************** For BW sum with Boltzmann ****************************
 #ifdef b_boltzman
 
-            TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.05, 2.20, 15); // expol 3
+            TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.05, 2.15, 15); // expol 3
 
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
             for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
@@ -850,7 +862,8 @@ void glueball_fit_4rBW()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {2000, f1270Mass, f1270Width, 1500, a1320Mass, a1320Width, 4000, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width};
+            // double parameters[] = {2000, f1270Mass, f1270Width, 1500, a1320Mass, a1320Width, 4000, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; //default
+            double parameters[] = {800, f1270Mass, f1270Width, 1300, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 860, f1710Mass, f1710Width}; //3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -858,7 +871,7 @@ void glueball_fit_4rBW()
             {
                 BEexpol->SetParameter(i, parameters[i]);
             }
-            BEexpol->SetParLimits(9, 1400, 1600); // this is to constrain the width of f1710
+            // BEexpol->SetParLimits(9, 1400, 1600); // this is to constrain the width of f1710 (default)
 
             vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 10 * f1710WidthErr}};
 
@@ -869,7 +882,8 @@ void glueball_fit_4rBW()
                 BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             }
 
-            double initial_param_bkg[] = {3.274e5, 0.7029, 4.391};
+            // double initial_param_bkg[] = {3.274e5, 0.7029, 4.391}; //default
+            double initial_param_bkg[] = {1.274e5, 0.87029, 5.0391};
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5
@@ -1004,7 +1018,7 @@ void glueball_fit_4rBW()
             ptstats->SetY1NDC(0.4);
             ptstats->SetY2NDC(0.92);
             ptstats->Draw("same");
-            c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.pdf", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
+            c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
 
             double fitnorm1525 = BEexpol->GetParameter(6);
             double fitnorm1525_err = BEexpol->GetParError(6);
@@ -1037,6 +1051,24 @@ void glueball_fit_4rBW()
             double resdual_bkg_par3 = BEexpol->GetParameter(14);
             double resdual_bkg_par4 = BEexpol->GetParameter(15);
 
+            // // Write data (values are separated by commas) for .csv file
+            // file << "Norm range," << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << "\n";
+            // file << "Fit range," << fitrangelow << " - " << fitrangehigh << "\n";
+            // file << "Signal counts," << signal_counts << "\n";
+            // file << "Background counts," << background_counts << "\n";
+            // file << "S/B ratio," << (signal_counts / background_counts) << "\n";
+            // file << std::fixed << std::setprecision(2);
+            // file << "Significance," << significance << "\n";
+            // file << "StatSignificance," << statSignificance << "\n";
+            // file << "Chi2NDF," << (BEexpol->GetChisquare() / BEexpol->GetNDF()) << "\n";
+
+            // file << std::fixed << std::setprecision(1);
+            // // Fit parameters with ± sign
+            // file << "Fit mass," << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << "\n";
+            // file << "Fit width," << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << "\n";
+            // file << "Fit norm," << fitnorm1710 << " ± " << fitnorm1710_err << "\n";
+
+            // // for .txt files for systematics
             file << "Norm range " << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << endl;
             file << "Fit range " << fitrangelow << " - " << fitrangehigh << endl;
             file << "Significance " << significance << endl;
@@ -1046,56 +1078,6 @@ void glueball_fit_4rBW()
             file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
             file << fitmass1710 << " ± " << fitmass1710_err << endl;
             file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
-
-            // file << fitstatus << "  " << "4rBW fits , pT range " << pT_bins[ipt] << " - " << pT_bins[ipt + 1] << " GeV/c" << endl;
-            // file << "fit range, fit params f1270 (norm, mass, and width), a1320, f1525, f1710, significance (f1710), chi2/ndf" << endl;
-            // file << std::fixed << std::setprecision(2);
-            // file << "Fit range: " << fitrangelow << " - " << fitrangehigh << endl;
-            // file << std::fixed << std::setprecision(0);
-            // file << fitnorm1270 << " ± " << fitnorm1270_err << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << fitmass1270 * 1000.0 << " \\pm " << fitmass1270_err * 1000.0 << endl;
-            // file << fitwidth1270 * 1000.0 << " \\pm " << fitwidth1270_err * 1000.0 << endl;
-            // file << std::fixed << std::setprecision(0);
-            // file << fitnorm1320 << " \\pm " << fitnorm1320_err << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << fitmass1320 * 1000.0 << " \\pm " << fitmass1320_err * 1000.0 << endl;
-            // file << fitwidth1320 * 1000.0 << " \\pm " << fitwidth1320_err * 1000.0 << endl;
-            // file << std::fixed << std::setprecision(0);
-            // file << fitnorm1525 << " \\pm " << fitnorm1525_err << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << fitmass1525 * 1000.0 << " \\pm " << fitmass1525_err * 1000.0 << endl;
-            // file << fitwidth1525 * 1000.0 << " \\pm " << fitwidth1525_err * 1000.0 << endl;
-
-            // // f0(1710) resonance
-            // file << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << "Chi2/NDF" << endl;
-            // file << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-            // file << std::fixed << std::setprecision(0);
-            // file << fitnorm1710 << " ± " << fitnorm1710_err << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << fitmass1710 * 1000.0 << " ± " << fitmass1710_err * 1000.0 << endl;
-            // file << fitwidth1710 * 1000.0 << " ± " << fitwidth1710_err * 1000.0 << endl;
-
-            // file << "\n\n Significance " << endl;
-            // file << std::fixed << std::setprecision(1);
-            // file << significance << endl;
-            // file << "\n\n";
-            // file << "residual bkg parameters" << endl;
-            // file << std::fixed << std::setprecision(5);
-            // file << resdual_bkg_par1 << ", " << resdual_bkg_par2 << ", " << resdual_bkg_par3 << ", " << resdual_bkg_par4 << endl;
-            // // file << endl;
-            // // file << endl;
-            // // file << std::fixed << std::setprecision(4);
-            // // file << "fit masses" << endl;
-            // // file << fitmass1270 << ", " << fitmass1320 << ", " << fitmass1525 << ", " << fitmass1710 << endl;
-            // // file << "fit masses errors" << endl;
-            // // file << fitmass1270_err << ", " << fitmass1320_err << ", " << fitmass1525_err << ", " << fitmass1710_err << endl;
-            // // file << "fit widths" << endl;
-            // // file << fitwidth1270 << ", " << fitwidth1320 << ", " << fitwidth1525 << ", " << fitwidth1710 << endl;
-            // // file << "fit widths errors" << endl;
-            // // file << fitwidth1270_err << ", " << fitwidth1320_err << ", " << fitwidth1525_err << ", " << fitwidth1710_err << endl;
 
 #ifdef residual_subtracted
             // Now subtract the residual background and plot
@@ -1157,7 +1139,7 @@ void glueball_fit_4rBW()
             lat2.SetTextFont(42);
             // lat2.DrawLatex(0.20, 0.89, "KsKs unlike sign pairs");
             // lat2.DrawLatex(0.20, 0.85, "Residual background subtracted");
-            c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".pdf").c_str());
+            c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
             // c2->Close();
 #endif
 
@@ -1181,7 +1163,8 @@ void glueball_fit_4rBW()
             hinvMass->SetLineColor(1);
             hinvMass->SetMarkerColor(1);
             hinvMass->SetStats(0);
-            hinvMass->SetMinimum(-40000);
+            // hinvMass->SetMinimum(-40000);
+            hinvMass->SetMinimum(-4000);
             // hinvMass->SetMaximum(0.9e6);
             hinvMass->SetMaximum(hinvMass->GetMaximum() * 0.8);
             hinvMass->GetYaxis()->SetMaxDigits(4);
@@ -1322,8 +1305,8 @@ void glueball_fit_4rBW()
                 singlefits1[i]->Draw("same");
             }
             c1->Update();
-            // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.pdf");
-            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_pt_%.2f_%.2f.pdf", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
+            // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
+            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.png", sysvar.c_str())).c_str());
 
 #endif
 
@@ -1505,6 +1488,8 @@ Double_t BWsumMassDepWidth(double *x, double *par)
     double n1 = (2.0 * j1 + 1.0) / 2.0;
     double n2 = (2.0 * j2 + 1.0) / 2.0;
 
+    // double phase_space = (x[0] / TMath::Sqrt(x[0] * x[0] + 15 * 15)) * (TMath::Exp(-TMath::Sqrt(x[0] * x[0] + 15 * 15) / 0.16)); // 160 MeV is the kinetic freeze-out temperature
+
     double yield1270 = par[0];
     double mass1270 = par[1];
     double width1270 = par[2] * (TMath::Power(par[1] / x[0], 1.0)) * TMath::Power((npart1) / (dpart1), n1);
@@ -1523,7 +1508,7 @@ Double_t BWsumMassDepWidth(double *x, double *par)
     double fit1525 = yield1525 * mass1525 * width1525 * x[0] / (pow((x[0] * x[0] - mass1525 * mass1525), 2) + pow(mass1525 * width1525, 2));
     double fit1710 = yield1710 * mass1710 * width1710 * x[0] / (pow((x[0] * x[0] - mass1710 * mass1710), 2) + pow(mass1710 * width1710, 2));
 
-    double fit = fit1270 + fit1320 + fit1525 + fit1710;
+    double fit = (fit1270 + fit1320 + fit1525 + fit1710);
     return fit;
 }
 

@@ -100,17 +100,17 @@ void glueball_fit_3rBW()
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
     // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
 
-    string sysvar = "temp"; // default
+    string sysvar = "varC3"; // default
 
     ofstream file;
-    file.open((path2 + "/fits/3rBw_fits/fit_params_" + sysvar + ".txt").c_str());
+    file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
 
-    string savepath = path2 + "/fits/3rBw_fits";
+    string savepath = path2 + "/fits/4rBw_fits";
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
-    // TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
     // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
     int colors[] = {4, 6, 28, 46};
@@ -129,8 +129,8 @@ void glueball_fit_3rBW()
         return;
     }
 
-    // #define b_modfied_boltzmann
-    #define b_massdepwidth
+// #define b_modfied_boltzmann
+#define b_massdepwidth
     // #define b_expol
     // #define b_boltzman_pure
     // #define b_boltzmann_pure_massdepwidth
@@ -156,7 +156,7 @@ void glueball_fit_3rBW()
         }
         TCanvas *c = new TCanvas("", "", 720, 720);
         SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
-        // hinvMass->Rebin(2);
+        hinvMass->Rebin(2);
         double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
         hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
         hinvMass->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
@@ -184,7 +184,8 @@ void glueball_fit_3rBW()
         }
 
         // double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
-        double parameters[] = {2500, f1270Mass, f1270Width, 7000, f1525Mass, f1525Width, 2500, f1710Mass, f1710Width}; // for preview presentation
+        // double parameters[] = {2500, f1270Mass, f1270Width, 7000, f1525Mass, f1525Width, 2500, f1710Mass, f1710Width}; // for preview presentation
+        double parameters[] = {1600, f1270Mass, f1270Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // 3-5 GeV/c rebin 2
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
         for (int i = 0; i < size_fitparams; i++)
@@ -201,25 +202,13 @@ void glueball_fit_3rBW()
         }
 
         // for rotational bkg with pt range 0-30 GeV/c , // 3BW/3BWAmp + expol/exponential1, 3BWAmp + expol, 3BWAmp + exponential3
-        double initial_param_bkg[] = {4.1562e5, -0.09379, 3.869, 1.30982}; // rotational 1-30 GeV/c (KsKs channel)
+        // double initial_param_bkg[] = {4.1562e5, -0.09379, 3.869, 1.30982}; // rotational 1-30 GeV/c (KsKs channel)
+        double initial_param_bkg[] = {1.062e5, -0.09, 3.69, 1.572}; // 3-5 GeV/c rebin twice
 
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // 206 //5.845e5
         BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  // 0.04316 //-0.07378
         BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // 11.48 //2.685
         BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // -3.149 //1.176
-
-        // // for rotational bkg with pt range 1-30 GeV/c
-        // BEexpol->FixParameter(size_fitparams + 0, 5.927e5);  // 5.562e5   // Fix
-        // BEexpol->SetParameter(size_fitparams + 1, -0.05466); // -0.09379  //Free
-        // BEexpol->FixParameter(size_fitparams + 2, 3.26);     // 2.569     // Fix
-        // BEexpol->SetParameter(size_fitparams + 3, 0.9221);   // 1.098     // Free
-
-        // for ME bkg with pt range 1-30 GeV/c
-        // Till now the problem with ME data is that, it goes negative. Now the expol fit does not go to neagtive values. Need to fix this.
-        // BEexpol->SetParameter(size_fitparams + 0, -0); // 5.562e5   // Fix
-        // BEexpol->SetParameter(size_fitparams + 1, 0.4);      // -0.09379  //Free
-        // BEexpol->SetParameter(size_fitparams + 2, 15.5);     // 2.569     // Fix
-        // BEexpol->SetParameter(size_fitparams + 3, 2.8);      // 1.098     // Free
 
         // BEexpol->FixParameter(1, f1270Mass);
         // BEexpol->FixParameter(4, f1525Mass);
@@ -901,7 +890,7 @@ void glueball_fit_3rBW()
         ptstats->Draw("same");
         // hinvMass->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
         // hinvMass->SetMaximum(1.5 * hinvMass->GetMaximum());
-        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f.pdf", pT_bins[ipt], pT_bins[ipt + 1])).c_str());
+        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
 
         double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
         double fitnorm1525 = BEexpol->GetParameter(3);
@@ -1045,7 +1034,7 @@ void glueball_fit_3rBW()
         ltemp2->AddEntry(singlefits[1], "f'_{2}(1525)", "l");
         ltemp2->AddEntry(singlefits[2], "f_{0}(1710)", "l");
         ltemp2->Draw("same");
-        c2->SaveAs((savepath + "/rBWfit_residual.pdf").c_str());
+        c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
 
 #endif
 

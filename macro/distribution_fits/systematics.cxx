@@ -40,7 +40,8 @@ void systematics()
 {
     gStyle->SetOptStat(0);
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_3sigmaKs/fits/4rBw_fits/systematics_onlywidthfixed/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup2/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/backup2/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/rebin2/";
     ifstream file;
 
     // int colors[] = {kBlue, kRed, kGreen + 3, kOrange + 7, kMagenta + 2, kCyan + 2, kBlack};
@@ -51,16 +52,16 @@ void systematics()
 
     // string all_variations[] = {"Signal extraction", "PID", "Track selection", "Topological selection"};
 
-    // // // // Mapping variations to sources
-    // // *********************signal extraction*******************************
-    // int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
-    // int variationsNumber[] = {1, 4, 2, 4, 4};
-    // // Number of variations for each source
-    // vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2", "varC1", "varC2", "varC3", "varC4", "varD1", "varD2", "varD3", "varD4"}; // signal extraction
-    // vector<string> varNames = {"Fit range", "Normalization range", "Fit function", "Fit parameters"};                                                                 // signal extraction
-    // vector<vector<string>> individual_sources{{"1.05-2.20 GeV/c^{2} (def)", "1.02-2.20 GeV/c^{2}", "1.05-2.30 GeV/c^{2}", "1.08-2.15 GeV/c^{2}", "1.02-2.30 GeV/c^{2}"}, {"2.50-2.60 GeV/c^{2} (def)", "2.40-2.50 GeV/c^{2}", "2.60-2.70 GeV/c^{2}"}, {"Fit 1 (def)", "Fit 2", "Fit 3", "Fit 4", "Fit 5"}, {"#Gamma fix to PDG (spin-2) (def)", "All parameter free", "#Gamma & M fixed (spin-2)", "#Gamma f_{0}(1710) fix to PDG", "M f_{0} fix to PDG"}};
-    // string combinedName = "Signal Extraction";
-    // sysfile.open(path + "sys_signal.txt");
+    // // // Mapping variations to sources
+    // *********************signal extraction*******************************
+    int variations[] = {1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5};
+    int variationsNumber[] = {1, 4, 2, 4, 4};
+    // Number of variations for each source
+    vector<string> names = {"default", "varA1", "varA2", "varA3", "varA4", "varB1", "varB2", "varC1", "varC2", "varC3", "varC4", "varD1", "varD2", "varD3", "varD4"}; // signal extraction
+    vector<string> varNames = {"Fit range", "Normalization range", "Fit function", "Fit parameters"};                                                                 // signal extraction
+    vector<vector<string>> individual_sources{{"1.05-2.20 GeV/c^{2} (def)", "1.02-2.20 GeV/c^{2}", "1.05-2.30 GeV/c^{2}", "1.08-2.15 GeV/c^{2}", "1.02-2.30 GeV/c^{2}"}, {"2.50-2.60 GeV/c^{2} (def)", "2.40-2.50 GeV/c^{2}", "2.60-2.70 GeV/c^{2}"}, {"Fit 1 (def)", "Fit 2", "Fit 3", "Fit 4", "Fit 5"}, {"#Gamma fix to PDG (spin-2) (def)", "All parameter free", "#Gamma & M fixed (spin-2)", "#Gamma f_{0}(1710) fix to PDG", "M f_{0} fix to PDG"}};
+    string combinedName = "Signal Extraction";
+    sysfile.open(path + "sys_signal.txt");
 
     // // *****************PID********************************
     // int variations[] = {1, 2, 2};
@@ -71,15 +72,25 @@ void systematics()
     // string combinedName = "PID";
     // sysfile.open(path + "sys_PID.txt");
 
-    // //*****************Track selection & PID**************************
-    int variations[] = {1, 2, 2, 3, 3, 4, 4};
-    int variationsNumber[] = {1, 2, 2, 2};
-    vector<string> names = {"default", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varTrB1", "varTrB2"}; // Track selection
-    vector<string> varNames = {"TPC crossed rows", "TPC crossed rows over findable clusters", "TPC PID"}; // Track selection
-    vector<vector<string>> individual_sources{{"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // Track selection
-    string combinedName = "Track Selection";
-    // //sysfile.open(path + "sys_TrkSel.txt");
-    sysfile.open(path + "test.txt");
+    // // //*****************Track selection & PID**************************
+    // int variations[] = {1, 2, 2, 3, 3, 4, 4};
+    // int variationsNumber[] = {1, 2, 2, 2};
+    // vector<string> names = {"default", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varTrB1", "varTrB2"}; // Track selection
+    // vector<string> varNames = {"TPC crossed rows", "TPC crossed rows over findable clusters", "TPC PID"}; // Track selection
+    // vector<vector<string>> individual_sources{{"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}, {"3#sigma (def)", "4#sigma", "5#sigma"}}; // Track selection
+    // string combinedName = "Track Selection and PID";
+    // // //sysfile.open(path + "sys_TrkSel.txt");
+    // sysfile.open(path + "test.txt");
+
+
+    // // //*****************Track selection**************************
+    // int variations[] = {1, 2, 2, 3, 3};
+    // int variationsNumber[] = {1, 2, 2};
+    // vector<string> names = {"default", "varTrC1", "varTrC2", "varTrD1", "varTrD2"}; // Track selection
+    // vector<string> varNames = {"TPC crossed rows", "TPC crossed rows over findable clusters"}; // Track selection
+    // vector<vector<string>> individual_sources{{"70 (def)", "100", "120"}, {"0.8 (def)", "0.9", "1.0"}}; // Track selection
+    // string combinedName = "Track Selection";
+    // sysfile.open(path + "sys_TrkSel.txt");
 
     // // // ***************Topological selection***************
     // int variations[] = {1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7};
@@ -259,7 +270,7 @@ void systematics()
     l1->Draw("same");
 
     TCanvas *c2 = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(c2, 0.18, 0.03, 0.05, 0.14);
+    SetCanvasStyle(c2, 0.18, 0.03, 0.01, 0.14);
     for (int i = 0; i < size; i++)
     {
         hwidth_var[i] = new TH1F(Form("hwidth_var%d", i), "", 1, 0, 30);
@@ -279,7 +290,7 @@ void systematics()
     SetHistoQA(hwidth_total);
     hwidth_total->SetLineColor(1);
     hwidth_total->SetLineWidth(4);
-    hwidth_total->GetYaxis()->SetRangeUser(0.00, 0.331);
+    hwidth_total->GetYaxis()->SetRangeUser(0.00, 0.309);
     hwidth_total->Draw("same");
 
     TLegend *l2 = new TLegend(0.25, 0.60, 0.55, 0.91);
@@ -297,6 +308,8 @@ void systematics()
 
     // c1->SaveAs(("/home/sawan/Videos/systematic_mass_" + combinedName + ".png").c_str());
     // c2->SaveAs(("/home/sawan/Videos/systematic_width_" + combinedName + ".png").c_str());
+    c1->Close();
+    c2->Close();
 
     TCanvas *c3 = new TCanvas("c", "", 720, 720);
     SetCanvasStyle(c3, 0.18, 0.03, 0.001, 0.08);
@@ -304,7 +317,7 @@ void systematics()
 
     c3->cd(1);
     gPad->SetLeftMargin(0.27);
-    gPad->SetTopMargin(0.05);
+    gPad->SetTopMargin(0.01);
     for (int i = 0; i < size; i++)
     {
         hmass_var[i]->GetXaxis()->SetBinLabel(1, "Mass (GeV/#it{c}^{2})");
@@ -321,7 +334,7 @@ void systematics()
     // Right plot (Width)
     c3->cd(2);
     gPad->SetRightMargin(0.28);
-    gPad->SetTopMargin(0.05);
+    gPad->SetTopMargin(0.01);
     SetHistoQA(hwidth_total);
     hwidth_total->GetXaxis()->SetBinLabel(1, "Width (GeV/#it{c}^{2})");
     hwidth_total->GetXaxis()->SetLabelSize(0.12);
@@ -363,7 +376,7 @@ void systematics()
     l3->AddEntry(hmass_total, "Total", "l");
     l3->Draw(); // No need for "same"
 
-    c3->SaveAs(("/home/sawan/Videos/systematic_mass_width_doublepanel_" + combinedName + ".pdf").c_str());
+    c3->SaveAs(("/home/sawan/Music/systematic_doublepanel_rebin_" + combinedName + ".png").c_str());
 
     // // make double panel plots for the ratios
     // TH1F *mass_default = new TH1F("mass_default", "", 1, 0, 30);

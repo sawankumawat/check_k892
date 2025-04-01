@@ -43,7 +43,7 @@ void SetHistoQA(TH1 *h)
     h->GetXaxis()->SetTitleFont(42);
     h->GetXaxis()->SetLabelSize(0.045);
     h->GetXaxis()->SetTitleSize(0.05);
-    h->GetXaxis()->SetTickLength(0.04);
+    h->GetXaxis()->SetTickLength(0.02);
     h->GetXaxis()->SetTitleOffset(1.2);
     h->GetXaxis()->CenterTitle(true);
     h->GetYaxis()->CenterTitle(true);
@@ -52,7 +52,7 @@ void SetHistoQA(TH1 *h)
     h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.045);
-    h->GetYaxis()->SetTickLength(0.04);
+    h->GetYaxis()->SetTickLength(0.02);
     h->GetYaxis()->SetTitleSize(0.05);
     h->GetYaxis()->SetTitleFont(42);
 }
@@ -162,7 +162,7 @@ void SetCanvasStyle(TCanvas *c, float leftmargin, float rightmargin, float topma
     c->SetBorderMode(0);
     c->SetFillColor(10);
     c->SetFrameFillColor(10);
-    // c->SetFrameLineWidth(2);
+    c->SetFrameLineWidth(2);
     // c->SetLeftMargin(0.2);
     // c->SetRightMargin(0.05);
     // c->SetTopMargin(0.08);

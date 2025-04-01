@@ -37,8 +37,8 @@ void gaussian_fit_Ks3()
 
     //********************************************************************
 
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_100SigmaKs/QA/KsInvMass.root";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/369624/KsKs_Channel/higher-mass-resonances/QA/KsInvMass.root";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351471/KsKs_Channel/higher-mass-resonances_100SigmaKs/QA/KsInvMass.root";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/369624/KsKs_Channel/higher-mass-resonances/QA/KsInvMass.root";
 
     TFile *f = new TFile(path.c_str(), "read");
     if (f == nullptr)
@@ -47,38 +47,38 @@ void gaussian_fit_Ks3()
         return;
     }
 
-    // THnSparseF *hsparse = (THnSparseF *)f->Get("kshort_2dsparse");
-    // if (hsparse == nullptr)
-    // {
-    //     cout << "THnSparse not found" << endl;
-    //     return;
-    // }
-    // THnSparseF *hsparseClone = (THnSparseF *)hsparse->Clone("hsparseClone");
-    // TH1F *hpt = (TH1F *)hsparse->Projection(1);
-    // int ptbinlow = hsparseClone->GetAxis(1)->FindBin(0.0);
-    // int ptbinhigh = hsparseClone->GetAxis(1)->FindBin(30.0);
-    // hsparseClone->GetAxis(1)->SetRange(ptbinlow, ptbinhigh);
-
-    TH2F *hsparse = (TH2F *)f->Get("ksks_mass_correlation");
+    THnSparseF *hsparse = (THnSparseF *)f->Get("kshort_2dsparse");
     if (hsparse == nullptr)
     {
-        cout << "TH2F not found" << endl;
+        cout << "THnSparse not found" << endl;
         return;
     }
+    THnSparseF *hsparseClone = (THnSparseF *)hsparse->Clone("hsparseClone");
+    TH1F *hpt = (TH1F *)hsparse->Projection(1);
+    int ptbinlow = hsparseClone->GetAxis(1)->FindBin(0.0);
+    int ptbinhigh = hsparseClone->GetAxis(1)->FindBin(30.0);
+    hsparseClone->GetAxis(1)->SetRange(ptbinlow, ptbinhigh);
 
-    TH2F *hsparseClone = (TH2F *)hsparse->Clone("hsparseClone");
-    TH1F *hInvMass = (TH1F *)hsparseClone->ProjectionY();
+    // TH2F *hsparse = (TH2F *)f->Get("ksks_mass_correlation");
+    // if (hsparse == nullptr)
+    // {
+    //     cout << "TH2F not found" << endl;
+    //     return;
+    // }
 
-    // TH1F *hInvMass = (TH1F *)hsparseClone->Projection(0, "E");
+    // TH2F *hsparseClone = (TH2F *)hsparse->Clone("hsparseClone");
+    // TH1F *hInvMass = (TH1F *)hsparseClone->ProjectionY();
+
+    TH1F *hInvMass = (TH1F *)hsparseClone->Projection(0, "E");
     hInvMass->Rebin(rebin);
     double binwidth = hInvMass->GetBinWidth(1);
     cout << "Bin width: " << binwidth << endl;
 
     TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
-    SetCanvasStyle(c1, 0.14, 0.03, 0.05, 0.13);
+    SetCanvasStyle(c1, 0.148, 0.01, 0.05, 0.125);
     SetHistoStyle_temp(hInvMass, 1, 20, binwidth);
     hInvMass->GetYaxis()->SetMaxDigits(3);
-    hInvMass->GetYaxis()->SetTitleOffset(1.5);
+    hInvMass->GetYaxis()->SetTitleOffset(1.6);
     hInvMass->SetMinimum(-100);
     hInvMass->SetMarkerStyle(20);
     hInvMass->SetMarkerSize(1.0);
@@ -96,8 +96,8 @@ void gaussian_fit_Ks3()
     // hInvMass->Fit("gauspol2", "R");
 
     TF1 *crystalball = new TF1("crystalball", CB, 0.486, 0.507, 5);
-    // crystalball->SetParameter(0, 1e9);
-    crystalball->SetParameter(0, 1e7);
+    crystalball->SetParameter(0, 1e9);
+    // crystalball->SetParameter(0, 1e7);
     crystalball->SetParameter(1, ksmass);
     crystalball->SetParLimits(1, ksmass - 2 * kswidth, ksmass + 2 * kswidth);
     crystalball->SetParameter(2, kswidth);
@@ -113,55 +113,56 @@ void gaussian_fit_Ks3()
     doubleCrystalBall->SetParameter(4, crystalball->GetParameter(4));
     doubleCrystalBall->SetParameter(5, crystalball->GetParameter(3));
     doubleCrystalBall->SetParameter(6, crystalball->GetParameter(4));
-    hInvMass->Fit("doubleCrystalBall", "REBMS");
+    hInvMass->Fit("doubleCrystalBall", "REBMS0");
 
-    // // TF1 *crystalballpol1 = new TF1("crystalballpol1", CBpol1, 0.46, 0.54, 7);
+    TF1 *crystalballpol1 = new TF1("crystalballpol1", CBpol1, 0.46, 0.54, 7);
     // TF1 *crystalballpol1 = new TF1("crystalballpol1", CBpol1, 0.485, 0.51, 7);
-    // crystalballpol1->SetParameter(0, crystalball->GetParameter(0));
-    // crystalballpol1->SetParameter(1, crystalball->GetParameter(1));
-    // crystalballpol1->SetParameter(2, crystalball->GetParameter(2));
-    // crystalballpol1->SetParameter(3, crystalball->GetParameter(3));
-    // crystalballpol1->SetParameter(4, crystalball->GetParameter(4));
-    // // crystalballpol1->SetParameter(5, 5e7);
-    // // crystalballpol1->SetParameter(6, 6e7);
+    crystalballpol1->SetParameter(0, crystalball->GetParameter(0));
+    crystalballpol1->SetParameter(1, crystalball->GetParameter(1));
+    crystalballpol1->SetParameter(2, crystalball->GetParameter(2));
+    crystalballpol1->SetParameter(3, crystalball->GetParameter(3));
+    crystalballpol1->SetParameter(4, crystalball->GetParameter(4));
+    crystalballpol1->SetParameter(5, 5e7);
+    crystalballpol1->SetParameter(6, 6e7);
     // crystalballpol1->SetParameter(5, 5e5);
     // crystalballpol1->SetParameter(6, 6e5);
-    // hInvMass->Fit("crystalballpol1", "REBMS0");
+    hInvMass->Fit("crystalballpol1", "REBMS0");
 
-    // TF1 *doublecrystalBallpol1 = new TF1("doublecrystalBallpol1", doubleCBpol1, 0.46, 0.54, 9);
-    // doublecrystalBallpol1->SetParameter(0, crystalballpol1->GetParameter(0));
-    // doublecrystalBallpol1->SetParameter(1, crystalballpol1->GetParameter(1));
-    // doublecrystalBallpol1->SetParameter(2, crystalballpol1->GetParameter(2));
-    // doublecrystalBallpol1->SetParameter(3, crystalballpol1->GetParameter(3));
-    // doublecrystalBallpol1->SetParameter(4, crystalballpol1->GetParameter(4));
-    // doublecrystalBallpol1->SetParameter(5, crystalballpol1->GetParameter(3));
-    // doublecrystalBallpol1->SetParameter(6, crystalballpol1->GetParameter(4));
-    // doublecrystalBallpol1->SetParameter(7, crystalballpol1->GetParameter(5));
-    // doublecrystalBallpol1->SetParameter(8, crystalballpol1->GetParameter(6));
-    // hInvMass->Fit("doublecrystalBallpol1", "REBMS");
+    TF1 *doublecrystalBallpol1 = new TF1("doublecrystalBallpol1", doubleCBpol1, 0.46, 0.54, 9);
+    doublecrystalBallpol1->SetParameter(0, crystalballpol1->GetParameter(0));
+    doublecrystalBallpol1->SetParameter(1, crystalballpol1->GetParameter(1));
+    doublecrystalBallpol1->SetParameter(2, crystalballpol1->GetParameter(2));
+    doublecrystalBallpol1->SetParameter(3, crystalballpol1->GetParameter(3));
+    doublecrystalBallpol1->SetParameter(4, crystalballpol1->GetParameter(4));
+    doublecrystalBallpol1->SetParameter(5, crystalballpol1->GetParameter(3));
+    doublecrystalBallpol1->SetParameter(6, crystalballpol1->GetParameter(4));
+    doublecrystalBallpol1->SetParameter(7, crystalballpol1->GetParameter(5));
+    doublecrystalBallpol1->SetParameter(8, crystalballpol1->GetParameter(6));
+    doublecrystalBallpol1->SetNpx(10000);
+    hInvMass->Fit("doublecrystalBallpol1", "REBMS");
 
-    // double mean = doublecrystalBallpol1->GetParameter(1);
-    // double width = doublecrystalBallpol1->GetParameter(2);
+    double mean = doublecrystalBallpol1->GetParameter(1);
+    double width = doublecrystalBallpol1->GetParameter(2);
 
-    // TH1F *hInvMassClone1 = (TH1F *)hInvMass->Clone("hInvMassClone1");
-    // TH1F *hInvMassClone2 = (TH1F *)hInvMass->Clone("hInvMassClone2");
-    // hInvMassClone1->SetLineColor(0);
-    // hInvMassClone1->SetLineWidth(0);
-    // hInvMassClone1->SetFillColor(5);
-    // hInvMassClone1->GetXaxis()->SetRangeUser(mean - 3.0 * width, mean + 3.0 * width);
-    // hInvMassClone1->Draw("E3 hist same");
-    // hInvMassClone2->Draw("pe same");
+    TH1F *hInvMassClone1 = (TH1F *)hInvMass->Clone("hInvMassClone1");
+    TH1F *hInvMassClone2 = (TH1F *)hInvMass->Clone("hInvMassClone2");
+    hInvMassClone1->SetLineColor(0);
+    hInvMassClone1->SetLineWidth(0);
+    hInvMassClone1->SetFillColor(5);
+    hInvMassClone1->GetXaxis()->SetRangeUser(mean - 3.0 * width, mean + 3.0 * width);
+    hInvMassClone1->Draw("E3 hist same");
+    hInvMassClone2->Draw("pe same");
 
     // cout << "mass is " << mean * 1000 << " MeV" << " #pm " << doublecrystalBallpol1->GetParError(1) * 1000 << " MeV" << endl;
     // cout << "width is " << width * 1000 << " MeV" << " #pm " << doublecrystalBallpol1->GetParError(2) * 1000 << " MeV" << endl;
 
-    // TF1 *pol1 = new TF1("pol1", "[0]+x[0]*[1]", doublecrystalBallpol1->GetXmin(), doublecrystalBallpol1->GetXmax());
-    // pol1->SetParameter(0, doublecrystalBallpol1->GetParameter(7));
-    // pol1->SetParameter(1, doublecrystalBallpol1->GetParameter(8));
-    // pol1->SetLineColor(4);
-    // pol1->SetLineStyle(2);
-    // pol1->SetLineWidth(2);
-    // pol1->Draw("SAME");
+    TF1 *pol1 = new TF1("pol1", "[0]+x[0]*[1]", doublecrystalBallpol1->GetXmin(), doublecrystalBallpol1->GetXmax());
+    pol1->SetParameter(0, doublecrystalBallpol1->GetParameter(7));
+    pol1->SetParameter(1, doublecrystalBallpol1->GetParameter(8));
+    pol1->SetLineColor(4);
+    pol1->SetLineStyle(2);
+    pol1->SetLineWidth(2);
+    pol1->Draw("SAME");
 
     // TF1 *doublecrystalBall = new TF1("doublecrystalBall", doubleCB, doublecrystalBallpol1->GetXmin(), doublecrystalBallpol1->GetXmax(), 7);
     // for (int i = 0; i < 7; i++)
@@ -183,24 +184,33 @@ void gaussian_fit_Ks3()
     // cout << "Purity: " << purity << endl;
     // cout << "Total counts percentage in the signal region: " << areasigbkg * 100 / noofevents << endl;
 
-    TLegend *lp2 = DrawLegend(0.16, 0.62, 0.42, 0.91);
+    TLegend *lp2 = DrawLegend(0.13, 0.62, 0.42, 0.86);
     lp2->SetTextSize(0.035);
     lp2->SetTextFont(42);
     lp2->SetFillStyle(0);
     lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    lp2->AddEntry((TObject *)0, "K_{S}^{0}#rightarrow#pi^{+}#pi^{-}", " ");
     lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
     lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
-    lp2->AddEntry((TObject *)0, "p_{T}: 0-30 GeV/#it{c}", "");
+    // lp2->AddEntry((TObject *)0, "0 < #it{p}_{T} < 30 GeV/#it{c}", "");
     lp2->Draw("same");
 
-    TLegend *lp3 = DrawLegend(0.6, 0.72, 0.9, 0.9);
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.035);
+    lat.SetTextFont(42);
+    lat.DrawLatex(0.2019499, 0.8700575, "ALICE Performance");
+
+    TLegend *lp3 = DrawLegend(0.591922,0.6594828,0.7952646,0.8994253);
     lp3->SetFillStyle(0);
     lp3->SetTextSize(0.035);
     lp3->SetTextFont(42);
-    lp3->AddEntry(hInvMass, "Data (K^{0}_{s} #rightarrow #pi^{+}#pi^{-})", "lpe");
+    // lp3->AddEntry((TObject *)0,"K_{S}^{0} #rightarrow #pi^{+} #pi^{-}", " ");
+    lp3->AddEntry(hInvMass, "Data (stat. uncert.)", "p");
     // lp3->AddEntry(doublecrystalBallpol1, "Fit", "l");
-    lp3->AddEntry(doubleCrystalBall, "Fit", "l");
-    // lp3->AddEntry(pol1, "Pol 1", "l");
+    lp3->AddEntry(doubleCrystalBall, "Double CB + Res. Bkg", "l");
+    lp3->AddEntry(pol1, "Res. Bkg", "l");
+    lp3->AddEntry(hInvMassClone1, "Signal region", "f");
     lp3->Draw("same");
 
     TLegend *lp4 = DrawLegend(0.48, 0.5, 0.9, 0.65);
@@ -212,9 +222,9 @@ void gaussian_fit_Ks3()
     // lp4->AddEntry((TObject *)0, Form("Width = %.2f #pm %.1e MeV", doublecrystalBallpol1->GetParameter(2) * 1000, doublecrystalBallpol1->GetParError(2) * 1000), "");
     lp4->AddEntry((TObject *)0, Form("Mass = %.2f #pm %.1e MeV", doubleCrystalBall->GetParameter(1) * 1000, doubleCrystalBall->GetParError(1) * 1000), "");
     lp4->AddEntry((TObject *)0, Form("Width = %.2f #pm %.1e MeV", doubleCrystalBall->GetParameter(2) * 1000, doubleCrystalBall->GetParError(2) * 1000), "");
-    lp4->Draw("same");
+    // lp4->Draw("same");
 
-    c1->SaveAs("/home/sawan/Videos/CBfit_ks2.png");
+    c1->SaveAs("/home/sawan/Videos/CBfit_ks3.pdf");
 
     // // gPad->Update();
     // // TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");
@@ -236,13 +246,13 @@ void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth)
     h->GetXaxis()->SetLabelSize(0.04);
     h->GetXaxis()->SetTitleFont(42);
     h->GetXaxis()->SetTitleSize(0.045);
-    h->GetXaxis()->SetTickLength(0.04);
+    h->GetXaxis()->SetTickLength(0.02);
     h->GetYaxis()->CenterTitle(true);
     h->GetXaxis()->CenterTitle(true);
     h->GetYaxis()->SetLabelOffset(0.035);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.04);
-    h->GetYaxis()->SetTickLength(0.04);
+    h->GetYaxis()->SetTickLength(0.02);
     h->GetYaxis()->SetTitleSize(0.045);
     h->GetYaxis()->SetTitleFont(42);
 
@@ -255,7 +265,7 @@ void SetHistoStyle_temp(TH1 *h, Int_t MCol, Int_t MSty, double binwidth)
     h->SetLineColor(kBlack);
     h->SetMaximum(1.2 * h->GetMaximum());
     // h->GetXaxis()->SetRangeUser(0.45, 0.55);
-    h->GetYaxis()->SetTitle(Form("Counts /(%.3f GeV/#it{c^{2}})", binwidth));
+    h->GetYaxis()->SetTitle(Form("Counts /(%.0f MeV/#it{c^{2}})", binwidth * 1000));
     h->GetXaxis()->SetTitle("#it{M}_{#pi^{+}#pi^{-}} (GeV/#it{c^{2}})");
 }
 

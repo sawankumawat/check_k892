@@ -100,7 +100,7 @@ void glueball_fit_3rBW()
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
     // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
 
-    string sysvar = "varC3"; // default
+    string sysvar = "varC2"; // default
 
     ofstream file;
     file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".txt").c_str());
@@ -109,8 +109,8 @@ void glueball_fit_3rBW()
 
     gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-    // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
-    TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
+    TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
+    // TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
     // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
     int colors[] = {4, 6, 28, 46};
@@ -134,7 +134,7 @@ void glueball_fit_3rBW()
     // #define b_expol
     // #define b_boltzman_pure
     // #define b_boltzmann_pure_massdepwidth
-#define residual_subtracted
+// #define residual_subtracted
     // #define doublepanelplot
 
     for (int ipt = 0; ipt < Npt; ipt++)
@@ -183,9 +183,9 @@ void glueball_fit_3rBW()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        // double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
+        double parameters[] = {8384, f1270Mass, f1270Width, 7858, f1525Mass, f1525Width, 3218, f1710Mass, f1710Width};
         // double parameters[] = {2500, f1270Mass, f1270Width, 7000, f1525Mass, f1525Width, 2500, f1710Mass, f1710Width}; // for preview presentation
-        double parameters[] = {1600, f1270Mass, f1270Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // 3-5 GeV/c rebin 2
+        // double parameters[] = {1600, f1270Mass, f1270Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // 3-5 GeV/c rebin 2
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
         for (int i = 0; i < size_fitparams; i++)
@@ -202,8 +202,8 @@ void glueball_fit_3rBW()
         }
 
         // for rotational bkg with pt range 0-30 GeV/c , // 3BW/3BWAmp + expol/exponential1, 3BWAmp + expol, 3BWAmp + exponential3
-        // double initial_param_bkg[] = {4.1562e5, -0.09379, 3.869, 1.30982}; // rotational 1-30 GeV/c (KsKs channel)
-        double initial_param_bkg[] = {1.062e5, -0.09, 3.69, 1.572}; // 3-5 GeV/c rebin twice
+        double initial_param_bkg[] = {4.1562e5, -0.09379, 3.869, 1.30982}; // rotational 1-30 GeV/c (KsKs channel)
+        // double initial_param_bkg[] = {1.062e5, -0.09, 3.69, 1.572}; // 3-5 GeV/c rebin twice
 
         BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // 206 //5.845e5
         BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  // 0.04316 //-0.07378

@@ -5,7 +5,7 @@
 #ifdef DATASET_LHC22o_pass7_small
 #ifdef KsKschannel
 const Int_t Npt = 1;
-double pT_bins[Npt + 1] = {0.0, 30.0};
+double pT_bins[Npt + 1] = {0.0, 29.99};
 // double pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 5.0, 8.0};
 const int pt_start = 0;
 const int pt_end = Npt;
@@ -41,7 +41,7 @@ const std::vector<vector<float>> kNormRangepT = {
 
 const std::vector<int> kRebin = {
     // 2, // 0.0-30.0 GeV/c
-    // 4, // 0.0-1.0 GeV/c
+    4, // 0.0-1.0 GeV/c
     2, // 1.0-2.0 GeV/c
     2, // 2.0-3.0 GeV/c
     2, // 3.0-4.0 GeV/c

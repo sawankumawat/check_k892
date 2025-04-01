@@ -142,7 +142,7 @@ void glueball_fit_4rBW()
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
 
-        string sysvar = "test"; // default
+        string sysvar = "default"; // default
 
         ofstream file;
         // file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".csv").c_str());
@@ -153,12 +153,12 @@ void glueball_fit_4rBW()
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
         TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ"); // default
-        // TFile *f = new TFile((path + "/hglue_MIX_norm_2.50_2.60_pt_3.00_5.00.root").c_str(), "READ"); // default
+        // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_1.00_2.00.root").c_str(), "READ"); // default
         // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
 
-        int colors[] = {4, 6, 28, 46};
+        int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
         double widths[] = {f1270Width, a1320Width, f1525Width, f1710Width};
         string resonance_names[] = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
@@ -176,8 +176,8 @@ void glueball_fit_4rBW()
         // #define b_expol1
         // #define b_HERAexponential
 
-        // #define residual_subtracted
-        // #define doublepanelplot
+#define residual_subtracted
+#define doublepanelplot
 
         for (int ipt = 0; ipt < Npt; ipt++)
         {
@@ -201,7 +201,7 @@ void glueball_fit_4rBW()
             }
             TCanvas *c = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
-            // hinvMass->Rebin(2);
+            hinvMass->Rebin(2);
             double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
             // cout<<"x max is "<<hinvMass->GetXaxis()->GetXmax()<<endl;
             // cout<<"x min is "<<hinvMass->GetXaxis()->GetXmin()<<endl;
@@ -209,8 +209,9 @@ void glueball_fit_4rBW()
             cout << "bin width is " << binwidthfile << endl;
             hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
             hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
-            hinvMass->GetYaxis()->SetTitle(Form("Counts/%.2f GeV/#it{c}^{2}", binwidthfile));
-            hinvMass->SetMaximum(1.6 * hinvMass->GetMaximum());
+            hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
+            hinvMass->SetMaximum(1.2 * hinvMass->GetMaximum());
+            hinvMass->SetMarkerSize(1.0);
             hinvMass->Draw("pe");
             TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
             TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
@@ -226,7 +227,7 @@ void glueball_fit_4rBW()
 
 #ifdef b_massdepwidth
 
-            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.20, 16); // expol 3
+            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.04, 2.20, 16); // expol 3
 
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
             for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
@@ -234,12 +235,15 @@ void glueball_fit_4rBW()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
-            // double parameters[] = {1.21e4, f1270Mass, f1270Width, 10000, a1320Mass, a1320Width, 24000, f1525Mass, f1525Width, 7200, f1710Mass, f1710Width}; // LHC23_pass4_thin
-            // double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
+            // double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
+            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
+            double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
             // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 800, f1710Mass, f1710Width}; // medium train
             // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
             // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
+            // double parameters[] = {35, f1270Mass, f1270Width, 66, a1320Mass, a1320Width, 166, f1525Mass, f1525Width, 280, f1710Mass, f1710Width}; // pt range 8-15 GeV/c rebin 3
+            // double parameters[] = {690, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 2300, f1525Mass, f1525Width, 500, f1710Mass, f1710Width}; // pt range 2-3 GeV/c rebin 2 (fit 1.05-2.25)
+            // double parameters[] = {1470, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 1300, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // pt range 1-2 GeV/c rebin 2 (fit 1.05-2.20)
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -247,8 +251,8 @@ void glueball_fit_4rBW()
             {
                 BEexpol->SetParameter(i, parameters[i]);
             }
-            vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}};
-            // vector<vector<float>> par_limits = {{2, 8 * f1270WidthErr}};
+            vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 1 * f1710Width}, {11, 1 * f1710WidthErr}};
+
             int limits_size = par_limits.size();
             for (int i = 0; i < limits_size; i++)
             {
@@ -256,17 +260,18 @@ void glueball_fit_4rBW()
                 BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             }
 
-            // double initial_param_bkg[] = {9.07518e5, -0.2044, 4.077, 1.64}; // LHC23_thin
-
             // //********systematic studies*************
-            double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
-            // double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice
-            // double initial_param_bkg[] = {2.12518e6, -0.0234, 2.82, 1.03}; // pass_4_thin
+            // double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
+            double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice
+            // double initial_param_bkg[] = {4.618e6, 0.00774, 2.82, 1.03}; // pass_4_thin
             // double initial_param_bkg[] = {2.57518e5, 0.0424, 3.171167, 0.964}; // 0-30 GeV/c, 3sigma
             // double initial_param_bkg[] = {4.8e4, -0.107, 3.51167, 1.4}; //pt range 3-5, 5-8 GeV/c
             // double initial_param_bkg[] = {7.0e4, -0.17, 3.867, 1.8}; // pt range 3-5, 5-8 GeV/c (rebin 2)
             // double initial_param_bkg[] = {3.7e5, 0.07, 3.7, 0.94}; //rot range 1 - 30
             // double initial_param_bkg[] = {1.1e5, -0.17, 4.00, 1.4}; //rot range 2 - 30
+            // double initial_param_bkg[] = {7646, -0.06, 2.15, 1.4}; // pt range 8-15 GeV/c (rebin 3)
+            // double initial_param_bkg[] = {8.2e4, -0.257, 5.715, 1.8}; // pt range 2-3 GeV/c (rebin 2)
+            // double initial_param_bkg[] = {7.3e6, 0.57, 6.15, 0.4}; // pt range 1-2 GeV/c (rebin 2)
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
@@ -381,9 +386,9 @@ void glueball_fit_4rBW()
 
             for (int i = 0; i < 4; i++)
             {
-                double significance_num = singlefits[i]->Integral(masses[i] - 1 * widths[i], masses[i] + 1 * widths[i]) / binwidthfile;
-                int binlow = hraw->GetXaxis()->FindBin(masses[i] - 1 * widths[i]);
-                int binhigh = hraw->GetXaxis()->FindBin(masses[i] + 1 * widths[i]);
+                double significance_num = singlefits[i]->Integral(masses[i] - 2 * widths[i], masses[i] + 2 * widths[i]) / binwidthfile;
+                int binlow = hraw->GetXaxis()->FindBin(masses[i] - 2 * widths[i]);
+                int binhigh = hraw->GetXaxis()->FindBin(masses[i] + 2 * widths[i]);
                 double significance_den = TMath::Sqrt(hraw->Integral(binlow, binhigh));
                 significance = significance_num / significance_den;
                 signal_counts = significance_num;
@@ -554,7 +559,8 @@ void glueball_fit_4rBW()
             }
 
             // double parameters[] = {2263, f1270Mass, f1270Width, 1580, a1320Mass, a1320Width, 3800, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // default
-            double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 750, f1710Mass, f1710Width}; // pt 3-5 GeV/c rebin twice
+            double parameters[] = {4500, f1270Mass, f1270Width, 3200, a1320Mass, a1320Width, 7500, f1525Mass, f1525Width, 3000, f1710Mass, f1710Width}; // default rebin 2
+            // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 750, f1710Mass, f1710Width}; // pt 3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -562,7 +568,7 @@ void glueball_fit_4rBW()
             {
                 BEexpol->SetParameter(i, parameters[i]);
             }
-            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 2 * f1710Width}, {11, 5 * f1710WidthErr}};
+            vector<vector<float>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 2 * f1710Width}, {11, 2 * f1710WidthErr}};
             int limits_size = par_limits.size();
             for (int i = 0; i < limits_size; i++)
             {
@@ -571,7 +577,8 @@ void glueball_fit_4rBW()
             }
 
             // double initial_param_bkg[] = {3.073e5, -0.04378, 2.727, 1.011}; // rotational 0-30 GeV/c (KsKs channel)
-            double initial_param_bkg[] = {5.1e4, -0.593, 1.6, 3.781}; // 3-5 GeV/c rebin twice
+            double initial_param_bkg[] = {5.43e5, -0.08, 2.627, 1.06}; // rotational 0-30 GeV/c rebin
+            // double initial_param_bkg[] = {5.1e4, -0.593, 1.6, 3.781}; // 3-5 GeV/c rebin twice
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5
@@ -705,8 +712,9 @@ void glueball_fit_4rBW()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            // double parameters[] = {2200, f1270Mass, f1270Width, 1800, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // KsKs channel
-            double parameters[] = {1000, f1270Mass, f1270Width, 1160, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 850, f1710Mass, f1710Width}; // 3-5 GeV/c rebin twice
+            // double parameters[] = {2200, f1270Mass, f1270Width, 1800, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; // KsKs channel default
+            double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7500, f1525Mass, f1525Width, 2300, f1710Mass, f1710Width}; // KsKs channel default rebin
+            // double parameters[] = {1000, f1270Mass, f1270Width, 1160, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 850, f1710Mass, f1710Width}; // 3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -725,7 +733,8 @@ void glueball_fit_4rBW()
             }
 
             // double initial_param_bkg[] = {370.9, 0.0741322, 11.6184, -4.395450}; //default
-            double initial_param_bkg[] = {250.9, 0.22, 11.24, -4.395450}; //3-5 GeV/c rebin twice
+            double initial_param_bkg[] = {150.9, 0.039, 11.6184, -3.0450}; // default rebin
+            // double initial_param_bkg[] = {250.9, 0.22, 11.24, -4.395450}; // 3-5 GeV/c rebin twice
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Fix
@@ -742,7 +751,7 @@ void glueball_fit_4rBW()
             // BEexpol->FixParameter(7, f1525Mass);
 
             // BEexpol->FixParameter(10, f1710Mass);
-            // BEexpol->FixParameter(11, f1710Width + 0.02);
+            // BEexpol->FixParameter(11, f1710Width);
 
             hinvMass->Fit("BEexpol", "REBMS");
             hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.3);
@@ -854,7 +863,7 @@ void glueball_fit_4rBW()
             // // // **************** For BW sum with Boltzmann ****************************
 #ifdef b_boltzman
 
-            TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.05, 2.15, 15); // expol 3
+            TF1 *BEexpol = new TF1("BEexpol", BWsum_boltzman_1, 1.05, 2.10, 15); // expol 3
 
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "A", "n", "b", "c"};
             for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
@@ -863,7 +872,8 @@ void glueball_fit_4rBW()
             }
 
             // double parameters[] = {2000, f1270Mass, f1270Width, 1500, a1320Mass, a1320Width, 4000, f1525Mass, f1525Width, 1500, f1710Mass, f1710Width}; //default
-            double parameters[] = {800, f1270Mass, f1270Width, 1300, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 860, f1710Mass, f1710Width}; //3-5 GeV/c rebin twice
+            double parameters[] = {4800, f1270Mass, f1270Width, 2500, a1320Mass, a1320Width, 8000, f1525Mass, f1525Width, 3000, f1710Mass, f1710Width}; // default rebin
+            // double parameters[] = {800, f1270Mass, f1270Width, 1300, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 860, f1710Mass, f1710Width}; // 3-5 GeV/c rebin twice
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -883,7 +893,8 @@ void glueball_fit_4rBW()
             }
 
             // double initial_param_bkg[] = {3.274e5, 0.7029, 4.391}; //default
-            double initial_param_bkg[] = {1.274e5, 0.87029, 5.0391};
+            double initial_param_bkg[] = {6.44e5, 0.729, 4.391}; // default rebin
+            // double initial_param_bkg[] = {1.274e5, 0.87029, 4.391};
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5
@@ -1086,7 +1097,7 @@ void glueball_fit_4rBW()
             expol_clone->SetRange(0.99, 2.99);
             hsubtracted->Add(expol_clone, -1);
             hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
-            hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.5);
+            hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.7);
             hsubtracted->Draw();
             hsubtracted->Write("3BW");
             // for (int i = 0; i < limits_size; i++)
@@ -1095,6 +1106,7 @@ void glueball_fit_4rBW()
             //     onlyBW_clone->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             // }
             onlyBW_clone->SetNpx(1000);
+            // onlyBW_clone->SetLineColor(1);
             hsubtracted->Fit("onlyBW_clone", "REBMS");
             // onlyBW_clone->Draw("same");
             double *obtained_parameters2 = onlyBW_clone->GetParameters();
@@ -1146,29 +1158,35 @@ void glueball_fit_4rBW()
 #ifdef doublepanelplot
             // gStyle->SetOptFit(0);
             TCanvas *c1 = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(c1, 0.14, 0.03, 0.05, 0.14);
             double pad1Size, pad2Size;
             canvas_style(c1, pad1Size, pad2Size);
             c1->cd(1);
+            gPad->SetFrameLineWidth(2);
+            gPad->SetLeftMargin(0.14);
             gPad->SetTickx(1);
+            SetHistoQA(hinvMass);
+            SetHistoQA(hsubtracted);
             hinvMass->GetXaxis()->SetTitleSize(0.04 / pad1Size);
             hinvMass->GetYaxis()->SetTitleSize(0.04 / pad1Size);
             hinvMass->GetXaxis()->SetLabelSize(0.04 / pad1Size);
             hinvMass->GetYaxis()->SetLabelSize(0.04 / pad1Size);
             hinvMass->GetXaxis()->SetTitleOffset(1.02);
-            hinvMass->GetYaxis()->SetTitleOffset(0.8);
+            hinvMass->GetYaxis()->SetTitleOffset(0.87);
             hinvMass->GetYaxis()->CenterTitle(0);
             hinvMass->GetXaxis()->SetRangeUser(1.05, 2.15);
-            hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin() + 0.001, BEexpol->GetXmax() - 0.001);
-            hinvMass->SetMarkerSize(0.8);
+            hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
+            hinvMass->SetMarkerSize(1.0);
             hinvMass->SetLineColor(1);
             hinvMass->SetMarkerColor(1);
             hinvMass->SetStats(0);
-            // hinvMass->SetMinimum(-40000);
-            hinvMass->SetMinimum(-4000);
+            hinvMass->SetMinimum(-40000);
+            // hinvMass->SetMinimum(-4000);
             // hinvMass->SetMaximum(0.9e6);
-            hinvMass->SetMaximum(hinvMass->GetMaximum() * 0.8);
+            hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.0);
             hinvMass->GetYaxis()->SetMaxDigits(4);
             hinvMass->GetYaxis()->SetNdivisions(506);
+            hinvMass->GetYaxis()->SetTitle(0);
             hinvMass->Draw("pe");
             expol->Draw("same");
             onlyBW->SetLineWidth(0);
@@ -1178,84 +1196,61 @@ void glueball_fit_4rBW()
             onlyBW->SetNpx(1000);
             gPad->Update();
 
-            // TArrow *arrow = new TArrow(0.3300836, 0.6471264, 0.3300836, 0.5373563, 0.02, "|>");
-            // arrow->SetFillColor(1);
-            // arrow->SetFillStyle(1001);
-            // arrow->SetLineWidth(2);
-            // arrow->SetNDC();
-            // arrow->Draw();
-            // TLatex *tex = new TLatex(0.3384401, 0.7011494, "f_{2}(1270)/a_{2}^{0}(1320)");
-            // tex->SetNDC();
-            // tex->SetTextAlign(22);
-            // tex->SetLineWidth(2);
-            // tex->Draw();
-            // arrow = new TArrow(0.4902507, 0.5637931, 0.4902507, 0.454023, 0.02, "|>");
-            // arrow->SetFillColor(1);
-            // arrow->SetFillStyle(1001);
-            // arrow->SetLineWidth(2);
-            // arrow->SetNDC();
-            // arrow->Draw();
-            // tex = new TLatex(0.4818942, 0.6005747, "f'_{2}(1525)");
-            // tex->SetNDC();
-            // tex->SetTextAlign(22);
-            // tex->SetLineWidth(2);
-            // tex->Draw();
-            // arrow = new TArrow(0.6239554, 0.3942529, 0.6239554, 0.2844828, 0.02, "|>");
-            // arrow->SetFillColor(1);
-            // arrow->SetFillStyle(1001);
-            // arrow->SetLineWidth(2);
-            // arrow->SetNDC();
-            // arrow->Draw();
-            // tex = new TLatex(0.6267409, 0.4310345, "f_{0}(1710)");
-            // tex->SetNDC();
-            // tex->SetTextAlign(22);
-            // tex->SetLineWidth(2);
-            // tex->Draw();
-
-            TArrow *arrow = new TArrow(0.3300313, 0.5725806, 0.3300313, 0.4637097, 0.02, "|>");
+            TArrow *arrow = new TArrow(0.3300313, 0.4925806, 0.3300313, 0.4137097, 0.02, "|>");
             arrow->SetFillColor(1);
             arrow->SetFillStyle(1001);
             arrow->SetLineWidth(2);
             arrow->SetNDC();
             arrow->Draw();
-            TLatex *tex = new TLatex(0.3347237, 0.6209677, "f_{2}(1270)/a_{2}^{0}(1320)");
+            TLatex *tex = new TLatex(0.3347237, 0.5409677, "f_{2}(1270)/a_{2}^{0}(1320)");
             tex->SetNDC();
             tex->SetTextAlign(22);
             tex->SetLineWidth(2);
             tex->Draw();
-            arrow = new TArrow(0.4864442, 0.5060484, 0.4864442, 0.3971774, 0.02, "|>");
+            arrow = new TArrow(0.4996435, 0.4056322, 0.4996435, 0.3264368, 0.02, "|>");
             arrow->SetFillColor(1);
             arrow->SetFillStyle(1001);
             arrow->SetLineWidth(2);
             arrow->SetNDC();
             arrow->Draw();
-            tex = new TLatex(0.487487, 0.5483871, "f'_{2}(1525)");
+            tex = new TLatex(0.5, 0.4458621, "f^{,}_{2}(1525)");
             tex->SetNDC();
             tex->SetTextAlign(22);
             tex->SetLineWidth(2);
             tex->Draw();
-            arrow = new TArrow(0.6266945, 0.3709677, 0.6266945, 0.2620968, 0.02, "|>");
+            arrow = new TArrow(0.6328134, 0.271954, 0.6328134, 0.1927586, 0.02, "|>");
             arrow->SetFillColor(1);
             arrow->SetFillStyle(1001);
             arrow->SetLineWidth(2);
             arrow->SetNDC();
             arrow->Draw();
-            tex = new TLatex(0.6266945, 0.4153226, "f_{0}(1710)");
+            tex = new TLatex(0.6397772, 0.3093103, "f_{0}(1710)");
             tex->SetNDC();
             tex->SetTextAlign(22);
             tex->SetLineWidth(2);
             tex->Draw();
 
-            TLegend *leg = new TLegend(0.65, 0.47, 0.99, 0.77);
+            // TLegend *leg = new TLegend(0.65, 0.47, 0.99, 0.77);
+            TLegend *leg = new TLegend(0.65, 0.44, 0.99, 0.86);
             leg->SetFillStyle(0);
             leg->SetTextFont(42);
-            leg->SetTextSize(0.06);
+            leg->SetTextSize(0.055);
             leg->SetBorderSize(0);
-            leg->AddEntry(hinvMass, "Data (stat. uncert.)", "lpe");
-            leg->AddEntry(BEexpol, "4 BW + Residual BG", "l");
+            leg->SetHeader("ALICE Performance");
+            leg->AddEntry(hinvMass, "Data (stat. uncert.)", "p");
+            leg->AddEntry(BEexpol, "4 BW + Res. Bkg", "l");
+            leg->AddEntry(expol, "Res. Bkg", "l");
             leg->AddEntry(onlyBW, "Signal", "f");
-            leg->AddEntry(expol, "Residual BG", "l");
             leg->Draw("same");
+
+            TLatex lat5;
+            lat5.SetNDC();
+            lat5.SetTextSize(0.055);
+            lat5.SetTextFont(42);
+            // lat5.DrawLatex(0.32, 0.80, "ALICE Performance");
+            lat5.DrawLatex(0.32 , 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV");
+            lat5.DrawLatex(0.32 , 0.73, "FT0M 0-100%, |#it{y}| < 0.5");
+            lat5.DrawLatex(0.32 , 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
 
             // TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
             // text4->SetNDC();
@@ -1263,50 +1258,90 @@ void glueball_fit_4rBW()
             // text4->SetTextFont(42);
             // text4->Draw("same");
 
-            TLatex lat4;
-            lat4.SetNDC();
-            lat4.SetTextSize(0.06);
-            lat4.SetTextFont(42);
-            lat4.DrawLatex(0.65, 0.80, "ALICE, work in progress");
-
             c1->cd(2);
+            gPad->SetFrameLineWidth(2);
+            gPad->SetLeftMargin(0.14);
             gPad->SetTickx(1);
             hsubtracted->GetYaxis()->SetTitleSize(0.04 / pad2Size);
             hsubtracted->GetXaxis()->SetTitleSize(0.04 / pad2Size);
             hsubtracted->GetXaxis()->SetLabelSize(0.04 / pad2Size);
             hsubtracted->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-            hsubtracted->GetYaxis()->SetNdivisions(504);
+            hsubtracted->GetYaxis()->SetNdivisions(505);
             hsubtracted->GetXaxis()->SetRangeUser(1.05, 2.15);
             hsubtracted->SetStats(0);
             hsubtracted->SetMinimum(0);
             // hsubtracted->SetMaximum(0.13e6);
-            hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 0.8);
-            hsubtracted->SetMarkerSize(0.8);
+            hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 0.67);
+            hsubtracted->SetMarkerSize(1.05);
             // hsubtracted->GetYaxis()->SetMaxDigits(10);
+            hsubtracted->SetMarkerStyle(53);
             hsubtracted->Draw("pe");
 
-            // TLatex *text5 = new TLatex(0.55, 0.80, "Residual background subtraction");
-            // text5->SetNDC();
-            // text5->SetTextSize(0.06);
-            // text5->SetTextFont(42);
-            // text5->Draw("same");
+            TLatex lat6;
+            lat6.SetNDC();
+            lat6.SetTextSize(0.06);
+            lat6.SetTextFont(42);
+            lat6.DrawLatex(0.59, 0.86, "Residual background subtraction");
+            // lat6.DrawLatex(0.65, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
+            // lat6.DrawLatex(0.65, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
+            // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
 
-            TLatex lat5;
-            lat5.SetNDC();
-            lat5.SetTextSize(0.06);
-            lat5.SetTextFont(42);
-            lat5.DrawLatex(0.59, 0.80, "Residual background subtraction");
-            lat5.DrawLatex(0.69, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
-            lat5.DrawLatex(0.69, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
-            lat5.DrawLatex(0.69, 0.50, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            // TLegend *leg = new TLegend(0.65, 0.50, 0.99, 0.83);
+            // leg->SetFillStyle(0);
+            // leg->SetTextFont(42);
+            // leg->SetTextSize(0.06);
+            // leg->SetBorderSize(0);
+            // leg->AddEntry(hinvMass, "Data (stat. uncert.)", "p");
+            // leg->AddEntry(BEexpol, "4 BW + Residual BG", "l");
+            // leg->AddEntry(onlyBW, "Signal", "f");
+            // leg->AddEntry(expol, "Residual BG", "l");
+            // leg->Draw("same");
+
+            TLatex *text5 = new TLatex(0.16, 0.89, "#times 10^{3}");
+            text5->SetNDC();
+            text5->SetTextSize(0.08);
+            text5->SetTextFont(42);
+            text5->Draw("same");
+
+            int linestyles[4] = {2, 2, 2, 7};
+            int linewidths[] = {2, 2, 2, 3};
 
             for (int i = 0; i < 4; i++)
             {
+                // singlefits1[i]->SetRange(masses[i] - 1 * widths[i], masses[i] + 1 * widths[i]);
+                singlefits1[i]->SetLineStyle(linestyles[i]);
+                singlefits1[i]->SetLineWidth(linewidths[i]);
                 singlefits1[i]->Draw("same");
             }
-            c1->Update();
+
+            TLegend *leg2 = new TLegend(0.63, 0.45, 0.99, 0.85);
+            leg2->SetFillStyle(0);
+            leg2->SetTextFont(42);
+            leg2->SetTextSize(0.055);
+            leg2->SetBorderSize(0);
+            leg2->AddEntry(singlefits1[0], "f_{2}(1270)", "l");
+            leg2->AddEntry(singlefits1[1], "a_{2}(1320)^{0}", "l");
+            leg2->AddEntry(singlefits1[2], "f'_{2}(1525)", "l");
+            leg2->AddEntry(singlefits1[3], "f_{0}(1710)", "l");
+            leg2->Draw("same");
+
+            c1->cd();
+            TPad *textPad1 = new TPad("textPad1", "", 0, 0, 1, 1);
+            textPad1->SetFillStyle(0); // Transparent
+            textPad1->SetFrameFillStyle(0);
+            textPad1->Draw();
+            textPad1->cd();
+
+            // Add left-side text
+            TLatex *textLeft1 = new TLatex(0.025, 0.4, Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
+            textLeft1->SetTextAlign(12); // Left alignment
+            textLeft1->SetTextAngle(90); // Rotate the text by 90 degrees
+            textLeft1->SetTextSize(0.045);
+            textLeft1->SetTextFont(42);
+            textLeft1->Draw();
+
             // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
-            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.png", sysvar.c_str())).c_str());
+            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.pdf", sysvar.c_str())).c_str());
 
 #endif
 

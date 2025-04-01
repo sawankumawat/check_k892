@@ -18,8 +18,8 @@ float parameter0(float mass, float width);
 void glueball_KsKs_channel()
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -41,8 +41,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(1110);
-    // gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -207,11 +207,11 @@ void glueball_KsKs_channel()
 
             //*****************************************************************************************************
             TCanvas *c1 = new TCanvas("", "", 720, 720);
-            SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
+            SetCanvasStyle(c1, 0.15, 0.015, 0.05, 0.155);
             SetHistoQA(hfsig);
             hfsig->SetTitle(0);
             hfsig->SetMarkerStyle(20);
-            hfsig->SetMarkerSize(0.8);
+            hfsig->SetMarkerSize(1.1);
             hfsig->GetYaxis()->SetMaxDigits(3);
             hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
@@ -240,15 +240,15 @@ void glueball_KsKs_channel()
             // }
             // gPad->Modified(); // Necessary to update the canvas with the new text size
             // gPad->Update();
-            TLegend *lp2 = DrawLegend(0.6, 0.63, 0.92, 0.91);
+            TLegend *lp2 = DrawLegend(0.55, 0.63, 0.85, 0.91);
             lp2->SetTextSize(0.035);
             lp2->SetTextFont(42);
             lp2->SetFillStyle(0);
-            lp2->AddEntry((TObject *)0, "ALICE", "");
+            lp2->AddEntry((TObject *)0, "ALICE Performance", "");
             lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
             lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
             lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
-            lp2->AddEntry((TObject *)0, Form("#it{p}_{T}: %.0f - %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
+            lp2->AddEntry((TObject *)0, Form("%.0f < #it{p}_{T} < %.0f GeV/#it{c}", pT_bins[ip], pT_bins[ip + 1]), "");
             lp2->Draw("same");
 
             if (save_invmass_distributions)
@@ -257,15 +257,15 @@ void glueball_KsKs_channel()
             }
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
-            SetCanvasStyle(c2, 0.15, 0.03, 0.05, 0.15);
+            SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
             SetHistoQA(fHistTotal[ip]);
             SetHistoQA(hfbkg);
 
             TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
-            hbkg_nopeak->SetLineColor(kRed);
-            hbkg_nopeak->SetMarkerColor(kRed);
-            hbkg_nopeak->SetFillColor(kRed);
-            hbkg_nopeak->SetFillStyle(3001);
+            hbkg_nopeak->SetLineColor(kBlue -7);
+            hbkg_nopeak->SetMarkerColor(kBlue -7);
+            hbkg_nopeak->SetFillColor(kBlue -7);
+            // hbkg_nopeak->SetFillStyle(3001);
             for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
             {
                 if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
@@ -276,16 +276,16 @@ void glueball_KsKs_channel()
 
             fHistTotal[ip]->SetMarkerStyle(20);
             fHistTotal[ip]->SetMarkerColor(kBlack);
-            fHistTotal[ip]->SetMarkerSize(0.8);
+            fHistTotal[ip]->SetMarkerSize(1.1);
             hfbkg->SetMarkerStyle(20);
-            hfbkg->SetMarkerSize(0.8);
+            hfbkg->SetMarkerSize(1.1);
             hfbkg->SetMarkerColor(kRed);
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
             fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
-            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.3f GeV/c^{2}", binwidth_file));
+            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/c^{2})", binwidth_file*1000));
             // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
-            fHistTotal[ip]->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
+            fHistTotal[ip]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
             fHistTotal[ip]->Draw("E");
             fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
             hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
@@ -297,16 +297,17 @@ void glueball_KsKs_channel()
             if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 hbkg_nopeak->Draw("BAR same");
 
-            TLegend *leg = new TLegend(0.1851253, 0.2454598, 0.5445682, 0.3908046);
+            TLegend *leg = new TLegend(0.25, 0.2454598, 0.5445682, 0.3908046);
             leg->SetFillStyle(0);
             leg->SetBorderSize(0);
             leg->SetTextFont(42);
             leg->SetTextSize(0.035);
-            leg->AddEntry(fHistTotal[ip], "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
-            string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same event rotational background";
-            leg->AddEntry(hfbkg, bkgname.c_str(), "lpe");
+            leg->AddEntry(fHistTotal[ip], "Same-event pairs", "p");
+            string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same-event rotated paris";
+            leg->AddEntry(hfbkg, bkgname.c_str(), "p");
             // if (kResBkg == "MIX")
-            leg->AddEntry(hbkg_nopeak, "Norm. region", "f");
+            hbkg_nopeak->SetLineWidth(0);
+            leg->AddEntry(hbkg_nopeak, "Normalization region", "f");
             leg->Draw();
             lp2->Draw("same");
 

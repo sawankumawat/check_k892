@@ -375,7 +375,7 @@ void systematics2()
     l3->AddEntry(hmass_total, "Total", "l");
     l3->Draw(); // No need for "same"
 
-    c3->SaveAs(("/home/sawan/Videos/systematic_doublepanel_highpt1" + combinedName + ".png").c_str());
+    // c3->SaveAs(("/home/sawan/Videos/systematic_doublepanel_highpt1" + combinedName + ".png").c_str());
 
     // // make double panel plots for the ratios
     // TH1F *mass_default = new TH1F("mass_default", "", 1, 0, 30);

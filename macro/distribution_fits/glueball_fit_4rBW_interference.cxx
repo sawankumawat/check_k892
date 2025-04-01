@@ -657,7 +657,7 @@ void glueball_fit_4rBW_interference()
         ptstats->SetY1NDC(0.4);
         ptstats->SetY2NDC(0.92);
         ptstats->Draw("same");
-        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.pdf", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
+        c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
 
         double chi2_ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
         double fitmass1270 = BEexpol->GetParameter(0);

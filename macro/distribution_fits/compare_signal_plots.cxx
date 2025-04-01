@@ -12,13 +12,17 @@ void compare_signal_plots()
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/370825/KsKs_Channel/higher-mass-resonances";
     gStyle->SetOptStat(0);
-    int colors[] = {2, 4, 6, 28, kGreen + 2, kBlue -7};
+    int colors[] = {2, 4, 6, 28, kGreen + 2, kBlue - 7};
     int markers[] = {20, 21, 22, 23, 26, 27};
 
     // string path1 = path + "_2sigmaKs/";
     // string path2 = path + "_3sigmaKs/";
     // string path3 = path + "/";
     // string path4 = path + "_5SigmaKs/";
+
+    string path1 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/";
+    string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_Ks_selection4_id24939/";
+    string path3 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_Ks_selection5_id24939/";
 
     // const string path1 = path + "_id25081/";
     // const string path2 = path + "_angsep_3_id25081/";
@@ -47,17 +51,17 @@ void compare_signal_plots()
     // const string path4 = path + "_lambda_6/";
     // const string path5 = path + "_lambda_7/";
 
-    const string path1 = path + "_id24937/";
-
-    TFile *file1 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    TFile *file2 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.50_30.00.root").c_str(), "READ");
-    TFile *file3 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_1.00_30.00.root").c_str(), "READ");
-    TFile *file4 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_2.00_30.00.root").c_str(), "READ");
-    TFile *file5 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_10.00.root").c_str(), "READ");
+    // const string path1 = path + "_id24937/";
 
     // TFile *file1 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    // TFile *file2 = new TFile((path2 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
-    // TFile *file3 = new TFile((path3 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    // TFile *file2 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.50_30.00.root").c_str(), "READ");
+    // TFile *file3 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_1.00_30.00.root").c_str(), "READ");
+    // TFile *file4 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_2.00_30.00.root").c_str(), "READ");
+    // TFile *file5 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_10.00.root").c_str(), "READ");
+
+    TFile *file1 = new TFile((path1 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    TFile *file2 = new TFile((path2 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
+    TFile *file3 = new TFile((path3 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
     // TFile *file4 = new TFile((path4 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
     // TFile *file5 = new TFile((path5 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
     // // TFile *file6 = new TFile((path6 + "hglue_ROTATED_norm_2.50_2.60_pt_0.00_30.00.root").c_str(), "READ");
@@ -76,11 +80,10 @@ void compare_signal_plots()
     }
 
     TH1F *h1 = (TH1F *)file1->Get("ksks_subtracted_invmass_pt_0.0_30.0");
-    TH1F *h2 = (TH1F *)file2->Get("ksks_subtracted_invmass_pt_0.5_30.0");
-    TH1F *h3 = (TH1F *)file3->Get("ksks_subtracted_invmass_pt_1.0_30.0");
-    TH1F *h4 = (TH1F *)file4->Get("ksks_subtracted_invmass_pt_2.0_30.0");
-    TH1F *h5 = (TH1F *)file5->Get("ksks_subtracted_invmass_pt_0.0_10.0");
-
+    TH1F *h2 = (TH1F *)file2->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    TH1F *h3 = (TH1F *)file3->Get("ksks_subtracted_invmass_pt_0.0_30.0");
+    // TH1F *h4 = (TH1F *)file4->Get("ksks_subtracted_invmass_pt_2.0_30.0");
+    // TH1F *h5 = (TH1F *)file5->Get("ksks_subtracted_invmass_pt_0.0_10.0");
 
     // TH1F *h1 = (TH1F *)file1->Get("ksks_invmass_pt_0.0_30.0");
     // TH1F *h2 = (TH1F *)file2->Get("ksks_invmass_pt_0.0_30.0");
@@ -89,9 +92,9 @@ void compare_signal_plots()
     // TH1F *h5 = (TH1F *)file5->Get("ksks_invmass_pt_0.0_30.0");
     // TH1F *h6 = (TH1F *)file6->Get("ksks_invmass_pt_0.0_30.0");
 
-    // h1->Rebin(2);
-    // h2->Rebin(2);
-    // h3->Rebin(2);
+    h1->Rebin(2);
+    h2->Rebin(2);
+    h3->Rebin(2);
     // h4->Rebin(2);
     // h5->Rebin(2);
     // // h6->Rebin(2);
@@ -157,19 +160,19 @@ void compare_signal_plots()
     h3->SetLineColor(colors[2]);
     h3->SetMarkerStyle(markers[2]);
     h3->Draw("same");
-    SetHistoQA(h4);
-    h4->GetXaxis()->SetRangeUser(1.00, 2.60);
-    h4->SetMarkerSize(0.8);
-    h4->SetMarkerColor(colors[3]);
-    h4->SetLineColor(colors[3]);
-    h4->SetMarkerStyle(markers[3]);
-    h4->Draw("same");
-    SetHistoQA(h5);
-    h5->GetXaxis()->SetRangeUser(1.00, 2.60);
-    h5->SetMarkerColor(colors[4]);
-    h5->SetLineColor(colors[4]);
-    h5->SetMarkerStyle(markers[4]);
-    h5->Draw("same");
+    // SetHistoQA(h4);
+    // h4->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // h4->SetMarkerSize(0.8);
+    // h4->SetMarkerColor(colors[3]);
+    // h4->SetLineColor(colors[3]);
+    // h4->SetMarkerStyle(markers[3]);
+    // h4->Draw("same");
+    // SetHistoQA(h5);
+    // h5->GetXaxis()->SetRangeUser(1.00, 2.60);
+    // h5->SetMarkerColor(colors[4]);
+    // h5->SetLineColor(colors[4]);
+    // h5->SetMarkerStyle(markers[4]);
+    // h5->Draw("same");
     // SetHistoQA(h6);
     // h6->GetXaxis()->SetRangeUser(1.00, 2.60);
     // h6->SetMarkerColor(colors[5]);
@@ -211,13 +214,18 @@ void compare_signal_plots()
     // leg->AddEntry(h2, "4 #sigma", "lpe");
     // leg->AddEntry(h3, "5 #sigma", "lpe");
 
-    leg->SetHeader("p_{T} ranges (statistics lost)");
-    leg->AddEntry(h1, Form("0.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h1->GetEntries()) * 100 / h1->GetEntries()), "lpe");
-    leg->AddEntry(h2, Form("0.5 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h2->GetEntries()) * 100 / h1->GetEntries()), "lpe");
-    leg->AddEntry(h3, Form("1.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h3->GetEntries()) * 100 / h1->GetEntries()), "lpe");
-    leg->AddEntry(h4, Form("2.0 - 30.0 GeV/c (%.1f %)", (h1->GetEntries() - h4->GetEntries()) * 100 / h1->GetEntries()), "lpe");
-    leg->AddEntry(h5, Form("0.0 - 10.0 GeV/c (%.1f %)", (h1->GetEntries() - h5->GetEntries()) * 100 / h1->GetEntries()), "lpe");
-    leg->Draw("same");
+    leg->SetHeader("K^{0}_{s} mass tolerance");
+    leg->AddEntry(h1, "2 #sigma", "lpe");
+    leg->AddEntry(h2, "3 #sigma", "lpe");
+    leg->AddEntry(h3, "4 #sigma", "lpe");
+
+    // leg->SetHeader("p_{T} ranges");
+    // leg->AddEntry(h1, "0.0 - 30.0 GeV/c", "lpe");
+    // leg->AddEntry(h2, "0.5 - 30.0 GeV/c", "lpe");
+    // leg->AddEntry(h3, "1.0 - 30.0 GeV/c", "lpe");
+    // leg->AddEntry(h4, "2.0 - 30.0 GeV/c", "lpe");
+    // leg->AddEntry(h5, "0.0 - 10.0 GeV/c", "lpe");
+    // leg->Draw("same");
 
     // cout << "entries in h1 " << h1->GetEntries() << endl;
     // cout << "entries in h2 " << h2->GetEntries() << endl;
@@ -226,7 +234,7 @@ void compare_signal_plots()
     // cout << "entries in h5 " << h5->GetEntries() << endl;
 
     // // // c->SaveAs((path1 + "compare_norm_ranges.png").c_str());
-    c->SaveAs("/home/sawan/Music/compare_rotpt.png");
+    c->SaveAs("/home/sawan/Music/compare_massTolerance.png");
     // c->SaveAs("/home/sawan/Music/compare_TPCPIDSignal.png");
 
     // TCanvas *c2 = new TCanvas("", "", 720, 720);

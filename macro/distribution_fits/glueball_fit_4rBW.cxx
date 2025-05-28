@@ -380,9 +380,9 @@ void glueball_fit_4rBW()
             lat1.SetNDC();
             lat1.SetTextSize(0.03);
             lat1.SetTextFont(42);
-            lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
+            lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
 
             for (int i = 0; i < 4; i++)
             {
@@ -1341,7 +1341,7 @@ void glueball_fit_4rBW()
             textLeft1->Draw();
 
             // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
-            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.pdf", sysvar.c_str())).c_str());
+            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.eps", sysvar.c_str())).c_str());
 
 #endif
 

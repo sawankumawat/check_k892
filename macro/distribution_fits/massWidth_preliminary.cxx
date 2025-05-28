@@ -31,8 +31,9 @@ void massWidth_preliminary()
     // Top panel for Mass
     c->cd(1);
     TPad *pad1 = (TPad *)gPad;
+    gPad->SetFrameLineWidth(2);
     gPad->SetTopMargin(0.01);
-    gPad->SetBottomMargin(0.18);
+    gPad->SetBottomMargin(0.185);
     gPad->SetRightMargin(0.01);
     gPad->SetLeftMargin(0.01);
 
@@ -41,13 +42,13 @@ void massWidth_preliminary()
     g_mass->SetPoint(0, mass_alice, 0.9);
     g_mass->SetPointError(0, stat_mass, 0);
     g_mass->SetMarkerStyle(20);
-    g_mass->SetMarkerColor(1);
-    g_mass->SetLineColor(1);
+    g_mass->SetMarkerColor(4);
+    g_mass->SetLineColor(4);
     g_mass->SetMarkerSize(1.5);
     g_mass->SetLineWidth(2);
     g_mass->GetYaxis()->SetLabelSize(0);
     g_mass->GetYaxis()->SetTickLength(0);
-    g_mass->GetXaxis()->SetTitleSize(0.06);
+    g_mass->GetXaxis()->SetTitleSize(0.07);
     g_mass->GetXaxis()->SetLabelSize(0.06);
     g_mass->Draw("AP");
 
@@ -55,12 +56,12 @@ void massWidth_preliminary()
     {
         TBox *box = new TBox(mass_alice - sys_low_mass, 0.87, mass_alice + sys_high_mass, 0.93);
         box->SetFillStyle(0);
-        box->SetLineColor(1);
+        box->SetLineColor(4);
         box->SetLineWidth(2);
         box->Draw("same");
     }
 
-    g_mass->GetXaxis()->SetTitle("Mass (MeV/c^{2})");
+    g_mass->GetXaxis()->SetTitle("Mass (MeV/#it{c}^{2})");
     g_mass->GetXaxis()->SetLimits(1670, 1810);
     g_mass->SetMinimum(0.5);
     g_mass->SetMaximum(1.5);
@@ -78,20 +79,20 @@ void massWidth_preliminary()
 
     TLatex lat;
     lat.SetNDC();
-    lat.SetTextSize(0.06);
+    lat.SetTextSize(0.07);
     lat.SetTextFont(42);
-    lat.DrawLatex(0.05, 0.89, "ALICE Performance");
-    lat.DrawLatex(0.05, 0.80, "pp, #sqrt{s} = 13.6 TeV");
-    lat.DrawLatex(0.05, 0.71, "FT0M 0-100%, |y| < 0.5");
-    lat.DrawLatex(0.05, 0.62, "0.0 < #it{p}_{T} < 30 GeV/c");
+    lat.DrawLatex(0.6, 0.86, "ALICE Performance");
+    lat.DrawLatex(0.6, 0.74, "pp, #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.6, 0.62, "FT0M 0-100%, |#it{y}| < 0.5");
+    lat.DrawLatex(0.6, 0.50, "0.0 < #it{p}_{T} < 30 GeV/#it{c}");
 
     TLatex lat2;
     lat2.SetNDC();
-    lat2.SetTextSize(0.06);
+    lat2.SetTextSize(0.067);
     lat2.SetTextFont(42);
     // lat2.DrawLatex(0.6, 0.29, "Uncertainties: stat.(bar), sys.(box)");
 
-    TLegend *leg = new TLegend(0.75, 0.65, 0.95, 0.95);
+    TLegend *leg = new TLegend(0.65, 0.65, 0.95, 0.95);
     leg->SetTextFont(42);
     leg->SetTextSize(0.06);
     leg->SetBorderSize(0);
@@ -100,9 +101,9 @@ void massWidth_preliminary()
     leg->AddEntry((TObject *)0, "pp 13.6 TeV", "");
     leg->AddEntry(g_mass, "Data", "p");
     leg->AddEntry(pdg_box, "PDG 2024", "F");
-    leg->Draw();
+    // leg->Draw();
 
-    TLegend *legtemp = new TLegend(0.75, 0.65, 0.95, 0.95);
+    TLegend *legtemp = new TLegend(0.65, 0.65, 0.95, 0.95);
     legtemp->SetTextFont(42);
     legtemp->SetTextSize(0.06);
     legtemp->SetBorderSize(0);
@@ -110,11 +111,12 @@ void massWidth_preliminary()
     legtemp->AddEntry((TObject *)0, "", "");
     legtemp->AddEntry((TObject *)0, "", "");
     legtemp->AddEntry(pdg_line, " ", "e");
-    legtemp->Draw();
+    // legtemp->Draw();
 
     // Bottom panel for Width
     c->cd(2);
     TPad *pad2 = (TPad *)gPad;
+    gPad->SetFrameLineWidth(2);
     gPad->SetTopMargin(0.0);
     gPad->SetBottomMargin(0.18);
     gPad->SetRightMargin(0.01);
@@ -124,14 +126,14 @@ void massWidth_preliminary()
     SetGrapherrorStyle(g_width);
     g_width->SetPoint(0, width_alice, 1);
     g_width->SetPointError(0, stat_width, 0);
-    g_width->SetMarkerStyle(21);
+    g_width->SetMarkerStyle(20);
     g_width->SetMarkerColor(4);
     g_width->SetLineColor(4);
     g_width->SetMarkerSize(1.5);
     g_width->SetLineWidth(2);
     g_width->GetYaxis()->SetLabelSize(0);
     g_width->GetYaxis()->SetTickLength(0);
-    g_width->GetXaxis()->SetTitleSize(0.06);
+    g_width->GetXaxis()->SetTitleSize(0.07);
     g_width->GetXaxis()->SetLabelSize(0.06);
     g_width->Draw("AP");
 
@@ -144,7 +146,7 @@ void massWidth_preliminary()
         box->Draw("same");
     }
 
-    g_width->GetXaxis()->SetTitle("Width (MeV/c^{2})");
+    g_width->GetXaxis()->SetTitle("Width (MeV/#it{c}^{2})");
     g_width->GetXaxis()->SetLimits(40, 289);
     g_width->SetMinimum(0.5);
     g_width->SetMaximum(1.5);
@@ -163,28 +165,28 @@ void massWidth_preliminary()
     pdg_line_width->SetLineWidth(2);
     pdg_line_width->Draw("same");
 
-    lat2.DrawLatex(0.55, 0.29, "Uncertainties: stat.(bar), sys.(box)");
+    lat2.DrawLatex(0.52, 0.29, "Uncertainties: stat.(bar), sys.(box)");
 
-    TLegend *leg2 = new TLegend(0.75, 0.65, 0.95, 0.95);
+    TLegend *leg2 = new TLegend(0.65, 0.65, 0.95, 0.95);
     leg2->SetTextFont(42);
-    leg2->SetTextSize(0.06);
+    leg2->SetTextSize(0.07);
     leg2->SetBorderSize(0);
     leg2->SetFillStyle(0);
     // leg2->SetHeader("Width f_{0}(1710)");
     // leg2->AddEntry(g_width, "pp 13.6 TeV", "p");
     leg2->AddEntry(g_width, "Data", "p");
-    // leg2->AddEntry(pdg_box_width, "PDG 2024", "F");
+    leg2->AddEntry(pdg_box_width, "PDG 2024", "F");
     leg2->Draw();
 
-    TLegend *legtemp2 = new TLegend(0.75, 0.65, 0.95, 0.95);
+    TLegend *legtemp2 = new TLegend(0.65, 0.65, 0.95, 0.95);
     legtemp2->SetTextFont(42);
-    legtemp2->SetTextSize(0.06);
+    legtemp2->SetTextSize(0.07);
     legtemp2->SetBorderSize(0);
     legtemp2->SetFillStyle(0);
-    legtemp2->AddEntry((TObject *)0, "", "");
+    // legtemp2->AddEntry((TObject *)0, "", "");
     legtemp2->AddEntry((TObject *)0, "", "");
     legtemp2->AddEntry(pdg_line_width, " ", "e");
-    // legtemp2->Draw();
+    legtemp2->Draw();
 
     TLatex lat3;
     lat3.SetNDC();

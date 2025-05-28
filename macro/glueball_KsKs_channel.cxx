@@ -283,7 +283,7 @@ void glueball_KsKs_channel()
             hfbkg->SetLineColor(kRed);
             fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
             fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
-            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/c^{2})", binwidth_file*1000));
+            fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file*1000));
             // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
             fHistTotal[ip]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
             fHistTotal[ip]->Draw("E");
@@ -525,7 +525,7 @@ void glueball_KsKs_channel()
         hmasscorr->GetYaxis()->SetTitleOffset(3.0);
         hmasscorr->GetXaxis()->SetTitleSize(0.04);
         hmasscorr->GetYaxis()->SetTitleSize(0.04);
-        hmasscorr->GetZaxis()->SetTitle(Form("Counts/%.0f MeV/c^{2}", hmasscorr->GetXaxis()->GetBinWidth(1) * 1000));
+        hmasscorr->GetZaxis()->SetTitle(Form("Counts/%.0f MeV/#it{c}^{2}", hmasscorr->GetXaxis()->GetBinWidth(1) * 1000));
         hmasscorr->GetZaxis()->SetTitleSize(0.04);
         hmasscorr->GetZaxis()->SetTitleOffset(2.0);
         hmasscorr->GetXaxis()->SetRangeUser(0.475, 0.52);

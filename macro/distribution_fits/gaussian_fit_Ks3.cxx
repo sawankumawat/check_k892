@@ -224,7 +224,7 @@ void gaussian_fit_Ks3()
     lp4->AddEntry((TObject *)0, Form("Width = %.2f #pm %.1e MeV", doubleCrystalBall->GetParameter(2) * 1000, doubleCrystalBall->GetParError(2) * 1000), "");
     // lp4->Draw("same");
 
-    c1->SaveAs("/home/sawan/Videos/CBfit_ks3.pdf");
+    c1->SaveAs("/home/sawan/Videos/CBfit_ks3.eps");
 
     // // gPad->Update();
     // // TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");

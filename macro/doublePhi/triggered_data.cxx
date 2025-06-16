@@ -4,7 +4,7 @@ using namespace std;
 
 void triggered_data()
 {
-    TFile *file = new TFile("../../data/doublePhi/trigger_data/AnalysisResults_fullrun.root");
+    TFile *file = new TFile("../../data/doublePhi/triggered_data/AnalysisResults_fullrun.root");
     if (file->IsZombie())
     {
         std::cerr << "Error: Could not open file triggered_data/AnalysisResults_fullrun.root\n";
@@ -30,7 +30,7 @@ void triggered_data()
     SetHistoQA(hevent_processed);
     hevent_processed->GetYaxis()->SetTitleOffset(1.1);
     hevent_processed->Draw();
-    c1->SaveAs("trigger_data/processed_events.png");
+    c1->SaveAs("triggered_data/processed_events.png");
 
     TCanvas *c2 = new TCanvas("c2", "Phi Mass", 720, 720);
     SetCanvasStyle(c2, 0.13, 0.06, 0.05, 0.13);
@@ -44,7 +44,7 @@ void triggered_data()
     hphiMassProj->GetXaxis()->SetNdivisions(505);
     hphiMassProj->GetYaxis()->SetTitle("Counts");
     hphiMassProj->Draw("pe");
-    c2->SaveAs("trigger_data/phi_mass.png");
+    c2->SaveAs("triggered_data/phi_mass.png");
 
     TCanvas *c3 = new TCanvas("c3", "Double Phi Mass", 720, 720);
     SetCanvasStyle(c3, 0.13, 0.06, 0.05, 0.13);
@@ -61,7 +61,7 @@ void triggered_data()
     hdoublePhiMassProj->GetXaxis()->SetRangeUser(2.6, 2.9);
     hdoublePhiMassProj->GetXaxis()->SetNdivisions(508);
     hdoublePhiMassProj->Draw("pe");
-    c3->SaveAs("trigger_data/double_phi_mass_pt2to5.png");
+    // c3->SaveAs("triggered_data/double_phi_mass_pt0to10.png");
 
     TCanvas *c4 = new TCanvas("c4", "Nsigma TPC Kaon", 720, 720);
     SetCanvasStyle(c4, 0.13, 0.14, 0.05, 0.13);
@@ -76,7 +76,7 @@ void triggered_data()
     hNsigmaTPCKaon->GetZaxis()->SetMaxDigits(3);
     hNsigmaTPCKaon->SetStats(0);
     hNsigmaTPCKaon->Draw("colz");
-    c4->SaveAs("trigger_data/nsigma_tpc_kaon.png");
+    c4->SaveAs("triggered_data/nsigma_tpc_kaon.png");
 
     TCanvas *c5 = new TCanvas("c5", "Nsigma TOF Kaon", 720, 720);
     SetCanvasStyle(c5, 0.13, 0.14, 0.05, 0.13);
@@ -91,7 +91,7 @@ void triggered_data()
     hNsigmaTOFKaon->GetZaxis()->SetMaxDigits(3);
     hNsigmaTOFKaon->SetStats(0);
     hNsigmaTOFKaon->Draw("colz");
-    c5->SaveAs("trigger_data/nsigma_tof_kaon.png");
+    c5->SaveAs("triggered_data/nsigma_tof_kaon.png");
 
     TCanvas *c6 = new TCanvas("c6", "Nsigma TPC", 720, 720);
     SetCanvasStyle(c6, 0.13, 0.14, 0.05, 0.13);
@@ -104,7 +104,7 @@ void triggered_data()
     line->SetLineColor(kRed);
     line->SetLineStyle(2);
     line->Draw("same");
-    c6->SaveAs("trigger_data/nsigma_tpc1D.png");
+    c6->SaveAs("triggered_data/nsigma_tpc1D.png");
 
     TCanvas *c7 = new TCanvas("c7", "Nsigma TOF", 720, 720);
     SetCanvasStyle(c7, 0.13, 0.14, 0.05, 0.13);
@@ -114,6 +114,6 @@ void triggered_data()
     line2->SetLineColor(kRed);
     line2->SetLineStyle(2);
     line2->Draw("same");
-    c7->SaveAs("trigger_data/nsigma_tof1D.png");
+    c7->SaveAs("triggered_data/nsigma_tof1D.png");
 
 }

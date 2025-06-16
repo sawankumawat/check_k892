@@ -20,10 +20,13 @@ void toy_model()
 
     // Histogram for decay product pT
     TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
+    TH1F *hrec_pT = new TH1F("hrec_pT", "Reconstructed p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
     TH1F *h_angdist = new TH1F("h_angdist", "Angular distribution of daughter particles; Angular separation (rad); Events", 400, 0, 4);
+    TH1F *h_rapdity = new TH1F("h_rapidity", "Rapidity distribution of mother; Rapidity; Events", 100, -3.0, 3.0);
+    TH2F *hptvsrap = new TH2F("hptvsrap", "p_{T} vs Rapidity; p_{T} (GeV/c); Rapidity", 150, 0, 30, 100, -3.0, 3.0);
 
     // Loop over multiple decay events
-    int nEvents = 1e8;
+    int nEvents = 1e7;
     TLorentzVector lvmother;
     for (int i = 0; i < nEvents; i++)
     {
@@ -46,6 +49,7 @@ void toy_model()
             // Get daughter particles
             TLorentzVector *p1 = event.GetDecay(0);
             TLorentzVector *p2 = event.GetDecay(1);
+            TLorentzVector lvmother2 = *p1 + *p2; // Reconstruct mother from daughters
 
             // Fill histogram with transverse momentum of mother
             h_pT->Fill(pT);
@@ -53,22 +57,46 @@ void toy_model()
             double phi1 = p1->Phi();
             double eta2 = p2->Eta();
             double phi2 = p2->Phi();
-            double angsep = sqrt(pow(eta1 - eta2, 2) + pow(phi1 - phi2, 2));
-            h_angdist->Fill(angsep);
+            // double angsep = sqrt(pow(eta1 - eta2, 2) + pow(phi1 - phi2, 2));
+            // h_angdist->Fill(angsep);
+
+            double rec_rapidity = lvmother2.Rapidity();
+            h_rapdity->Fill(rec_rapidity);
+            if (abs(rec_rapidity) < 0.5)
+            {
+                hrec_pT->Fill(lvmother2.Pt());
+                hptvsrap->Fill(lvmother2.Pt(), rec_rapidity);
+            }
         }
         lvmother.Clear();
     }
 
-    // // Draw histogram
-    // TCanvas *c1 = new TCanvas("c1", "Decay Simulation", 720, 720);
-    // SetCanvasStyle(c1, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(h_pT);
-    // h_pT->GetYaxis()->SetMaxDigits(3);
-    // h_pT->Draw();
-    TCanvas *c2 = new TCanvas("c2", "Angular Separation", 720, 720);
-    SetCanvasStyle(c2, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(h_angdist);
-    h_angdist->GetYaxis()->SetMaxDigits(3);
-    h_angdist->Draw();
-    c2->SaveAs("angular_separation.png");
+    // Draw histogram
+    TCanvas *c1 = new TCanvas("c1", "Decay Simulation", 720, 720);
+    SetCanvasStyle(c1, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(h_pT);
+    h_pT->GetYaxis()->SetMaxDigits(3);
+    h_pT->Draw();
+    // TCanvas *c2 = new TCanvas("c2", "Angular Separation", 720, 720);
+    // SetCanvasStyle(c2, 0.15, 0.05, 0.05, 0.15);
+    // SetHistoQA(h_angdist);
+    // h_angdist->GetYaxis()->SetMaxDigits(3);
+    // h_angdist->Draw();
+    // c2->SaveAs("angular_separation.png");
+
+    TCanvas *c3 = new TCanvas("c3", "Reconstructed pT", 720, 720);
+    SetCanvasStyle(c3, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hrec_pT);
+    hrec_pT->GetYaxis()->SetMaxDigits(3);
+    hrec_pT->Draw();
+    TCanvas *c4 = new TCanvas("c4", "Rapidity Distribution", 720, 720);
+    SetCanvasStyle(c4, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(h_rapdity);
+    h_rapdity->GetYaxis()->SetMaxDigits(3);
+    h_rapdity->Draw();
+    TCanvas *c5 = new TCanvas("c5", "pT vs Rapidity", 720, 720);
+    SetCanvasStyle(c5, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hptvsrap);
+    hptvsrap->GetYaxis()->SetMaxDigits(3);
+    hptvsrap->Draw("colz");
 }

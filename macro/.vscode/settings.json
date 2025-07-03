@@ -75,6 +75,9 @@
         "Results.C": "cpp",
         "Systematics.C": "cpp",
         "YieldMeanK892.C": "cpp",
-        "Signal_th3f.C": "cpp"
+        "Signal_th3f.C": "cpp",
+        "YieldMean.C": "cpp",
+        "meanpT_dNdy_Levy.C": "cpp",
+        "allinonemacromix.C": "cpp"
     }
 }

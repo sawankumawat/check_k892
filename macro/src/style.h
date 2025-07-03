@@ -134,24 +134,24 @@ void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
     gr->SetLineColor(linecolor);
     gr->SetMarkerSize(1.4);
     gr->SetLineWidth(2);
-    gr->GetXaxis()->CenterTitle(false);
+    gr->GetXaxis()->CenterTitle(true);
     gr->GetXaxis()->SetNdivisions(506);
     gr->GetYaxis()->SetNdivisions(505);
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);
-    gr->GetXaxis()->SetLabelSize(0.045);
-    gr->GetXaxis()->SetTitleSize(0.05);
+    gr->GetXaxis()->SetLabelSize(0.04);
+    gr->GetXaxis()->SetTitleSize(0.045);
     gr->GetXaxis()->SetTickLength(0.04);
     gr->GetXaxis()->SetTitleOffset(1.2);
-    gr->GetYaxis()->SetTitleOffset(1.7);
+    gr->GetYaxis()->SetTitleOffset(1.3);
     gr->GetYaxis()->CenterTitle(true);
     gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
-    gr->GetYaxis()->SetLabelSize(0.045);
+    gr->GetYaxis()->SetLabelSize(0.04);
     gr->GetYaxis()->SetTickLength(0.04);
-    gr->GetYaxis()->SetTitleSize(0.05);
+    gr->GetYaxis()->SetTitleSize(0.045);
     gr->GetYaxis()->SetTitleFont(42);
 }
 

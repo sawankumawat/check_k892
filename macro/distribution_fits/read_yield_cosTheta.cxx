@@ -16,6 +16,10 @@ void read_yield_cosTheta()
     TH1D *hYield1525 = new TH1D("hYield1525", "Yield vs cosTheta", nBins, cosThetaBins);
     TH1D *hMass1525 = new TH1D("hMass1525", "Mass vs cosTheta", nBins, cosThetaBins);
     TH1D *hWidth1525 = new TH1D("hWidth1525", "Width vs cosTheta", nBins, cosThetaBins);
+    TH1D *hYieldBkg1 = new TH1D("hYieldBkg1", "Background Yield 1 vs cosTheta", nBins, cosThetaBins);
+    TH1D *hYieldBkg2 = new TH1D("hYieldBkg2", "Background Yield 2 vs cosTheta", nBins, cosThetaBins);
+    TH1D *hYieldBkg3 = new TH1D("hYieldBkg3", "Background Yield 3 vs cosTheta", nBins, cosThetaBins);
+    double totalYield1710, totalYield1525;
 
     for (int i = 0; i < nBins; i++)
     {
@@ -37,6 +41,7 @@ void read_yield_cosTheta()
         double yield1 = 0, yield1_err = 0;
         double mass1 = 0, mass1_err = 0;
         double width1 = 0, width1_err = 0;
+        double bkgYield1 = 0, bkgYield1_err = 0, bkgYield2 = 0, bkgYield2_err = 0, bkgYield3 = 0, bkgYield3_err = 0;
 
         // Parameters for f1525
         double yield2 = 0, yield2_err = 0;
@@ -46,6 +51,7 @@ void read_yield_cosTheta()
         int paramIndex = 0;
         bool readingF1710 = false;
         bool readingF1525 = false;
+        bool readingBkg = false;
 
         while (std::getline(infile, line))
         {
@@ -64,6 +70,7 @@ void read_yield_cosTheta()
             {
                 readingF1710 = true;
                 readingF1525 = false;
+                readingBkg = false;
                 paramIndex = 0;
             }
 
@@ -71,7 +78,25 @@ void read_yield_cosTheta()
             {
                 readingF1525 = true;
                 readingF1710 = false;
+                readingBkg = false;
                 paramIndex = 0;
+            }
+            else if (line.find("Background") != std::string::npos)
+            {
+                readingBkg = true;
+                readingF1710 = false;
+                readingF1525 = false;
+                paramIndex = 0;
+            }
+            else if (line.find("Norm range") != std::string::npos || line.find("Fit range") != std::string::npos)
+            {
+                // Skip norm and fit range lines
+                continue;
+            }
+            else if (line.find("Yield region") != std::string::npos)
+            {
+                // Skip yield region lines
+                continue;
             }
 
             else if (line.find("±") != std::string::npos)
@@ -116,8 +141,29 @@ void read_yield_cosTheta()
                         break;
                     }
                 }
+                else if (readingBkg)
+                {
+                    switch (paramIndex++)
+                    {
+                    case 0:
+                        bkgYield1 = val;
+                        bkgYield1_err = err;
+                        break;
+                    case 1:
+                        bkgYield2 = val;
+                        bkgYield2_err = err;
+                        break;
+                    case 2:
+                        bkgYield3 = val;
+                        bkgYield3_err = err;
+                        break;
+                    }
+                }
             }
         }
+
+        totalYield1710 += yield1;
+        totalYield1525 += yield2;
 
         hYield1710->SetBinContent(i + 1, yield1);
         hYield1710->SetBinError(i + 1, yield1_err);
@@ -133,10 +179,20 @@ void read_yield_cosTheta()
         hWidth1525->SetBinContent(i + 1, width2);
         hWidth1525->SetBinError(i + 1, width2_err);
 
+        hYieldBkg1->SetBinContent(i + 1, bkgYield1);
+        hYieldBkg1->SetBinError(i + 1, bkgYield1 / 20);
+        hYieldBkg2->SetBinContent(i + 1, bkgYield2);
+        hYieldBkg2->SetBinError(i + 1, bkgYield2 / 20);
+        hYieldBkg3->SetBinContent(i + 1, bkgYield3);
+        hYieldBkg3->SetBinError(i + 1, bkgYield3 / 20);
+
         // cout<<"f1525 yield is "<<yield2<<" +- "<<yield2_err<<endl;
         // cout<<"f1525 mass is "<<mass2<<" +- "<<mass2_err<<endl;
         // cout<<"f1525 width is "<<width2<<" +- "<<width2_err<<endl;
     }
+
+    cout << "Integrated yield of 1710 is " << totalYield1710 << endl;
+    cout << "Integrated yield of 1525 is " << totalYield1525 << endl;
 
     TCanvas *cYield = new TCanvas("cYield", "Yield vs cosTheta", 720, 720);
     SetCanvasStyle(cYield, 0.18, 0.03, 0.05, 0.14);
@@ -148,10 +204,27 @@ void read_yield_cosTheta()
     // hYield1710->GetYaxis()->SetRangeUser(0.0, 460);
     hYield1710->SetMaximum(hYield1710->GetMaximum() * 2.0);
     hYield1710->SetMarkerStyle(21);
+    hYield1710->SetMinimum(-1e-7);
     hYield1710->Draw("pe");
     hYield1525->SetMarkerColor(kRed);
     hYield1525->SetLineColor(kRed);
     hYield1525->Draw("pe same");
+    SetHistoQA(hYieldBkg1);
+    SetHistoQA(hYieldBkg2);
+    SetHistoQA(hYieldBkg3);
+    hYieldBkg1->SetMarkerColor(kBlack);
+    hYieldBkg1->SetLineColor(kBlack);
+    hYieldBkg1->GetXaxis()->SetTitle("cos(#theta)");
+    hYieldBkg1->GetYaxis()->SetTitle("Background Yield (1/N_{ev} * d^{2}N/(dy dCos#theta))");
+    hYieldBkg1->GetYaxis()->SetTitleOffset(1.6);
+    hYieldBkg1->SetMaximum(hYieldBkg1->GetMaximum() * 2.0);
+    hYieldBkg1->Draw("pe same");
+    hYieldBkg2->SetMarkerColor(kMagenta - 2);
+    hYieldBkg2->SetLineColor(kMagenta - 2);
+    hYieldBkg2->Draw("pe same");
+    hYieldBkg3->SetMarkerColor(kGreen + 2);
+    hYieldBkg3->SetLineColor(kGreen + 2);
+    hYieldBkg3->Draw("pe same");
 
     TLegend *legend = new TLegend(0.77, 0.83, 0.9, 0.93);
     legend->SetFillColor(0);
@@ -194,4 +267,22 @@ void read_yield_cosTheta()
     // hWidth1525->Draw("pe same");
     // legend->Draw();
     cWidth->SaveAs((path + "width_vs_cosTheta.png").c_str());
+
+    // TCanvas *cYieldBkg = new TCanvas("cYieldBkg", "Background Yield vs cosTheta", 720, 720);
+    // SetCanvasStyle(cYieldBkg, 0.16, 0.03, 0.05, 0.14);
+    // SetHistoQA(hYieldBkg1);
+    // SetHistoQA(hYieldBkg2);
+    // SetHistoQA(hYieldBkg3);
+    // hYieldBkg1->SetMarkerStyle(21);
+    // hYieldBkg1->GetXaxis()->SetTitle("cos(#theta)");
+    // hYieldBkg1->GetYaxis()->SetTitle("Background Yield (1/N_{ev} * d^{2}N/(dy dCos#theta))");
+    // hYieldBkg1->GetYaxis()->SetTitleOffset(1.6);
+    // hYieldBkg1->SetMaximum(hYieldBkg1->GetMaximum() * 2.0);
+    // hYieldBkg1->Draw("pe");
+    // hYieldBkg2->SetMarkerColor(kRed);
+    // hYieldBkg2->SetLineColor(kRed);
+    // hYieldBkg2->Draw("pe same");
+    // hYieldBkg3->SetMarkerColor(kGreen + 2);
+    // hYieldBkg3->SetLineColor(kGreen + 2);
+    // hYieldBkg3->Draw("pe same");
 }

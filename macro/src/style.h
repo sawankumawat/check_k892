@@ -55,6 +55,7 @@ void SetHistoQA(TH1 *h)
     h->GetYaxis()->SetTickLength(0.02);
     h->GetYaxis()->SetTitleSize(0.05);
     h->GetYaxis()->SetTitleFont(42);
+    h->GetYaxis()->SetMaxDigits(3);
 }
 
 void SetHistoQA2D(TH2 *h)
@@ -102,23 +103,18 @@ void SetGrapherrorStyle(TGraphErrors *gr)
 {
     gr->SetTitle(0);
     gr->SetMarkerStyle(20);
-    // gr->SetMarkerColor(markercolor);
-    // gr->SetLineColor(linecolor);
     gr->SetMarkerSize(1.0);
     gr->SetLineWidth(2);
     gr->GetXaxis()->CenterTitle(true);
-    // gr->GetXaxis()->SetNdivisions(506);
-    // gr->GetYaxis()->SetNdivisions(505);
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);
     gr->GetXaxis()->SetLabelSize(0.045);
     gr->GetXaxis()->SetTitleSize(0.05);
     gr->GetXaxis()->SetTickLength(0.04);
-    gr->GetXaxis()->SetTitleOffset(1.3);
+    gr->GetXaxis()->SetTitleOffset(1.4);
     gr->GetYaxis()->SetTitleOffset(1.5);
     gr->GetYaxis()->CenterTitle(true);
-    // gr->GetYaxis()->SetDecimals(false);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
     gr->GetYaxis()->SetLabelSize(0.045);

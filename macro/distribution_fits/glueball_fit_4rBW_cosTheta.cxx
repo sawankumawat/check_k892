@@ -151,7 +151,7 @@ void glueball_fit_4rBW_cosTheta()
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta.root").c_str(), "READ"); // default
+        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt3.root").c_str(), "READ"); // default
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol_cosTheta.root", "RECREATE");
 
@@ -187,8 +187,8 @@ void glueball_fit_4rBW_cosTheta()
         double total_events = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
 
         // float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
-        float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
-        // float cosThetaBins[] = {0.6, 0.8};
+        // float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
+        float cosThetaBins[] = {-0.8, -0.6};
         int nBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
         // TCanvas *cplot_all = new TCanvas("cplot_all", "cplot_all", 2880, 1440);
         // SetCanvasStyle(cplot_all, 0.14, 0.03, 0.05, 0.14);
@@ -224,7 +224,7 @@ void glueball_fit_4rBW_cosTheta()
             hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
             hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
             hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
-            hinvMass->GetYaxis()->SetTitleOffset(1.5);
+            hinvMass->GetYaxis()->SetTitleOffset(1.2);
             hinvMass->SetMaximum(1.5 * hinvMass->GetMaximum());
             hinvMass->SetMarkerSize(1.0);
             hinvMass->Draw("pe");
@@ -249,7 +249,10 @@ void glueball_fit_4rBW_cosTheta()
             }
 
             // double parameters[] = {3200, f1270Mass, f1270Width, 3000, a1320Mass, a1320Width, 7500, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // same bkg as f0 and f1
-            double parameters[] = {550, f1270Mass, f1270Width, 450, a1320Mass, a1320Width, 900, f1525Mass, f1525Width, 300, f1710Mass, f1710Width}; // 0.0 < cosTheta < 0.2
+            // double parameters[] = {550, f1270Mass, f1270Width, 450, a1320Mass, a1320Width, 900, f1525Mass, f1525Width, 300, f1710Mass, f1710Width}; // no pT cut
+
+            // for low pT cut of 3 GeV/c
+            double parameters[] = {120, f1270Mass, f1270Width, 117, a1320Mass, a1320Width, 350, f1525Mass, f1525Width, 220, f1710Mass, f1710Width}; // (110 for [0.0, 0.2] else 120
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -269,26 +272,34 @@ void glueball_fit_4rBW_cosTheta()
 
             // double initial_param_bkg[] = {9.5e6, -0.007, -2.4, -0.15}; // exact form as f0 and f1
 
+            // for no low pT cut
             // double initial_param_bkg[] = {4.0e5, -0.04, -1.6, -0.45}; // All cosTheta except 0.8 to 1.0, -1.0 to -0.8, and -0.8 to -0.6
             // double initial_param_bkg[] = {1.3e6, 0.01, -2.9, -0.045}; // -0.8 to -0.6 cosTheta, 0.6 to 0.8
 
-            // ...existing code...
-            double initial_param_bkg[4];
-            if (icosTheta == 0 || icosTheta == nBins - 1)
-            {
-                initial_param_bkg[0] = 1.3e6;
-                initial_param_bkg[1] = 0.01;
-                initial_param_bkg[2] = -2.9;
-                initial_param_bkg[3] = -0.045;
-            }
-            else
-            {
-                initial_param_bkg[0] = 4.0e5;
-                initial_param_bkg[1] = -0.04;
-                initial_param_bkg[2] = -1.6;
-                initial_param_bkg[3] = -0.45;
-            }
-            // ...existing code...
+            // for low pT cut of 3 GeV/c (Mix)
+            // double initial_param_bkg[] = {2170, -0.08, 3.8, -2.45}; // all expect the below ones
+            // double initial_param_bkg[] = {1700, -0.1, 4.0, -2.5}; // 0.6 - 0.8 - 1.0 (for negative last bin)
+
+            // for low pT cut of 3 GeV/c (Rotational background)
+            // double initial_param_bkg[] = {1600, -0.1, 3.9, -2.7}; //[0.0, 0.2, 0.4], [0.6, 0.8]
+            double initial_param_bkg[] = {20000, -0.01, 1.4, -2.7}; //[0.4, 0.6]
+            // double initial_param_bkg[] = {4.2e5, 0.09, -1.4, -3.9}; //[0.8, 1.0]
+
+            // double initial_param_bkg[4];
+            // if (icosTheta == 0 || icosTheta == nBins - 1)
+            // {
+            //     initial_param_bkg[0] = 1.3e6;
+            //     initial_param_bkg[1] = 0.01;
+            //     initial_param_bkg[2] = -2.9;
+            //     initial_param_bkg[3] = -0.045;
+            // }
+            // else
+            // {
+            //     initial_param_bkg[0] = 4.0e5;
+            //     initial_param_bkg[1] = -0.04;
+            //     initial_param_bkg[2] = -1.6;
+            //     initial_param_bkg[3] = -0.45;
+            // }
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Fix
@@ -305,19 +316,11 @@ void glueball_fit_4rBW_cosTheta()
             // BEexpol->FixParameter(7, f1525Mass);
 
             // BEexpol->FixParameter(10, f1710Mass);
-            // BEexpol->FixParameter(11, f1710Width);
+            BEexpol->FixParameter(11, f1710Width);
 
             // hinvMass->Fit("BEexpol", "REBMS");
-            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBS");
 
-            string fitstatus = "Successfull";
-            // if (fitResultptr->Status() != 4000)
-            // {
-            //     cout << "Fit failed or call limit" << endl;
-            //     fitstatus = "Failed";
-            // }
-            // cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-            // fitResultptr->Print("V");
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
 
             double *obtained_parameters = BEexpol->GetParameters();
@@ -486,7 +489,6 @@ void glueball_fit_4rBW_cosTheta()
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
             cout << "chi2/ndf is " << chi2ndf << endl;
-            string fitstatus = "Successfull";
 
             double *obtained_parameters = BEexpol->GetParameters();
             TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -787,7 +789,6 @@ void glueball_fit_4rBW_cosTheta()
 
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
             cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-            string fitstatus = "Successfull";
 
             double *obtained_parameters = BEexpol->GetParameters();
             TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -945,13 +946,6 @@ void glueball_fit_4rBW_cosTheta()
 
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
             cout << "chi2/ndf is " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-            string fitstatus = "Successfull";
-            // cout<<"fit status code "<<fitResultptr->Status()<<endl;
-            if (fitResultptr->Status() != 4140)
-            {
-                cout << "Fit failed or call limit !!!!!!!" << endl;
-                fitstatus = "Failed";
-            }
 
             double *obtained_parameters = BEexpol->GetParameters();
             TF1 *expol = new TF1("expol", Boltzmann_bkg_1, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);

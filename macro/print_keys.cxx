@@ -3,7 +3,7 @@
 #include <TFile.h>
 
 void print_keys() {
-    std::string filePath = "/home/sawan/check_k892/data/glueball/LHC22o_pass7_small/294059.root"; // Default file path
+    std::string filePath = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/447406.root"; // Default file path
 
     // // Parse command line arguments
     // int option;
@@ -22,7 +22,7 @@ void print_keys() {
     TFile *file = TFile::Open(filePath.c_str(), "READ");
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Could not open file " << filePath << "\n";
-        return 1;
+        return;
     }
     std::cout << "Successfully opened file: " << filePath << "\n";
 

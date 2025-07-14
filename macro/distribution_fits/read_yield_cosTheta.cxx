@@ -5,9 +5,11 @@ using namespace std;
 void read_yield_cosTheta()
 {
     gStyle->SetOptStat(0);
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/fits/4rBw_fits/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/";
 
     float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
+    // float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
     int nBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
 
     TH1D *hYield1710 = new TH1D("hYield1710", "Yield vs cosTheta", nBins, cosThetaBins);
@@ -186,7 +188,8 @@ void read_yield_cosTheta()
         hYieldBkg3->SetBinContent(i + 1, bkgYield3);
         hYieldBkg3->SetBinError(i + 1, bkgYield3 / 20);
 
-        // cout<<"f1525 yield is "<<yield2<<" +- "<<yield2_err<<endl;
+        cout<<"f1525 yield is "<<yield2<<" +- "<<yield2_err<<endl;
+        cout<<"f1710 yield is "<<yield1<<" +- "<<yield1_err<<endl;
         // cout<<"f1525 mass is "<<mass2<<" +- "<<mass2_err<<endl;
         // cout<<"f1525 width is "<<width2<<" +- "<<width2_err<<endl;
     }
@@ -234,7 +237,7 @@ void read_yield_cosTheta()
     legend->AddEntry(hYield1710, "f_{0}(1710)", "lpe");
     legend->AddEntry(hYield1525, "f'_{2}(1525)", "lpe");
     legend->Draw();
-    cYield->SaveAs((path + "yield_vs_cosTheta.png").c_str());
+    // cYield->SaveAs((path + "yield_vs_cosTheta.png").c_str());
 
     TCanvas *cMass = new TCanvas("cMass", "Mass vs cosTheta", 720, 720);
     SetCanvasStyle(cMass, 0.16, 0.03, 0.05, 0.14);
@@ -250,7 +253,7 @@ void read_yield_cosTheta()
     hMass1525->SetLineColor(kRed);
     hMass1525->Draw("pe same");
     legend->Draw();
-    cMass->SaveAs((path + "mass_vs_cosTheta.png").c_str());
+    // cMass->SaveAs((path + "mass_vs_cosTheta.png").c_str());
 
     TCanvas *cWidth = new TCanvas("cWidth", "Width vs cosTheta", 720, 720);
     SetCanvasStyle(cWidth, 0.16, 0.03, 0.05, 0.14);
@@ -266,7 +269,7 @@ void read_yield_cosTheta()
     hWidth1525->SetLineColor(kRed);
     // hWidth1525->Draw("pe same");
     // legend->Draw();
-    cWidth->SaveAs((path + "width_vs_cosTheta.png").c_str());
+    // cWidth->SaveAs((path + "width_vs_cosTheta.png").c_str());
 
     // TCanvas *cYieldBkg = new TCanvas("cYieldBkg", "Background Yield vs cosTheta", 720, 720);
     // SetCanvasStyle(cYieldBkg, 0.16, 0.03, 0.05, 0.14);

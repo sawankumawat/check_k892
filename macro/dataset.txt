@@ -1,4 +1,0 @@
-LHC23_pass1_QC1
-LHC23_pass1_QC2
-LHC23_pass1_lowB_highIR
-LHC23_pass1_lowB_lowIR

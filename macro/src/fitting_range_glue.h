@@ -5,7 +5,7 @@
 #ifdef DATASET_LHC22o_pass7_small
 #ifdef KsKschannel
 const Int_t Npt = 1;
-double pT_bins[Npt + 1] = {0.0, 30.0};
+double pT_bins[Npt + 1] = {3.0, 30.0};
 // double pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 5.0, 8.0};
 const int pt_start = 0;
 const int pt_end = Npt;

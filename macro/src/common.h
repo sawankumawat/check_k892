@@ -3,9 +3,10 @@
 const string kParticle = "kstar/";
 const bool multipanel_plots = 0;
 const bool save_plots = 1;
-// const string kfoldername_temp = "kstarqa";
-const string kfoldername_temp = "lf-kstar892analysis";
+const string kfoldername_temp = "kstarqa_id21631/hInvMass";
+// const string kfoldername_temp = "lf-kstar892analysis";
 // const string kfoldername_temp = "lf-k892analysis";
+
 const string kvariation = ""; // change the variation here
 // const string kvariation = "_Combined_cut"; // change the variation here
 // const string kvariation = "_TOF"; // change the variation here
@@ -16,43 +17,22 @@ const string kvariation = ""; // change the variation here
 ////********************************************************************************************
 
 // define datasets here
-// #define DATASET_LHC220_pass6_small
 #define DATASET_LHC220_pass7
 
 const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
 const string kSignalOutput_temp = "../output/" + kParticle; // output folder
-
-// define datasets name here
-#ifdef DATASET_LHC220_pass6_small
-const string kDataset_temp = "LHC220_pass6_small/";
-// const string kMCDataset = "../mc/LHC24b1/";
-const string kMCDataset = "../mc/LHC24b1b/";
-#endif
 
 #ifdef DATASET_LHC220_pass7
 const string kDataset_temp = "LHC22o_pass7/";
 const string kMCDataset = "../mc/LHC24f3b/";
 #endif
 
-// define datasets train output run number here
-#ifdef DATASET_LHC220_pass6_small
-// const string kDataFilename_temp2 = "208396.root"; // data file
-// const string kDataFilename_temp2 = "210677.root"; // data file
-// const string kDataFilename_temp2 = "211075.root"; // tpc cluster 120
-// const string kDataFilename_temp2 = "211557.root"; // global tracks w/o dca on
-const string kDataFilename_temp2 = "227978.root"; // large invariant mass range upto 3 GeV/c^2
-
-// const string kMCFilename_temp = "210563.root";    // only mc process (b1b)
-// const string kMCFilename_temp = "211233.root";    // tpc cluster 120 + mass pi fix
-const string kMCFilename_temp = "211346.root"; // split tracks
-#endif
-
 #ifdef DATASET_LHC220_pass7
 // const string kDataFilename_temp2 = "269284.root"; // Marta code for pp 13.6 TeV
-// const string kDataFilename_temp2 = "279143.root"; // DCA 0.01 cm
-const string kDataFilename_temp2 = "283597.root"; // DCA 0.1 cm
+// const string kDataFilename_temp2 = "283597.root"; // DCA 0.1 cm
 // const string kDataFilename_temp2 = "283598.root"; //  Neural network corrections, no combined PID cut, cuts on mother particle
-const string kMCFilename_temp = "279218.root"; //
+const string kDataFilename_temp2 = "447406.root"; // 
+const string kMCFilename_temp = "440496.root"; //
 #endif
 
 // final dataset name
@@ -66,8 +46,8 @@ const string koutputfolder = kSignalOutput + "/" + kfoldername;
 // Canvas dimensions
 const int klowerpad = 2;
 const int kupperpad = 2;
-const int kcanvaswidth = 600 * klowerpad;
-const int kcanvasheight = 600 * kupperpad;
+const int kcanvaswidth = 720 * klowerpad;
+const int kcanvasheight = 720 * kupperpad;
 const int kcanvasdivide[2] = {klowerpad, kupperpad};
 
 float masspdg = 0.895;  // in GeV/c^2

@@ -2,11 +2,35 @@
 
 #include <cmath>
 
+Double_t BW(Double_t *x, Double_t *par)
+{
+    return ((0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]));
+}
+
+Double_t polynomial2(Double_t *x, Double_t *par)
+{
+    double poly2 = par[0] + par[1] * x[0] + par[2] * x[0] * x[0];
+    return (poly2);
+}
+
+Double_t polynomial3(Double_t *x, Double_t *par)
+{
+    double poly3 = par[0] + par[1] * x[0] + par[2] * x[0] * x[0] + par[3] * x[0] * x[0] * x[0];
+    return (poly3);
+}
+
 Double_t BreitWignerpoly3(Double_t *x, Double_t *par)
 {
     double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
-    double poly3 = par[6] + par[5] * x[0] + par[4] * x[0] * x[0] + par[3] * x[0] * x[0] * x[0];
+    double poly3 = par[3] + par[4] * x[0] + par[5] * x[0] * x[0] + par[6] * x[0] * x[0] * x[0];
     return (BW + poly3);
+}
+
+Double_t BreitWignerpoly2(Double_t *x, Double_t *par)
+{
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is invariant mass, 1 is width, 2 is the yield
+    double poly2 = par[3] + par[4] * x[0] + par[5] * x[0] * x[0];
+    return (BW + poly2);
 }
 
 Double_t voigtpol2(Double_t *x, Double_t *par)
@@ -34,18 +58,6 @@ Double_t phi_bkg(Double_t *x, Double_t *par)
     return (srv);
 }
 
-Double_t BreitWignerpoly2(Double_t *x, Double_t *par)
-{
-    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is invariant mass, 1 is width, 2 is the yield
-    double poly2 = par[5] + par[4] * x[0] + par[3] * x[0] * x[0];
-    return (BW + poly2);
-}
-
-Double_t BW(Double_t *x, Double_t *par)
-{
-    return (0.5 * par[2] * par[1] / TMath::Pi() / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]));
-}
-
 Double_t BreitWignerpoly1(Double_t *x, Double_t *par)
 {
     double BW = (0.5 * par[2] * par[1] / 3.14159) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]);
@@ -54,21 +66,9 @@ Double_t BreitWignerpoly1(Double_t *x, Double_t *par)
     return (BW + poly1);
 }
 
-Double_t polynomial2(Double_t *x, Double_t *par)
-{
-    double poly2 = par[2] + par[1] * x[0] + par[0] * x[0] * x[0];
-    return (poly2);
-}
-
 Double_t polynomial1(Double_t *x, Double_t *par)
 {
     return (par[0] + par[1] * x[0]);
-}
-
-Double_t polynomial3(Double_t *x, Double_t *par)
-{
-    double poly3 = par[3] + par[2] * x[0] + par[1] * x[0] * x[0] + par[0] * x[0] * x[0] * x[0];
-    return (poly3);
 }
 
 Double_t BWExpo(Double_t *x, Double_t *par)

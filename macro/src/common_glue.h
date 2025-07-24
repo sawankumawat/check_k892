@@ -4,7 +4,7 @@
 
 const string kParticle = "glueball/";
 const float txtsize = 0.045;
-const string koutputtype = "png"; // pdf, eps
+const string koutputtype = "pdf"; // pdf, eps
 ////********************************************************************************************
 #ifdef KsKschannel
 const string kchannel = "KsKs_Channel";
@@ -12,14 +12,14 @@ const string kchannel = "KsKs_Channel";
 const string kfoldername_temp = "higher-mass-resonances";
 
 
-const string kvariation = ""; // No variation
+// const string kvariation = ""; // No variation
 // const string kvariation = "_lambda_7"; 
 // const string kvariation = "_all_tight"; 
 // const string kvariation = "_PID3"; 
 // const string kvariation = "_3sigmaKs"; 
 
 //****************systematics train*******************************
-// const string kvariation = "_id24937"; // first four are same
+const string kvariation = "_id24937"; // first four are same
 // const string kvariation = "_id24938";
 // const string kvariation = "_id24939";
 // const string kvariation = "_id24940";
@@ -113,13 +113,13 @@ const string kMCFilename_temp = "211346.root"; // MC file
 // const string kDataFilename_temp2 = "351470.root"; // LHC23 pass4 thin (largest dataset)
 // const string kDataFilename_temp2 = "351471.root"; // Full pass 7 dataset
 // const string kDataFilename_temp2 = "359454.root"; // Medium dataset angular cut (wrong cut used)
-// const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
+const string kDataFilename_temp2 = "358932.root"; // Full train with systematics
 // const string kDataFilename_temp2 = "363021.root"; // small train (ks mass cuts and angular separation cuts)
 // const string kDataFilename_temp2 = "363594.root"; // medium train (ks mass cuts)
 // const string kDataFilename_temp2 = "362701.root"; // medium train (angular separation cuts)
 // const string kDataFilename_temp2 = "369624.root"; // full trian with Ks sigma = 3.7 MeV/c^2
 // const string kDataFilename_temp2 = "370825.root"; // LHC23_thin_small (competing cascade rejection cuts)
-const string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7
+// const string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7
 // const string kDataFilename_temp2 = "435448.root"; // Full 2022 pass 7 (more finer pT bins)
 
 const string kMCFilename_temp = "211346.root"; // MC file // temporary since injected MC is not available

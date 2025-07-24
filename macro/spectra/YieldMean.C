@@ -160,12 +160,12 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
   TF1 *gaus = (TF1 *)gROOT->GetFunction("gaus");
 
   cCanvasStat->cd(1);
-  hIntegral->Fit(gaus, "q");
+  hIntegral->Fit(gaus, "q0");
   integral = hout->GetBinContent(kYield) * gaus->GetParameter(2) / gaus->GetParameter(1);
   hout->SetBinContent(kYieldStat, integral);
 
   cCanvasStat->cd(2);
-  hMean->Fit(gaus, "q");
+  hMean->Fit(gaus, "q0");
   mean = hout->GetBinContent(kMean) * gaus->GetParameter(2) / gaus->GetParameter(1);
   hout->SetBinContent(kMeanStat, mean);
 

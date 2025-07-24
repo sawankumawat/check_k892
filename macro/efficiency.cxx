@@ -6,10 +6,17 @@ using namespace std;
 
 void efficiency()
 {
-    TString outputfolder = koutputfolder + "/efficiency";
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451993/kstarqa/hInvMass"; // 2024 data
+    TString outputfolder = path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/447216.root", "READ");
-    TFile *fileraw = new TFile("/home/sawan/check_k892/output/kstar/LHC22o_pass7/447406/kstarqa_id21631/hInvMass/yield.root", "READ");
+
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/448748.root", "READ"); // 2022 MC (INEL)
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/449625.root", "READ"); // 2023 MC (INEL)
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/452215.root", "READ"); // 2024 MC (for skimmed) (INEL > 0)
+
+    TFile *fileraw = new TFile((path + "/yield.root").c_str(), "READ");
 
     if (fileeff->IsZombie() || fileraw->IsZombie())
     {
@@ -143,24 +150,36 @@ void efficiency()
     // Plot other plots for all multiplicity bins
     TCanvas *cefficiency = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cefficiency, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(heff[0]);
-    heff[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    heff[0]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-    heff[0]->GetYaxis()->SetTitleOffset(1.6);
-    heff[0]->SetMaximum(0.65);
-    heff[0]->Draw("pe");
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    SetHistoQA(heff[1]);
+    heff[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    heff[1]->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    heff[1]->GetYaxis()->SetTitleOffset(1.6);
+    heff[1]->SetMaximum(0.65);
+    heff[1]->Draw("pe");
+    for (int imult = 1; imult < nmultbins + 1; imult++)
     {
         heff[imult]->SetMarkerStyle(markers[imult]);
-        // heff[imult]->SetMarkerSize(1.2);
+        heff[imult]->SetMarkerSize(1.2);
         heff[imult]->Draw("pe same PLC PMC");
     }
+    TF1 *pol1fit = new TF1("pol1fit", "pol1", 5.5, 12);
+    pol1fit->FixParameter(1, 0.0); // Fixing the slope to 0
+    pol1fit->SetLineColor(kBlack);
+    pol1fit->SetLineWidth(2);
+    pol1fit->SetLineStyle(2);
+    heff[4]->Fit(pol1fit, "RQ0");
+    cout<<"Intercept value : "<<pol1fit->GetParameter(0)<<endl;
+    TLine *line = new TLine(0, pol1fit->GetParameter(0), 15, pol1fit->GetParameter(0));
+    line->SetLineStyle(2);
+    line->SetLineColor(kBlack);
+    line->SetLineWidth(2);
+    line->Draw();
     TLegend *legall = new TLegend(0.20, 0.75, 0.92, 0.98);
     legall->SetTextSize(0.03);
     legall->SetNColumns(5);
     legall->SetFillStyle(0);
     legall->SetBorderSize(0);
-    legall->AddEntry(heff[0], "0-100%", "p");
+    // legall->AddEntry(heff[0], "0-100%", "p");
     for (int imult = 1; imult < nmultbins + 1; imult++)
     {
         legall->AddEntry(heff[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "p");
@@ -170,17 +189,17 @@ void efficiency()
 
     TCanvas *cSignificance = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cSignificance, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hSignificance[0]);
-    hSignificance[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSignificance[0]->GetYaxis()->SetTitle("Significance");
-    hSignificance[0]->GetYaxis()->SetTitleOffset(1.6);
-    hSignificance[0]->SetMaximum(hSignificance[0]->GetMaximum() * 1.5);
-    hSignificance[0]->SetMinimum(-5);
-    hSignificance[0]->Draw("p");
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    SetHistoQA(hSignificance[1]);
+    hSignificance[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignificance[1]->GetYaxis()->SetTitle("Significance");
+    hSignificance[1]->GetYaxis()->SetTitleOffset(1.6);
+    hSignificance[1]->SetMaximum(750);
+    hSignificance[1]->SetMinimum(-5);
+    hSignificance[1]->Draw("p");
+    for (int imult = 1; imult < nmultbins + 1; imult++)
     {
         hSignificance[imult]->SetMarkerStyle(markers[imult]);
-        // hSignificance[imult]->SetMarkerSize(1.2);
+        hSignificance[imult]->SetMarkerSize(1.2);
         hSignificance[imult]->Draw("p same PLC PMC");
     }
     legall->Draw();
@@ -188,18 +207,18 @@ void efficiency()
 
     TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hChi2byNDF[0]);
-    hChi2byNDF[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hChi2byNDF[0]->GetYaxis()->SetTitle("#chi^{2}/NDF");
-    hChi2byNDF[0]->GetYaxis()->SetTitleOffset(1.6);
-    hChi2byNDF[0]->SetMaximum(6.5);
-    hChi2byNDF[0]->SetMinimum(0);
-    hChi2byNDF[0]->SetStats(0);
-    hChi2byNDF[0]->Draw("p");
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    SetHistoQA(hChi2byNDF[1]);
+    hChi2byNDF[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hChi2byNDF[1]->GetYaxis()->SetTitle("#chi^{2}/NDF");
+    hChi2byNDF[1]->GetYaxis()->SetTitleOffset(1.6);
+    hChi2byNDF[1]->SetMaximum(6.5);
+    hChi2byNDF[1]->SetMinimum(0);
+    hChi2byNDF[1]->SetStats(0);
+    hChi2byNDF[1]->Draw("p");
+    for (int imult = 1; imult < nmultbins + 1; imult++)
     {
         hChi2byNDF[imult]->SetMarkerStyle(markers[imult]);
-        // hChi2byNDF[imult]->SetMarkerSize(1.2);
+        hChi2byNDF[imult]->SetMarkerSize(1.2);
         hChi2byNDF[imult]->Draw("p same PLC PMC");
     }
     legall->Draw();
@@ -207,17 +226,17 @@ void efficiency()
 
     TCanvas *cMass = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hMass[0]);
-    hMass[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hMass[0]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    hMass[0]->GetYaxis()->SetTitleOffset(1.6);
-    hMass[0]->GetYaxis()->SetRangeUser(0.878, 0.919);
-    hMass[0]->SetStats(0);
-    hMass[0]->Draw("pe");
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    SetHistoQA(hMass[1]);
+    hMass[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hMass[1]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    hMass[1]->GetYaxis()->SetTitleOffset(1.6);
+    hMass[1]->GetYaxis()->SetRangeUser(0.878, 0.919);
+    hMass[1]->SetStats(0);
+    hMass[1]->Draw("pe");
+    for (int imult = 1; imult < nmultbins + 1; imult++)
     {
         hMass[imult]->SetMarkerStyle(markers[imult]);
-        // hMass[imult]->SetMarkerSize(1.2);
+        hMass[imult]->SetMarkerSize(1.2);
         hMass[imult]->Draw("pe same PLC PMC");
     }
     TLine *linePDG = new TLine(0, masspdg, 20, masspdg);

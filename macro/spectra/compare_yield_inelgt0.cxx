@@ -1,21 +1,9 @@
 #include <iostream>
 #include "../src/style.h"
 #include "../src/fitfunc.h"
-#include "../levy_fits/YieldMean.C"
+#include "YieldMean.C"
 
 using namespace std;
-
-string names[] = {
-    "", // Dump
-    "",
-    "_DCAxy_loose",
-    "_all_manual_cuts",
-    "_bins_cent",
-    "_manual_trk_sel",
-    "_mult_calib",
-    "_no_pvcontributor",
-    "_tof_high_pt",
-    "_tpc_cluster120"};
 
 Double_t FuncLavy(Double_t *x, Double_t *par)
 {
@@ -35,20 +23,34 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
     pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
     pad2->SetPad(0, 0, 1, 0.3);
-    pad1->SetRightMargin(0.009);
-    pad2->SetRightMargin(0.009);
+    pad1->SetRightMargin(0.06);
+    pad2->SetRightMargin(0.06);
     pad2->SetBottomMargin(0.33);
-    pad1->SetLeftMargin(0.14);
-    pad2->SetLeftMargin(0.14);
+    pad1->SetLeftMargin(0.16);
+    pad2->SetLeftMargin(0.16);
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
-    pad2->SetTopMargin(0.02);
+    pad2->SetTopMargin(0.001);
 }
 
 void compare_yield_inelgt0()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
+
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
+    TString outputPath = path2;
+
+    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
+    TFile *fspectra2 = new TFile((path2 + "/corrected_spectra.root").c_str(), "read");
+
+    if (fspectra1->IsZombie() || fspectra2->IsZombie())
+    {
+        cout << "Error: files not found" << endl;
+        return;
+    }
+
     TFile *fpub = new TFile("pp13TeV_INELgt0.root", "READ");
     if (fpub->IsZombie())
     {
@@ -56,191 +58,210 @@ void compare_yield_inelgt0()
         return;
     }
 
-    // choose any table except Table 1 for the INELgt0 case, since for Table 1, there are less bins.
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
-    TGraphErrors *g_vom = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", 4));                   // vom1
-    TGraphErrors *g_ratio_vom_inelgt0 = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", 4 + 9)); // ratio: vom1 / INEL>0
+    TH1F *hmult1[numofmultbins + 1];
+    TH1F *hmult2[numofmultbins + 1];
+    TH1F *hmultClone1[numofmultbins + 1];
+    TH1F *hmultClone2[numofmultbins + 1];
+    TGraphErrors *g_vom[numofmultbins];
 
-    if (g_vom == nullptr || g_ratio_vom_inelgt0 == nullptr)
+    hmult1[0] = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral");
+    hmult2[0] = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral");
+    hmultClone1[0] = (TH1F *)hmult1[0]->Clone("hmultClone0");
+    hmultClone2[0] = (TH1F *)hmult2[0]->Clone("hmultClone0");
+
+    if (hmult1[0] == nullptr)
     {
-        cout << "Graph not found" << endl;
+        cout << "Histogram 1 not found" << endl;
         return;
     }
-    TGraphErrors *gr_inelgt0 = new TGraphErrors();
-    for (int i = 0; i < g_vom->GetN(); i++)
+
+    for (int imult = 1; imult < numofmultbins + 1; imult++)
+    // for (int imult = 1; imult < 2; imult++)
     {
-        double x, y, xerr, yerr;
-        g_vom->GetPoint(i, x, y);
-        xerr = g_vom->GetErrorX(i);
-        yerr = g_vom->GetErrorY(i);
-
-        double x1, y1, xerr1, yerr1;
-        g_ratio_vom_inelgt0->GetPoint(i, x1, y1);
-        xerr1 = g_ratio_vom_inelgt0->GetErrorX(i);
-        yerr1 = g_ratio_vom_inelgt0->GetErrorY(i);
-
-        if (x != x1)
+        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
+        hmult2[imult] = (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
+        hmultClone1[imult] = (TH1F *)hmult1[imult]->Clone(Form("hmultClone%d", imult));
+        hmultClone2[imult] = (TH1F *)hmult2[imult]->Clone(Form("hmultClone%d", imult));
+        if (hmult1[imult] == nullptr)
         {
-            cout << "x values do not match" << endl;
+            cout << "Histogram others not found" << endl;
+            return;
+        }
+        g_vom[imult - 1] = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", imult)); // vom1
+        if (g_vom[imult - 1] == nullptr)
+        {
+            cout << "Run2 yield graph not found for mult bin " << imult << endl;
             return;
         }
 
-        double inelgt0 = y / y1;
-        double errory = sqrt(pow(yerr / y1, 2) + pow(y * yerr1 / (y1 * y1), 2));
+        hmultClone1[imult]->Scale(0.5); // In run the average of K* and anti-K* is taken. so we have to scale it.
+        hmultClone2[imult]->Scale(0.5);
 
-        gr_inelgt0->SetPoint(i, x, inelgt0);
-        gr_inelgt0->SetPointError(i, xerr, errory);
+        TH1F *h1 = (TH1F *)hmultClone1[imult]->Clone("h1");
+        TH1F *h2 = (TH1F *)hmultClone1[imult]->Clone("h2");
+
+        TH1F *h21 = (TH1F *)hmultClone2[imult]->Clone("h21");
+        TH1F *h22 = (TH1F *)hmultClone2[imult]->Clone("h22");
+
+        for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
+        {
+            double systemerr1 = (0.1 * h1->GetBinContent(i));
+            double systemerr2 = (0.1 * h21->GetBinContent(i));
+            h1->SetBinError(i, systemerr1);
+            h21->SetBinError(i, systemerr2);
+        }
+
+        int numColors = gStyle->GetNumberOfColors();
+        int paletteIndex = (imult - 1) * numColors / numofmultbins;
+        paletteIndex = std::min(paletteIndex, numColors - 1); // Ensure within bounds
+        int color = gStyle->GetColorPalette(paletteIndex);
+
+        TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+        fitFcn1->SetParameter(0, 5.0);
+        fitFcn1->SetParameter(1, 0.07);
+        fitFcn1->FixParameter(2, 0.895);
+        fitFcn1->SetParameter(3, 0.3);
+        fitFcn1->SetParNames("n", "dn/dy", "mass", "T");
+        // fitFcn1->SetLineColor(color);
+        fitFcn1->SetLineColor(kBlack);
+        fitFcn1->SetLineStyle(2);
+        fitFcn1->SetLineWidth(2);
+
+        TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
+        fitFcn2->SetParameter(0, 5.0);
+        fitFcn2->SetParameter(1, 0.07);
+        fitFcn2->FixParameter(2, 0.895);
+        fitFcn2->SetParameter(3, 0.3);
+        fitFcn2->SetParNames("n", "dn/dy", "mass", "T");
+        fitFcn2->SetLineColor(kRed);
+        fitFcn2->SetLineStyle(2);
+        fitFcn2->SetLineWidth(2);
+
+        /*************meanpT*****************byresonance*******************package*************************/
+        Double_t min = 0;
+        Double_t max = 15;
+        Double_t loprecision = 0.01;
+        Double_t hiprecision = 0.1;
+        Option_t *opt = "RI0+";
+        TString logfilename = "log.root";
+        Double_t minfit = 0;
+        Double_t maxfit = 15;
+        // Double_t maxfit=8.0;
+
+        TH1 *hout = YieldMean(h1, h1, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+        TH1 *hout2 = YieldMean(h21, h21, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+
+        TGraphErrors *gratio1 = new TGraphErrors();
+        TGraphErrors *gratio2 = new TGraphErrors();
+        for (int i = 0; i < g_vom[imult - 1]->GetN(); i++)
+        {
+            double x_run2, yield_run2, x_error, y_error_run2;
+            g_vom[imult - 1]->GetPoint(i, x_run2, yield_run2);
+            x_error = g_vom[imult - 1]->GetErrorX(i);
+            y_error_run2 = g_vom[imult - 1]->GetErrorY(i);
+
+            double thisanalysis1 = fitFcn1->Eval(x_run2);
+            double thisanalysis2 = fitFcn2->Eval(x_run2);
+            // cout << "run 2 x is " << x_run2 << " y run2 is " << yield_run2 << "run 3 " << thisanalysis1 << endl;
+            gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
+            gratio2->SetPoint(i, x_run2, thisanalysis2 / yield_run2);
+            double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
+            double error2 = sqrt(pow(thisanalysis2 * y_error_run2 / (yield_run2 * yield_run2), 2));
+            gratio1->SetPointError(i, x_error, error1);
+            gratio2->SetPointError(i, x_error, error2);
+
+            // double error = sqrt(pow(binerror / yield_run2, 2) + pow(bincontent * y_error_run2 / (yield_run2 * yield_run2), 2));
+        }
+
+        TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
+        SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
+        double pad1Size, pad2Size;
+        canvas_style(c1, pad1Size, pad2Size);
+        c1->cd(1);
+        SetHistoStyle(h1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+        SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+        h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+        h1->SetMaximum(h1->GetMaximum() * 10);
+        h1->SetMinimum(h1->GetMinimum() * 1);
+        h1->GetYaxis()->SetTitleOffset(1.30);
+        h1->GetXaxis()->SetTitleOffset(1.02);
+        h1->SetMarkerStyle(20);
+        h1->SetMarkerSize(1);
+        h1->GetXaxis()->SetRangeUser(0, 10);
+        h1->Draw("pe");
+        h21->SetMarkerStyle(21);
+        h21->SetMarkerSize(1);
+        h21->SetMarkerColor(kRed);
+        h21->SetLineColor(kRed);
+        h21->Draw("pe same");
+        fitFcn1->SetLineColor(kBlack);
+        fitFcn1->SetLineStyle(2);
+        fitFcn1->Draw("same");
+        fitFcn2->SetLineColor(kRed);
+        fitFcn2->SetLineStyle(2);
+        fitFcn2->Draw("same");
+        gPad->SetLogy(1);
+        g_vom[imult - 1]->SetMarkerStyle(22);
+        g_vom[imult - 1]->SetMarkerSize(1);
+        g_vom[imult - 1]->SetMarkerColor(kBlue);
+        g_vom[imult - 1]->SetLineColor(kBlue);
+        g_vom[imult - 1]->SetLineWidth(2);
+        g_vom[imult - 1]->Draw("pe same");
+
+        TLegend *leg = new TLegend(0.4, 0.7, 0.9, 0.91);
+        SetLegendStyle(leg);
+        leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]));
+        leg->AddEntry(h1, "2022 data", "p");
+        leg->AddEntry(h21, "2023 data", "p");
+        // leg->AddEntry(h21, "2024 data", "p");
+        // leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
+        leg->AddEntry(g_vom[imult - 1], "pp 13 TeV (Published)", "p");
+        leg->SetTextSize(0.05);
+        leg->Draw();
+
+        c1->cd(2);
+        TH1F *hdummy = (TH1F *)h1->Clone();
+        for (int i = 0; i < hdummy->GetNbinsX(); i++)
+        {
+            hdummy->SetBinContent(i + 1, 0);
+            hdummy->SetBinError(i + 1, 0);
+        }
+
+        SetGrapherrorStyle(gratio1);
+        SetGrapherrorStyle(gratio2);
+        gratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+        gratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+        gratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+        gratio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+        gratio1->SetMarkerStyle(20);
+        gratio1->SetMarkerSize(1.0);
+        gratio1->SetMarkerColor(1);
+        gratio1->SetLineColor(1);
+        gratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
+        gratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        gratio1->GetXaxis()->CenterTitle(1);
+        gratio1->GetYaxis()->SetTitleOffset(0.6);
+        gratio1->GetXaxis()->SetTitleOffset(1.1);
+        gratio1->GetYaxis()->SetNdivisions(506);
+        gratio1->GetXaxis()->SetRangeUser(0, 10);
+        gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.2);
+        gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.9);
+        // gratio1->SetMinimum(0.45);
+        gratio1->Draw("ap");
+        gratio2->SetMarkerStyle(21);
+        gratio2->SetMarkerSize(1.0);
+        gratio2->SetMarkerColor(2);
+        gratio2->SetLineColor(2);
+        gratio2->Draw("p same");
+
+        TLine *line = new TLine(0, 1, 10, 1);
+        line->SetLineStyle(2);
+        line->SetLineWidth(2);
+        line->SetLineColor(1);
+        line->Draw();
+        c1->SaveAs(outputPath + Form("/YieldRatioMult_%.0f-%.0f.png", mult_classes[imult - 1], mult_classes[imult]));
     }
-
-    int spectrano = 0;
-    // TFile *spectra = new TFile(("spectra_" + to_string(spectrano) + ".root").c_str(), "READ");
-    TFile *spectra1 = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass7_INEL/common/spectra.root", "READ");
-    TFile *spectra2 = new TFile("/home/sawan/k892_postprocessing/output/LHC22o_pass7_INEL/common/spectra_1.root", "READ");
-
-    if (spectra1->IsZombie() || spectra2->IsZombie())
-    {
-        cout << "Error: files not found" << endl;
-        return;
-    }
-
-    TH1D *h1 = (TH1D *)spectra2->Get(("lf-k892analysis_TOF" + names[spectrano] + "/K892/0/hCorrectedYields").c_str());
-    TH1D *h2 = (TH1D *)spectra1->Get(("lf-k892analysis" + names[spectrano] + "/K892/0/hCorrectedYields").c_str());
-    if (h1 == nullptr || h2 == nullptr)
-    {
-        cout << "Histogram not found" << endl;
-        return;
-    }
-
-    h1->Scale(0.5);
-    h2->Scale(0.5);
-    TF1 *fLevyTsallis = new TF1("levyTsallis", levyTsallis, 0, 13.5, 3); // Adjust range and parameter count as needed
-    // Set initial parameter values
-    fLevyTsallis->SetParameters(0.155025, 6.91579, 0.219293); // Example values: q, T, N, mass
-    fLevyTsallis->SetParNames("dN/dy", "T", "n");
-    fLevyTsallis->SetLineWidth(2);
-    fLevyTsallis->SetLineColor(kBlue);
-
-    // // //Fit the function to the histogram
-    // h1->Fit("levyTsallis", "REBMS"); // "R" option to use the function range
-
-    for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
-    {
-        double systemerr = (0.1 * h1->GetBinContent(i));
-        h1->SetBinError(i, systemerr);
-    }
-
-    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
-    fitFcn->SetParameter(0, 5.0);
-    fitFcn->SetParameter(1, 0.0007);
-    fitFcn->FixParameter(2, 1.285);
-    fitFcn->SetParameter(3, 0.3);
-    fitFcn->SetParNames("n", "dn/dy", "mass", "T");
-    fitFcn->SetLineColor(kBlue);
-
-    /*************meanpT*****************byresonance*******************package*************************/
-    Double_t min = 0;
-    Double_t max = 15;
-    Double_t loprecision = 0.01;
-    Double_t hiprecision = 0.1;
-    Option_t *opt = "RI+";
-    TString logfilename = "log.root";
-    Double_t minfit = 0;
-    Double_t maxfit = 20;
-    // Double_t maxfit=8.0;
-
-    TH1 *hout = YieldMean(h1, h1, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-
-    // TCanvas *c = new TCanvas();
-    // c->SetLogy(1);
-    // h1->Draw();
-
-    cout << "run 2 bins from graph size is " << gr_inelgt0->GetN() << endl;
-    cout << "run 3 bins are " << h1->GetNbinsX() << endl; // one extra bin from 15 GeV/c2 to 20 GeV/c2
-
-    TGraphErrors *gratio = new TGraphErrors();
-    for (int i = 0; i < gr_inelgt0->GetN(); i++)
-    {
-        double x_run2, yield_run2, x_error, y_error_run2;
-        gr_inelgt0->GetPoint(i, x_run2, yield_run2);
-        x_error = gr_inelgt0->GetErrorX(i);
-        y_error_run2 = gr_inelgt0->GetErrorY(i);
-
-        // double bincontent = h1->GetBinContent(i + 1);
-        // double binerror = h1->GetBinError(i + 1);
-        // double ratio = bincontent / yield_run2;
-        // double error = sqrt(pow(binerror / yield_run2, 2) + pow(bincontent * y_error_run2 / (yield_run2 * yield_run2), 2));
-        // gratio->SetPoint(i, x_run2, ratio);
-        // gratio->SetPointError(i, x_error, error);
-
-        double thisanalysis = fitFcn->Eval(x_run2);
-        cout << "run 2 x is " << x_run2 << " y run2 is " << yield_run2 << "run 3 " << thisanalysis << endl;
-        gratio->SetPoint(i, x_run2, thisanalysis / yield_run2);
-        double error = sqrt(pow(thisanalysis * y_error_run2 / (yield_run2 * yield_run2), 2));
-        gratio->SetPointError(i, x_error, error);
-    }
-
-    TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
-    SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
-    double pad1Size, pad2Size;
-    canvas_style(c1, pad1Size, pad2Size);
-    c1->cd(1);
-    SetHistoStyle(h1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    h1->SetMaximum(h1->GetMaximum() * 1.5);
-    h1->SetMinimum(h1->GetMinimum() * 10);
-    h1->GetYaxis()->SetTitleOffset(1.15);
-    h1->GetXaxis()->SetTitleOffset(1.02);
-    h1->SetMarkerStyle(22);
-    h1->SetMarkerSize(1);
-    h1->GetXaxis()->SetRangeUser(0, 10);
-    h1->Draw("pe");
-    gPad->SetLogy(1);
-    gr_inelgt0->SetMarkerStyle(29);
-    gr_inelgt0->SetMarkerSize(1);
-    gr_inelgt0->SetMarkerColor(kRed);
-    gr_inelgt0->SetLineColor(kRed);
-    gr_inelgt0->Draw("pe same");
-
-    TLegend *leg = new TLegend(0.46, 0.7, 0.9, 0.91);
-    SetLegendStyle(leg);
-    // leg->AddEntry(h1, "pp 13.6 TeV (TPC + TOF)", "lpe");
-    leg->AddEntry(h1, "pp 13.6 TeV (TPC only)", "lpe");
-    leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
-    leg->AddEntry(gr_inelgt0, "pp 13 TeV (Published)", "lpe");
-    leg->SetTextSize(0.05);
-    leg->Draw();
-
-    c1->cd(2);
-    TH1F *hdummy = (TH1F *)h1->Clone();
-    for (int i = 0; i < hdummy->GetNbinsX(); i++)
-    {
-        hdummy->SetBinContent(i + 1, 0);
-        hdummy->SetBinError(i + 1, 0);
-    }
-
-    SetgrgrStyle(gratio, 1, 53, 1, 0.05, 0.05, 0.04 / pad2Size, 0.04 / pad2Size, 1.13, 1.8);
-    gratio->GetYaxis()->SetTitleSize(0.04 / pad2Size);
-    gratio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    gratio->SetMarkerStyle(23);
-    gratio->SetMarkerSize(1);
-    gratio->SetMarkerColor(kRed);
-    gratio->SetLineColor(kRed);
-    gratio->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
-    gratio->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    gratio->GetXaxis()->CenterTitle(1);
-    gratio->GetYaxis()->SetTitleOffset(0.45);
-    gratio->GetYaxis()->SetNdivisions(506);
-    gratio->GetXaxis()->SetRangeUser(0, 10);
-    gratio->Draw("ap");
-
-    TLine *line = new TLine(0, 1, 15, 1);
-    line->SetLineStyle(2);
-    line->Draw();
-
-    // TCanvas *ctemp = new TCanvas("ctemp", "ctemp", 850, 900);
-    // h1->Draw();
-    // fitFcn->SetLineColor(8);
-    // fitFcn->Draw("same");
-
-    // c1->SaveAs("/home/sawan/TPC_only.png");
 }

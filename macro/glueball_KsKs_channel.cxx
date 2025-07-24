@@ -17,8 +17,8 @@ float parameter0(float mass, float width);
 void glueball_KsKs_channel()
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -40,8 +40,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    gStyle->SetOptStat(1110);
-    // gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(1110);
+    gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -135,7 +135,7 @@ void glueball_KsKs_channel()
         //     fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_all_pT", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
         // }
 
-        // /*
+        /*
 
         double cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0}; // cos(theta) bins
         // double cosThetaBins[] = {-1.0, 1.0};                                              // cos(theta) bins
@@ -246,7 +246,7 @@ void glueball_KsKs_channel()
             hfsig->SetLineColor(kBlack);
             hfsig->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
             hfsig->GetYaxis()->SetTitle(Form("Counts/%.0f MeV / c^{2}", binwidth_file * 1000));
-            hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
+            hfsig->GetXaxis()->SetRangeUser(1.00, 3.00);
             hfsig->Draw("e");
             TLine *linesig = new TLine(1.0, 0, 2.50, 0);
             linesig->SetLineColor(kRed);
@@ -358,7 +358,7 @@ void glueball_KsKs_channel()
             hsig_temp[ip] = (TH1D *)hfsig->Clone();
         } // cos theta loop ended
 
-        // */
+        */
 
         float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
         // TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
@@ -368,7 +368,7 @@ void glueball_KsKs_channel()
         // SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
         // c2divide->Divide(2, 2);
 
-        /*
+        // /*
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         // for (Int_t ip = 0; ip < 4; ip++) // start pt bin loop
@@ -467,15 +467,15 @@ void glueball_KsKs_channel()
             hfsig->GetYaxis()->SetTitleOffset(1.5);
             hfsig->SetMarkerColor(kBlack);
             hfsig->SetLineColor(kBlack);
-            hfsig->GetXaxis()->SetTitle("M_{K^{0}_{s}K^{0}_{s}} (GeV/c^{2})");
-            hfsig->GetYaxis()->SetTitle(Form("Counts/(%.0f MeV/c^{2})", binwidth_file * 1000));
-            hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
+            hfsig->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
+            hfsig->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
+            hfsig->GetXaxis()->SetRangeUser(1.00, 3.00);
             hfsig->Draw("e");
             TLine *linesig = new TLine(1.0, 0, 2.50, 0);
             linesig->SetLineColor(kRed);
             linesig->SetLineStyle(2);
             linesig->SetLineWidth(2);
-            linesig->Draw("same");
+            // linesig->Draw("same");
             // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
             hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
             // gPad->Update();
@@ -503,10 +503,10 @@ void glueball_KsKs_channel()
             lp2->AddEntry((TObject *)0, Form("%.0f < #it{p}_{T} < %.0f GeV/#it{c}", lowpt, highpt), "");
             lp2->Draw("same");
 
-            // if (save_invmass_distributions)
-            // {
-            //     c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
-            // }
+            if (save_invmass_distributions)
+            {
+                c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+            }
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
@@ -588,7 +588,7 @@ void glueball_KsKs_channel()
             hsig_temp[ip] = (TH1D *)hfsig->Clone();
         } // pt bin loop end here
 
-        */
+        // */
 
         // c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
         // c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());

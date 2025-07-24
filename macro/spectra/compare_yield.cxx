@@ -39,14 +39,14 @@ void compare_yield()
     gStyle->SetOptFit(0);
     TFile *fpublished = new TFile("pp13TeV.root", "READ");
     TGraph *grpublished = (TGraph *)fpublished->Get("Table 4/Graph1D_y1");
-    grpublished->Scale(1.0 / 0.7448);
+    // grpublished->Scale(1.0 / 0.7448);
     if (!grpublished)
     {
         cout << "Graph not found" << endl;
         return;
     }
 
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/447406/kstarqa_id21631/hInvMass/";
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448489/kstarqa/hInvMass/";
     TFile *spectra1 = new TFile((path + "corrected_spectra.root").c_str(), "READ");
     TFile *spectra2 = new TFile((path + "corrected_spectra.root").c_str(), "READ");
 
@@ -56,25 +56,14 @@ void compare_yield()
         return;
     }
 
-    TH1D *h1 = (TH1D *)spectra1->Get("corrected_spectra_Integral");
-    TH1D *h2 = (TH1D *)spectra2->Get("corrected_spectra_Integral");
+    TH1D *h1 = (TH1D *)spectra1->Get("mult_0-100/corrected_spectra_Integral");
+    TH1D *h2 = (TH1D *)spectra2->Get("mult_0-100/corrected_spectra_Integral");
 
     if (h1 == nullptr || h2 == nullptr)
     {
         cout << "Histogram not found" << endl;
         return;
     }
-
-    // // // h1->Scale(0.5);
-    // TF1 *fLevyTsallis = new TF1("levyTsallis", levyTsallis, 0, 15.5, 3); // Adjust range and parameter count as needed
-    // // Set initial parameter values
-    // fLevyTsallis->SetParameters(0.155025, 6.91579, 0.219293); // Example values: q, T, N, mass
-    // fLevyTsallis->SetParNames("dN/dy", "T", "n");
-    // fLevyTsallis->SetLineWidth(2);
-    // fLevyTsallis->SetLineColor(kBlue);
-
-    // // //Fit the function to the histogram
-    // h1->Fit("levyTsallis", "REBMS"); // "R" option to use the function range
 
     for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -124,7 +113,7 @@ void compare_yield()
         cout << "Bin " << i + 1 << " content: " << bincontent << " error: " << binerror << ", run 2 content: " << yield_run2 << " error: " << y_error_run2 << endl;
         double ratio = bincontent / yield_run2;
         double error = sqrt(pow(binerror / yield_run2, 2) + pow(bincontent * y_error_run2 / (yield_run2 * yield_run2), 2));
-        cout<<"Ratio error is "<<error<<endl;
+        cout << "Ratio error is " << error << endl;
         gratio->SetPoint(i, x_run2, ratio);
         gratio->SetPointError(i, x_error, error);
 

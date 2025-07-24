@@ -28,47 +28,16 @@ void analyze_kstar_spectra_pythia()
         return;
     }
 
-    TCanvas *cspectra = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cspectra, 0.14, 0.02, 0.02, 0.14);
-    double pad1Size, pad2Size;
-    canvas_style(cspectra, pad1Size, pad2Size);
-
-    cspectra->cd(1);
-    gPad->SetLogy();
-    SetHistoQA(spectrapp13);
-    SetHistoQA(spectrapp136);
-    spectrapp13->SetLineColor(kRed);
-    spectrapp136->SetLineColor(kBlue);
-    spectrapp13->Scale(1. / spectrapp13->GetEntries());
-    spectrapp136->Scale(1. / spectrapp136->GetEntries());
-
-    spectrapp13->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    spectrapp13->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
-    spectrapp13->GetYaxis()->SetTitleOffset(1.4);
-    spectrapp13->GetXaxis()->SetTitleSize(0.042 / pad1Size);
-    spectrapp13->GetYaxis()->SetTitleSize(0.042 / pad1Size);
-    spectrapp13->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    spectrapp13->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    spectrapp13->GetXaxis()->SetRangeUser(0, 20);
-    spectrapp13->Draw("HIST");
-    spectrapp136->Draw("HIST same");
-
-    TLegend *leg = new TLegend(0.6, 0.55, 0.92, 0.92);
-    leg->SetBorderSize(0);
-    leg->SetFillStyle(0);
-    leg->SetTextFont(42);
-    leg->SetTextSize(0.04 / pad1Size);
-    leg->AddEntry((TObject *)0, "Pythia simulations", "");
-    leg->AddEntry((TObject *)0, "K*^{0} (892) spectra", "");
-    leg->AddEntry(spectrapp136, "pp 13.6 TeV", "l");
-    leg->AddEntry(spectrapp13, "pp 13 TeV", "l");
-    leg->Draw();
-
     // Now lets the use the binning as in the data histogra
     double ptbins[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0};
     int nptbins = sizeof(ptbins) / sizeof(double) - 1;
 
+    spectrapp13->Scale(1. / spectrapp13->GetEntries());
+    spectrapp136->Scale(1. / spectrapp136->GetEntries());
+
     TH1F *ratio_rebin = new TH1F("", "", nptbins, ptbins);
+    TH1F *spectrapp136_rebin = (TH1F *)spectrapp136->Rebin(nptbins, "spectrapp136_rebin", ptbins);
+    TH1F *spectrapp13_rebin = (TH1F *)spectrapp13->Rebin(nptbins, "spectrapp13_rebin", ptbins);
     double deviation_below10GeV = 0.0;
     double deviation_above10GeV = 0.0;
     for (int i = 0; i < nptbins; i++)
@@ -78,6 +47,8 @@ void analyze_kstar_spectra_pythia()
 
         double content13 = spectrapp13->Integral(binmin, binmax);
         double content136 = spectrapp136->Integral(binmin, binmax);
+        spectrapp13_rebin->SetBinContent(i + 1, content13 / (ptbins[i + 1] - ptbins[i]));
+        spectrapp136_rebin->SetBinContent(i + 1, content136 / (ptbins[i + 1] - ptbins[i]));
 
         // Get errors for the integrals
         double error13 = 0.0;
@@ -99,24 +70,62 @@ void analyze_kstar_spectra_pythia()
     cout << "Deviation above 10 GeV/c %: " << deviation_above10GeV * 100 << endl;
     cout << "Deviation below 10 GeV/c %: " << deviation_below10GeV * 100 << endl;
 
+    TCanvas *cspectra = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cspectra, 0.14, 0.02, 0.02, 0.14);
+    double pad1Size, pad2Size;
+    canvas_style(cspectra, pad1Size, pad2Size);
+
+    cspectra->cd(1);
+    gPad->SetLogy();
+    SetHistoQA(spectrapp13_rebin);
+    SetHistoQA(spectrapp136_rebin);
+    spectrapp13_rebin->SetLineColor(kRed);
+    spectrapp13_rebin->SetMarkerColor(kRed);
+    spectrapp13_rebin->SetMarkerStyle(20);
+    spectrapp136_rebin->SetMarkerStyle(25);
+    spectrapp136_rebin->SetMarkerColor(kBlue);
+    spectrapp136_rebin->SetLineColor(kBlue);
+
+    spectrapp13_rebin->GetXaxis()->SetTitle("#it{p}_{T} [GeV/#it{c}]");
+    spectrapp13_rebin->GetYaxis()->SetTitle("dN/dp_{T} [(GeV/#it{c})^{-1}]");
+    spectrapp13_rebin->GetYaxis()->SetTitleOffset(1.4);
+    spectrapp13_rebin->GetXaxis()->SetTitleSize(0.042 / pad1Size);
+    spectrapp13_rebin->GetYaxis()->SetTitleSize(0.044 / pad1Size);
+    spectrapp13_rebin->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    spectrapp13_rebin->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    spectrapp13_rebin->GetXaxis()->SetRangeUser(0, 10);
+    spectrapp13_rebin->Draw("pe");
+    spectrapp136_rebin->Draw("pe same");
+
+    TLegend *leg = new TLegend(0.52, 0.55, 0.92, 0.92);
+    leg->SetBorderSize(0);
+    leg->SetFillStyle(0);
+    leg->SetTextFont(42);
+    leg->SetTextSize(0.04 / pad1Size);
+    leg->AddEntry((TObject *)0, "Pythia simulations", "");
+    leg->AddEntry((TObject *)0, "K*^{0} (892) spectra", "");
+    leg->AddEntry(spectrapp136_rebin, "pp 13.6 TeV", "p");
+    leg->AddEntry(spectrapp13_rebin, "pp 13 TeV", "p");
+    leg->Draw();
+
     cspectra->cd(2);
     // TH1F *histratio = (TH1F *)spectrapp136->Clone();
     // histratio->Divide(spectrapp13); // ratio
     SetHistoQA(ratio_rebin);
-    ratio_rebin->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratio_rebin->GetXaxis()->SetTitle("#it{p}_{T} [GeV/#it{c}]");
     ratio_rebin->GetYaxis()->SetTitle("#frac{pp 13.6 TeV}{pp 13 TeV}");
-    ratio_rebin->GetYaxis()->SetTitleOffset(0.6);
+    ratio_rebin->GetYaxis()->SetTitleOffset(0.66);
     ratio_rebin->GetXaxis()->SetTitleOffset(1.1);
     ratio_rebin->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    ratio_rebin->GetYaxis()->SetTitleSize(0.04 / pad2Size);
+    ratio_rebin->GetYaxis()->SetTitleSize(0.037 / pad2Size);
     ratio_rebin->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     ratio_rebin->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    ratio_rebin->GetXaxis()->SetRangeUser(0, 20);
-    ratio_rebin->GetYaxis()->SetRangeUser(0.92, 1.12);
+    ratio_rebin->GetXaxis()->SetRangeUser(0, 10);
+    ratio_rebin->GetYaxis()->SetRangeUser(0.945, 1.07);
     ratio_rebin->GetXaxis()->SetNdivisions(510);
     ratio_rebin->GetYaxis()->SetNdivisions(505);
     ratio_rebin->Draw("pe");
-    TLine *line = new TLine(0, 1, 20, 1);
+    TLine *line = new TLine(0, 1, 10, 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);
     line->Draw();
@@ -135,12 +144,16 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
     pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2
     pad2->SetPad(0, 0, 1, 0.3);
-    pad1->SetRightMargin(0.02);
-    pad2->SetRightMargin(0.02);
+    pad1->SetRightMargin(0.05);
+    pad2->SetRightMargin(0.05);
     pad2->SetBottomMargin(0.35);
     pad1->SetLeftMargin(0.175);
     pad2->SetLeftMargin(0.175);
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.003);
     pad2->SetTopMargin(0.04);
+    
+    // Set ticks on individual pads
+    pad1->SetTicks(1, 1);
+    pad2->SetTicks(1, 1);
 }

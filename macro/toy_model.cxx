@@ -22,7 +22,7 @@ void toy_model()
     TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
     TH1F *hrec_pT = new TH1F("hrec_pT", "Reconstructed p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
     TH1F *h_angdist = new TH1F("h_angdist", "Angular distribution of daughter particles; Angular separation (rad); Events", 400, 0, 4);
-    TH1F *h_rapdity = new TH1F("h_rapidity", "Rapidity distribution of mother; Rapidity; Events", 100, -1.0, 1.0);
+    TH1F *h_rapidity = new TH1F("h_rapidity", "Rapidity distribution of mother; Rapidity; Events", 100, -1.0, 1.0);
     TH2F *hptvsrap = new TH2F("hptvsrap", "p_{T} vs Rapidity; p_{T} (GeV/c); Rapidity", 150, 0, 30, 100, -3.0, 3.0);
     TH1F *hcosThetaStar = new TH1F("h_cosThetaStar", "Cosine of the angle between mother and daughter in CM frame; cos(#theta^{*}); Events", 20, -1, 1);
     TH1F *hpseudoRapidity = new TH1F("h_pseudoRapidity", "Pseudo-rapidity distribution of mother; #eta; Events", 100, -1.0, 1.0);
@@ -35,7 +35,7 @@ void toy_model()
     for (int i = 0; i < nEvents; i++)
     {
         // Generate random transverse momentum pT
-        double pT = randGen.Uniform(0, 20);               // Uniform pT between 0 and 30 GeV/c
+        double pT = randGen.Uniform(0, 20);               // Uniform pT between 0 and 20 GeV/c
         double phi = randGen.Uniform(0, 2 * TMath::Pi()); //  Uniform phi between 0 and 2pi
         double eta = randGen.Uniform(-0.8, 0.8);          // according to ALICE TPC acceptance
         // double eta = randGen.Uniform(-1.0, 1.0);
@@ -72,11 +72,21 @@ void toy_model()
             // double angsep = sqrt(pow(eta1 - eta2, 2) + pow(phi1 - phi2, 2));
             // h_angdist->Fill(angsep);
 
-            hpseudoRapidity->Fill(fourVecMother.Eta());
+            // if (abs(p1->Eta()) > 0.8 || abs(p2->Eta()) > 0.8)
+            // {
+            //     continue;
+            // }
+
+            // if (abs(p1->Y()) > 0.5 || abs(p2->Y()) > 0.5)
+            // {
+            //     continue;
+            // }
+
             double gen_rapidity = fourVecMother.Y();
-            h_rapdity->Fill(gen_rapidity);
+            hpseudoRapidity->Fill(fourVecMother.Eta());
             if (abs(gen_rapidity) < 0.5)
             {
+                h_rapidity->Fill(fourVecMother.Y());
                 hrec_pT->Fill(fourVecMother.Pt());
                 hptvsrap->Fill(fourVecMother.Pt(), gen_rapidity);
                 hcosThetaStar->Fill(cosThetaStar); // Fill histogram with cos(theta*)
@@ -86,7 +96,7 @@ void toy_model()
     }
 
     // Draw histogram
-    TCanvas *c1 = new TCanvas("c1", "Decay Simulation", 720, 720);
+    TCanvas *c1 = new TCanvas("c1", "p_{T} without rapidity cut", 720, 720);
     SetCanvasStyle(c1, 0.15, 0.05, 0.05, 0.15);
     SetHistoQA(h_pT);
     h_pT->GetYaxis()->SetMaxDigits(3);
@@ -108,9 +118,9 @@ void toy_model()
 
     TCanvas *c4 = new TCanvas("c4", "Rapidity Distribution", 720, 720);
     SetCanvasStyle(c4, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(h_rapdity);
-    h_rapdity->GetYaxis()->SetMaxDigits(3);
-    h_rapdity->Draw();
+    SetHistoQA(h_rapidity);
+    h_rapidity->GetYaxis()->SetMaxDigits(3);
+    h_rapidity->Draw();
     c4->SaveAs("toy_model_plots/rapidity_distribution.png");
 
     TCanvas *c5 = new TCanvas("c5", "pT vs Rapidity", 720, 720);

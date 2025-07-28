@@ -6,15 +6,30 @@ using namespace std;
 
 void efficiency()
 {
+    // ****************Data files ********************
+    //// This is with wrong placement of TPC crossed rows
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451993/kstarqa/hInvMass"; // 2024 data
+
+    // correct placement of TPC crossed rows
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+
     TString outputfolder = path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
 
+    //********MC files *****************
+    // Wrong placement of TPC crossed rows
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/448748.root", "READ"); // 2022 MC (INEL)
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/449625.root", "READ"); // 2023 MC (INEL)
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/452215.root", "READ"); // 2024 MC (for skimmed) (INEL > 0)
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/452215.root", "READ"); // 2024 MC  (INEL > 0)
+
+    // Correct placement of TPC crossed rows
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459909.root", "READ"); // 2022 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/449625.root", "READ"); // 2023 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459912.root", "READ"); // 2024 MC
 
     TFile *fileraw = new TFile((path + "/yield.root").c_str(), "READ");
 
@@ -168,7 +183,7 @@ void efficiency()
     pol1fit->SetLineWidth(2);
     pol1fit->SetLineStyle(2);
     heff[4]->Fit(pol1fit, "RQ0");
-    cout<<"Intercept value : "<<pol1fit->GetParameter(0)<<endl;
+    cout << "Intercept value : " << pol1fit->GetParameter(0) << endl;
     TLine *line = new TLine(0, pol1fit->GetParameter(0), 15, pol1fit->GetParameter(0));
     line->SetLineStyle(2);
     line->SetLineColor(kBlack);

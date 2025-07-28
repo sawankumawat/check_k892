@@ -151,7 +151,7 @@ void glueball_fit_4rBW_cosTheta()
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt3.root").c_str(), "READ"); // default
+        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt1.root").c_str(), "READ"); // default
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol_cosTheta.root", "RECREATE");
 
@@ -167,10 +167,10 @@ void glueball_fit_4rBW_cosTheta()
             return;
         }
 
-        // #define b_boltzman
-        // #define b_modified_Boltzmann // without mass dependent width
-        // #define b_massdepwidth
-#define b_massdepWidth_expol2
+// #define b_boltzman
+// #define b_modified_Boltzmann // without mass dependent width
+#define b_massdepwidth
+        // #define b_massdepWidth_expol2
         // #define b_HERAexponential
 
         // #define residual_subtracted
@@ -188,7 +188,7 @@ void glueball_fit_4rBW_cosTheta()
 
         // float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
         // float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
-        float cosThetaBins[] = {-0.8, -0.6};
+        float cosThetaBins[] = {-1.0, -0.8};
         int nBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
         // TCanvas *cplot_all = new TCanvas("cplot_all", "cplot_all", 2880, 1440);
         // SetCanvasStyle(cplot_all, 0.14, 0.03, 0.05, 0.14);
@@ -451,23 +451,38 @@ void glueball_fit_4rBW_cosTheta()
             }
 
             // //********systematic studies*************
+            // // for no pT cut:
+            // double initial_param_bkg[] = {1.2e5, 0.2, 3.78, 0.6}; // cosTheta -1.0 to -0.8
+            // double initial_param_bkg[] = {6.2e4, 0.007, 3.078, 1.0}; // cosTheta -0.8 to -0.6 to 0.8
+            // double initial_param_bkg[] = {3.2e5, 0.3, 4.478, 0.5}; // cosTheta 0.8 to 1.0
+
+            // std::vector<double> initial_param_bkg = (icosTheta == 0)
+            //                                             ? std::vector<double>{1.2e5, 0.2, 3.78, 0.6}
+            //                                         : (icosTheta == nBins - 1) ? std::vector<double>{3.2e5, 0.3, 4.478, 0.5}
+            //                                                                    : std::vector<double>{6.2e4, 0.007, 3.078, 1.0};
+
+            // // for pT cut of 1 GeV/c:
+            double initial_param_bkg[] = {1.2e5, 0.2, 3.78, 0.6}; // cosTheta -1.0 to -0.8
+
+
+
             // double initial_param_bkg[] = {8e3, -0.34, 3.67, 1.04}; // cosTheta all except -1.0 to -0.8
             // double initial_param_bkg[] = {5.2e4, 0.08, 3.78, 1.4}; // cosTheta -1.0 to -0.8
-            double initial_param_bkg[4];
-            if (icosTheta == 0)
-            {
-                initial_param_bkg[0] = 5.2e3;
-                initial_param_bkg[1] = -0.4;
-                initial_param_bkg[2] = 3.78;
-                initial_param_bkg[3] = 1.4;
-            }
-            else
-            {
-                initial_param_bkg[0] = 8e3;
-                initial_param_bkg[1] = -0.34;
-                initial_param_bkg[2] = 3.67;
-                initial_param_bkg[3] = 1.04;
-            }
+            // double initial_param_bkg[4];
+            // if (icosTheta == 0)
+            // {
+            //     initial_param_bkg[0] = 5.2e3;
+            //     initial_param_bkg[1] = -0.4;
+            //     initial_param_bkg[2] = 3.78;
+            //     initial_param_bkg[3] = 1.4;
+            // }
+            // else
+            // {
+            //     initial_param_bkg[0] = 8e3;
+            //     initial_param_bkg[1] = -0.34;
+            //     initial_param_bkg[2] = 3.67;
+            //     initial_param_bkg[3] = 1.04;
+            // }
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // Free
@@ -479,11 +494,11 @@ void glueball_fit_4rBW_cosTheta()
             BEexpol->FixParameter(5, a1320Width);
             BEexpol->FixParameter(8, f1525Width);
 
-            // BEexpol->FixParameter(1, f1270Mass);
-            // BEexpol->FixParameter(4, a1320Mass);
-            // BEexpol->FixParameter(7, f1525Mass);
+            BEexpol->FixParameter(1, f1270Mass);
+            BEexpol->FixParameter(4, a1320Mass);
+            BEexpol->FixParameter(7, f1525Mass);
 
-            // BEexpol->FixParameter(10, f1710Mass);
+            BEexpol->FixParameter(10, f1710Mass);
             BEexpol->FixParameter(11, f1710Width);
 
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");

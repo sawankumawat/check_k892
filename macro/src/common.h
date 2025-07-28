@@ -36,17 +36,25 @@ const string kMCDataset = "../mc/LHC24f3b/";
 // const string kDataFilename_temp2 = "448806.root"; // LHC22_pass7_small dataset, INEL > 0
 // const string kDataFilename_temp2 = "448807.root"; // LHC22_pass7_small dataset, INEL
 
+//***************TPC crossed rows placed in wrong place*****************************
 // const string kDataFilename_temp2 = "448490.root"; // LHC22_pass7_medium dataset, INEL > 0
 // const string kDataFilename_temp2 = "448489.root"; // LHC22_pass7_medium dataset, INEL
 
 // const string kDataFilename_temp2 = "449695.root"; // LHC23_pass4_thin_small dataset, INEL > 0
 // const string kDataFilename_temp2 = "449694.root"; // LHC23_pass4_thin_small dataset, INEL
 
-const string kDataFilename_temp2 = "451993.root"; // 	LHC24_pass1_minBias dataset, INEL > 0
+// const string kDataFilename_temp2 = "451993.root"; // 	LHC24_pass1_minBias dataset, INEL > 0
 // const string kDataFilename_temp2 = "451992.root"; // 	LHC24_pass1_minBias dataset, INEL
 
 // const string kDataFilename_temp2 = "451003.root"; // 	LHC24an_pass1_skimmed_small dataset, INEL > 0
 // const string kDataFilename_temp2 = "451002.root"; // 	LHC24an_pass1_skimmed_small dataset, INEL
+
+//*****************************Corrected TPC crossed rows********************************
+const string kDataFilename_temp2 = "459845.root"; // LHC22_pass7_medium dataset, INEL > 0
+
+// const string kDataFilename_temp2 = "459908.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+
+// const string kDataFilename_temp2 = "460233.root"; // 	LHC24_pass1_minBias dataset, INEL > 0
 #endif
 
 // final dataset name

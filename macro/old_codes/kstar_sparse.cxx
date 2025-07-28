@@ -102,26 +102,25 @@ void kstar_sparse()
     // double Event = hmult->GetEntries();
     // cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
     THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassUnlikeSign", kfoldername.c_str()));
     THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassMixed", kfoldername.c_str()));
-    THnSparseF *fHistLSPP = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignPP", kfoldername.c_str()));
-    THnSparseF *fHistLSMM = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignMM", kfoldername.c_str()));
+    THnSparseF *fHistLS = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSign", kfoldername.c_str()));
     THnSparseF *fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassRotated", kfoldername.c_str()));
 
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistLSPP == nullptr || fHistLSMM == nullptr || fHistRotated == nullptr)
+    if (fHistNum == nullptr || fHistDen == nullptr || fHistLS == nullptr || fHistRotated == nullptr)
     {
         cerr << "Invariant mass histograms not found!!!!!!!!!!!!" << endl;
         return;
     }
     TFile *filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
 
-    // for (int imult = 0; imult < nmultbins + 1; imult++)
-    for (int imult = 0; imult < 1; imult++)
+    for (int imult = 0; imult < nmultbins + 1; imult++)
+    // for (int imult = 1; imult < 2; imult++)
     {
         //**************Invariant mass histograms for sig+bkg and mixed event bg******************
         int multlow, multhigh;
@@ -178,8 +177,7 @@ void kstar_sparse()
 
                 fHistNum->GetAxis(1)->SetRange(lbin, hbin);
                 fHistDen->GetAxis(1)->SetRange(lbin, hbin);
-                fHistLSPP->GetAxis(1)->SetRange(lbin, hbin);
-                fHistLSMM->GetAxis(1)->SetRange(lbin, hbin);
+                fHistLS->GetAxis(1)->SetRange(lbin, hbin);
                 fHistRotated->GetAxis(1)->SetRange(lbin, hbin);
 
                 int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-3);
@@ -187,33 +185,16 @@ void kstar_sparse()
 
                 fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
                 fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistLSPP->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistLSMM->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                fHistLS->GetAxis(0)->SetRange(lbinmult, hbinmult);
                 fHistRotated->GetAxis(0)->SetRange(lbinmult, hbinmult);
 
                 fHistTotal[ip] = fHistNum->Projection(2, "E");
                 fHistBkg[ip] = fHistDen->Projection(2, "E");
-                fHistbkgLSPP[ip] = fHistLSPP->Projection(2, "E");
-                fHistbkgLSMM[ip] = fHistLSMM->Projection(2, "E");
+                fHistbkgLS[ip] = fHistLS->Projection(2, "E");
                 fHistRotated1D[ip] = fHistRotated->Projection(2, "E");
-
-                // Initialize fHistbkgLS[ip] by cloning one of the existing histograms
-                fHistbkgLS[ip] = (TH1D *)fHistbkgLSPP[ip]->Clone(Form("fHistbkgLS_%d_%d", imult, ip));
-                fHistbkgLS[ip]->Reset(); // Clear the content, keep the binning structure
-
-                for (int ibin = 0; ibin < fHistbkgLSPP[ip]->GetNbinsX(); ibin++)
-                {
-                    double linkesignpp = fHistbkgLSPP[ip]->GetBinContent(ibin + 1);
-                    double linkesignmm = fHistbkgLSMM[ip]->GetBinContent(ibin + 1);
-                    fHistbkgLS[ip]->SetBinContent(ibin + 1, 2 * sqrt(linkesignpp * linkesignmm));
-                    double binerrorpp = fHistbkgLSPP[ip]->GetBinError(ibin + 1);
-                    double binerrormm = fHistbkgLSMM[ip]->GetBinError(ibin + 1);
-                    fHistbkgLS[ip]->SetBinError(ibin + 1, sqrt(linkesignmm / linkesignpp) * binerrorpp + sqrt(linkesignpp / linkesignmm) * binerrormm);
-                }
                 fHistNum->SetName(Form("fHistNum_%d_%d", imult, ip));
                 fHistDen->SetName(Form("fHistDen_%d_%d", imult, ip));
-                fHistLSPP->SetName(Form("fHistLSPP_%d_%d", imult, ip));
-                fHistLSMM->SetName(Form("fHistLSMM_%d_%d", imult, ip));
+                fHistLS->SetName(Form("fHistLS_%d_%d", imult, ip));
                 fHistRotated->SetName(Form("fHistRotated_%d_%d", imult, ip));
 
                 auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
@@ -230,7 +211,7 @@ void kstar_sparse()
 
                 if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 {
-                    TH1D *bkgclonetemp = (kResBkg == "MIX") ? (TH1D *)fHistBkg[ip]->Clone() : (TH1D *)fHistRotated1D[ip]->Clone();
+                    TH1D *bkgclonetemp = (TH1D *)fHistBkg[ip]->Clone();
 
                     sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
                     bkg_integral = (bkgclonetemp->Integral(bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][0]), bkgclonetemp->GetXaxis()->FindBin(kNormRangepT[ip][1])));
@@ -255,6 +236,14 @@ void kstar_sparse()
                     hfsig->Rebin(rebin_value);
                     hfsig->Add(hfbkg, -1);
                 }
+                // else if (kResBkg == "ROTATED")
+                // {
+                //     hfbkg = (TH1D *)fHistRotated1D[ip]->Clone();
+                //     hfbkg->Scale(0.5);
+                //     hfbkg->Rebin(rebin_value);
+                //     hfsig->Rebin(rebin_value);
+                //     hfsig->Add(hfbkg, -1);
+                // }
 
                 fHistTotal[ip]->Rebin(rebin_value);
 
@@ -289,8 +278,7 @@ void kstar_sparse()
                 {
                     fitFcn->SetParLimits(0, 0.885, 0.888); // Mass
                 }
-                else if (imult == 1 && ip > Npt - 4)
-                {
+                else if (imult == 1 && ip > Npt - 4){
                     fitFcn->SetParLimits(0, 0.895, 0.898); // Mass
                 }
                 else if (imult == nmultbins && ip > Npt - 4)
@@ -579,7 +567,7 @@ void kstar_sparse()
                 hfbkg->Draw("E same");
                 fHistTotal[ip]->SetMarkerSize(1.0);
                 hfbkg->SetMarkerSize(1.0);
-                if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                if (kResBkg == "MIX")
                     hbkg_nopeak->Draw("BAR same");
                 // (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
                 ltx->Draw();
@@ -617,17 +605,9 @@ void kstar_sparse()
                 cgrid_bkg2->Close();
             }
 
-            // Check if directory exists, if not create it
-            TDirectory *dir = filecmp->GetDirectory(Form("mult_%d-%d", multlow, multhigh));
-            if (!dir)
-            {
-                dir = filecmp->mkdir(Form("mult_%d-%d", multlow, multhigh));
-            }
+            TDirectory *dir = filecmp->mkdir(Form("mult_%d-%d", multlow, multhigh));
             filecmp->cd();
-            if (dir)
-            {
-                dir->cd();
-            }
+            dir->cd();
 
             if (makeallpTplots)
             {

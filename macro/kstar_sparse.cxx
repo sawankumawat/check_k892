@@ -99,11 +99,11 @@ void kstar_sparse()
         cerr << "Histogram not found" << endl;
         return;
     }
-    // double Event = hmult->GetEntries();
-    // cout << "*****************number of events********************:" << Event << endl;
+    double Event = hmult->GetEntries();
+    cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -120,8 +120,8 @@ void kstar_sparse()
     }
     TFile *filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
 
-    // for (int imult = 0; imult < nmultbins + 1; imult++)
-    for (int imult = 0; imult < 1; imult++)
+    for (int imult = 0; imult < nmultbins + 1; imult++)
+    // for (int imult = 0; imult < 1; imult++)
     {
         //**************Invariant mass histograms for sig+bkg and mixed event bg******************
         int multlow, multhigh;
@@ -150,7 +150,7 @@ void kstar_sparse()
         {
             // gStyle->SetOptStat(1110);
             gStyle->SetOptStat(0);
-            gStyle->SetOptFit(0);
+            gStyle->SetOptFit(1);
 
             for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
             {
@@ -532,7 +532,7 @@ void kstar_sparse()
                 pag2->AddEntry(fitFcn, "BW+pol3", "l");
                 pag2->AddEntry(fitFcn1, "BW", "l");
                 pag2->AddEntry(fitFcn2, "pol3", "l");
-                pag2->Draw();
+                // pag2->Draw();
 
                 double fitprob = fitFcn->GetProb();
                 // pag->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f", Mass[ip], ErrorMass[ip]), "");

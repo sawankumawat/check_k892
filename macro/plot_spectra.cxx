@@ -42,8 +42,20 @@ void plot_spectra()
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451993/kstarqa/hInvMass"; // 2024 data
+
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+
+    //IR study
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535999/kstarqa/hInvMass"; // 330 kHz
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/536106/kstarqa/hInvMass"; // 650 kHz
 
     // TFile *fspectra = new TFile((path + "/corrected_spectra.root").c_str(), "read");
     TFile *fspectra = (plotOnlyRaw) ? new TFile((path + "/yield.root").c_str(), "read") : new TFile((path + "/corrected_spectra.root").c_str(), "read");
@@ -307,6 +319,8 @@ void plot_spectra()
             return;
         }
 
+        TFile *fLevyFit = new TFile(outputfolder + "/levy_fit.root", "recreate");
+
         TCanvas *cMeanYield = new TCanvas("cMeanYield", "cMeanYield", 720, 720);
         SetCanvasStyle(cMeanYield, 0.15, 0.03, 0.03, 0.15);
         SetGrapherrorStyle(gMeanYieldRun2);
@@ -317,12 +331,14 @@ void plot_spectra()
         gMeanYieldRun2->GetXaxis()->SetTitle("dN_{ch}/d#eta");
         gMeanYieldRun2->GetYaxis()->SetTitle("dN/dy");
         gMeanYieldRun2->Draw("AP");
+        gMeanYieldRun2->Write("gMeanYieldRun2");
         SetGrapherrorStyle(gMeanYieldRun3);
         gMeanYieldRun3->SetMarkerStyle(21);
         gMeanYieldRun3->SetMarkerSize(1.2);
         gMeanYieldRun3->SetMarkerColor(kBlue);
         gMeanYieldRun3->SetLineColor(kBlue);
         gMeanYieldRun3->Draw("P same");
+        gMeanYieldRun3->Write("gMeanYieldRun3");
         TLegend *legMeanYield = new TLegend(0.2, 0.80, 0.45, 0.90);
         legMeanYield->SetTextSize(0.04);
         legMeanYield->SetBorderSize(0);
@@ -342,6 +358,7 @@ void plot_spectra()
         gMeanpTRun2->GetXaxis()->SetTitle("dN_{ch}/d#eta");
         gMeanpTRun2->GetYaxis()->SetTitle("<p_{T}> (GeV/c)");
         gMeanpTRun2->Draw("AP");
+        gMeanpTRun2->Write("gMeanpTRun2");
         SetGrapherrorStyle(gMeanpTRun3);
         gMeanpTRun3->SetMarkerStyle(21);
         gMeanpTRun3->SetMarkerSize(1.2);
@@ -349,6 +366,7 @@ void plot_spectra()
         gMeanpTRun3->SetLineColor(kBlue);
         gMeanpTRun3->Draw("P same");
         legMeanYield->Draw();
+        gMeanpTRun3->Write("gMeanpTRun3");
         cMeanpT->SaveAs(outputfolder + "/mean_pT_run2.png");
     }
 }

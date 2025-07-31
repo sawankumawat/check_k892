@@ -24,7 +24,7 @@ const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
 const string kSignalOutput_temp = "../output/" + kParticle; // output folder
 
 #ifdef DATASET_LHC220_pass7
-const string kDataset_temp = "LHC22o_pass7/";
+const string kDataset_temp = "LHC22o_pass7/IR_study/";
 const string kMCDataset = "../mc/LHC24f3b/";
 #endif
 
@@ -50,11 +50,18 @@ const string kMCDataset = "../mc/LHC24f3b/";
 // const string kDataFilename_temp2 = "451002.root"; // 	LHC24an_pass1_skimmed_small dataset, INEL
 
 //*****************************Corrected TPC crossed rows********************************
-const string kDataFilename_temp2 = "459845.root"; // LHC22_pass7_medium dataset, INEL > 0
-
+// const string kDataFilename_temp2 = "459845.root"; // LHC22_pass7_medium dataset, INEL > 0
 // const string kDataFilename_temp2 = "459908.root"; // LHC23_pass4_thin_small dataset, INEL > 0
-
 // const string kDataFilename_temp2 = "460233.root"; // 	LHC24_pass1_minBias dataset, INEL > 0
+
+//*************************IR study********************************
+// const string kDataFilename_temp2 = "463114.root"; // 1-2 MHz
+// const string kDataFilename_temp2 = "535069.root"; // 14 kHz
+// const string kDataFilename_temp2 = "535545.root"; // 70 kHz
+const string kDataFilename_temp2 = "535645.root"; // 135 kHz
+// const string kDataFilename_temp2 = "535999.root"; // 330 kHz
+// const string kDataFilename_temp2 = "536106.root"; // 650 kHz
+
 #endif
 
 // final dataset name

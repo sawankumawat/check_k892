@@ -6,14 +6,15 @@ void compare_QAplots()
 {
     gStyle->SetOptStat(0);
     string datapath = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/";
-    string path1 = "448490"; // 2022 data
-    string path2 = "449695"; // 2023 data
-    // string path2 = "451003"; // 2024 data
-    TString outputPath = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/" + path2 + "/kstarqa/hInvMass/QA";
+    string path1 = "459845"; // 2022 data
+    string path2 = "459908"; // 2023 data
+    string path3 = "460233"; // 2024 data
+    TString outputPath = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/" + path3 + "/kstarqa/hInvMass/QA";
 
     TFile *file1 = new TFile((datapath + path1 + ".root").c_str(), "read");
     TFile *file2 = new TFile((datapath + path2 + ".root").c_str(), "read");
-    if (file1->IsZombie() || file2->IsZombie())
+    TFile *file3 = new TFile((datapath + path3 + ".root").c_str(), "read");
+    if (file1->IsZombie() || file2->IsZombie() || file3->IsZombie())
     {
         cout << "Error: files not found" << endl;
         return;
@@ -37,6 +38,15 @@ void compare_QAplots()
     TH1F *hNsigmaTPCKaon_pos2 = (TH1F *)file2->Get("kstarqa/hPID/Before/h1PID_TPC_pos_kaon");
     TH1F *hNsigmaTPCPion_pos2 = (TH1F *)file2->Get("kstarqa/hPID/Before/h1PID_TPC_pos_pion");
 
+    TH1F *hNsigmaTOFKaon_neg3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TOF_neg_kaon");
+    TH1F *hNsigmaTOFPion_neg3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TOF_neg_pion");
+    TH1F *hNsigmaTOFKaon_pos3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TOF_pos_kaon");
+    TH1F *hNsigmaTOFPion_pos3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TOF_pos_pion");
+    TH1F *hNsigmaTPCKaon_neg3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TPC_neg_kaon");
+    TH1F *hNsigmaTPCPion_neg3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TPC_neg_pion");
+    TH1F *hNsigmaTPCKaon_pos3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TPC_pos_kaon");
+    TH1F *hNsigmaTPCPion_pos3 = (TH1F *)file3->Get("kstarqa/hPID/Before/h1PID_TPC_pos_pion");
+
     hNsigmaTOFKaon_neg1->Scale(1.0 / hNsigmaTOFKaon_neg1->GetEntries());
     hNsigmaTOFPion_neg1->Scale(1.0 / hNsigmaTOFPion_neg1->GetEntries());
     hNsigmaTOFKaon_pos1->Scale(1.0 / hNsigmaTOFKaon_pos1->GetEntries());
@@ -55,6 +65,15 @@ void compare_QAplots()
     hNsigmaTPCKaon_pos2->Scale(1.0 / hNsigmaTPCKaon_pos2->GetEntries());
     hNsigmaTPCPion_pos2->Scale(1.0 / hNsigmaTPCPion_pos2->GetEntries());
 
+    hNsigmaTOFKaon_neg3->Scale(1.0 / hNsigmaTOFKaon_neg3->GetEntries());
+    hNsigmaTOFPion_neg3->Scale(1.0 / hNsigmaTOFPion_neg3->GetEntries());
+    hNsigmaTOFKaon_pos3->Scale(1.0 / hNsigmaTOFKaon_pos3->GetEntries());
+    hNsigmaTOFPion_pos3->Scale(1.0 / hNsigmaTOFPion_pos3->GetEntries());
+    hNsigmaTPCKaon_neg3->Scale(1.0 / hNsigmaTPCKaon_neg3->GetEntries());
+    hNsigmaTPCPion_neg3->Scale(1.0 / hNsigmaTPCPion_neg3->GetEntries());
+    hNsigmaTPCKaon_pos3->Scale(1.0 / hNsigmaTPCKaon_pos3->GetEntries());
+    hNsigmaTPCPion_pos3->Scale(1.0 / hNsigmaTPCPion_pos3->GetEntries());
+
     if (hNsigmaTOFKaon_neg1 == nullptr)
     {
         cerr << "PID histograms not found in file 1!!!!!!!!!!!!" << endl;
@@ -65,11 +84,17 @@ void compare_QAplots()
         cerr << "PID histograms not found in file 2!!!!!!!!!!!!" << endl;
         return;
     }
+    if (hNsigmaTOFKaon_neg3 == nullptr)
+    {
+        cerr << "PID histograms not found in file 3!!!!!!!!!!!!" << endl;
+        return;
+    }
 
     TCanvas *cNsigmaTOFKaon_neg = new TCanvas("cNsigmaTOFKaon_neg", "Nsigma TOF Kaon Neg", 720, 720);
     SetCanvasStyle(cNsigmaTOFKaon_neg, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTOFKaon_neg1);
     SetHistoQA(hNsigmaTOFKaon_neg2);
+    SetHistoQA(hNsigmaTOFKaon_neg3);
     hNsigmaTOFKaon_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFKaon_neg1->GetXaxis()->SetTitle("n#sigma_{TOF} (K)");
     hNsigmaTOFKaon_neg1->GetXaxis()->SetRangeUser(-3, 3);
@@ -77,6 +102,8 @@ void compare_QAplots()
     hNsigmaTOFKaon_neg1->Draw("HIST");
     hNsigmaTOFKaon_neg2->SetLineColor(kRed);
     hNsigmaTOFKaon_neg2->Draw("HIST same");
+    hNsigmaTOFKaon_neg3->SetLineColor(kBlue);
+    hNsigmaTOFKaon_neg3->Draw("HIST same");
     TLegend *legend = new TLegend(0.2, 0.75, 0.5, 0.92);
     legend->SetBorderSize(0);
     legend->SetFillStyle(0);
@@ -84,18 +111,20 @@ void compare_QAplots()
     legend->SetTextSize(0.03);
     legend->AddEntry(hNsigmaTOFKaon_neg1, "2022 dataset", "l");
     legend->AddEntry(hNsigmaTOFKaon_neg2, "2023 dataset", "l");
+    legend->AddEntry(hNsigmaTOFKaon_neg3, "2024 dataset", "l");
     legend->Draw();
     TLine *lineverticalx0 = new TLine(0, hNsigmaTOFKaon_neg1->GetYaxis()->GetXmin(), 0, hNsigmaTOFKaon_neg1->GetYaxis()->GetXmax());
     lineverticalx0->SetLineStyle(2);
     lineverticalx0->SetLineColor(2);
     lineverticalx0->SetLineWidth(2);
-    // lineverticalx0->Draw();
+    lineverticalx0->Draw();
     cNsigmaTOFKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_neg.png"));
 
     TCanvas *cNsigmaTOFPion_neg = new TCanvas("cNsigmaTOFPion_neg", "Nsigma TOF Pion Neg", 720, 720);
     SetCanvasStyle(cNsigmaTOFPion_neg, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTOFPion_neg1);
     SetHistoQA(hNsigmaTOFPion_neg2);
+    SetHistoQA(hNsigmaTOFPion_neg3);
     hNsigmaTOFPion_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFPion_neg1->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi)");
     hNsigmaTOFPion_neg1->GetXaxis()->SetRangeUser(-3, 3);
@@ -103,6 +132,9 @@ void compare_QAplots()
     hNsigmaTOFPion_neg1->Draw("HIST");
     hNsigmaTOFPion_neg2->SetLineColor(kRed);
     hNsigmaTOFPion_neg2->Draw("HIST same");
+    hNsigmaTOFPion_neg3->SetLineColor(kBlue);
+    hNsigmaTOFPion_neg3->Draw("HIST same");
+    lineverticalx0->Draw();
     legend->Draw();
     cNsigmaTOFPion_neg->SaveAs(outputPath + ("/compare_NsigmaTOFPion_neg.png"));
 
@@ -110,6 +142,7 @@ void compare_QAplots()
     SetCanvasStyle(cNsigmaTOFKaon_pos, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTOFKaon_pos1);
     SetHistoQA(hNsigmaTOFKaon_pos2);
+    SetHistoQA(hNsigmaTOFKaon_pos3);
     hNsigmaTOFKaon_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFKaon_pos1->GetXaxis()->SetTitle("n#sigma_{TOF} (K)");
     hNsigmaTOFKaon_pos1->GetXaxis()->SetRangeUser(-3, 3);
@@ -117,13 +150,17 @@ void compare_QAplots()
     hNsigmaTOFKaon_pos1->Draw("HIST");
     hNsigmaTOFKaon_pos2->SetLineColor(kRed);
     hNsigmaTOFKaon_pos2->Draw("HIST same");
+    hNsigmaTOFKaon_pos3->SetLineColor(kBlue);
+    hNsigmaTOFKaon_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTOFKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_pos.png"));
 
     TCanvas *cNsigmaTOFPion_pos = new TCanvas("cNsigmaTOFPion_pos", "Nsigma TOF Pion Pos", 720, 720);
     SetCanvasStyle(cNsigmaTOFPion_pos, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTOFPion_pos1);
     SetHistoQA(hNsigmaTOFPion_pos2);
+    SetHistoQA(hNsigmaTOFPion_pos3);
     hNsigmaTOFPion_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFPion_pos1->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi)");
     hNsigmaTOFPion_pos1->GetXaxis()->SetRangeUser(-3, 3);
@@ -131,13 +168,17 @@ void compare_QAplots()
     hNsigmaTOFPion_pos1->Draw("HIST");
     hNsigmaTOFPion_pos2->SetLineColor(kRed);
     hNsigmaTOFPion_pos2->Draw("HIST same");
+    hNsigmaTOFPion_pos3->SetLineColor(kBlue);
+    hNsigmaTOFPion_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTOFPion_pos->SaveAs(outputPath + ("/compare_NsigmaTOFPion_pos.png"));
 
     TCanvas *cNsigmaTPCKaon_neg = new TCanvas("cNsigmaTPCKaon_neg", "Nsigma TPC Kaon Neg", 720, 720);
     SetCanvasStyle(cNsigmaTPCKaon_neg, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTPCKaon_neg1);
     SetHistoQA(hNsigmaTPCKaon_neg2);
+    SetHistoQA(hNsigmaTPCKaon_neg3);
     hNsigmaTPCKaon_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCKaon_neg1->GetXaxis()->SetTitle("n#sigma_{TPC} (K)");
     hNsigmaTPCKaon_neg1->GetXaxis()->SetRangeUser(-3, 3);
@@ -145,13 +186,17 @@ void compare_QAplots()
     hNsigmaTPCKaon_neg1->Draw("HIST");
     hNsigmaTPCKaon_neg2->SetLineColor(kRed);
     hNsigmaTPCKaon_neg2->Draw("HIST same");
+    hNsigmaTPCKaon_neg3->SetLineColor(kBlue);
+    hNsigmaTPCKaon_neg3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTPCKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_neg.png"));
 
     TCanvas *cNsigmaTPCPion_neg = new TCanvas("cNsigmaTPCPion_neg", "Nsigma TPC Pion Neg", 720, 720);
     SetCanvasStyle(cNsigmaTPCPion_neg, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTPCPion_neg1);
     SetHistoQA(hNsigmaTPCPion_neg2);
+    SetHistoQA(hNsigmaTPCPion_neg3);
     hNsigmaTPCPion_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCPion_neg1->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi)");
     hNsigmaTPCPion_neg1->GetXaxis()->SetRangeUser(-3, 3);
@@ -159,13 +204,17 @@ void compare_QAplots()
     hNsigmaTPCPion_neg1->Draw("HIST");
     hNsigmaTPCPion_neg2->SetLineColor(kRed);
     hNsigmaTPCPion_neg2->Draw("HIST same");
+    hNsigmaTPCPion_neg3->SetLineColor(kBlue);
+    hNsigmaTPCPion_neg3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTPCPion_neg->SaveAs(outputPath + ("/compare_NsigmaTPCPion_neg.png"));
 
     TCanvas *cNsigmaTPCKaon_pos = new TCanvas("cNsigmaTPCKaon_pos", "Nsigma TPC Kaon Pos", 720, 720);
     SetCanvasStyle(cNsigmaTPCKaon_pos, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTPCKaon_pos1);
     SetHistoQA(hNsigmaTPCKaon_pos2);
+    SetHistoQA(hNsigmaTPCKaon_pos3);
     hNsigmaTPCKaon_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCKaon_pos1->GetXaxis()->SetTitle("n#sigma_{TPC} (K)");
     hNsigmaTPCKaon_pos1->GetXaxis()->SetRangeUser(-3, 3);
@@ -173,13 +222,17 @@ void compare_QAplots()
     hNsigmaTPCKaon_pos1->Draw("HIST");
     hNsigmaTPCKaon_pos2->SetLineColor(kRed);
     hNsigmaTPCKaon_pos2->Draw("HIST same");
+    hNsigmaTPCKaon_pos3->SetLineColor(kBlue);
+    hNsigmaTPCKaon_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTPCKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_pos.png"));
 
     TCanvas *cNsigmaTPCPion_pos = new TCanvas("cNsigmaTPCPion_pos", "Nsigma TPC Pion Pos", 720, 720);
     SetCanvasStyle(cNsigmaTPCPion_pos, 0.14, 0.05, 0.06, 0.14);
     SetHistoQA(hNsigmaTPCPion_pos1);
     SetHistoQA(hNsigmaTPCPion_pos2);
+    SetHistoQA(hNsigmaTPCPion_pos3);
     hNsigmaTPCPion_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCPion_pos1->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi)");
     hNsigmaTPCPion_pos1->GetXaxis()->SetRangeUser(-3, 3);
@@ -187,6 +240,9 @@ void compare_QAplots()
     hNsigmaTPCPion_pos1->Draw("HIST");
     hNsigmaTPCPion_pos2->SetLineColor(kRed);
     hNsigmaTPCPion_pos2->Draw("HIST same");
+    hNsigmaTPCPion_pos3->SetLineColor(kBlue);
+    hNsigmaTPCPion_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
     cNsigmaTPCPion_pos->SaveAs(outputPath + ("/compare_NsigmaTPCPion_pos.png"));
 }

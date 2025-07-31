@@ -13,9 +13,17 @@ void efficiency()
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451993/kstarqa/hInvMass"; // 2024 data
 
     // correct placement of TPC crossed rows
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+
+    // IR study
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
+    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
+    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
+    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
+    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535999/kstarqa/hInvMass"; // 330 kHz
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/536106/kstarqa/hInvMass"; // 650 kHz
 
     TString outputfolder = path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
@@ -27,9 +35,17 @@ void efficiency()
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/452215.root", "READ"); // 2024 MC  (INEL > 0)
 
     // Correct placement of TPC crossed rows
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459909.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/449625.root", "READ"); // 2023 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459909.root", "READ"); // 2022 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/460571.root", "READ"); // 2023 MC
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459912.root", "READ"); // 2024 MC
+
+    // IR study
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/463114MC.root", "READ"); // 1-2 MHz
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/535069MC.root", "READ"); // 14 kHz
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/535545MC.root", "READ"); // 70 kHz
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/535645MC.root", "READ"); // 135 kHz
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/535999MC.root", "READ"); // 330 kHz
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/IR_study/536106MC.root", "READ"); // 650 kHz
 
     TFile *fileraw = new TFile((path + "/yield.root").c_str(), "READ");
 
@@ -40,6 +56,8 @@ void efficiency()
     }
     const string genpath = "kstarqa/hInvMass/hk892GenpT";
     const string recpath = "kstarqa/hInvMass/h2KstarRecpt2";
+    // const string genpath = "kstarqa_PIDKa2/hInvMass/hk892GenpT";
+    // const string recpath = "kstarqa_PIDKa2/hInvMass/h2KstarRecpt2";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -52,7 +70,7 @@ void efficiency()
         cout << "Error reading efficiency histograms" << endl;
         return;
     }
-    TFile *spectra = new TFile((koutputfolder + "/corrected_spectra.root").c_str(), "RECREATE");
+    TFile *spectra = new TFile((path + "/corrected_spectra.root").c_str(), "RECREATE");
     TH1F *hChi2byNDF[nmultbins + 1];
     TH1F *hMass[nmultbins + 1];
     TH1F *hSignificance[nmultbins + 1];
@@ -95,7 +113,8 @@ void efficiency()
             cout << "Error reading yield histogram" << endl;
             return;
         }
-        heff[imult] = (TH1F *)hyieldBinCount->Clone(); // Just taking bins from the yield histogram which will be set to efficiency value.
+        // heff[imult] = (TH1F *)hyieldBinCount->Clone(); // Just taking bins from the yield histogram which will be set to efficiency value.
+        heff[imult] = (TH1F *)hyieldIntegral->Clone(); // Just taking bins from the yield histogram which will be set to efficiency value.
 
         cout << "bins: " << heff[imult]->GetNbinsX() << endl;
         for (int i = 0; i < heff[imult]->GetNbinsX(); i++)

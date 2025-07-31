@@ -22,7 +22,7 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
 }
-void compare_sameBin()
+void compare_rawCorrecYield()
 {
     bool isCorrectedYield = false;
     gStyle->SetOptStat(0);
@@ -32,10 +32,10 @@ void compare_sameBin()
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass/mix";  // 2022 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass/rot";  // 2023 data
-    string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass/like"; // 2024 data
-    TString outputPath = path2;
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
+    string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+    TString outputPath = path3;
 
     TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + "/corrected_spectra.root").c_str(), "read") : new TFile((path1 + "/yield.root").c_str(), "read");
     TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + "/corrected_spectra.root").c_str(), "read") : new TFile((path2 + "/yield.root").c_str(), "read");
@@ -109,20 +109,20 @@ void compare_sameBin()
         hmult2[imult]->Draw("pe same");
         hmult3[imult]->SetMarkerStyle(22);
         hmult3[imult]->SetMarkerSize(1);
-        hmult3[imult]->SetMarkerColor(kGreen + 2);
-        hmult3[imult]->SetLineColor(kGreen + 2);
+        hmult3[imult]->SetMarkerColor(kRed);
+        hmult3[imult]->SetLineColor(kRed);
         hmult3[imult]->SetLineWidth(2);
         hmult3[imult]->Draw("pe same");
 
         TLegend *leg = new TLegend(0.46, 0.7, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-        // leg->AddEntry(hmult1[imult], "2022 data", "lpe");
-        // leg->AddEntry(hmult2[imult], "2023 data", "lpe");
-        // leg->AddEntry(hmult2[imult], "2024 data", "lpe");
-        leg->AddEntry(hmult1[imult], "Mixed-event", "lpe");
-        leg->AddEntry(hmult2[imult], "Rotated pairs", "lpe");
-        leg->AddEntry(hmult3[imult], "Like-sign pairs", "lpe");
+        leg->AddEntry(hmult1[imult], "2022 data", "lpe");
+        leg->AddEntry(hmult2[imult], "2023 data", "lpe");
+        leg->AddEntry(hmult3[imult], "2024 data", "lpe");
+        // leg->AddEntry(hmult1[imult], "Mixed-event", "lpe");
+        // leg->AddEntry(hmult2[imult], "Rotated pairs", "lpe");
+        // leg->AddEntry(hmult3[imult], "Like-sign pairs", "lpe");
         leg->SetTextSize(0.04);
         leg->SetTextSize(0.05);
         leg->Draw();
@@ -145,18 +145,20 @@ void compare_sameBin()
         hratio1->SetMarkerColor(kBlue);
         hratio1->SetLineColor(kBlue);
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
-        hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
+        // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
+        hratio1->GetYaxis()->SetTitle("Ratio to 2022");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
         hratio1->GetYaxis()->SetNdivisions(505);
+        hratio1->SetMaximum(hratio2->GetMaximum() * 1.1);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
         hratio1->Draw("p");
         hratio2->SetMarkerStyle(21);
         hratio2->SetMarkerSize(1.0);
-        hratio2->SetMarkerColor(kGreen + 2);
-        hratio2->SetLineColor(kGreen + 2);
+        hratio2->SetMarkerColor(kRed);
+        hratio2->SetLineColor(kRed);
         hratio2->Draw("p same");
 
         TLine *line = new TLine(0, 1, 10, 1);

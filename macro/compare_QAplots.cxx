@@ -6,14 +6,19 @@ void compare_QAplots()
 {
     gStyle->SetOptStat(0);
     string datapath = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/";
-    string path1 = "459845"; // 2022 data
-    string path2 = "459908"; // 2023 data
-    string path3 = "460233"; // 2024 data
-    TString outputPath = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/" + path3 + "/kstarqa/hInvMass/QA";
+    string simpath = "/home/sawan/check_k892/mc/LHC24f3c/NotTuneOnData/NN/";
+    // string path1 = "459845"; // 2022 data
+    // string path2 = "459908"; // 2023 data
+    // string path3 = "460233"; // 2024 data
+    string path1 = "462343"; // 2022 MC
+    string path2 = "462503"; // 2023 MC
+    string path3 = "462351"; // 2024 MC
+    string outpath = "459845";
+    TString outputPath = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/" + outpath + "/kstarqa/hInvMass/QA";
 
-    TFile *file1 = new TFile((datapath + path1 + ".root").c_str(), "read");
-    TFile *file2 = new TFile((datapath + path2 + ".root").c_str(), "read");
-    TFile *file3 = new TFile((datapath + path3 + ".root").c_str(), "read");
+    TFile *file1 = new TFile((simpath + path1 + ".root").c_str(), "read");
+    TFile *file2 = new TFile((simpath + path2 + ".root").c_str(), "read");
+    TFile *file3 = new TFile((simpath + path3 + ".root").c_str(), "read");
     if (file1->IsZombie() || file2->IsZombie() || file3->IsZombie())
     {
         cout << "Error: files not found" << endl;
@@ -98,7 +103,7 @@ void compare_QAplots()
     hNsigmaTOFKaon_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFKaon_neg1->GetXaxis()->SetTitle("n#sigma_{TOF} (K)");
     hNsigmaTOFKaon_neg1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTOFKaon_neg1->SetMaximum(1.3 * hNsigmaTOFKaon_neg1->GetMaximum());
+    hNsigmaTOFKaon_neg1->SetMaximum(1.3 * hNsigmaTOFKaon_neg2->GetMaximum());
     hNsigmaTOFKaon_neg1->Draw("HIST");
     hNsigmaTOFKaon_neg2->SetLineColor(kRed);
     hNsigmaTOFKaon_neg2->Draw("HIST same");
@@ -128,12 +133,14 @@ void compare_QAplots()
     hNsigmaTOFPion_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFPion_neg1->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi)");
     hNsigmaTOFPion_neg1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTOFPion_neg1->SetMaximum(1.3 * hNsigmaTOFKaon_neg1->GetMaximum());
+    hNsigmaTOFPion_neg1->SetMaximum(1.3 * hNsigmaTOFPion_neg2->GetMaximum());
     hNsigmaTOFPion_neg1->Draw("HIST");
     hNsigmaTOFPion_neg2->SetLineColor(kRed);
     hNsigmaTOFPion_neg2->Draw("HIST same");
     hNsigmaTOFPion_neg3->SetLineColor(kBlue);
     hNsigmaTOFPion_neg3->Draw("HIST same");
+    lineverticalx0->SetY1(1.3 * hNsigmaTOFPion_neg1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTOFPion_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     legend->Draw();
     cNsigmaTOFPion_neg->SaveAs(outputPath + ("/compare_NsigmaTOFPion_neg.png"));
@@ -146,7 +153,7 @@ void compare_QAplots()
     hNsigmaTOFKaon_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFKaon_pos1->GetXaxis()->SetTitle("n#sigma_{TOF} (K)");
     hNsigmaTOFKaon_pos1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTOFKaon_pos1->SetMaximum(1.3 * hNsigmaTOFKaon_pos1->GetMaximum());
+    hNsigmaTOFKaon_pos1->SetMaximum(1.3 * hNsigmaTOFKaon_pos2->GetMaximum());
     hNsigmaTOFKaon_pos1->Draw("HIST");
     hNsigmaTOFKaon_pos2->SetLineColor(kRed);
     hNsigmaTOFKaon_pos2->Draw("HIST same");
@@ -164,13 +171,15 @@ void compare_QAplots()
     hNsigmaTOFPion_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTOFPion_pos1->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi)");
     hNsigmaTOFPion_pos1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTOFPion_pos1->SetMaximum(1.3 * hNsigmaTOFPion_pos1->GetMaximum());
+    hNsigmaTOFPion_pos1->SetMaximum(1.3 * hNsigmaTOFPion_pos2->GetMaximum());
     hNsigmaTOFPion_pos1->Draw("HIST");
     hNsigmaTOFPion_pos2->SetLineColor(kRed);
     hNsigmaTOFPion_pos2->Draw("HIST same");
     hNsigmaTOFPion_pos3->SetLineColor(kBlue);
     hNsigmaTOFPion_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->SetY1(1.3 * hNsigmaTOFPion_pos1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTOFPion_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     cNsigmaTOFPion_pos->SaveAs(outputPath + ("/compare_NsigmaTOFPion_pos.png"));
 
@@ -182,13 +191,15 @@ void compare_QAplots()
     hNsigmaTPCKaon_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCKaon_neg1->GetXaxis()->SetTitle("n#sigma_{TPC} (K)");
     hNsigmaTPCKaon_neg1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTPCKaon_neg1->SetMaximum(1.3 * hNsigmaTPCKaon_neg1->GetMaximum());
+    hNsigmaTPCKaon_neg1->SetMaximum(1.3 * hNsigmaTPCKaon_neg2->GetMaximum());
     hNsigmaTPCKaon_neg1->Draw("HIST");
     hNsigmaTPCKaon_neg2->SetLineColor(kRed);
     hNsigmaTPCKaon_neg2->Draw("HIST same");
     hNsigmaTPCKaon_neg3->SetLineColor(kBlue);
     hNsigmaTPCKaon_neg3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->SetY1(1.3 * hNsigmaTPCKaon_neg1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTPCKaon_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     cNsigmaTPCKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_neg.png"));
 
@@ -200,13 +211,15 @@ void compare_QAplots()
     hNsigmaTPCPion_neg1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCPion_neg1->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi)");
     hNsigmaTPCPion_neg1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTPCPion_neg1->SetMaximum(1.3 * hNsigmaTPCPion_neg1->GetMaximum());
+    hNsigmaTPCPion_neg1->SetMaximum(1.3 * hNsigmaTPCPion_neg2->GetMaximum());
     hNsigmaTPCPion_neg1->Draw("HIST");
     hNsigmaTPCPion_neg2->SetLineColor(kRed);
     hNsigmaTPCPion_neg2->Draw("HIST same");
     hNsigmaTPCPion_neg3->SetLineColor(kBlue);
     hNsigmaTPCPion_neg3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->SetY1(1.3 * hNsigmaTPCPion_neg1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTPCPion_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     cNsigmaTPCPion_neg->SaveAs(outputPath + ("/compare_NsigmaTPCPion_neg.png"));
 
@@ -218,13 +231,15 @@ void compare_QAplots()
     hNsigmaTPCKaon_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCKaon_pos1->GetXaxis()->SetTitle("n#sigma_{TPC} (K)");
     hNsigmaTPCKaon_pos1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTPCKaon_pos1->SetMaximum(1.3 * hNsigmaTPCKaon_pos1->GetMaximum());
+    hNsigmaTPCKaon_pos1->SetMaximum(1.3 * hNsigmaTPCKaon_pos2->GetMaximum());
     hNsigmaTPCKaon_pos1->Draw("HIST");
     hNsigmaTPCKaon_pos2->SetLineColor(kRed);
     hNsigmaTPCKaon_pos2->Draw("HIST same");
     hNsigmaTPCKaon_pos3->SetLineColor(kBlue);
     hNsigmaTPCKaon_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->SetY1(1.3 * hNsigmaTPCKaon_pos1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTPCKaon_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     cNsigmaTPCKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_pos.png"));
 
@@ -236,13 +251,16 @@ void compare_QAplots()
     hNsigmaTPCPion_pos1->GetYaxis()->SetTitle("Counts");
     hNsigmaTPCPion_pos1->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi)");
     hNsigmaTPCPion_pos1->GetXaxis()->SetRangeUser(-3, 3);
-    hNsigmaTPCPion_pos1->SetMaximum(1.3 * hNsigmaTPCPion_pos1->GetMaximum());
+    hNsigmaTPCPion_pos1->SetMaximum(1.3 * hNsigmaTPCPion_pos2->GetMaximum());
     hNsigmaTPCPion_pos1->Draw("HIST");
     hNsigmaTPCPion_pos2->SetLineColor(kRed);
     hNsigmaTPCPion_pos2->Draw("HIST same");
     hNsigmaTPCPion_pos3->SetLineColor(kBlue);
     hNsigmaTPCPion_pos3->Draw("HIST same");
     legend->Draw();
+    lineverticalx0->Draw();
+    lineverticalx0->SetY1(1.3 * hNsigmaTPCPion_pos1->GetMaximum());
+    lineverticalx0->SetY2(hNsigmaTPCPion_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     cNsigmaTPCPion_pos->SaveAs(outputPath + ("/compare_NsigmaTPCPion_pos.png"));
 }

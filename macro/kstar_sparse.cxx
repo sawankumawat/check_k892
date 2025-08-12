@@ -12,7 +12,6 @@
 using namespace std;
 
 void kstar_sparse()
-
 {
     TStopwatch timer;
     timer.Start();
@@ -93,7 +92,10 @@ void kstar_sparse()
     }
 
     // TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa_id21631/eventSelection/hMultiplicity");
-    TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
+    // TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
+    string multpath = kfoldername.substr(0, kfoldername.length() - 9);
+    TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
+    // cout << "Given path is " << kfoldername << endl;
     if (hmult == nullptr)
     {
         cerr << "Histogram not found" << endl;
@@ -107,13 +109,26 @@ void kstar_sparse()
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
-    THnSparseF *fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassUnlikeSign", kfoldername.c_str()));
-    THnSparseF *fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassMixed", kfoldername.c_str()));
-    THnSparseF *fHistLSPP = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignPP", kfoldername.c_str()));
-    THnSparseF *fHistLSMM = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignMM", kfoldername.c_str()));
-    THnSparseF *fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassRotated", kfoldername.c_str()));
+    THnSparseF *fHistNum, *fHistDen, *fHistLSPP, *fHistLSMM, *fHistRotated;
 
-    if (fHistNum == nullptr || fHistDen == nullptr || fHistLSPP == nullptr || fHistLSMM == nullptr || fHistRotated == nullptr)
+    cout << "path for invariant mass histograms is " << Form("%s/h3KstarInvMassUnlikeSign", kfoldername.c_str()) << endl;
+
+    fHistNum = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassUnlikeSign", kfoldername.c_str()));
+    if (kResBkg == "MIX")
+    {
+        fHistDen = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassMixed", kfoldername.c_str()));
+    }
+    if (kResBkg == "LIKE")
+    {
+        fHistLSPP = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignPP", kfoldername.c_str()));
+        fHistLSMM = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMasslikeSignMM", kfoldername.c_str()));
+    }
+    if (kResBkg == "ROTATED")
+    {
+        fHistRotated = (THnSparseF *)fInputFile->Get(Form("%s/h3KstarInvMassRotated", kfoldername.c_str()));
+    }
+
+    if (fHistNum == nullptr)
     {
         cerr << "Invariant mass histograms not found!!!!!!!!!!!!" << endl;
         return;
@@ -123,6 +138,12 @@ void kstar_sparse()
     for (int imult = 0; imult < nmultbins + 1; imult++)
     // for (int imult = 0; imult < 1; imult++)
     {
+        // basic checks
+        if (kNormRangepT.size() < Npt || kFitRange.size() < Npt || kRebin.size() < Npt)
+        {
+            cerr << "Error: kNormRangepT, kFitRange, or kRebin arrays are not initialized for all pT bins." << endl;
+            return;
+        }
         //**************Invariant mass histograms for sig+bkg and mixed event bg******************
         int multlow, multhigh;
 
@@ -152,10 +173,25 @@ void kstar_sparse()
             gStyle->SetOptStat(0);
             gStyle->SetOptFit(1);
 
+            // Check if directory exists, if not create it
+            TDirectory *dir = filecmp->GetDirectory(Form("mult_%d-%d", (int)multlow, (int)multhigh));
+            if (!dir)
+            {
+                dir = filecmp->mkdir(Form("mult_%d-%d", (int)multlow, (int)multhigh));
+            }
+            filecmp->cd();
+            dir->cd();
+            TDirectory *subdir = dir->GetDirectory("SignalInAllPtBins");
+            if (!subdir)
+            {
+                subdir = dir->mkdir("SignalInAllPtBins");
+            }
+            subdir->cd();
+
             for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
             {
                 rebin_value = kRebin[ip][imult]; // rebinning value for the multiplicity bin
-                // rebin_value = 1; // for medium dataset (temporarily set to 1)
+                // rebin_value = 2;                 // for medium dataset (temporarily set to 1)
 
                 double lowfitrange = kFitRange[ip][0];
                 double highfitrange = kFitRange[ip][1];
@@ -177,44 +213,83 @@ void kstar_sparse()
                 int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-3);
 
                 fHistNum->GetAxis(1)->SetRange(lbin, hbin);
-                fHistDen->GetAxis(1)->SetRange(lbin, hbin);
-                fHistLSPP->GetAxis(1)->SetRange(lbin, hbin);
-                fHistLSMM->GetAxis(1)->SetRange(lbin, hbin);
-                fHistRotated->GetAxis(1)->SetRange(lbin, hbin);
+                if (kResBkg == "MIX")
+                {
+                    fHistDen->GetAxis(1)->SetRange(lbin, hbin);
+                }
+                if (kResBkg == "LIKE")
+                {
+                    fHistLSPP->GetAxis(1)->SetRange(lbin, hbin);
+                    fHistLSMM->GetAxis(1)->SetRange(lbin, hbin);
+                }
+                if (kResBkg == "ROTATED")
+                {
+                    fHistRotated->GetAxis(1)->SetRange(lbin, hbin);
+                }
 
                 int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-3);
                 int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-3);
 
                 fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistLSPP->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistLSMM->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                fHistRotated->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                if (kResBkg == "MIX")
+                {
+                    fHistDen->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                }
+                if (kResBkg == "LIKE")
+                {
+                    fHistLSPP->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                    fHistLSMM->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                }
+                if (kResBkg == "ROTATED")
+                {
+                    fHistRotated->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                }
 
                 fHistTotal[ip] = fHistNum->Projection(2, "E");
-                fHistBkg[ip] = fHistDen->Projection(2, "E");
-                fHistbkgLSPP[ip] = fHistLSPP->Projection(2, "E");
-                fHistbkgLSMM[ip] = fHistLSMM->Projection(2, "E");
-                fHistRotated1D[ip] = fHistRotated->Projection(2, "E");
-
-                // Initialize fHistbkgLS[ip] by cloning one of the existing histograms
-                fHistbkgLS[ip] = (TH1D *)fHistbkgLSPP[ip]->Clone(Form("fHistbkgLS_%d_%d", imult, ip));
-                fHistbkgLS[ip]->Reset(); // Clear the content, keep the binning structure
-
-                for (int ibin = 0; ibin < fHistbkgLSPP[ip]->GetNbinsX(); ibin++)
+                if (kResBkg == "MIX")
                 {
-                    double linkesignpp = fHistbkgLSPP[ip]->GetBinContent(ibin + 1);
-                    double linkesignmm = fHistbkgLSMM[ip]->GetBinContent(ibin + 1);
-                    fHistbkgLS[ip]->SetBinContent(ibin + 1, 2 * sqrt(linkesignpp * linkesignmm));
-                    double binerrorpp = fHistbkgLSPP[ip]->GetBinError(ibin + 1);
-                    double binerrormm = fHistbkgLSMM[ip]->GetBinError(ibin + 1);
-                    fHistbkgLS[ip]->SetBinError(ibin + 1, sqrt(linkesignmm / linkesignpp) * binerrorpp + sqrt(linkesignpp / linkesignmm) * binerrormm);
+                    fHistBkg[ip] = fHistDen->Projection(2, "E");
+                }
+                if (kResBkg == "LIKE")
+                {
+                    fHistbkgLSPP[ip] = fHistLSPP->Projection(2, "E");
+                    fHistbkgLSMM[ip] = fHistLSMM->Projection(2, "E");
+                }
+                if (kResBkg == "ROTATED")
+                {
+                    fHistRotated1D[ip] = fHistRotated->Projection(2, "E");
+                }
+
+                if (kResBkg == "LIKE")
+                {
+                    // Initialize fHistbkgLS[ip] by cloning one of the existing histograms
+                    fHistbkgLS[ip] = (TH1D *)fHistbkgLSPP[ip]->Clone(Form("fHistbkgLS_%d_%d", imult, ip));
+                    fHistbkgLS[ip]->Reset(); // Clear the content, keep the binning structure
+
+                    for (int ibin = 0; ibin < fHistbkgLSPP[ip]->GetNbinsX(); ibin++)
+                    {
+                        double linkesignpp = fHistbkgLSPP[ip]->GetBinContent(ibin + 1);
+                        double linkesignmm = fHistbkgLSMM[ip]->GetBinContent(ibin + 1);
+                        fHistbkgLS[ip]->SetBinContent(ibin + 1, 2 * sqrt(linkesignpp * linkesignmm));
+                        double binerrorpp = fHistbkgLSPP[ip]->GetBinError(ibin + 1);
+                        double binerrormm = fHistbkgLSMM[ip]->GetBinError(ibin + 1);
+                        fHistbkgLS[ip]->SetBinError(ibin + 1, sqrt(linkesignmm / linkesignpp) * binerrorpp + sqrt(linkesignpp / linkesignmm) * binerrormm);
+                    }
                 }
                 fHistNum->SetName(Form("fHistNum_%d_%d", imult, ip));
-                fHistDen->SetName(Form("fHistDen_%d_%d", imult, ip));
-                fHistLSPP->SetName(Form("fHistLSPP_%d_%d", imult, ip));
-                fHistLSMM->SetName(Form("fHistLSMM_%d_%d", imult, ip));
-                fHistRotated->SetName(Form("fHistRotated_%d_%d", imult, ip));
+                if (kResBkg == "MIX")
+                {
+                    fHistDen->SetName(Form("fHistDen_%d_%d", imult, ip));
+                }
+                if (kResBkg == "LIKE")
+                {
+                    fHistLSPP->SetName(Form("fHistLSPP_%d_%d", imult, ip));
+                    fHistLSMM->SetName(Form("fHistLSMM_%d_%d", imult, ip));
+                }
+                if (kResBkg == "ROTATED")
+                {
+                    fHistRotated1D[ip]->SetName(Form("fHistRotated_%d_%d", imult, ip));
+                }
 
                 auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
                 auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
@@ -548,6 +623,8 @@ void kstar_sparse()
                 if (multipanel_plots == 1)
                     cinv[ip]->Close();
 
+                hfsig->Write(Form("hfsig_pt%d", ip + 1));
+
                 // inv distribution before the background subtraction
                 (multipanel_plots == 1) ? (ip < klowerpad * kupperpad) ? cgrid_bkg1->cd(ip + 1) : cgrid_bkg2->cd(ip + 1 - klowerpad * kupperpad) : cSigbkg[ip]->cd();
                 TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
@@ -616,18 +693,7 @@ void kstar_sparse()
                 cgrid_bkg1->Close();
                 cgrid_bkg2->Close();
             }
-
-            // Check if directory exists, if not create it
-            TDirectory *dir = filecmp->GetDirectory(Form("mult_%d-%d", multlow, multhigh));
-            if (!dir)
-            {
-                dir = filecmp->mkdir(Form("mult_%d-%d", multlow, multhigh));
-            }
-            filecmp->cd();
-            if (dir)
-            {
-                dir->cd();
-            }
+            dir->cd();
 
             if (makeallpTplots)
             {
@@ -755,36 +821,37 @@ void kstar_sparse()
     if (makeQAplots)
     {
         gStyle->SetOptStat(0);
-        TH1F *hDCAxy = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hDcaxy");
-        TH1F *hDCAz = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hDcaz");
-        TH1F *hMult = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
-        TH1F *hvz = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hVertexZRec");
-        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr)
+        TH1F *hDCAxy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hDcaxy", multpath.c_str()));
+        TH1F *hDCAz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hDcaz", multpath.c_str()));
+        TH1F *hMult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
+        TH1F *hvz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hVertexZRec", multpath.c_str()));
+        TH1F *hoccupancy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hOccupancy", multpath.c_str()));
+        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr)
         {
             cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
             return;
         }
 
-        TH2F *hNsigmaTPCTOFKaon = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigma_TPC_TOF_Ka_after");
-        TH2F *hNsigmaTPCTOFPion = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigma_TPC_TOF_Pi_after");
-        TH2F *hNsigmaTPCKaon = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigmaKaonTPC_after");
-        TH2F *hNsigmaTPCPion = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigmaPionTPC_after");
-        TH2F *hNsigmaTOFKaon = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigmaKaonTOF_after");
-        TH2F *hNsigmaTOFPion = (TH2F *)fInputFile->Get("kstarqa/hPID/After/hNsigmaPionTOF_after");
+        TH2F *hNsigmaTPCTOFKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Ka_after", multpath.c_str()));
+        TH2F *hNsigmaTPCTOFPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Pi_after", multpath.c_str()));
+        TH2F *hNsigmaTPCKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaKaonTPC_after", multpath.c_str()));
+        TH2F *hNsigmaTPCPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaPionTPC_after", multpath.c_str()));
+        TH2F *hNsigmaTOFKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaKaonTOF_after", multpath.c_str()));
+        TH2F *hNsigmaTOFPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaPionTOF_after", multpath.c_str()));
         if (hNsigmaTPCTOFKaon == nullptr || hNsigmaTPCTOFPion == nullptr || hNsigmaTPCKaon == nullptr || hNsigmaTPCPion == nullptr || hNsigmaTOFKaon == nullptr || hNsigmaTOFPion == nullptr)
         {
             cerr << "PID histograms after selection not found!!!!!!!!!!!!" << endl;
             return;
         }
 
-        TH1F *hNsigmaTOFKaon_neg = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TOF_neg_kaon");
-        TH1F *hNsigmaTOFPion_neg = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TOF_neg_pion");
-        TH1F *hNsigmaTOFKaon_pos = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TOF_pos_kaon");
-        TH1F *hNsigmaTOFPion_pos = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TOF_pos_pion");
-        TH1F *hNsigmaTPCKaon_neg = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TPC_neg_kaon");
-        TH1F *hNsigmaTPCPion_neg = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TPC_neg_pion");
-        TH1F *hNsigmaTPCKaon_pos = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TPC_pos_kaon");
-        TH1F *hNsigmaTPCPion_pos = (TH1F *)fInputFile->Get("kstarqa/hPID/Before/h1PID_TPC_pos_pion");
+        TH1F *hNsigmaTOFKaon_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_neg_kaon", multpath.c_str()));
+        TH1F *hNsigmaTOFPion_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_neg_pion", multpath.c_str()));
+        TH1F *hNsigmaTOFKaon_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_pos_kaon", multpath.c_str()));
+        TH1F *hNsigmaTOFPion_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_pos_pion", multpath.c_str()));
+        TH1F *hNsigmaTPCKaon_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_neg_kaon", multpath.c_str()));
+        TH1F *hNsigmaTPCPion_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_neg_pion", multpath.c_str()));
+        TH1F *hNsigmaTPCKaon_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_pos_kaon", multpath.c_str()));
+        TH1F *hNsigmaTPCPion_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_pos_pion", multpath.c_str()));
         if (hNsigmaTOFKaon_neg == nullptr || hNsigmaTOFPion_neg == nullptr || hNsigmaTOFKaon_pos == nullptr || hNsigmaTOFPion_pos == nullptr || hNsigmaTPCKaon_neg == nullptr || hNsigmaTPCPion_neg == nullptr || hNsigmaTPCKaon_pos == nullptr || hNsigmaTPCPion_pos == nullptr)
         {
             cerr << "PID histograms before selection not found!!!!!!!!!!!!" << endl;
@@ -827,6 +894,18 @@ void kstar_sparse()
         hvz->Draw();
         cvz->SaveAs(output_QA_folder + ("/VertexZ." + outputtype).c_str());
 
+        TCanvas *cOccupancy = new TCanvas("cOccupancy", "Occupancy", 720, 720);
+        SetCanvasStyle(cOccupancy, 0.14, 0.03, 0.06, 0.14);
+        gPad->SetLogy();
+        SetHistoQA(hoccupancy);
+        hoccupancy->GetXaxis()->SetTitle("Occupancy");
+        hoccupancy->GetYaxis()->SetTitle("Counts");
+        hoccupancy->GetXaxis()->SetRangeUser(0, 2200);
+        hoccupancy->GetXaxis()->SetNdivisions(505);
+        hoccupancy->Draw();
+        cOccupancy->SaveAs(output_QA_folder + ("/Occupancy." + outputtype).c_str());
+
+        gPad->SetLogy(0);
         TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC TOF Kaon", 720, 720);
         SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
         SetHistoQA2D(hNsigmaTPCTOFKaon);

@@ -20,9 +20,9 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    const string outputtype = "pdf"; // pdf, eps
-    const bool save_bkg_plots = 1;   // save background plots
-    const float txtsize = 0.045;     // text size in the plots
+    string outputtype = "pdf";     // pdf, eps
+    const bool save_bkg_plots = 1; // save background plots
+    const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = false;
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
@@ -105,7 +105,7 @@ void kstar_sparse()
     cout << "*****************number of events********************:" << Event << endl;
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -133,7 +133,12 @@ void kstar_sparse()
         cerr << "Invariant mass histograms not found!!!!!!!!!!!!" << endl;
         return;
     }
-    TFile *filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
+    TFile *filecmp;
+
+    if (calcInvMass)
+    {
+        filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
+    }
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     // for (int imult = 0; imult < 1; imult++)
@@ -191,21 +196,21 @@ void kstar_sparse()
             for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
             {
                 rebin_value = kRebin[ip][imult]; // rebinning value for the multiplicity bin
-                // rebin_value = 2;                 // for medium dataset (temporarily set to 1)
+                // rebin_value = 2; // for medium dataset (temporarily set to 4)
 
                 double lowfitrange = kFitRange[ip][0];
                 double highfitrange = kFitRange[ip][1];
 
-                if (imult == nmultbins)
-                {
-                    lowfitrange = kFitRange70to100[ip][0]; // for last mult bin, extend the range a bit
-                    highfitrange = kFitRange70to100[ip][1];
-                }
-                if (imult == 1 && ip == 0)
-                { // for multiplicity 0-1% and first pt bin
-                    lowfitrange = 0.77;
-                    highfitrange = 1.03;
-                }
+                // if (imult == nmultbins)
+                // {
+                //     lowfitrange = kFitRange70to100[ip][0]; // for last mult bin, extend the range a bit
+                //     highfitrange = kFitRange70to100[ip][1];
+                // }
+                // if (imult == 1 && ip == 0)
+                // { // for multiplicity 0-1% and first pt bin
+                //     lowfitrange = 0.77;
+                //     highfitrange = 1.03;
+                // }
 
                 lowpt = pT_bins[ip];
                 highpt = pT_bins[ip + 1];
@@ -372,12 +377,16 @@ void kstar_sparse()
                 {
                     fitFcn->SetParLimits(0, 0.895, 0.898); // Mass
                 }
+                else if (imult == 1 && ip == 10)
+                {
+                    fitFcn->SetParLimits(0, 0.89, 0.91); // Mass
+                }
                 else
                 {
                     fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
                 }
                 fitFcn->FixParameter(1, widthpdg); // width
-                // fitFcn->SetParLimits(1, 0.03, 0.07); // width
+                // fitFcn->SetParLimits(1, 0.033, 0.065); // width
                 fitFcn->SetParameter(2, 1000);     // yield
                 fitFcn->SetParLimits(2, 0.0, 1e8); // Yield
 
@@ -826,7 +835,9 @@ void kstar_sparse()
         TH1F *hMult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
         TH1F *hvz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hVertexZRec", multpath.c_str()));
         TH1F *hoccupancy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hOccupancy", multpath.c_str()));
-        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr)
+        TH1F *hEventCut = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hEventCut", multpath.c_str()));
+        TH1F *htracksData = (TH1F *)fInputFile->Get(Form("%s/eventSelection/tracksCheckData", multpath.c_str()));
+        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksData == nullptr)
         {
             cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
             return;
@@ -857,6 +868,8 @@ void kstar_sparse()
             cerr << "PID histograms before selection not found!!!!!!!!!!!!" << endl;
             return;
         }
+
+        outputtype = "png";
 
         TCanvas *cDCAxy = new TCanvas("cDCAxy", "DCAxy", 720, 720);
         SetCanvasStyle(cDCAxy, 0.14, 0.03, 0.06, 0.14);
@@ -896,7 +909,7 @@ void kstar_sparse()
 
         TCanvas *cOccupancy = new TCanvas("cOccupancy", "Occupancy", 720, 720);
         SetCanvasStyle(cOccupancy, 0.14, 0.03, 0.06, 0.14);
-        gPad->SetLogy();
+        gPad->SetLogy(1);
         SetHistoQA(hoccupancy);
         hoccupancy->GetXaxis()->SetTitle("Occupancy");
         hoccupancy->GetYaxis()->SetTitle("Counts");
@@ -904,6 +917,31 @@ void kstar_sparse()
         hoccupancy->GetXaxis()->SetNdivisions(505);
         hoccupancy->Draw();
         cOccupancy->SaveAs(output_QA_folder + ("/Occupancy." + outputtype).c_str());
+
+        TCanvas *cTracksData = new TCanvas("cTracksData", "Tracks Data", 1440, 720);
+        SetCanvasStyle(cTracksData, 0.1, 0.03, 0.06, 0.16);
+        SetHistoQA(htracksData);
+        gPad->SetLogy(1);
+        gPad->SetGrid(1,0);
+        htracksData->SetTitle("Tracks Data");
+        htracksData->GetYaxis()->SetTitle("Counts");
+        htracksData->GetYaxis()->SetTitleOffset(0.8);
+        htracksData->GetXaxis()->SetRangeUser(0, 8);
+        // htracksData->SetMaximum(htracksData->GetMaximum() * 10);
+        htracksData->Draw();
+        cTracksData->SaveAs(output_QA_folder + ("/TracksData." + outputtype).c_str());
+
+        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1440, 720);
+        SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
+        SetHistoQA(hEventCut);
+        gPad->SetGrid(1,0);
+        gPad->SetLogy(1);
+        hEventCut->SetTitle("Event Cut");
+        hEventCut->GetYaxis()->SetTitle("Counts");
+        hEventCut->GetYaxis()->SetTitleOffset(0.8);
+        hEventCut->GetXaxis()->SetRangeUser(0, 16);
+        hEventCut->Draw();
+        cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
 
         gPad->SetLogy(0);
         TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC TOF Kaon", 720, 720);

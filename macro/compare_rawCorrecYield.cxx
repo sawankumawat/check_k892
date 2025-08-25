@@ -24,26 +24,27 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 }
 void compare_rawCorrecYield()
 {
-    bool isCorrectedYield = false;
+    bool isCorrectedYield = true;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
-    // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
-    // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2022 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480448/kstarqa/hInvMass"; // 2023 data
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass";       // 2023 (135 kHz) data
+    // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
+    // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data
+    // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass";         // 2023 (135 kHz) data
     // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass";         // 2023 (450 kHz) data
-    string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass";        // 2023 (650 kHz) data
-    TString outputPath = path3;
+    // string path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 2023 (650 kHz) data
+    TString outputPath = path2;
 
     TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + "/corrected_spectra.root").c_str(), "read") : new TFile((path1 + "/yield.root").c_str(), "read");
     TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + "/corrected_spectra.root").c_str(), "read") : new TFile((path2 + "/yield.root").c_str(), "read");
-    TFile *fspectra3 = (isCorrectedYield) ? new TFile((path3 + "/corrected_spectra.root").c_str(), "read") : new TFile((path3 + "/yield.root").c_str(), "read");
+    // TFile *fspectra3 = (isCorrectedYield) ? new TFile((path3 + "/corrected_spectra.root").c_str(), "read") : new TFile((path3 + "/yield.root").c_str(), "read");
     // TFile *fspectra4 = (isCorrectedYield) ? new TFile((path4 + "/corrected_spectra.root").c_str(), "read") : new TFile((path4 + "/yield.root").c_str(), "read");
 
-    if (fspectra1->IsZombie() || fspectra2->IsZombie() || fspectra3->IsZombie())
+    if (fspectra1->IsZombie() || fspectra2->IsZombie())
     {
         cout << "Error: files not found" << endl;
         return;
@@ -54,12 +55,12 @@ void compare_rawCorrecYield()
 
     TH1F *hmult1[numofmultbins + 1];
     TH1F *hmult2[numofmultbins + 1];
-    TH1F *hmult3[numofmultbins + 1];
+    // TH1F *hmult3[numofmultbins + 1];
     // TH1F *hmult4[numofmultbins + 1];
 
     TH1F *hefficiency1[numofmultbins + 1];
     TH1F *hefficiency2[numofmultbins + 1];
-    TH1F *hefficiency3[numofmultbins + 1];
+    // TH1F *hefficiency3[numofmultbins + 1];
     // TH1F *hefficiency4[numofmultbins + 1];
 
     for (int imult = 0; imult < numofmultbins + 1; imult++)
@@ -69,14 +70,14 @@ void compare_rawCorrecYield()
 
         hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
-        hmult3[imult] = (isCorrectedYield) ? (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        // hmult3[imult] = (isCorrectedYield) ? (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         // hmult4[imult] = (isCorrectedYield) ? (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
 
         if (isCorrectedYield)
         {
             hefficiency1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh));
             hefficiency2[imult] = (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh));
-            hefficiency3[imult] = (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh));
+            // hefficiency3[imult] = (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh));
             // hefficiency4[imult] = (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh));
         }
 
@@ -87,10 +88,10 @@ void compare_rawCorrecYield()
         }
 
         TH1F *hratio1 = (TH1F *)hmult2[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
-        TH1F *hratio2 = (TH1F *)hmult3[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
+        // TH1F *hratio2 = (TH1F *)hmult3[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
         // TH1F *hratio3 = (TH1F *)hmult4[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
         hratio1->Divide(hmult1[imult]);
-        hratio2->Divide(hmult1[imult]);
+        // hratio2->Divide(hmult1[imult]);
         // hratio3->Divide(hmult1[imult]);
 
         TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
@@ -115,20 +116,20 @@ void compare_rawCorrecYield()
         hmult2[imult]->SetLineColor(kBlue);
         hmult2[imult]->SetLineWidth(2);
         hmult2[imult]->Draw("pe same");
-        hmult3[imult]->SetMarkerStyle(22);
-        hmult3[imult]->SetMarkerSize(1);
-        hmult3[imult]->SetMarkerColor(kRed);
-        hmult3[imult]->SetLineColor(kRed);
-        hmult3[imult]->SetLineWidth(2);
-        hmult3[imult]->Draw("pe same");
+        // hmult3[imult]->SetMarkerStyle(22);
+        // hmult3[imult]->SetMarkerSize(1);
+        // hmult3[imult]->SetMarkerColor(kRed);
+        // hmult3[imult]->SetLineColor(kRed);
+        // hmult3[imult]->SetLineWidth(2);
+        // hmult3[imult]->Draw("pe same");
         // hmult4[imult]->SetMarkerStyle(23);
         // hmult4[imult]->SetMarkerSize(1);
-        // hmult4[imult]->SetMarkerColor(kGreen);
-        // hmult4[imult]->SetLineColor(kGreen);
+        // hmult4[imult]->SetMarkerColor(kGreen+2);
+        // hmult4[imult]->SetLineColor(kGreen+2);
         // hmult4[imult]->SetLineWidth(2);
         // hmult4[imult]->Draw("pe same");
 
-        TLegend *leg = new TLegend(0.46, 0.7, 0.9, 0.91);
+        TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
         // leg->AddEntry(hmult1[imult], "2022 data", "lpe");
@@ -137,10 +138,12 @@ void compare_rawCorrecYield()
         // leg->AddEntry(hmult1[imult], "Mixed-event", "lpe");
         // leg->AddEntry(hmult2[imult], "Rotated pairs", "lpe");
         // leg->AddEntry(hmult3[imult], "Like-sign pairs", "lpe");
-        leg->AddEntry(hmult1[imult], "2024 (500 kHz)", "lpe");
-        leg->AddEntry(hmult2[imult], "2023 (135 kHz)", "lpe");
-        // leg->AddEntry(hmult3[imult], "2023 (450 kHz)", "lpe");
-        leg->AddEntry(hmult3[imult], "2023 (650 kHz)", "lpe");
+        // leg->AddEntry(hmult1[imult], "2022 (500 kHz)", "lpe");
+        // leg->AddEntry(hmult2[imult], "2024 (500 kHz)", "lpe");
+        // leg->AddEntry(hmult3[imult], "2023 (135 kHz)", "lpe");
+        // leg->AddEntry(hmult4[imult], "2023 (650 kHz)", "lpe");
+        leg->AddEntry(hmult1[imult], "No multCent", "lpe");
+        leg->AddEntry(hmult2[imult], "With multCent", "lpe");
         leg->SetTextSize(0.04);
         leg->SetTextSize(0.05);
         leg->Draw();
@@ -154,8 +157,6 @@ void compare_rawCorrecYield()
         }
 
         SetHistoQA(hratio1);
-        SetHistoQA(hratio2);
-        // SetHistoQA(hratio3);
         hratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
         hratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -166,32 +167,29 @@ void compare_rawCorrecYield()
         hratio1->SetLineColor(kBlue);
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
-        hratio1->GetYaxis()->SetTitle("Ratio to 2024");
+        hratio1->GetYaxis()->SetTitle("Ratio to 2022");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
         hratio1->GetYaxis()->SetNdivisions(505);
-        hratio1->SetMaximum(hratio2->GetMaximum() * 1.6);
-        hratio1->SetMinimum(hratio2->GetMinimum() * 0.6);
+        // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
+        // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
         hratio1->Draw("p");
-        hratio2->SetMarkerStyle(21);
-        hratio2->SetMarkerSize(1.0);
-        hratio2->SetMarkerColor(kRed);
-        hratio2->SetLineColor(kRed);
-        hratio2->Draw("p same");
+        // SetHistoQA(hratio2);
+        // hratio2->SetMarkerStyle(21);
+        // hratio2->SetMarkerSize(1.0);
+        // hratio2->SetMarkerColor(kRed);
+        // hratio2->SetLineColor(kRed);
+        // hratio2->Draw("p same");
+        // SetHistoQA(hratio3);
         // hratio3->SetMarkerStyle(22);
         // hratio3->SetMarkerSize(1.0);
-        // hratio3->SetMarkerColor(kGreen);
-        // hratio3->SetLineColor(kGreen);
+        // hratio3->SetMarkerColor(kGreen + 2);
+        // hratio3->SetLineColor(kGreen + 2);
         // hratio3->Draw("p same");
-        // hratio4->SetMarkerStyle(23);
-        // hratio4->SetMarkerSize(1.0);
-        // hratio4->SetMarkerColor(kBlue);
-        // hratio4->SetLineColor(kBlue);
-        // hratio4->Draw("p same");
-
+        
         TLine *line = new TLine(0, 1, 10, 1);
         line->SetLineStyle(2);
         line->SetLineWidth(2);
@@ -211,35 +209,37 @@ void compare_rawCorrecYield()
             TCanvas *c2 = new TCanvas("c2", "c2", 720, 720);
             SetCanvasStyle(c2, 0.15, 0.03, 0.03, 0.15);
             SetHistoQA(hefficiency1[imult]);
-            SetHistoQA(hefficiency2[imult]);
-            SetHistoQA(hefficiency3[imult]);
             // SetHistoQA(hefficiency4[imult]);
             hefficiency1[imult]->SetMarkerStyle(20);
             hefficiency1[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
             hefficiency1[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
             hefficiency1[imult]->SetMaximum(hefficiency1[imult]->GetMaximum() * 1.2);
             hefficiency1[imult]->Draw("pe");
+            SetHistoQA(hefficiency2[imult]);
             hefficiency2[imult]->SetMarkerStyle(21);
             hefficiency2[imult]->SetMarkerColor(kBlue);
             hefficiency2[imult]->SetLineColor(kBlue);
             hefficiency2[imult]->Draw("pe same");
-            hefficiency3[imult]->SetMarkerStyle(22);
-            hefficiency3[imult]->SetMarkerColor(kRed);
-            hefficiency3[imult]->SetLineColor(kRed);
-            hefficiency3[imult]->Draw("pe same");
+            // SetHistoQA(hefficiency3[imult]);
+            // hefficiency3[imult]->SetMarkerStyle(22);
+            // hefficiency3[imult]->SetMarkerColor(kRed);
+            // hefficiency3[imult]->SetLineColor(kRed);
+            // hefficiency3[imult]->Draw("pe same");
             // hefficiency4[imult]->SetMarkerStyle(23);
-            // hefficiency4[imult]->SetMarkerColor(kGreen);
-            // hefficiency4[imult]->SetLineColor(kGreen);
+            // hefficiency4[imult]->SetMarkerColor(kGreen + 2);
+            // hefficiency4[imult]->SetLineColor(kGreen + 2);
             // hefficiency4[imult]->Draw("pe same");
-            TLegend *leg2 = new TLegend(0.46, 0.4, 0.9, 0.61);
+            TLegend *leg2 = new TLegend(0.46, 0.37, 0.9, 0.61);
             SetLegendStyle(leg2);
             leg2->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
             // leg2->AddEntry(hefficiency1[imult], "2022 dataset", "lpe");
             // leg2->AddEntry(hefficiency2[imult], "2023 dataset", "lpe");
-            leg2->AddEntry(hefficiency1[imult], "2024 (500 kHz)", "lpe");
-            leg2->AddEntry(hefficiency2[imult], "2023 (135 kHz)", "lpe");
-            // leg2->AddEntry(hefficiency3[imult], "2023 (450 kHz)", "lpe");
-            leg2->AddEntry(hefficiency3[imult], "2023 (650 kHz)", "lpe");
+            // leg2->AddEntry(hefficiency1[imult], "2022 (500 kHz)", "lpe");
+            // leg2->AddEntry(hefficiency2[imult], "2024 (500 kHz)", "lpe");
+            // leg2->AddEntry(hefficiency3[imult], "2023 (135 kHz)", "lpe");
+            // leg2->AddEntry(hefficiency4[imult], "2023 (650 kHz)", "lpe");
+            leg2->AddEntry(hefficiency1[imult], "No multCent", "lpe");
+            leg2->AddEntry(hefficiency2[imult], "With multCent", "lpe");
             leg2->SetTextSize(0.04);
             leg2->Draw();
             c2->SaveAs(outputPath + Form("/EfficiencyMult_%.0f-%.0f.png", multlow, multhigh));

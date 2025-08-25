@@ -41,28 +41,23 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    // *************Wrong placement of TPC crossed rows**************************
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/448490/kstarqa/hInvMass"; // 2022 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451993/kstarqa/hInvMass"; // 2024 data
+    // double inelNormFactorRun2[] = {0.997814, 0.998632, 0.998465, 0.997509, 0.993852, 0.985782, 0.971972, 0.935197, 0.756786}; // this is event loss factor used in run 2
 
     // ******************Correct placement of TPC crossed rows**************************
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa_PIDKa2/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa_PIDKa2/hInvMass"; // 2024 data
 
-    // IR study
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass"; // 450 kHz
-    //  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 650 kHz
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data (500 kHz)
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass"; // 2023 data (135 kHz)
+    //*********************PID Variations for Kaon (without MID)************************
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // 2022 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa_PIDKa1/hInvMass"; // 2023 data
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass"; // 2024 data
 
-    // Checks on the data
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/checks/473185/kstarqa_MID_id33593/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+    TString pathLevyFits = path + "/LevyFits";
+    if (gSystem->mkdir(pathLevyFits, kTRUE))
+    {
+        std::cout << "Folder " << pathLevyFits << " created successfully." << std::endl;
+    }
 
     // TFile *fspectra = new TFile((path + "/corrected_spectra.root").c_str(), "read");
     TFile *fspectra = (plotOnlyRaw) ? new TFile((path + "/yield.root").c_str(), "read") : new TFile((path + "/corrected_spectra.root").c_str(), "read");
@@ -78,8 +73,8 @@ void plot_spectra()
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     TH1F *hmult[numofmultbins + 1];
     TH1F *hmultClone[numofmultbins + 1];
-    hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral");
-    // hmult[0] = (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral");
+    // hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral");
+    hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral_final");
     hmultClone[0] = (TH1F *)hmult[0]->Clone("hmultClone0");
 
     if (hmult[0] == nullptr)
@@ -91,13 +86,14 @@ void plot_spectra()
     for (int i = 1; i < numofmultbins + 1; i++)
     {
         // hmult[i] = (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[i - 1], mult_classes[i]));
-        hmult[i] = (plotOnlyRaw) ? (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/yield_integral", mult_classes[i - 1], mult_classes[i])) : (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[i - 1], mult_classes[i]));
+        hmult[i] = (plotOnlyRaw) ? (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/yield_integral", mult_classes[i - 1], mult_classes[i])) : (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", mult_classes[i - 1], mult_classes[i]));
 
         if (hmult[i] == nullptr)
         {
             cout << "Histogram others not found" << endl;
             return;
         }
+        // hmult[i]->Scale(inelNormFactorRun2[i - 1]);
         hmultClone[i] = (TH1F *)hmult[i]->Clone(Form("hmultClone%d", i));
     }
 
@@ -157,19 +153,18 @@ void plot_spectra()
             }
             /*************meanpT*****************byresonance*******************package*************************/
             Double_t min = 0.0;
-            Double_t max = 15.0;
+            Double_t max = 10.0;
             Double_t loprecision = 0.01;
             Double_t hiprecision = 0.1;
             Option_t *opt = "RI0+";
             TString logfilename = "log.root";
-            Double_t minfit = 0;
-            Double_t maxfit = 15;
-            // Double_t maxfit=8.0;
+            Double_t minfit = 0.0;
+            Double_t maxfit = 10.0;
 
-            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
             fitFcn->SetParameter(0, 5.0);
             // fitFcn->SetParameter(1, 0.05);
-            fitFcn->SetParameter(1, 50);
+            fitFcn->SetParameter(1, 0.5);
             fitFcn->FixParameter(2, 0.895);
             fitFcn->SetParameter(3, 0.35);
             fitFcn->SetParNames("n", "dn/dy", "mass", "T");
@@ -245,7 +240,7 @@ void plot_spectra()
         // Now lets calculate the mean pT and yield as a function of dN_charge/deta
         for (int imult = 1; imult < numofmultbins + 1; imult++)
         {
-            hmultClone[imult]->Scale(0.5); // In run the average of K* and anti-K* is taken. so we have to scale it.
+            // hmultClone[imult]->Scale(0.5); // In run the average of K* and anti-K* is taken. so we have to scale it.
             TH1F *h1 = (TH1F *)hmultClone[imult]->Clone("h1");
             TH1F *h2 = (TH1F *)hmultClone[imult]->Clone("h2");
             // TH1F *h1 = (TH1F *)hmult[imult]->Clone("h1");
@@ -258,18 +253,18 @@ void plot_spectra()
             }
             /*************meanpT*****************byresonance*******************package*************************/
             Double_t min = 0.0;
-            Double_t max = 15.0;
+            Double_t max = 10.0;
             Double_t loprecision = 0.01;
             Double_t hiprecision = 0.1;
-            Option_t *opt = "RI0+";
+            Option_t *opt = "RI+";
             TString logfilename = "log.root";
             Double_t minfit = 0.0;
-            Double_t maxfit = 16.0;
+            Double_t maxfit = 10.0;
             // Double_t maxfit=8.0;
 
-            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
             fitFcn->SetParameter(0, 5.0);
-            fitFcn->SetParameter(1, 0.05);
+            fitFcn->SetParameter(1, 0.5);
             // fitFcn->SetParameter(1, 50);
             fitFcn->FixParameter(2, 0.895);
             fitFcn->SetParameter(3, 0.35);
@@ -280,16 +275,32 @@ void plot_spectra()
             paletteIndex = std::min(paletteIndex, numColors - 1); // Ensure within bounds
             int color = gStyle->GetColorPalette(paletteIndex);
             fitFcn->SetLineColor(color);
+            fitFcn->SetLineStyle(2);
 
             TH1 *hout = YieldMean(h1, h2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
             meanpT[imult - 1] = hout->GetBinContent(5);
             meanpT_err[imult - 1] = hout->GetBinContent(6);
             yield[imult - 1] = hout->GetBinContent(1);
             yield_err[imult - 1] = hout->GetBinContent(2);
-            for (Int_t ip = 0; ip < 9; ip++)
-            {
-                cout << hout->GetBinContent(ip + 1) << endl;
-            }
+            // for (Int_t ip = 0; ip < 9; ip++)
+            // {
+            //     cout << hout->GetBinContent(ip + 1) << endl;
+            // }
+            gStyle->SetOptFit(1111);
+            gStyle->SetOptStat(1110);
+            TCanvas *clevy = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(clevy, 0.18, 0.03, 0.03, 0.15);
+            gPad->SetLogy();
+            h1->SetLineColor(color);
+            h1->SetMarkerColor(color);
+            h1->SetStats(1);
+            h1->Draw();
+            clevy->SaveAs(pathLevyFits + Form("/levy_fit_mult_%.0f-%.0f.png", mult_classes[imult - 1], mult_classes[imult]));
+
+            cout << "Multiplicity class " << mult_classes[imult - 1] << " - " << mult_classes[imult] << endl;
+            cout << "dN/dy: " << yield[imult - 1] << " +/- " << yield_err[imult - 1] << endl;
+            cout << "<pT>: " << meanpT[imult - 1] << " +/- " << meanpT_err[imult - 1] << endl;
+            cout << "\n\n";
 
             ctemp->cd(0);
             hmultClone[imult]->SetMarkerStyle(markers[imult]);
@@ -308,19 +319,25 @@ void plot_spectra()
         ctemp->SaveAs(outputfolder + "/spectra_temp.png");
 
         // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
-        double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.195, 10.86, 9.09, 7.63, 5.87, 3.69};
-        TGraphErrors *gMeanYieldRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, yield, nullptr, yield_err);
-        TGraphErrors *gMeanpTRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, meanpT, nullptr, meanpT_err);
+        double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.19, 10.86, 9.09, 7.63, 5.87, 3.69};
+        double dnch_detaRun3_err[] = {0.31, 0.25, 0.21, 0.18, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
+
+        TGraphErrors *gMeanYieldRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, yield_err);
+        TGraphErrors *gMeanpTRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, meanpT_err);
 
         TFile *fRun2 = new TFile("spectra/pp13TeV_INELgt0.root", "read");
-        if (fRun2->IsZombie())
+        TFile *fpp5020MeV = new TFile("spectra/pp5.02TeV_INELgt0.root", "read");
+        if (fRun2->IsZombie() || fpp5020MeV->IsZombie())
         {
             cout << "Run 2 file not found" << endl;
             return;
         }
         TGraphErrors *gMeanYieldRun2 = (TGraphErrors *)fRun2->Get("Table 41/Graph1D_y1");
         TGraphErrors *gMeanpTRun2 = (TGraphErrors *)fRun2->Get("Table 39/Graph1D_y1");
-        if (gMeanYieldRun2 == nullptr || gMeanpTRun2 == nullptr)
+        TGraphErrors *gMeanYieldRun2_5020MeV = (TGraphErrors *)fpp5020MeV->Get("Table 5/Graph1D_y1");
+        TGraphErrors *gMeanpTRun2_5020MeV = (TGraphErrors *)fpp5020MeV->Get("Table 6/Graph1D_y1");
+
+        if (gMeanYieldRun2 == nullptr || gMeanpTRun2 == nullptr || gMeanYieldRun2_5020MeV == nullptr || gMeanpTRun2_5020MeV == nullptr)
         {
             cout << "Run 2 graph not found" << endl;
             return;
@@ -337,6 +354,7 @@ void plot_spectra()
         gMeanYieldRun2->SetLineColor(kRed);
         gMeanYieldRun2->GetXaxis()->SetTitle("dN_{ch}/d#eta");
         gMeanYieldRun2->GetYaxis()->SetTitle("dN/dy");
+        gMeanYieldRun2->GetYaxis()->SetRangeUser(0.0, 0.89);
         gMeanYieldRun2->Draw("AP");
         gMeanYieldRun2->Write("gMeanYieldRun2");
         SetGrapherrorStyle(gMeanYieldRun3);
@@ -345,13 +363,18 @@ void plot_spectra()
         gMeanYieldRun3->SetMarkerColor(kBlue);
         gMeanYieldRun3->SetLineColor(kBlue);
         gMeanYieldRun3->Draw("P same");
+        gMeanYieldRun2_5020MeV->SetLineColor(kGreen + 2);
+        gMeanYieldRun2_5020MeV->SetMarkerColor(kGreen + 2);
+        gMeanYieldRun2_5020MeV->SetMarkerStyle(22);
+        // gMeanYieldRun2_5020MeV->Draw("P same");
         gMeanYieldRun3->Write("gMeanYieldRun3");
         TLegend *legMeanYield = new TLegend(0.2, 0.80, 0.45, 0.90);
         legMeanYield->SetTextSize(0.04);
         legMeanYield->SetBorderSize(0);
         legMeanYield->SetFillStyle(0);
-        legMeanYield->AddEntry(gMeanYieldRun2, "Run 2", "p");
-        legMeanYield->AddEntry(gMeanYieldRun3, "Run 3", "p");
+        // legMeanYield->AddEntry(gMeanYieldRun2_5020MeV, "Run 2 (5.02 TeV)", "p");
+        legMeanYield->AddEntry(gMeanYieldRun2, "Run 2 (13 TeV)", "p");
+        legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
         legMeanYield->Draw();
         cMeanYield->SaveAs(outputfolder + "/mean_yield_run2.png");
 
@@ -364,6 +387,7 @@ void plot_spectra()
         gMeanpTRun2->SetLineColor(kRed);
         gMeanpTRun2->GetXaxis()->SetTitle("dN_{ch}/d#eta");
         gMeanpTRun2->GetYaxis()->SetTitle("<p_{T}> (GeV/c)");
+        gMeanpTRun2->GetYaxis()->SetRangeUser(0.25, 2.09);
         gMeanpTRun2->Draw("AP");
         gMeanpTRun2->Write("gMeanpTRun2");
         SetGrapherrorStyle(gMeanpTRun3);
@@ -372,8 +396,34 @@ void plot_spectra()
         gMeanpTRun3->SetMarkerColor(kBlue);
         gMeanpTRun3->SetLineColor(kBlue);
         gMeanpTRun3->Draw("P same");
+        gMeanpTRun2_5020MeV->SetLineColor(kGreen + 2);
+        gMeanpTRun2_5020MeV->SetMarkerColor(kGreen + 2);
+        gMeanpTRun2_5020MeV->SetMarkerStyle(22);
+        // gMeanpTRun2_5020MeV->Draw("P same");
         legMeanYield->Draw();
         gMeanpTRun3->Write("gMeanpTRun3");
         cMeanpT->SaveAs(outputfolder + "/mean_pT_run2.png");
     }
 }
+
+// IR study
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass"; // 450 kHz
+//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 650 kHz
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data (500 kHz)
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass"; // 2023 data (135 kHz)
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data (500 kHz)
+
+// Checks on the data
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/checks/473185/kstarqa_MID_id33593/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+
+////*************************PID Variations for Kaon (without MID, multcentTable)**************************
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/999999/kstarqa/hInvMass"; // 2022 data
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480448/kstarqa/hInvMass"; // 2023 data
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480358/kstarqa/hInvMass"; // 2024 data
+
+//*************************ItsTpcTracksCheck, betacutTOF******************************
+// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/481941/kstarqa_PIDKa1_itstpc/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0

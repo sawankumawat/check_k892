@@ -92,6 +92,7 @@ void glueball_fit_4rBW()
 
         //****************systematics train*******************************
         // Defaults
+        // const string kvariation1 = ""; // for other trains
         const string kvariation1 = "_id24937"; // first four are same
         // const string kvariation1 = "_id24938";
         // const string kvariation1 = "_id24939";
@@ -101,7 +102,7 @@ void glueball_fit_4rBW()
         //  const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
         //  const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
         //  const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
-        //  const string kvariation1 = "b_massdepWidth_modifiedBoltzmann_TPCPID4_id24937"; //TPC PID
+        //  const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
         //  const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
         //  const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
         //  const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
@@ -143,6 +144,9 @@ void glueball_fit_4rBW()
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
         string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances";
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         string path2 = path;
 
         // //*********for temporary study with angular separation cuts************************
@@ -180,15 +184,15 @@ void glueball_fit_4rBW()
 
 // #define b_constantWidth_modified_Boltzmann // without mass dependent width
 // #define b_massdepWidth_Standard_boltzman
-// #define b_massdepWidth_modifiedBoltzmann
-#define b_massdepWidth_expol2
+#define b_massdepWidth_modifiedBoltzmann
+        // #define b_massdepWidth_expol2
         // #define b_massdepWidth_HERAexponential
         // #define b_modifiedBoltzmann_hera_const // for real + img part without interference
         // #define b_modifiedBoltzmann_hera // for real + img part with interference
         // #define b_modifiedBoltzmann_hera_mass_dep // for real + img part with interference and mass dependent width
         // #define b_coherentSum_modifiedBoltzmann // for coherent sum with phases
 
-        // #define residual_subtracted
+#define residual_subtracted
         // #define doublepanelplot
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
@@ -259,9 +263,9 @@ void glueball_fit_4rBW()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            // double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
-            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
             double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
+            // double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
+            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin (old)
             // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 800, f1710Mass, f1710Width}; // medium train
             // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
             // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
@@ -287,9 +291,11 @@ void glueball_fit_4rBW()
             }
 
             // //********systematic studies*************
-            // double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
             double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice
-            // double initial_param_bkg[] = {4.618e6, 0.00774, 2.82, 1.03}; // pass_4_thin
+            // double initial_param_bkg[] = {2.6e6, 0.20, 3.67, 0.8}; // rebin twice (2024 dataset)
+            // double initial_param_bkg[] = {3.8e6, 0.0134, 3.071167, 1.04}; // rebin twice (2023 dataset)
+            // double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
+            // double initial_param_bkg[] = {4.618e6, 0.00774, 2.82, 1.03}; // pass_4_thin (old)
             // double initial_param_bkg[] = {2.57518e5, 0.0424, 3.171167, 0.964}; // 0-30 GeV/c, 3sigma
             // double initial_param_bkg[] = {4.8e4, -0.107, 3.51167, 1.4}; //pt range 3-5, 5-8 GeV/c
             // double initial_param_bkg[] = {7.0e4, -0.17, 3.867, 1.8}; // pt range 3-5, 5-8 GeV/c (rebin 2)
@@ -317,10 +323,76 @@ void glueball_fit_4rBW()
             // BEexpol->FixParameter(10, f1710Mass);
             // BEexpol->FixParameter(11, f1710Width);
 
-            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
             cout << "chi2/ndf is " << chi2ndf << endl;
             string fitstatus = "Successfull";
+            double logL_full = fitResultptr->MinFcnValue();
+            std::cout << "-2 log L (full model) = " << logL_full << std::endl;
+            
+            // Store the full model parameters for likelihood tests
+            double *full_model_params = BEexpol->GetParameters();
+            
+            // Function to perform likelihood test for each resonance
+            auto performLikelihoodTest = [&](int resonance_index, const string& resonance_name) -> double {
+                // Create reduced model without the specific resonance
+                TF1 *BEexpol_reduced = new TF1("BEexpol_reduced", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+                
+                // Copy all parameters from full model
+                for (int i = 0; i < 16; i++) {
+                    BEexpol_reduced->SetParameter(i, full_model_params[i]);
+                }
+                
+                // Fix the amplitude of the resonance to zero (remove resonance)
+                BEexpol_reduced->FixParameter(3 * resonance_index, 0.0);
+                
+                // Apply same constraints as full model
+                BEexpol_reduced->FixParameter(2, f1270Width);
+                BEexpol_reduced->FixParameter(5, a1320Width); 
+                BEexpol_reduced->FixParameter(8, f1525Width);
+                
+                // Fit reduced model
+                TFitResultPtr fitResult_reduced = hinvMass->Fit("BEexpol_reduced", "RQELBMS");
+                double logL_reduced = fitResult_reduced->MinFcnValue();
+                
+                // Calculate Δ(-2 log L) = -2 log L_reduced - (-2 log L_full)
+                double delta_2logL = logL_reduced - logL_full;
+                
+                cout << "\n=== Likelihood Test for " << resonance_name << " ===" << endl;
+                cout << "-2 log L (without " << resonance_name << ") = " << logL_reduced << endl;
+                cout << "-2 log L (with " << resonance_name << ")    = " << logL_full << endl;
+                cout << "Δ(-2 log L) = " << delta_2logL << endl;
+                
+                // For nested models differing by 1 parameter, Δ(-2 log L) follows χ² distribution with 1 DOF
+                // Critical values: 1.0 (39% CL), 2.71 (90% CL), 3.84 (95% CL), 6.63 (99% CL), 10.83 (99.9% CL)
+                double significance_sigma = sqrt(delta_2logL);
+                cout << "Significance ≈ " << significance_sigma << " σ" << endl;
+                
+                if (delta_2logL > 10.83) {
+                    cout << "Result: " << resonance_name << " is HIGHLY SIGNIFICANT (>99.9% CL, ~3.3σ)" << endl;
+                } else if (delta_2logL > 6.63) {
+                    cout << "Result: " << resonance_name << " is SIGNIFICANT (>99% CL, ~2.6σ)" << endl;
+                } else if (delta_2logL > 3.84) {
+                    cout << "Result: " << resonance_name << " is EVIDENCE (>95% CL, ~2σ)" << endl;
+                } else if (delta_2logL > 2.71) {
+                    cout << "Result: " << resonance_name << " is WEAK EVIDENCE (>90% CL, ~1.6σ)" << endl;
+                } else {
+                    cout << "Result: " << resonance_name << " is NOT SIGNIFICANT (<90% CL)" << endl;
+                }
+                cout << "================================================\n" << endl;
+                
+                delete BEexpol_reduced;
+                return delta_2logL;
+            };
+            
+            // Perform likelihood tests for each resonance
+            vector<double> likelihood_test_results;
+            vector<string> test_resonance_names = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
+            
+            for (int i = 0; i < 4; i++) {
+                double delta_2logL = performLikelihoodTest(i, test_resonance_names[i]);
+                likelihood_test_results.push_back(delta_2logL);
+            }
             // cout<<"fit status code "<<fitResultptr->Status()<<endl;
             // if (fitResultptr->Status() != 4140)
             // {
@@ -1678,6 +1750,11 @@ void glueball_fit_4rBW()
             // // // //********************************* common for all fits ***************************************
             gPad->Update();
             TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+
+            // Customize precision for fit parameters display
+            TList *listOfLines = ptstats->GetListOfLines();
+            // You can iterate through and modify specific lines if needed
+
             ptstats->SetX1NDC(0.6);
             ptstats->SetX2NDC(0.99);
             ptstats->SetY1NDC(0.4);
@@ -1763,6 +1840,15 @@ void glueball_fit_4rBW()
             file << fitmass1525 * 1000 << " ± " << fitmass1525_err * 1000 << endl;
             file << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << endl;
             file << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << endl;
+            
+            // Add likelihood test results
+            file << "\n=== Likelihood Test Results ===" << endl;
+            file << std::fixed << std::setprecision(3);
+            for (int i = 0; i < 4; i++) {
+                double significance_sigma = sqrt(likelihood_test_results[i]);
+                file << test_resonance_names[i] << ": Δ(-2 log L) = " << likelihood_test_results[i] 
+                     << ", Significance ≈ " << significance_sigma << " σ" << endl;
+            }
 
 #ifdef residual_subtracted
             // Now subtract the residual background and plot
@@ -1781,7 +1867,7 @@ void glueball_fit_4rBW()
             // }
             onlyBW_clone->SetNpx(1000);
             // onlyBW_clone->SetLineColor(1);
-            hsubtracted->Fit("onlyBW_clone", "REBMS");
+            hsubtracted->Fit("onlyBW_clone", "RELBMS");
             // onlyBW_clone->Draw("same");
             double *obtained_parameters2 = onlyBW_clone->GetParameters();
             TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
@@ -1840,8 +1926,8 @@ void glueball_fit_4rBW()
 
             float nsigma_yield = 3.0;
 
-            cout << "Function integration for f0(1710) " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width)<<endl;
-            cout << " Function integration for f2(1525) " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width)<<endl;
+            cout << "Function integration for f0(1710) " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
+            cout << " Function integration for f2(1525) " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
 
             // // Yield calculation
             // double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (binwidthfile * total_events);

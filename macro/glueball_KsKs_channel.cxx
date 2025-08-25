@@ -19,7 +19,7 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = false;
+    const bool makeQAplots = true;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -40,8 +40,8 @@ void glueball_KsKs_channel()
     // Folder name inside the Analysis.root file *****************************************
     if (!save_invmass_distributions)
         gStyle->SetOptFit(1111);
-    // gStyle->SetOptStat(1110);
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
+    // gStyle->SetOptStat(0);
 
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.045);
@@ -114,12 +114,18 @@ void glueball_KsKs_channel()
         TH1D *fHistBkg[Npt];
         TH1D *fHistRotated[Npt];
 
-        // if (Npt > 1)
-        // {
-        // TCanvas *cdivide = new TCanvas("", "all_bins", 1440, 720);
-        // SetCanvasStyle(cdivide, 0.15, 0.03, 0.05, 0.15);
-        // cdivide->Divide(3, 2);
-        // }
+        TCanvas *cbkgall1 = new TCanvas("", "all_bins", 1440, 720);
+        TCanvas *ckbgall2 = new TCanvas("", "all_bins", 1440, 720);
+        TCanvas *csigall1 = new TCanvas("", "all_bins", 1440, 720);
+        TCanvas *csigall2 = new TCanvas("", "all_bins", 1440, 720);
+        SetCanvasStyle(cbkgall1, 0.15, 0.03, 0.05, 0.15);
+        SetCanvasStyle(ckbgall2, 0.15, 0.03, 0.05, 0.15);
+        SetCanvasStyle(csigall1, 0.15, 0.03, 0.05, 0.15);
+        SetCanvasStyle(csigall2, 0.15, 0.03, 0.05, 0.15);
+        cbkgall1->Divide(3, 2);
+        ckbgall2->Divide(3, 2);
+        csigall1->Divide(3, 2);
+        csigall2->Divide(3, 2);
 
         TH1D *hbkg_temp[Npt];
         TH1D *hbkg_nopeak_temp[Npt];
@@ -346,13 +352,14 @@ void glueball_KsKs_channel()
             }
             c2->Write(Form("ksks_invmass_withbkg_cosTheta_%.1f_%.1f", lowTheta, highTheta));
 
-            // cdivide->cd(ip + 1);
-            // fHistTotal[ip]->Draw("E");
-            // hfbkg->Draw("E same");
-            // if (kResBkg == "MIX" || kResBkg == "ROTATED")
-            //     hbkg_nopeak->Draw("BAR same");
-            // leg->Draw();
-            // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+            cbkgall1->cd(ip + 1);
+            fHistTotal[ip]->Draw("E");
+            hfbkg->Draw("E same");
+            if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                hbkg_nopeak->Draw("BAR same");
+            leg->Draw();
+            t2->DrawLatex(0.27, 0.8, Form("#bf{%.1f < cos#Theta < %.1f}", lowTheta, highTheta));
+
             hbkg_temp[ip] = (TH1D *)hfbkg->Clone();
             hbkg_nopeak_temp[ip] = (TH1D *)hbkg_nopeak->Clone();
             hsig_temp[ip] = (TH1D *)hfsig->Clone();
@@ -576,7 +583,7 @@ void glueball_KsKs_channel()
             // }
             // c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
 
-            // cdivide->cd(ip + 1);
+            // cbkgall1->cd(ip + 1);
             // fHistTotal[ip]->Draw("E");
             // hfbkg->Draw("E same");
             // if (kResBkg == "MIX" || kResBkg == "ROTATED")
@@ -683,9 +690,8 @@ void glueball_KsKs_channel()
         //     lp2->Draw("same");
         // }
         // csignal->SaveAs((outputfolder_str + "/hglueball_invmass_allbins_signal." + kResBkg + ".pdf").c_str());
+        cbkgall1->SaveAs((outputfolder_str + "/hglueball_invmass_all." + kResBkg + ".png").c_str());
     }
-
-    // cdivide->SaveAs((outputfolder_str + "/hglueball_invmass_allbins." + kResBkg + ".png").c_str());
     ////////////////////////////////////////////////////////////////////////
     // QA plots here
     if (makeQAplots)

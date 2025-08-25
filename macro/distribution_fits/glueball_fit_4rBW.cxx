@@ -329,70 +329,294 @@ void glueball_fit_4rBW()
             string fitstatus = "Successfull";
             double logL_full = fitResultptr->MinFcnValue();
             std::cout << "-2 log L (full model) = " << logL_full << std::endl;
-            
+
+            double *obtained_parameters = BEexpol->GetParameters();
+
             // Store the full model parameters for likelihood tests
             double *full_model_params = BEexpol->GetParameters();
-            
+
             // Function to perform likelihood test for each resonance
-            auto performLikelihoodTest = [&](int resonance_index, const string& resonance_name) -> double {
+            auto performLikelihoodTest = [&](int resonance_index, const string &resonance_name) -> double
+            {
                 // Create reduced model without the specific resonance
                 TF1 *BEexpol_reduced = new TF1("BEexpol_reduced", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
-                
+
                 // Copy all parameters from full model
-                for (int i = 0; i < 16; i++) {
+                for (int i = 0; i < 16; i++)
+                {
                     BEexpol_reduced->SetParameter(i, full_model_params[i]);
                 }
-                
+
                 // Fix the amplitude of the resonance to zero (remove resonance)
                 BEexpol_reduced->FixParameter(3 * resonance_index, 0.0);
-                
+
                 // Apply same constraints as full model
                 BEexpol_reduced->FixParameter(2, f1270Width);
-                BEexpol_reduced->FixParameter(5, a1320Width); 
+                BEexpol_reduced->FixParameter(5, a1320Width);
                 BEexpol_reduced->FixParameter(8, f1525Width);
-                
+
                 // Fit reduced model
                 TFitResultPtr fitResult_reduced = hinvMass->Fit("BEexpol_reduced", "RQELBMS");
                 double logL_reduced = fitResult_reduced->MinFcnValue();
-                
+
                 // Calculate Δ(-2 log L) = -2 log L_reduced - (-2 log L_full)
                 double delta_2logL = logL_reduced - logL_full;
-                
+
                 cout << "\n=== Likelihood Test for " << resonance_name << " ===" << endl;
                 cout << "-2 log L (without " << resonance_name << ") = " << logL_reduced << endl;
                 cout << "-2 log L (with " << resonance_name << ")    = " << logL_full << endl;
                 cout << "Δ(-2 log L) = " << delta_2logL << endl;
-                
+
                 // For nested models differing by 1 parameter, Δ(-2 log L) follows χ² distribution with 1 DOF
                 // Critical values: 1.0 (39% CL), 2.71 (90% CL), 3.84 (95% CL), 6.63 (99% CL), 10.83 (99.9% CL)
                 double significance_sigma = sqrt(delta_2logL);
                 cout << "Significance ≈ " << significance_sigma << " σ" << endl;
-                
-                if (delta_2logL > 10.83) {
+
+                if (delta_2logL > 10.83)
+                {
                     cout << "Result: " << resonance_name << " is HIGHLY SIGNIFICANT (>99.9% CL, ~3.3σ)" << endl;
-                } else if (delta_2logL > 6.63) {
+                }
+                else if (delta_2logL > 6.63)
+                {
                     cout << "Result: " << resonance_name << " is SIGNIFICANT (>99% CL, ~2.6σ)" << endl;
-                } else if (delta_2logL > 3.84) {
+                }
+                else if (delta_2logL > 3.84)
+                {
                     cout << "Result: " << resonance_name << " is EVIDENCE (>95% CL, ~2σ)" << endl;
-                } else if (delta_2logL > 2.71) {
+                }
+                else if (delta_2logL > 2.71)
+                {
                     cout << "Result: " << resonance_name << " is WEAK EVIDENCE (>90% CL, ~1.6σ)" << endl;
-                } else {
+                }
+                else
+                {
                     cout << "Result: " << resonance_name << " is NOT SIGNIFICANT (<90% CL)" << endl;
                 }
-                cout << "================================================\n" << endl;
-                
+                cout << "================================================\n"
+                     << endl;
+
                 delete BEexpol_reduced;
                 return delta_2logL;
             };
-            
+
             // Perform likelihood tests for each resonance
             vector<double> likelihood_test_results;
             vector<string> test_resonance_names = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
-            
-            for (int i = 0; i < 4; i++) {
+
+            for (int i = 0; i < 4; i++)
+            {
                 double delta_2logL = performLikelihoodTest(i, test_resonance_names[i]);
                 likelihood_test_results.push_back(delta_2logL);
             }
+
+            // Function to create likelihood profiles for parameters
+            auto createLikelihoodProfile = [&](int param_index, const string &param_name, double central_value,
+                                               double param_error, double scan_range = 3.0) -> TGraph *
+            {
+                cout << "\nCreating likelihood profile for " << param_name << "..." << endl;
+
+                // Create vectors to store scan points
+                vector<double> param_values;
+                vector<double> nll_values;
+
+                // Get the minimum NLL from the best fit
+                double nll_min = fitResultptr->MinFcnValue();
+
+                // Scan around the best-fit value
+                double param_min = central_value - scan_range * param_error;
+                double param_max = central_value + scan_range * param_error;
+                int n_points = 50;
+                double step = (param_max - param_min) / (n_points - 1);
+
+                // Store original parameter value
+                double original_value = BEexpol->GetParameter(param_index);
+
+                for (int j = 0; j < n_points; j++)
+                {
+                    double test_value = param_min + j * step;
+
+                    // Set the parameter to the test value and fix it
+                    BEexpol->SetParameter(param_index, test_value);
+                    BEexpol->FixParameter(param_index, test_value);
+
+                    // Refit with this parameter fixed
+                    TFitResultPtr temp_fit = hinvMass->Fit("BEexpol", "RELBMSNQ");
+                    double nll_test = temp_fit->MinFcnValue();
+
+                    // Store the results
+                    param_values.push_back(test_value);
+                    nll_values.push_back(nll_test - nll_min); // Relative to minimum
+
+                    if (j % 10 == 0)
+                    {
+                        cout << "  Point " << j + 1 << "/" << n_points
+                             << ": " << param_name << " = " << test_value
+                             << ", Δ(-2 log L) = " << nll_test - nll_min << endl;
+                    }
+                }
+
+                // Restore original parameter
+                BEexpol->ReleaseParameter(param_index);
+                BEexpol->SetParameter(param_index, original_value);
+
+                // Create TGraph
+                TGraph *profile = new TGraph(n_points, &param_values[0], &nll_values[0]);
+                profile->SetName(Form("profile_%s", param_name.c_str()));
+                profile->SetTitle(Form("Likelihood Profile: %s;%s;#Delta(-2 log L)", param_name.c_str(), param_name.c_str()));
+                profile->SetMarkerStyle(20);
+                profile->SetMarkerSize(0.8);
+                profile->SetLineWidth(2);
+
+                return profile;
+            };
+
+            // Create likelihood profiles for key parameters
+            vector<TGraph *> likelihood_profiles;
+            vector<string> profile_param_names;
+            vector<int> profile_param_indices;
+
+            // Add profiles for masses and amplitudes of each resonance
+            string profile_names[] = {"f2_1270_mass", "f2_1270_amp", "a2_1320_mass", "a2_1320_amp",
+                                      "f2_1525_mass", "f2_1525_amp", "f0_1710_mass", "f0_1710_amp", "f0_1710_width"};
+            int profile_indices[] = {1, 0, 4, 3, 7, 6, 10, 9, 11}; // Parameter indices
+
+            for (int i = 0; i < 9; i++)
+            {
+                double central_val = obtained_parameters[profile_indices[i]];
+                double param_err = BEexpol->GetParError(profile_indices[i]);
+                // if (i == 8)
+                //     central_val = 0.138;
+                // if (i == 7)
+                //     central_val = 1950;
+
+                if (param_err > 0)
+                { // Only create profile if error is meaningful
+                    TGraph *profile = createLikelihoodProfile(profile_indices[i], profile_names[i],
+                                                              central_val, param_err);
+                    likelihood_profiles.push_back(profile);
+                    profile_param_names.push_back(profile_names[i]);
+                }
+            }
+
+            // Create canvas for likelihood profiles
+            TCanvas *c_profiles = new TCanvas("c_profiles", "Likelihood Profiles", 1440, 720);
+            SetCanvasStyle(c_profiles, 0.15, 0.06, 0.06, 0.15);
+            c_profiles->Divide(3, 3);
+
+            for (size_t i = 0; i < likelihood_profiles.size() && i < 9; i++)
+            {
+                c_profiles->cd(i + 1);
+                gPad->SetLeftMargin(0.15);
+                gPad->SetBottomMargin(0.15);
+                SetGraphStyle(likelihood_profiles[i], 1, 1);
+                likelihood_profiles[i]->SetMarkerSize(0.7);
+                likelihood_profiles[i]->Draw("ALP");
+
+                // Add horizontal lines for confidence levels
+                double y_min = likelihood_profiles[i]->GetYaxis()->GetXmin();
+                double y_max = likelihood_profiles[i]->GetYaxis()->GetXmax();
+                double x_min = likelihood_profiles[i]->GetXaxis()->GetXmin();
+                double x_max = likelihood_profiles[i]->GetXaxis()->GetXmax();
+
+                // 1σ (68.3% CL): Δ(-2 log L) = 1.0
+                TLine *line1sigma = new TLine(x_min, 1.0, x_max, 1.0);
+                line1sigma->SetLineColor(kGreen);
+                line1sigma->SetLineStyle(2);
+                line1sigma->SetLineWidth(2);
+                line1sigma->Draw("same");
+
+                // 2σ (95.4% CL): Δ(-2 log L) = 4.0
+                TLine *line2sigma = new TLine(x_min, 4.0, x_max, 4.0);
+                line2sigma->SetLineColor(kOrange);
+                line2sigma->SetLineStyle(2);
+                line2sigma->SetLineWidth(2);
+                line2sigma->Draw("same");
+
+                // 3σ (99.7% CL): Δ(-2 log L) = 9.0
+                TLine *line3sigma = new TLine(x_min, 9.0, x_max, 9.0);
+                line3sigma->SetLineColor(kRed);
+                line3sigma->SetLineStyle(2);
+                line3sigma->SetLineWidth(2);
+                line3sigma->Draw("same");
+
+                // Add legend for first plot
+                if (i == 0)
+                {
+                    TLegend *leg = new TLegend(0.6, 0.7, 0.9, 0.9);
+                    leg->SetFillStyle(0);
+                    leg->SetBorderSize(0);
+                    leg->SetTextSize(0.08);
+                    leg->AddEntry(line1sigma, "1#sigma", "L");
+                    leg->AddEntry(line2sigma, "2#sigma", "L");
+                    leg->AddEntry(line3sigma, "3#sigma", "L");
+                    leg->Draw();
+                }
+
+                likelihood_profiles[i]->GetYaxis()->SetRangeUser(0, min(20.0, y_max));
+            }
+
+            c_profiles->SaveAs((savepath + "/likelihood_profiles_" + sysvar + ".png").c_str());
+            cout << "\nLikelihood profiles saved as: " << savepath + "/likelihood_profiles_" + sysvar + ".png" << endl;
+
+            // Create summary plot showing significance levels
+            TCanvas *c_summary = new TCanvas("c_summary", "Likelihood Test Summary", 720, 720);
+            SetCanvasStyle(c_summary, 0.15, 0.06, 0.06, 0.15);
+
+            // Create histogram to show Δ(-2 log L) for each resonance
+            TH1F *h_summary = new TH1F("h_summary", "Likelihood Test Results;Resonance;#Delta(-2 log L)", 4, 0, 4);
+            SetHistoQA(h_summary);
+
+            for (int i = 0; i < 4; i++)
+            {
+                h_summary->SetBinContent(i + 1, likelihood_test_results[i]);
+                h_summary->GetXaxis()->SetBinLabel(i + 1, test_resonance_names[i].c_str());
+            }
+
+            h_summary->SetFillColor(kBlue);
+            h_summary->SetFillStyle(3004);
+            h_summary->GetYaxis()->SetRangeUser(0, *max_element(likelihood_test_results.begin(), likelihood_test_results.end()) * 1.2);
+            h_summary->Draw("bar");
+
+            // Add significance level lines
+            TLine *line_2sigma = new TLine(0, 3.84, 4, 3.84);
+            line_2sigma->SetLineColor(kOrange);
+            line_2sigma->SetLineWidth(3);
+            line_2sigma->SetLineStyle(2);
+            line_2sigma->Draw("same");
+
+            TLine *line_3sigma = new TLine(0, 6.63, 4, 6.63);
+            line_3sigma->SetLineColor(kRed);
+            line_3sigma->SetLineWidth(3);
+            line_3sigma->SetLineStyle(2);
+            line_3sigma->Draw("same");
+
+            TLine *line_5sigma = new TLine(0, 25.0, 4, 25.0);
+            line_5sigma->SetLineColor(kMagenta);
+            line_5sigma->SetLineWidth(3);
+            line_5sigma->SetLineStyle(2);
+            line_5sigma->Draw("same");
+
+            // Add legend
+            TLegend *leg_summary = new TLegend(0.2, 0.7, 0.5, 0.9);
+            leg_summary->SetFillStyle(0);
+            leg_summary->SetBorderSize(0);
+            leg_summary->AddEntry(h_summary, "#Delta(-2 log L)", "F");
+            leg_summary->AddEntry(line_2sigma, "2#sigma (95% CL)", "L");
+            leg_summary->AddEntry(line_3sigma, "3#sigma (99% CL)", "L");
+            leg_summary->AddEntry(line_5sigma, "5#sigma (99.9999% CL)", "L");
+            leg_summary->Draw();
+
+            // Add text with numerical values
+            TLatex lat;
+            lat.SetTextSize(0.03);
+            for (int i = 0; i < 4; i++)
+            {
+                double significance = sqrt(likelihood_test_results[i]);
+                lat.DrawLatex(i + 0.1, likelihood_test_results[i] + 1, Form("%.1f#sigma", significance));
+            }
+
+            c_summary->SaveAs((savepath + "/likelihood_summary_" + sysvar + ".png").c_str());
+            cout << "Likelihood summary saved as: " << savepath + "/likelihood_summary_" + sysvar + ".png" << endl;
             // cout<<"fit status code "<<fitResultptr->Status()<<endl;
             // if (fitResultptr->Status() != 4140)
             // {
@@ -401,7 +625,7 @@ void glueball_fit_4rBW()
             // }
             // fitResultptr->Print("V");
 
-            double *obtained_parameters = BEexpol->GetParameters();
+            // double *obtained_parameters = BEexpol->GetParameters();
             TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
             TF1 *expol_clone = new TF1("expol_clone", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4); //
             for (int i = 0; i < 4; i++)
@@ -1750,16 +1974,19 @@ void glueball_fit_4rBW()
             // // // //********************************* common for all fits ***************************************
             gPad->Update();
             TPaveStats *ptstats = (TPaveStats *)hinvMass->FindObject("stats");
+            if (ptstats != nullptr)
+            {
 
-            // Customize precision for fit parameters display
-            TList *listOfLines = ptstats->GetListOfLines();
-            // You can iterate through and modify specific lines if needed
+                // Customize precision for fit parameters display
+                TList *listOfLines = ptstats->GetListOfLines();
+                // You can iterate through and modify specific lines if needed
 
-            ptstats->SetX1NDC(0.6);
-            ptstats->SetX2NDC(0.99);
-            ptstats->SetY1NDC(0.4);
-            ptstats->SetY2NDC(0.92);
-            ptstats->Draw("same");
+                ptstats->SetX1NDC(0.6);
+                ptstats->SetX2NDC(0.99);
+                ptstats->SetY1NDC(0.4);
+                ptstats->SetY2NDC(0.92);
+                ptstats->Draw("same");
+            }
             // c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
             c->SaveAs((savepath + "/rBWfit.png").c_str());
 
@@ -1840,13 +2067,14 @@ void glueball_fit_4rBW()
             file << fitmass1525 * 1000 << " ± " << fitmass1525_err * 1000 << endl;
             file << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << endl;
             file << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << endl;
-            
+
             // Add likelihood test results
             file << "\n=== Likelihood Test Results ===" << endl;
             file << std::fixed << std::setprecision(3);
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 4; i++)
+            {
                 double significance_sigma = sqrt(likelihood_test_results[i]);
-                file << test_resonance_names[i] << ": Δ(-2 log L) = " << likelihood_test_results[i] 
+                file << test_resonance_names[i] << ": Δ(-2 log L) = " << likelihood_test_results[i]
                      << ", Significance ≈ " << significance_sigma << " σ" << endl;
             }
 

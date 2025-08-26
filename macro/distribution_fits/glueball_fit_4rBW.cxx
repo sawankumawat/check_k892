@@ -2,6 +2,7 @@
 #include <tuple>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 #include <TArrow.h>
 #include "../src/common_glue.h"
 #include "../src/fitting_range_glue.h"
@@ -51,6 +52,10 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 
 void glueball_fit_4rBW()
 {
+    // Start timing
+    auto start_time = chrono::high_resolution_clock::now();
+    cout << "Starting glueball_fit_4rBW execution..." << endl;
+    
     // systematic studies (signal extraction) ****************************
     // A. fit range: Default: 1.05-2.20 GeV/c^2, Variation1: 1.02-2.20 GeV/c^2, Variation2: 1.05-2.30 GeV/c^2, Variation3: 1.08-2.15 GeV/c^2, Variation4: 1.02-2.30 GeV/c^2
     // B. Norm range: Default: 2.50-2.60 GeV/c^2, Variation1: 2.40-2.50 GeV/c^2, Variation2: 2.60-2.70 GeV/c^2
@@ -323,16 +328,92 @@ void glueball_fit_4rBW()
             // BEexpol->FixParameter(10, f1710Mass);
             // BEexpol->FixParameter(11, f1710Width);
 
-            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
+            // First fit to get reasonable starting parameters
+            TFitResultPtr fitResultptr_initial = hinvMass->Fit("BEexpol", "RELBMS");
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
             cout << "chi2/ndf is " << chi2ndf << endl;
             string fitstatus = "Successfull";
+            
+            // ===================================================================
+            // FIND GLOBAL BEST FIT FOR PROFILE LIKELIHOOD REFERENCE
+            // ===================================================================
+            cout << "\n=== FINDING GLOBAL BEST FIT FOR PROFILE LIKELIHOOD REFERENCE ===" << endl;
+            
+            // Try multiple fits with different starting points to ensure we find global minimum
+            double best_logL = 1e10;
+            double best_parameters[16];
+            double best_errors[16];
+            TFitResultPtr best_fit_result;
+            
+            // Store initial fit as first candidate
+            double current_logL = fitResultptr_initial->MinFcnValue();
+            if (current_logL < best_logL) {
+                best_logL = current_logL;
+                for (int i = 0; i < 16; i++) {
+                    best_parameters[i] = BEexpol->GetParameter(i);
+                    best_errors[i] = BEexpol->GetParError(i);
+                }
+                best_fit_result = fitResultptr_initial;
+            }
+            cout << "Initial fit: -2 log L = " << current_logL << endl;
+            
+            // Try additional fits with perturbed starting values to find global minimum
+            int n_retry_fits = 5;
+            for (int retry = 0; retry < n_retry_fits; retry++) {
+                cout << "Retry fit " << retry + 1 << "/" << n_retry_fits << "..." << endl;
+                
+                // Perturb amplitude parameters by ±20%
+                for (int i = 0; i < 4; i++) {
+                    int amp_index = 3 * i; // Amplitude indices: 0, 3, 6, 9
+                    double original_val = best_parameters[amp_index];
+                    double perturbation = 0.2 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+                    BEexpol->SetParameter(amp_index, original_val + perturbation);
+                }
+                
+                // Slightly perturb mass parameters by ±0.5%
+                for (int i = 0; i < 4; i++) {
+                    int mass_index = 3 * i + 1; // Mass indices: 1, 4, 7, 10
+                    double original_val = best_parameters[mass_index];
+                    double perturbation = 0.005 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+                    BEexpol->SetParameter(mass_index, original_val + perturbation);
+                }
+                
+                // Fit with perturbed starting values
+                TFitResultPtr retry_fit = hinvMass->Fit("BEexpol", "RQELBMS");
+                current_logL = retry_fit->MinFcnValue();
+                cout << "  Retry " << retry + 1 << ": -2 log L = " << current_logL << endl;
+                
+                // Keep best result
+                if (current_logL < best_logL) {
+                    best_logL = current_logL;
+                    for (int i = 0; i < 16; i++) {
+                        best_parameters[i] = BEexpol->GetParameter(i);
+                        best_errors[i] = BEexpol->GetParError(i);
+                    }
+                    best_fit_result = retry_fit;
+                    cout << "  -> New best fit found!" << endl;
+                }
+            }
+            
+            // Set parameters to global best fit
+            for (int i = 0; i < 16; i++) {
+                BEexpol->SetParameter(i, best_parameters[i]);
+            }
+            
+            // Final fit to ensure convergence at global minimum
+            cout << "\nPerforming final fit at global minimum..." << endl;
+            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
             double logL_full = fitResultptr->MinFcnValue();
-            std::cout << "-2 log L (full model) = " << logL_full << std::endl;
-
+            
+            cout << "\nGLOBAL BEST FIT RESULTS:" << endl;
+            cout << "========================" << endl;
+            cout << "Final -2 log L (full model) = " << logL_full << endl;
+            cout << "Improvement from initial: " << (fitResultptr_initial->MinFcnValue() - logL_full) << endl;
+            
             double *obtained_parameters = BEexpol->GetParameters();
+            const Double_t *obtained_errors = BEexpol->GetParErrors();
 
-            // Store the full model parameters for likelihood tests
+            // Store the GLOBAL best fit parameters for likelihood tests
             double *full_model_params = BEexpol->GetParameters();
 
             // Function to perform likelihood test for each resonance
@@ -409,6 +490,335 @@ void glueball_fit_4rBW()
                 likelihood_test_results.push_back(delta_2logL);
             }
 
+            // ============================================================================
+            // PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE AS PARAMETER OF INTEREST
+            // ============================================================================
+            //
+            // METHODOLOGY:
+            // 1. Find global best fit L(θ̂) for full model with all parameters free
+            // 2. For each test value α of f0(1710) amplitude:
+            //    - Fix amplitude to α  
+            //    - Re-optimize ALL nuisance parameters θ̃(α) to maximize L(α, θ̃(α))
+            //    - Calculate profile likelihood PL(α) = max_θ L(α, θ)
+            // 3. Test statistic: Δ(-2 log L) = -2 log[PL(α)/L(θ̂)] = 2[logL_full - logL_profile(α)]
+            // 4. Under Wilks' theorem: Δ(-2 log L) ~ χ²(1) for nested hypotheses
+            //
+            // NUISANCE PARAMETERS (re-optimized for each α):
+            // - All other resonance amplitudes, masses  
+            // - f0(1710) mass and width
+            // - Background parameters
+            //
+            // FIXED PARAMETERS (physics constraints):
+            // - f2(1270), a2(1320), f2(1525) widths (PDG values)
+            // ============================================================================
+            
+            cout << "\n================================================================" << endl;
+            cout << "PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE" << endl;
+            cout << "================================================================" << endl;
+            
+            // Get f0(1710) amplitude parameter (parameter index 9)
+            int f0_amp_index = 9;
+            double f0_amp_best = obtained_parameters[f0_amp_index];
+            double f0_amp_error = obtained_errors[f0_amp_index];
+            
+            cout << "Best-fit f0(1710) amplitude: " << f0_amp_best << " ± " << f0_amp_error << endl;
+            
+            // Function to calculate profile likelihood for f0(1710) amplitude
+            auto profileLikelihood_f0_amp = [&](double test_amplitude) -> double {
+                // Create a copy of the fit function for profiling
+                TF1 *profile_func = new TF1("profile_func", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+                
+                // Set all parameters to GLOBAL best-fit values as starting point
+                for (int i = 0; i < 16; i++) {
+                    profile_func->SetParameter(i, obtained_parameters[i]);
+                }
+                
+                // Fix the f0(1710) amplitude to the test value (PARAMETER OF INTEREST)
+                profile_func->FixParameter(f0_amp_index, test_amplitude);
+                
+                // Apply same physics constraints as original fit (these remain fixed)
+                profile_func->FixParameter(2, f1270Width);   // f2(1270) width - physics constraint
+                profile_func->FixParameter(5, a1320Width);   // a2(1320) width - physics constraint
+                profile_func->FixParameter(8, f1525Width);   // f2(1525) width - physics constraint
+                
+                // ALL OTHER PARAMETERS ARE NUISANCE PARAMETERS - they must be re-optimized
+                // This includes: all amplitudes (except f0), all masses, f0 mass/width, background params
+                
+                // Try multiple starting points for nuisance parameters to find global optimum
+                double best_profile_logL = 1e10;
+                
+                // Strategy 1: Start from global best fit values
+                TFitResultPtr profile_fit1 = hinvMass->Fit("profile_func", "RQELSBN");
+                double logL1 = profile_fit1->MinFcnValue();
+                if (logL1 < best_profile_logL) {
+                    best_profile_logL = logL1;
+                }
+                
+                // Strategy 2: Try with slightly perturbed nuisance parameters
+                for (int retry = 0; retry < 2; retry++) {
+                    // Reset to best fit values
+                    for (int i = 0; i < 16; i++) {
+                        if (i != f0_amp_index && i != 2 && i != 5 && i != 8) { // Skip fixed parameters
+                            double original_val = obtained_parameters[i];
+                            double perturbation = 0.1 * obtained_errors[i] * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+                            profile_func->SetParameter(i, original_val + perturbation);
+                        }
+                    }
+                    profile_func->FixParameter(f0_amp_index, test_amplitude); // Re-fix parameter of interest
+                    profile_func->FixParameter(2, f1270Width);
+                    profile_func->FixParameter(5, a1320Width);  
+                    profile_func->FixParameter(8, f1525Width);
+                    
+                    TFitResultPtr profile_fit_retry = hinvMass->Fit("profile_func", "RQELSBN");
+                    double logL_retry = profile_fit_retry->MinFcnValue();
+                    if (logL_retry < best_profile_logL) {
+                        best_profile_logL = logL_retry;
+                    }
+                }
+                
+                delete profile_func;
+                return best_profile_logL;
+            };
+            
+            // VERIFICATION: Test profile likelihood at best-fit amplitude (should give logL_full)
+            cout << "\nVERIFICATION: Testing profile likelihood at best-fit amplitude..." << endl;
+            double nll_at_bestfit = profileLikelihood_f0_amp(f0_amp_best);
+            double difference_at_bestfit = nll_at_bestfit - logL_full;
+            cout << "Profile likelihood at best-fit amplitude: " << nll_at_bestfit << endl;
+            cout << "Original best-fit likelihood: " << logL_full << endl;
+            cout << "Difference (should be ~0): " << difference_at_bestfit << endl;
+            
+            if (abs(difference_at_bestfit) > 0.1) {
+                cout << "WARNING: Profile likelihood calculation may have convergence issues!" << endl;
+                cout << "Consider increasing the number of retry fits or checking parameter bounds." << endl;
+            } else {
+                cout << "VERIFICATION PASSED: Profile likelihood method is working correctly." << endl;
+            }
+            
+            // Calculate profile likelihood at amplitude = 0 (null hypothesis)
+            cout << "\nCalculating profile likelihood at f0(1710) amplitude = 0 (null hypothesis)..." << endl;
+            double nll_null = profileLikelihood_f0_amp(0.0);
+            
+            // Calculate Δ(-2 log L) = profile likelihood ratio test statistic
+            double delta_2logL_f0 = nll_null - logL_full;
+            
+            cout << "\nPROFILE LIKELIHOOD RATIO TEST RESULTS:" << endl;
+            cout << "=======================================" << endl;
+            cout << "-2 log L (full model): " << logL_full << endl;
+            cout << "-2 log L (f0_amp = 0): " << nll_null << endl;
+            cout << "Δ(-2 log L) = " << delta_2logL_f0 << endl;
+            
+            // Calculate significance
+            double significance_f0_amp = sqrt(delta_2logL_f0);
+            cout << "Significance of f0(1710) amplitude ≈ " << significance_f0_amp << " σ" << endl;
+            
+            // Interpret results
+            cout << "\nINTERPRETATION:" << endl;
+            if (delta_2logL_f0 > 25.0) {
+                cout << "DISCOVERY: f0(1710) amplitude is HIGHLY SIGNIFICANT (>5σ)" << endl;
+            } else if (delta_2logL_f0 > 9.0) {
+                cout << "EVIDENCE: f0(1710) amplitude is SIGNIFICANT (>3σ)" << endl;
+            } else if (delta_2logL_f0 > 4.0) {
+                cout << "EVIDENCE: f0(1710) amplitude shows EVIDENCE (>2σ)" << endl;
+            } else if (delta_2logL_f0 > 1.0) {
+                cout << "WEAK EVIDENCE: f0(1710) amplitude shows WEAK EVIDENCE (>1σ)" << endl;
+            } else {
+                cout << "NO EVIDENCE: f0(1710) amplitude is NOT SIGNIFICANT" << endl;
+            }
+            
+            // Create detailed profile likelihood scan for f0(1710) amplitude
+            cout << "\nCreating detailed profile likelihood scan for f0(1710) amplitude..." << endl;
+            
+            vector<double> amp_values;
+            vector<double> profile_nll_values;
+            
+            // Scan range: from -2σ to +4σ around best fit value (including negative values)
+            double amp_min = f0_amp_best - 2.0 * f0_amp_error;
+            double amp_max = f0_amp_best + 4.0 * f0_amp_error;
+            int n_scan_points = 60;
+            double amp_step = (amp_max - amp_min) / (n_scan_points - 1);
+            
+            cout << "Scanning amplitude from " << amp_min << " to " << amp_max << " in " << n_scan_points << " steps..." << endl;
+            
+            for (int i = 0; i < n_scan_points; i++) {
+                double test_amp = amp_min + i * amp_step;
+                double nll_test = profileLikelihood_f0_amp(test_amp);
+                double delta_nll = nll_test - logL_full;
+                
+                amp_values.push_back(test_amp);
+                profile_nll_values.push_back(delta_nll);
+                
+                if (i % 10 == 0) {
+                    cout << "  Point " << i+1 << "/" << n_scan_points 
+                         << ": amp = " << test_amp 
+                         << ", Δ(-2logL) = " << delta_nll << endl;
+                }
+                
+                // Special check at amplitude = 0
+                if (abs(test_amp) < amp_step/2.0) {
+                    cout << "  -> At amplitude = 0: Δ(-2logL) = " << delta_nll << " (significance = " << sqrt(delta_nll) << "σ)" << endl;
+                }
+            }
+            
+            // Create profile likelihood plot for f0(1710) amplitude
+            TCanvas *c_profile_f0 = new TCanvas("c_profile_f0", "Profile Likelihood: f0(1710) Amplitude", 720, 720);
+            SetCanvasStyle(c_profile_f0, 0.14, 0.06, 0.06, 0.14);
+            
+            TGraph *profile_f0 = new TGraph(n_scan_points, &amp_values[0], &profile_nll_values[0]);
+            profile_f0->SetName("profile_f0_amplitude");
+            profile_f0->SetTitle("Profile Likelihood: f_{0}(1710) Amplitude;f_{0}(1710) Amplitude;#Delta(-2 log L)");
+            profile_f0->SetMarkerStyle(20);
+            profile_f0->SetMarkerSize(0.8);
+            profile_f0->SetLineWidth(2);
+            profile_f0->SetLineColor(kBlue);
+            profile_f0->SetMarkerColor(kBlue);
+            
+            SetGraphStyle(profile_f0, 1, 1);
+            profile_f0->Draw("ALP");
+            
+            // Add confidence level lines
+            double y_min_prof = profile_f0->GetYaxis()->GetXmin();
+            double y_max_prof = profile_f0->GetYaxis()->GetXmax();
+            double x_min_prof = profile_f0->GetXaxis()->GetXmin();
+            double x_max_prof = profile_f0->GetXaxis()->GetXmax();
+            
+            // 1σ confidence interval: Δ(-2 log L) = 1.0
+            TLine *line1sigma_prof = new TLine(x_min_prof, 1.0, x_max_prof, 1.0);
+            line1sigma_prof->SetLineColor(kGreen);
+            line1sigma_prof->SetLineStyle(2);
+            line1sigma_prof->SetLineWidth(3);
+            line1sigma_prof->Draw("same");
+            
+            // 2σ confidence interval: Δ(-2 log L) = 4.0  
+            TLine *line2sigma_prof = new TLine(x_min_prof, 4.0, x_max_prof, 4.0);
+            line2sigma_prof->SetLineColor(kOrange);
+            line2sigma_prof->SetLineStyle(2);
+            line2sigma_prof->SetLineWidth(3);
+            line2sigma_prof->Draw("same");
+            
+            // 3σ confidence interval: Δ(-2 log L) = 9.0
+            TLine *line3sigma_prof = new TLine(x_min_prof, 9.0, x_max_prof, 9.0);
+            line3sigma_prof->SetLineColor(kRed);
+            line3sigma_prof->SetLineStyle(2);
+            line3sigma_prof->SetLineWidth(3);
+            line3sigma_prof->Draw("same");
+            
+            // 5σ discovery threshold: Δ(-2 log L) = 25.0
+            TLine *line5sigma_prof = nullptr;
+            if (y_max_prof > 25.0) {
+                line5sigma_prof = new TLine(x_min_prof, 25.0, x_max_prof, 25.0);
+                line5sigma_prof->SetLineColor(kMagenta);
+                line5sigma_prof->SetLineStyle(2);
+                line5sigma_prof->SetLineWidth(3);
+                line5sigma_prof->Draw("same");
+            }
+            
+            // Mark the null hypothesis point (amplitude = 0)
+            TMarker *null_point = new TMarker(0.0, delta_2logL_f0, 29);
+            null_point->SetMarkerColor(kRed);
+            null_point->SetMarkerSize(2.0);
+            null_point->Draw("same");
+            
+            // Mark the best-fit point
+            TMarker *best_point = new TMarker(f0_amp_best, 0.0, 29);
+            best_point->SetMarkerColor(kBlue);
+            best_point->SetMarkerSize(2.0);
+            best_point->Draw("same");
+            
+            // Add legend
+            TLegend *leg_prof = new TLegend(0.15, 0.65, 0.55, 0.88);
+            leg_prof->SetFillStyle(0);
+            leg_prof->SetBorderSize(0);
+            leg_prof->SetTextSize(0.035);
+            leg_prof->AddEntry(profile_f0, "Profile Likelihood", "LP");
+            leg_prof->AddEntry(line1sigma_prof, "1#sigma (68% CL)", "L");
+            leg_prof->AddEntry(line2sigma_prof, "2#sigma (95% CL)", "L");
+            leg_prof->AddEntry(line3sigma_prof, "3#sigma (99.7% CL)", "L");
+            if (line5sigma_prof != nullptr) {
+                leg_prof->AddEntry(line5sigma_prof, "5#sigma (discovery)", "L");
+            }
+            leg_prof->AddEntry(null_point, "Null hypothesis (amp=0)", "P");
+            leg_prof->AddEntry(best_point, "Best fit", "P");
+            leg_prof->Draw();
+            
+            // Add text box with results
+            TLatex lat_prof;
+            lat_prof.SetNDC();
+            lat_prof.SetTextSize(0.04);
+            lat_prof.SetTextFont(42);
+            lat_prof.DrawLatex(0.6, 0.85, "Profile Likelihood Test");
+            lat_prof.DrawLatex(0.6, 0.80, "f_{0}(1710) Amplitude");
+            lat_prof.DrawLatex(0.6, 0.75, Form("#Delta(-2logL) = %.2f", delta_2logL_f0));
+            lat_prof.DrawLatex(0.6, 0.70, Form("Significance = %.2f#sigma", significance_f0_amp));
+            
+            profile_f0->GetYaxis()->SetRangeUser(0, min(30.0, y_max_prof * 1.1));
+            
+            c_profile_f0->SaveAs((savepath + "/profile_likelihood_f0_amplitude_" + sysvar + ".png").c_str());
+            cout << "\nProfile likelihood plot saved as: " << savepath + "/profile_likelihood_f0_amplitude_" + sysvar + ".png" << endl;
+            
+            // Calculate confidence intervals
+            cout << "\nCONFIDENCE INTERVALS for f0(1710) amplitude:" << endl;
+            cout << "============================================" << endl;
+            
+            // Find intersections with confidence levels
+            auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double> {
+                double lower_bound = f0_amp_best;
+                double upper_bound = f0_amp_best;
+                bool found_lower = false, found_upper = false;
+                
+                for (int i = 0; i < n_scan_points - 1; i++) {
+                    // Check for crossing below best fit
+                    if (amp_values[i] <= f0_amp_best && amp_values[i+1] <= f0_amp_best) {
+                        if ((profile_nll_values[i] <= delta_threshold && profile_nll_values[i+1] >= delta_threshold) ||
+                            (profile_nll_values[i] >= delta_threshold && profile_nll_values[i+1] <= delta_threshold)) {
+                            lower_bound = amp_values[i] + (amp_values[i+1] - amp_values[i]) * 
+                                         (delta_threshold - profile_nll_values[i]) / 
+                                         (profile_nll_values[i+1] - profile_nll_values[i]);
+                            found_lower = true;
+                        }
+                    }
+                    // Check for crossing above best fit  
+                    if (amp_values[i] >= f0_amp_best && amp_values[i+1] >= f0_amp_best) {
+                        if ((profile_nll_values[i] <= delta_threshold && profile_nll_values[i+1] >= delta_threshold) ||
+                            (profile_nll_values[i] >= delta_threshold && profile_nll_values[i+1] <= delta_threshold)) {
+                            upper_bound = amp_values[i] + (amp_values[i+1] - amp_values[i]) * 
+                                         (delta_threshold - profile_nll_values[i]) / 
+                                         (profile_nll_values[i+1] - profile_nll_values[i]);
+                            found_upper = true;
+                        }
+                    }
+                }
+                
+                if (!found_lower) lower_bound = amp_min;
+                if (!found_upper) upper_bound = amp_max;
+                
+                return make_pair(lower_bound, upper_bound);
+            };
+            
+            // Calculate 68%, 95%, and 99.7% confidence intervals
+            auto ci_68 = findConfidenceInterval(1.0);
+            auto ci_95 = findConfidenceInterval(4.0);
+            auto ci_997 = findConfidenceInterval(9.0);
+            
+            cout << "68% CL (1σ): [" << ci_68.first << ", " << ci_68.second << "]" << endl;
+            cout << "95% CL (2σ): [" << ci_95.first << ", " << ci_95.second << "]" << endl;
+            cout << "99.7% CL (3σ): [" << ci_997.first << ", " << ci_997.second << "]" << endl;
+            
+            // Check if zero is excluded
+            bool zero_excluded_68 = (0.0 < ci_68.first || 0.0 > ci_68.second);
+            bool zero_excluded_95 = (0.0 < ci_95.first || 0.0 > ci_95.second);
+            bool zero_excluded_997 = (0.0 < ci_997.first || 0.0 > ci_997.second);
+            
+            cout << "\nZERO EXCLUSION TEST:" << endl;
+            cout << "====================" << endl;
+            cout << "Zero excluded at 68% CL: " << (zero_excluded_68 ? "YES" : "NO") << endl;
+            cout << "Zero excluded at 95% CL: " << (zero_excluded_95 ? "YES" : "NO") << endl;
+            cout << "Zero excluded at 99.7% CL: " << (zero_excluded_997 ? "YES" : "NO") << endl;
+            
+            cout << "\n================================================================" << endl;
+            cout << "END OF PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE" << endl;
+            cout << "================================================================\n" << endl;
+
             // Function to create likelihood profiles for parameters
             auto createLikelihoodProfile = [&](int param_index, const string &param_name, double central_value,
                                                double param_error, double scan_range = 3.0) -> TGraph *
@@ -483,7 +893,8 @@ void glueball_fit_4rBW()
             for (int i = 0; i < 9; i++)
             {
                 double central_val = obtained_parameters[profile_indices[i]];
-                double param_err = BEexpol->GetParError(profile_indices[i]);
+                // double param_err = BEexpol->GetParError(profile_indices[i]);
+                double param_err = obtained_errors[profile_indices[i]];
                 // if (i == 8)
                 //     central_val = 0.138;
                 // if (i == 7)
@@ -559,11 +970,17 @@ void glueball_fit_4rBW()
             cout << "\nLikelihood profiles saved as: " << savepath + "/likelihood_profiles_" + sysvar + ".png" << endl;
 
             // Create summary plot showing significance levels
-            TCanvas *c_summary = new TCanvas("c_summary", "Likelihood Test Summary", 720, 720);
-            SetCanvasStyle(c_summary, 0.15, 0.06, 0.06, 0.15);
+            TCanvas *c_summary = new TCanvas("c_summary", "Likelihood Test Summary", 1200, 720);
+            SetCanvasStyle(c_summary, 0.12, 0.06, 0.06, 0.12);
+            c_summary->Divide(2, 1);
 
+            // Left panel: Standard likelihood tests (presence/absence)
+            c_summary->cd(1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetBottomMargin(0.15);
+            
             // Create histogram to show Δ(-2 log L) for each resonance
-            TH1F *h_summary = new TH1F("h_summary", "Likelihood Test Results;Resonance;#Delta(-2 log L)", 4, 0, 4);
+            TH1F *h_summary = new TH1F("h_summary", "Resonance Likelihood Tests;Resonance;#Delta(-2 log L)", 4, 0, 4);
             SetHistoQA(h_summary);
 
             for (int i = 0; i < 4; i++)
@@ -607,16 +1024,77 @@ void glueball_fit_4rBW()
             leg_summary->Draw();
 
             // Add text with numerical values
-            TLatex lat;
-            lat.SetTextSize(0.03);
+            TLatex lat_sum;
+            lat_sum.SetTextSize(0.04);
             for (int i = 0; i < 4; i++)
             {
                 double significance = sqrt(likelihood_test_results[i]);
-                lat.DrawLatex(i + 0.1, likelihood_test_results[i] + 1, Form("%.1f#sigma", significance));
+                lat_sum.DrawLatex(i + 0.1, likelihood_test_results[i] + 1, Form("%.1f#sigma", significance));
             }
+            
+            // Right panel: f0(1710) amplitude profile likelihood test
+            c_summary->cd(2);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetBottomMargin(0.15);
+            
+            // Create single bar for f0(1710) amplitude test
+            TH1F *h_f0_profile = new TH1F("h_f0_profile", "f_{0}(1710) Amplitude Profile Test;Test Type;#Delta(-2 log L)", 1, 0, 1);
+            SetHistoQA(h_f0_profile);
+            
+            h_f0_profile->SetBinContent(1, delta_2logL_f0);
+            h_f0_profile->GetXaxis()->SetBinLabel(1, "f_{0}(1710) amp = 0");
+            h_f0_profile->SetFillColor(kRed);
+            h_f0_profile->SetFillStyle(3005);
+            h_f0_profile->GetYaxis()->SetRangeUser(0, max(delta_2logL_f0 * 1.2, 10.0));
+            h_f0_profile->Draw("bar");
+            
+            // Add significance level lines for right panel
+            TLine *line_2sigma_r = new TLine(0, 3.84, 1, 3.84);
+            line_2sigma_r->SetLineColor(kOrange);
+            line_2sigma_r->SetLineWidth(3);
+            line_2sigma_r->SetLineStyle(2);
+            line_2sigma_r->Draw("same");
 
+            TLine *line_3sigma_r = new TLine(0, 6.63, 1, 6.63);
+            line_3sigma_r->SetLineColor(kRed);
+            line_3sigma_r->SetLineWidth(3);
+            line_3sigma_r->SetLineStyle(2);
+            line_3sigma_r->Draw("same");
+
+            TLine *line_5sigma_r = new TLine(0, 25.0, 1, 25.0);
+            line_5sigma_r->SetLineColor(kMagenta);
+            line_5sigma_r->SetLineWidth(3);
+            line_5sigma_r->SetLineStyle(2);
+            line_5sigma_r->Draw("same");
+            
+            // Add text with significance value
+            TLatex lat_f0;
+            lat_f0.SetTextSize(0.04);
+            lat_f0.DrawLatex(0.1, delta_2logL_f0 + delta_2logL_f0 * 0.05, Form("%.1f#sigma", significance_f0_amp));
+            
+            // Add legend for right panel
+            TLegend *leg_f0 = new TLegend(0.2, 0.7, 0.8, 0.9);
+            leg_f0->SetFillStyle(0);
+            leg_f0->SetBorderSize(0);
+            leg_f0->AddEntry(h_f0_profile, "Profile Likelihood Test", "F");
+            leg_f0->AddEntry(line_2sigma_r, "2#sigma (95% CL)", "L");
+            leg_f0->AddEntry(line_3sigma_r, "3#sigma (99% CL)", "L");
+            leg_f0->AddEntry(line_5sigma_r, "5#sigma (discovery)", "L");
+            leg_f0->Draw();
+            
             c_summary->SaveAs((savepath + "/likelihood_summary_" + sysvar + ".png").c_str());
             cout << "Likelihood summary saved as: " << savepath + "/likelihood_summary_" + sysvar + ".png" << endl;
+            
+            // Write results to output file
+            file << "\n=== PROFILE LIKELIHOOD RATIO TEST RESULTS ===" << endl;
+            file << "f0(1710) best-fit amplitude: " << f0_amp_best << " ± " << f0_amp_error << endl;
+            file << "Δ(-2 log L) for f0_amp = 0: " << delta_2logL_f0 << endl;
+            file << "Significance of f0(1710) amplitude: " << significance_f0_amp << " σ" << endl;
+            file << "68% CL interval: [" << ci_68.first << ", " << ci_68.second << "]" << endl;
+            file << "95% CL interval: [" << ci_95.first << ", " << ci_95.second << "]" << endl;
+            file << "99.7% CL interval: [" << ci_997.first << ", " << ci_997.second << "]" << endl;
+            file << "Zero excluded at 95% CL: " << (zero_excluded_95 ? "YES" : "NO") << endl;
+            file << "=============================================" << endl;
             // cout<<"fit status code "<<fitResultptr->Status()<<endl;
             // if (fitResultptr->Status() != 4140)
             // {
@@ -2409,6 +2887,16 @@ void glueball_fit_4rBW()
         }
         // plots_4BW->Close();
     }
+    
+    // End timing and print elapsed time
+    auto end_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
+    auto seconds = duration.count() / 1000.0;
+    
+    cout << "=================================================================" << endl;
+    cout << "glueball_fit_4rBW execution completed!" << endl;
+    cout << "Total execution time: " << seconds << " seconds (" << duration.count() << " ms)" << endl;
+    cout << "=================================================================" << endl;
 }
 // end of main program
 

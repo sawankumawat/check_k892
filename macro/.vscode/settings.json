@@ -78,6 +78,8 @@
         "Signal_th3f.C": "cpp",
         "YieldMean.C": "cpp",
         "meanpT_dNdy_Levy.C": "cpp",
-        "allinonemacromix.C": "cpp"
+        "allinonemacromix.C": "cpp",
+        "chrono": "cpp",
+        "semaphore": "cpp"
     }
 }

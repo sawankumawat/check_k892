@@ -1,3 +1,11 @@
+#include <TH1.h>
+#include <TH2.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TStyle.h>
+
 void SetHistoStyle(TH1 *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Tsizex, Float_t Tsizey, Float_t Lsizex, Float_t Lsizey, Float_t Offsetx, Float_t Offsety)
 {
     h->SetMarkerColor(mcolor);

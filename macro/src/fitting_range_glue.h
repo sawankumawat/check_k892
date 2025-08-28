@@ -35,11 +35,13 @@ const int pt_end = Npt;
 //     {2.20, 2.30}, // 6.0-12.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
+#include <vector>
+
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
 // };
 
-const std::vector<vector<float>> kNormRangepT = {
+const std::vector<std::vector<float>> kNormRangepT = {
     // for cos theta
     {2.50, 2.60}, //
     {2.50, 2.60}, //

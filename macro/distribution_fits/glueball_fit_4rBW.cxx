@@ -101,485 +101,8 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 //     P(q₀ ≥ q₀_data) = 1/2 × P(χ²₁ ≥ q₀_data) for q₀_data > 0
 //
 // Uses toys for shape validation and Chernoff mixture approximation for tail p-values
-double calculateToyMCSignificance(TH1F *data_histogram, TF1 *null_model, TF1 *full_model, TFitResultPtr full_fit, vector<vector<double>> par_limits, int nToys = 1000, bool verbose = false)
-{
 
-    cout << "\n=== ENHANCED TOY MONTE CARLO SIGNIFICANCE CALCULATION (CHERNOFF MIXTURE) ===" << endl;
-    cout << "Generating " << nToys << " toy datasets under null hypothesis..." << endl;
-    cout << "Using Chernoff mixture: q0 ~ 1/2 δ(0) + 1/2 χ²₁" << endl;
-
-    TCanvas *ctemp = new TCanvas("ctemp", "ctemp", 800, 600);
-    data_histogram->Draw();
-
-    // Fit data with null model to get test statistic
-    cout << "Calculating test statistic from data..." << endl;
-    TFitResultPtr null_fit = data_histogram->Fit(null_model, "RQELSN");
-    // if (!null_fit.Get() || null_fit->Status() != 0)
-    // {
-    //     cout << "ERROR: Could not fit null model to data. Status: " << (null_fit.Get() ? null_fit->Status() : -999) << endl;
-    //     return -1;
-    // }
-    // ctemp->SaveAs(Form("null_model_fit_%d.png", 0));
-
-    // Get the test statistic q0 from data (MinFcnValue returns -2 log L, hence nll)
-    double nll_null_data = null_fit->MinFcnValue();
-    double nll_full_data = full_fit->MinFcnValue();
-    double q0_data = nll_null_data - nll_full_data; // test statistic from data
-
-    cout << "Data: q0 = " << q0_data << endl;
-    cout << "Null model fit: -2 log L = " << nll_null_data << endl;
-    cout << "Full model: -2 log L = " << nll_full_data << endl;
-
-    // Chernoff mixture asymptotic significance
-    // For Chernoff mixture: q0 ~ 1/2 δ(0) + 1/2 χ²₁
-    // The p-value is: P(q0 ≥ q0_data) = 1/2 * P(χ²₁ ≥ q0_data) if q0_data > 0
-    double chernoff_p_value = 0.0;
-    if (q0_data > 0)
-    {
-        double chi2_p_value = TMath::Prob(q0_data, 1); // P(χ²₁ ≥ q0_data)
-        chernoff_p_value = 0.5 * (1.0 - chi2_p_value); // Chernoff mixture p-value
-    }
-    else
-    {
-        chernoff_p_value = 1.0; // If q0_data ≤ 0, p-value is 1
-    }
-    double chernoff_significance = TMath::NormQuantile(1.0 - chernoff_p_value);
-
-    // Keep the old pure χ²₁ calculation for comparison
-    double pure_chi2_significance = sqrt(q0_data);
-
-    cout << "Pure χ²₁ significance = " << pure_chi2_significance << "σ" << endl;
-    cout << "Chernoff mixture significance = " << chernoff_significance << "σ" << endl;
-    cout << "Chernoff mixture p-value = " << chernoff_p_value << endl;
-
-    // Generate toy datasets under null hypothesis
-    vector<double> q0_toys;
-    q0_toys.reserve(nToys);
-
-    // Temporary
-    vector<double> NLL_null, NLL_full;
-    NLL_null.push_back(nll_null_data);
-    NLL_full.push_back(nll_full_data);
-
-    TRandom3 rng(0); // Use fixed seed for reproducibility, or use time(nullptr) for random
-
-    // Get binning from data histogram
-    int nbins = data_histogram->GetNbinsX();
-    double xmin = data_histogram->GetXaxis()->GetXmin();
-    double xmax = data_histogram->GetXaxis()->GetXmax();
-
-    for (int itoy = 0; itoy < nToys; itoy++)
-    {
-        if (verbose && itoy % 100 == 0)
-        {
-            cout << "Processing toy " << itoy << "/" << nToys << "\r" << flush;
-        }
-
-        // Create toy histogram
-        TH1F *h_toy = new TH1F(Form("h_toy_%d", itoy), "toy", nbins, xmin, xmax);
-
-        // Fill toy histogram by sampling from fitted null model with boundary conditions
-        for (int ibin = 1; ibin <= nbins; ibin++)
-        {
-            double bin_center = h_toy->GetBinCenter(ibin);
-            double bin_width = h_toy->GetBinWidth(ibin);
-            double bin_content = data_histogram->GetBinContent(ibin);
-
-            // Expected counts in this bin from fitted null model
-            double expected = null_model->Eval(bin_center);
-
-            // Apply boundary condition: ensure non-negative expected counts
-            // expected = max(0.0, expected);
-
-            // Generate Poisson-distributed counts
-            int observed = rng.Poisson(expected);
-            // Int_t observed = rng.Poisson(bin_content);
-            h_toy->SetBinContent(ibin, observed);
-            h_toy->SetBinError(ibin, sqrt(max(1.0, double(observed)))); // Avoid zero errors
-        }
-
-        // Create fresh copies of models for this toy (fails with cloning somehow)
-        // TF1 *toy_null = (TF1 *)null_model->Clone(Form("toy_null_%d", itoy));
-        // TF1 *toy_full = (TF1 *)full_model->Clone(Form("toy_full_%d", itoy));
-
-        TF1 *toy_null = new TF1("toy_null", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
-        TF1 *toy_full = new TF1("toy_full", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
-
-        // Apply boundary conditions for signal amplitude parameters
-        // For a BWsum model, typically amplitudes are at indices 0, 3, 6, 9 (every 3rd parameter)
-        for (int ipar = 0; ipar < 10; ipar += 3)
-        {
-
-            toy_full->SetParLimits(ipar, 0.0, 1e9); // Non-negative amplitude constraint
-            if (ipar < 7)
-                toy_null->SetParLimits(ipar, 0.0, 1e9); // Non-negative amplitude constraint
-        }
-
-        // Fit toy dataset with both models
-        // set first 12 parameters temporarily and then fit freely
-        double parameters_fit[] = {2000, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 6000, f1525Mass, f1525Width, 50, f1710Mass, f1710Width};
-        for (int iparams = 0; iparams < 12; iparams++)
-        {
-            toy_full->SetParameter(iparams, parameters_fit[iparams]);
-            if (iparams < 9)
-                toy_null->SetParameter(iparams, parameters_fit[iparams]);
-            // else
-            //     toy_null->SetParameter(iparams, 0); // Set f0(1710) amplitude to 0 for null model
-        }
-        int limits_size = par_limits.size();
-        for (int i = 0; i < limits_size; i++)
-        {
-            int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
-            toy_full->SetParLimits(par_limits[i][0], parameters_fit[param_index] - par_limits[i][1], parameters_fit[param_index] + par_limits[i][1]);
-            if (param_index < 9)
-                toy_null->SetParLimits(par_limits[i][0], parameters_fit[param_index] - par_limits[i][1], parameters_fit[param_index] + par_limits[i][1]);
-        }
-        toy_null->SetParLimits(10, f1710Mass - 5 * f1710Width, f1710Mass + 5 * f1710Width);
-        toy_null->SetParLimits(11, f1710Width - 20 * f1710WidthErr, f1710Width + 20 * f1710WidthErr);
-
-        toy_full->FixParameter(2, f1270Width);
-        toy_full->FixParameter(5, a1320Width);
-        toy_full->FixParameter(8, f1525Width);
-
-        toy_null->FixParameter(2, f1270Width);
-        toy_null->FixParameter(5, a1320Width);
-        toy_null->FixParameter(8, f1525Width);
-        toy_null->FixParameter(9, 0); // 0 amplitude for f0(1710) for null fit
-
-        toy_full->SetParameter(12, 3.7e5);
-        toy_full->SetParameter(13, -0.1);
-        toy_full->SetParameter(14, 2.3);
-        toy_full->SetParameter(15, 1.3);
-
-        toy_null->SetParameter(12, 3.3e5);
-        toy_null->SetParameter(13, -0.1);
-        toy_null->SetParameter(14, 2.3);
-        toy_null->SetParameter(15, 1.3);
-
-        // h_toy->Fit(toy_full, "REMSQ0");
-        TFitResultPtr toy_full_fit = h_toy->Fit(toy_full, "RELMSQ0");
-
-        // TCanvas *ctemp2 = new TCanvas("ctemp2", "toy model full fit", 800, 600);
-        // SetHistoQA(h_toy);
-        // h_toy->Draw("pe");
-        // toy_full->Draw("same");
-        // ctemp2->SaveAs(Form("toy_fit_full_%d.png", itoy));
-
-        // h_toy->Fit(toy_null, "REMSQ0");
-        TFitResultPtr toy_null_fit = h_toy->Fit(toy_null, "RELMSQ0");
-
-        // TCanvas *ctemp3 = new TCanvas("ctemp3", "toy model null fit", 800, 600);
-        // h_toy->Draw("pe");
-        // toy_null->Draw("same");
-        // ctemp3->SaveAs(Form("toy_fit_null_%d.png", itoy));
-
-        // Calculate test statistic for this toy (nll = -2 log L)
-        auto edm_full = toy_full_fit->Edm();
-        auto edm_null = toy_null_fit->Edm();
-        if (std::isnan(edm_null) || std::isnan(edm_full) || edm_null > 0.001 || edm_full > 0.001)
-        {
-            continue;
-        }
-        double q0_toy = toy_null_fit->MinFcnValue() - toy_full_fit->MinFcnValue();
-        if (q0_toy < 0 || !std::isfinite(q0_toy))
-            continue;
-
-        bool isAmpNotValid = false;
-
-        for (int ipar = 0; ipar < 10; ipar += 3)
-        {
-            if (toy_full->GetParameter(ipar) < 10)
-            {
-                isAmpNotValid = true;
-            }
-            if (ipar < 7 && toy_null->GetParameter(ipar) < 10)
-            {
-                isAmpNotValid = true;
-            }
-        }
-        if (isAmpNotValid)
-            continue;
-
-        float chi2ndf_full = toy_full->GetChisquare() / toy_full->GetNDF();
-        float chi2ndf_null = toy_null->GetChisquare() / toy_null->GetNDF();
-        if (chi2ndf_full > 5.0 || chi2ndf_null > 5.0)
-        {
-            continue;
-        }
-
-        q0_toys.push_back(q0_toy);
-        NLL_null.push_back(toy_null_fit->MinFcnValue());
-        NLL_full.push_back(toy_full_fit->MinFcnValue());
-        cout << "Iteration " << itoy << ", NLL_full: " << toy_full_fit->MinFcnValue() << ", NLL_null: " << toy_null_fit->MinFcnValue() << ", test statistic: " << q0_toy << endl;
-        cout << "Full fit status " << toy_full_fit->Status() << ", Null fit status " << toy_null_fit->Status() << endl;
-        cout << "Full fit edm " << toy_full_fit->Edm() << ", Null fit edm " << toy_null_fit->Edm() << endl;
-
-        delete h_toy;
-        delete toy_null;
-        delete toy_full;
-    }
-
-    TFile *ftemp = new TFile("toy_significance.root", "RECREATE");
-
-    // Plot the test statistic value for each iteration in toy model
-    TCanvas *c_test_stat = new TCanvas("c_test_stat", "Test Statistic Distribution", 800, 600);
-    TH1D *h_test_stat = new TH1D("h_test_stat", "Test Statistic Distribution; q0; Events", 2000, 500, 2500);
-    TH1D *h_NLL_full = new TH1D("h_NLL_full", "NLL Full Distribution; NLL; Events", 500, 0, 50);
-    TH1D *h_NLL_null = new TH1D("h_NLL_null", "NLL Null Distribution; NLL; Events", 1000, 1000, 2000);
-    for (double q0_toy : q0_toys)
-    {
-        h_test_stat->Fill(q0_toy);
-    }
-    for (double nll_full : NLL_full)
-    {
-        h_NLL_full->Fill(nll_full);
-    }
-    for (double nll_null : NLL_null)
-    {
-        h_NLL_null->Fill(nll_null);
-    }
-    h_test_stat->Draw();
-    h_test_stat->Write();
-    h_NLL_full->Write();
-    h_NLL_null->Write();
-    c_test_stat->SaveAs("test_stat_distribution.png");
-    // ftemp->Close();
-
-    // cout << "\nGenerated " << q0_toys.size() << " successful toy experiments" << endl;
-
-    // Calculate empirical p-value: fraction of toys with q0_toy >= q0_data
-    int count_extreme = 0;
-    for (double q0_toy : q0_toys)
-    {
-        if (q0_toy >= q0_data)
-        {
-            count_extreme++;
-        }
-    }
-
-    double empirical_p_value = double(count_extreme) / double(q0_toys.size());
-
-    // Enhanced significance calculation strategy using Chernoff mixture
-    double final_significance = 0.0;
-    string method_used = "";
-
-    if (chernoff_significance > 5.0 && empirical_p_value == 0.0)
-    {
-        // For very high significance with no extreme toys, use Chernoff mixture approximation
-        final_significance = chernoff_significance;
-        method_used = "Chernoff mixture (validated by toys)";
-
-        cout << "\nUSING CHERNOFF MIXTURE APPROXIMATION:" << endl;
-        cout << "Significance > 5σ and no toys exceeded data" << endl;
-        cout << "Chernoff mixture approximation is reliable for such extreme values" << endl;
-    }
-    else if (empirical_p_value > 0.0)
-    {
-        // Standard toy MC p-value conversion
-        final_significance = TMath::NormQuantile(1.0 - empirical_p_value);
-        method_used = "Empirical toys";
-    }
-    else
-    {
-        // No toys exceeded data, set conservative lower bound
-        double lower_bound_p = 1.0 / double(q0_toys.size());
-        final_significance = TMath::NormQuantile(1.0 - lower_bound_p);
-        method_used = "Conservative lower bound";
-        cout << "No toys exceeded data. Significance > " << final_significance << "σ" << endl;
-    }
-
-    cout << "\nTOY MONTE CARLO RESULTS:" << endl;
-    cout << "========================" << endl;
-    cout << "Test statistic from data: q0 = " << q0_data << endl;
-    cout << "Number of toys with q0 ≥ q0_data: " << count_extreme << " / " << q0_toys.size() << endl;
-    cout << "Empirical p-value = " << empirical_p_value << endl;
-    cout << "Method used: " << method_used << endl;
-    cout << "Final significance = " << final_significance << "σ" << endl;
-
-    // Additional diagnostics for validation
-    if (!q0_toys.empty())
-    {
-        double q0_mean = 0.0;
-        for (double q0_toy : q0_toys)
-            q0_mean += q0_toy;
-        q0_mean /= q0_toys.size();
-
-        double q0_max_toy = *max_element(q0_toys.begin(), q0_toys.end());
-
-        cout << "\nTOY DISTRIBUTION DIAGNOSTICS:" << endl;
-        cout << "Mean q0 from toys: " << q0_mean << endl;
-        cout << "Max q0 from toys:  " << q0_max_toy << endl;
-        cout << "Data vs toy max:   " << q0_data << " vs " << q0_max_toy << " (ratio: " << q0_data / q0_max_toy << ")" << endl;
-
-        // Compare toy distribution shape to Chernoff mixture expectation
-        // For Chernoff mixture: E[q0] = 1/2 * 0 + 1/2 * 1 = 0.5
-        // Var[q0] = 1/2 * 0² + 1/2 * (1 + 2) - 0.5² = 1.5 - 0.25 = 1.25
-        // So std[q0] = sqrt(1.25) ≈ 1.118
-        cout << "\nCHERNOFF MIXTURE vs TOY COMPARISON:" << endl;
-        cout << "Expected mean (Chernoff): 0.5,  Observed mean: " << q0_mean << endl;
-        cout << "Expected std (Chernoff):  √1.25 ≈ 1.118,  Observed std: ";
-
-        // Calculate standard deviation of toy distribution
-        double q0_var = 0.0;
-        for (double q0_toy : q0_toys)
-        {
-            q0_var += (q0_toy - q0_mean) * (q0_toy - q0_mean);
-        }
-        q0_var /= q0_toys.size();
-        double q0_std = sqrt(q0_var);
-        cout << q0_std << endl;
-
-        // Validation messages for Chernoff mixture
-        bool shape_ok = (abs(q0_mean - 0.5) < 0.3) && (abs(q0_std - 1.118) < 0.3);
-        if (shape_ok)
-        {
-            cout << "SHAPE VALIDATION: PASSED - Toy distribution matches Chernoff mixture expectation" << endl;
-        }
-        else
-        {
-            cout << "SHAPE VALIDATION: WARNING - Toy distribution deviates from Chernoff mixture" << endl;
-            cout << "Consider checking fit convergence or model assumptions" << endl;
-        }
-
-        if (q0_data > 50 * q0_max_toy)
-        {
-            cout << "EXTREME SIGNIFICANCE: Data test statistic is " << q0_data / q0_max_toy << "x larger than largest toy." << endl;
-            cout << "This confirms the signal is extremely significant." << endl;
-            cout << "For such extreme significances, asymptotic approximation is reliable." << endl;
-        }
-    }
-
-    // Generate theoretical Chernoff mixture samples for comparison
-    cout << "\nGenerating theoretical Chernoff mixture samples for validation..." << endl;
-    vector<double> chernoff_samples;
-    TRandom3 chernoff_rng(12345); // Different seed for theoretical samples
-
-    for (int i = 0; i < q0_toys.size(); i++)
-    {
-        double u = chernoff_rng.Uniform(0.0, 1.0);
-        if (u < 0.5)
-        {
-            // 50% probability: δ(0) - sample is exactly 0
-            chernoff_samples.push_back(0.0);
-        }
-        else
-        {
-            // 50% probability: χ²₁ distribution
-            double chi2_sample = chernoff_rng.Uniform(0.0, 1.0);
-            // Use inverse CDF of χ²₁ (approximately 2*Φ⁻¹(sqrt(u))² where Φ⁻¹ is normal quantile)
-            double normal_sample = TMath::NormQuantile(sqrt(chi2_sample));
-            chernoff_samples.push_back(normal_sample * normal_sample);
-        }
-    }
-
-    // Calculate statistics for theoretical Chernoff mixture
-    double chernoff_mean = 0.0;
-    for (double sample : chernoff_samples)
-        chernoff_mean += sample;
-    chernoff_mean /= chernoff_samples.size();
-
-    double chernoff_var = 0.0;
-    for (double sample : chernoff_samples)
-    {
-        chernoff_var += (sample - chernoff_mean) * (sample - chernoff_mean);
-    }
-    chernoff_var /= chernoff_samples.size();
-    double chernoff_std = sqrt(chernoff_var);
-
-    cout << "Theoretical Chernoff mixture: mean = " << chernoff_mean << ", std = " << chernoff_std << endl;
-
-    // Create diagnostic plot comparing toy distribution to asymptotic χ²(1)
-    TCanvas *c_toys = new TCanvas("c_toys", "Toy MC vs Asymptotic Distribution", 800, 600);
-
-    // Find appropriate range for histogram
-    double q0_min = *min_element(q0_toys.begin(), q0_toys.end());
-    double q0_max = *max_element(q0_toys.begin(), q0_toys.end());
-    double range_extend = (q0_max - q0_min) * 0.1;
-    double hist_max = max(q0_max + range_extend, min(q0_data + range_extend, 20.0)); // Cap at 20 for visibility
-
-    TH1F *h_toys = new TH1F("h_toys", "Distribution of q_{0}: Toy MC vs Chernoff Mixture;q_{0} = #Delta(-2logL);Normalized Frequency", 200, q0_min - range_extend, hist_max);
-
-    for (double q0_toy : q0_toys)
-    {
-        if (q0_toy <= hist_max)
-            h_toys->Fill(q0_toy);
-    }
-
-    // Normalize to unit area for comparison with Chernoff mixture
-    h_toys->Scale(1.0 / h_toys->Integral() / h_toys->GetBinWidth(1));
-    h_toys->SetFillColor(kBlue);
-    h_toys->SetFillStyle(3004);
-    h_toys->SetLineColor(kBlue);
-    h_toys->SetLineWidth(2);
-    h_toys->Write("Normalized_toy_null");
-    h_toys->Draw();
-
-    // Create and overlay theoretical Chernoff mixture histogram
-    TH1F *h_chernoff = new TH1F("h_chernoff", "Theoretical Chernoff Mixture", 200, q0_min - range_extend, hist_max);
-    for (double sample : chernoff_samples)
-    {
-        if (sample <= hist_max)
-            h_chernoff->Fill(sample);
-    }
-    h_chernoff->Scale(1.0 / h_chernoff->Integral() / h_chernoff->GetBinWidth(1));
-    h_chernoff->SetLineColor(kRed);
-    h_chernoff->SetLineWidth(3);
-    h_chernoff->SetLineStyle(2);
-    h_chernoff->Draw("same");
-
-    // Also overlay the pure χ²(1) for comparison
-    TF1 *chi2_1dof = new TF1("chi2_1dof", "0.5*exp(-0.5*x)/sqrt(2*TMath::Pi()*x)", 0.01, hist_max);
-    chi2_1dof->SetLineColor(kMagenta);
-    chi2_1dof->SetLineWidth(2);
-    chi2_1dof->SetLineStyle(3);
-    chi2_1dof->Draw("same");
-
-    // Mark data value if within range
-    if (q0_data <= hist_max)
-    {
-        TLine *line_data = new TLine(q0_data, 0, q0_data, h_toys->GetMaximum());
-        line_data->SetLineColor(kGreen + 2);
-        line_data->SetLineWidth(4);
-        line_data->Draw("same");
-    }
-
-    // Add legend and text
-    TLegend *leg = new TLegend(0.5, 0.60, 0.89, 0.89);
-    leg->SetFillStyle(0);
-    leg->SetBorderSize(0);
-    leg->AddEntry(h_toys, "Toy MC (null hyp.)", "f");
-    leg->AddEntry(h_chernoff, "Chernoff mixture", "l");
-    leg->AddEntry(chi2_1dof, "#chi^{2}(1) (comparison)", "l");
-    if (q0_data <= hist_max)
-    {
-        leg->AddEntry((TObject *)0, Form("Data: q_{0} = %.2f", q0_data), "");
-    }
-    else
-    {
-        leg->AddEntry((TObject *)0, Form("Data: q_{0} = %.2f (off scale)", q0_data), "");
-    }
-    leg->Draw();
-
-    TLatex lat;
-    lat.SetNDC();
-    lat.SetTextSize(0.035);
-    lat.DrawLatex(0.15, 0.85, Form("Empirical p-value = %.4f", empirical_p_value));
-    lat.DrawLatex(0.15, 0.80, Form("Final significance = %.2f#sigma", final_significance));
-    lat.DrawLatex(0.15, 0.75, Form("Method: %s", method_used.c_str()));
-    lat.DrawLatex(0.15, 0.70, Form("N_{toys} = %d", (int)q0_toys.size()));
-    lat.DrawLatex(0.15, 0.65, Form("Chernoff: %.2f#sigma", chernoff_significance));
-    lat.DrawLatex(0.15, 0.60, Form("Pure #chi^{2}: %.2f#sigma", pure_chi2_significance));
-
-    c_toys->SaveAs("toy_mc_vs_chernoff_distribution.png");
-    c_toys->Write("toy_mc_vs_chernoff_distribution");
-
-    delete c_toys;
-    delete h_toys;
-    delete chi2_1dof;
-
-    return final_significance;
-    // return 42;
-}
+double calculateToyMCSignificance(TH1F *data_histogram, TF1 *null_model, TF1 *full_model, TFitResultPtr full_fit, vector<vector<double>> par_limits, int nToys = 1000, bool verbose = false);
 
 void glueball_fit_4rBW()
 {
@@ -679,7 +202,7 @@ void glueball_fit_4rBW()
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial";
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances";
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
@@ -762,8 +285,11 @@ void glueball_fit_4rBW()
                 cout << "Error opening histogram" << endl;
                 return;
             }
+            TCanvas *c_reducedFit = new TCanvas("c_reducedFit", "Reduced Fit", 720, 720);
+            SetCanvasStyle(c_reducedFit, 0.14, 0.03, 0.05, 0.13);
             TCanvas *c = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
+            c->cd();
             hinvMass->Rebin(2);
             double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
             // cout<<"x max is "<<hinvMass->GetXaxis()->GetXmax()<<endl;
@@ -802,8 +328,8 @@ void glueball_fit_4rBW()
             }
 
             double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
+            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
             // double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
-            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin (old)
             // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 800, f1710Mass, f1710Width}; // medium train
             // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
             // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
@@ -900,7 +426,7 @@ void glueball_fit_4rBW()
             // cout << "Toy Monte Carlo:          " << toy_significance << "σ (validated)" << endl;
 
             // // First fit to get reasonable starting parameters
-            TFitResultPtr fitResultptr_initial = hinvMass->Fit("BEexpol", "RELBMS0"); // use during likelihood fits
+            TFitResultPtr fitResultptr_initial = hinvMass->Fit("BEexpol", "RELBMS0Q"); // use during likelihood fits
 
             // /*
 
@@ -981,6 +507,7 @@ void glueball_fit_4rBW()
             // Final fit to ensure convergence at global minimum
             cout << "\nPerforming final fit at global minimum..." << endl;
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
+
             double nll_full = fitResultptr->MinFcnValue();
 
             cout << "\nGLOBAL BEST FIT RESULTS:" << endl;
@@ -1015,7 +542,7 @@ void glueball_fit_4rBW()
                 BEexpol_reduced->FixParameter(8, f1525Width);
 
                 // Fit reduced model
-                TFitResultPtr fitResult_reduced = hinvMass->Fit("BEexpol_reduced", "RQELBMS0");
+                TFitResultPtr fitResult_reduced = hinvMass->Fit("BEexpol_reduced", "RELBMSQ");
                 double nll_reduced = fitResult_reduced->MinFcnValue();
 
                 // Calculate Δ(-2 log L) = -2 log L_reduced - (-2 log L_full)
@@ -1128,11 +655,11 @@ void glueball_fit_4rBW()
                 double best_profile_nll = 1e10;
 
                 // Strategy 1: Start from global best fit values
-                TFitResultPtr profile_fit1 = hinvMass->Fit("profile_func", "RQELSBN0");
-                if (test_amplitude == 0 && profile_fit1->Status() != 0)
-                {
-                    cout << "WARNING: Fit did not converge for f0_amp = 0. Check results!" << endl;
-                }
+                TFitResultPtr profile_fit1 = hinvMass->Fit("profile_func", "RQELBMSN0");
+                // if (test_amplitude == 0 && profile_fit1->Status() != 0)
+                // {
+                //     cout << "WARNING: Fit did not converge for f0_amp = 0. Check results!" << endl;
+                // }
                 double nll1 = profile_fit1->MinFcnValue();
                 if (nll1 < best_profile_nll)
                 {
@@ -1157,7 +684,7 @@ void glueball_fit_4rBW()
                     profile_func->FixParameter(5, a1320Width);
                     profile_func->FixParameter(8, f1525Width);
 
-                    TFitResultPtr profile_fit_retry = hinvMass->Fit("profile_func", "RQELSBN0");
+                    TFitResultPtr profile_fit_retry = hinvMass->Fit("profile_func", "RQELBMSN0");
                     double nll_retry = profile_fit_retry->MinFcnValue();
                     if (nll_retry < best_profile_nll)
                     {
@@ -1189,7 +716,53 @@ void glueball_fit_4rBW()
 
             // Calculate profile likelihood at amplitude = 0 (null hypothesis)
             cout << "\nCalculating profile likelihood at f0(1710) amplitude = 0 (null hypothesis)..." << endl;
+
+            // Create a copy of the fit function for null model plotting
+            TF1 *null_model_func = new TF1("null_model_func", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+            // Set all parameters to GLOBAL best-fit values as starting point
+            for (int i = 0; i < 16; i++)
+            {
+                null_model_func->SetParameter(i, obtained_parameters[i]);
+            }
+
+            // Fix the f0(1710) amplitude to 0 (null hypothesis)
+            null_model_func->FixParameter(f0_amp_index, 0.0);
+
+            // Apply same physics constraints as original fit
+            null_model_func->FixParameter(2, f1270Width); // f2(1270) width - physics constraint
+            null_model_func->FixParameter(5, a1320Width); // a2(1320) width - physics constraint
+            null_model_func->FixParameter(8, f1525Width); // f2(1525) width - physics constraint
+
+            // // apply the same limits here also
+            // for (int i = 0; i < limits_size; i++)
+            // {
+            //     int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+            //     null_model_func->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+            // }
+
+            // Fit the null model to get the best-fit parameters
+            cout << "****************Fitting with null model*********************" << endl;
+            TFitResultPtr null_fit = hinvMass->Fit("null_model_func", "RELMSN");
+
+            // Get the likelihood value (this should match what the lambda function returns)
             double nll_null = profileLikelihood_f0_amp(0.0);
+
+            // Now plot the null model fit on c_reducedFit
+            c_reducedFit->cd();
+            hinvMass->Draw("pe");
+            null_model_func->SetLineColor(kRed);
+            null_model_func->SetLineWidth(2);
+            null_model_func->Draw("same");
+            c_reducedFit->Update();
+
+            // Save the null model fit plot
+            string null_model_plot_path = savepath + "/null_model_fit.png";
+            c_reducedFit->SaveAs(null_model_plot_path.c_str());
+            cout << "Null model fit plot saved to: " << null_model_plot_path << endl;
+
+            // Clean up
+            delete null_model_func;
 
             // Calculate Δ(-2 log L) = profile likelihood ratio test statistic
             double delta_2logL_f0 = nll_null - nll_full;
@@ -1305,16 +878,19 @@ void glueball_fit_4rBW()
             //     cout << "The f0(1710) discovery is robust and well-established." << endl;
             // }
 
-            // Create detailed profile likelihood scan for f0(1710) amplitude
-            cout << "\nCreating detailed profile likelihood scan for f0(1710) amplitude..." << endl;
+            //===================================================================================//
+            // **********Create detailed profile likelihood scan for f0(1710) amplitude************
+            //===================================================================================//
 
+            cout << "\nCreating detailed profile likelihood scan for f0(1710) amplitude..." << endl;
             vector<double> amp_values;
             vector<double> profile_nll_values;
 
-            // Scan range: from -2σ to +4σ around best fit value (including negative values)
-            double amp_min = f0_amp_best - 2.0 * f0_amp_error;
-            double amp_max = f0_amp_best + 4.0 * f0_amp_error;
-            int n_scan_points = 60;
+            // Scan range: from -4σ to +5σ around best fit value (including negative values)
+            double amp_min = f0_amp_best - 3.0 * f0_amp_error;
+            double amp_max = f0_amp_best + 3.5 * f0_amp_error;
+            // int n_scan_points = 60;
+            int n_scan_points = 0; // Do not scan (temporarily)
             double amp_step = (amp_max - amp_min) / (n_scan_points - 1);
 
             cout << "Scanning amplitude from " << amp_min << " to " << amp_max << " in " << n_scan_points << " steps..." << endl;
@@ -1324,6 +900,7 @@ void glueball_fit_4rBW()
                 double test_amp = amp_min + i * amp_step;
                 double nll_test = profileLikelihood_f0_amp(test_amp);
                 double delta_nll = nll_test - nll_full;
+                cout << "scan point " << i + 1 << ": amp = " << test_amp << ", Δ(-2logL) = " << delta_nll << endl;
 
                 amp_values.push_back(test_amp);
                 profile_nll_values.push_back(delta_nll);
@@ -1363,26 +940,33 @@ void glueball_fit_4rBW()
             double x_min_prof = profile_f0->GetXaxis()->GetXmin();
             double x_max_prof = profile_f0->GetXaxis()->GetXmax();
 
-            // 1σ confidence interval: Δ(-2 log L) = 1.0
+            // 68% confidence level
             TLine *line1sigma_prof = new TLine(x_min_prof, 1.0, x_max_prof, 1.0);
             line1sigma_prof->SetLineColor(kGreen);
             line1sigma_prof->SetLineStyle(2);
             line1sigma_prof->SetLineWidth(3);
             line1sigma_prof->Draw("same");
 
-            // 2σ confidence interval: Δ(-2 log L) = 4.0
-            TLine *line2sigma_prof = new TLine(x_min_prof, 4.0, x_max_prof, 4.0);
+            // 95% confidence level
+            TLine *line2sigma_prof = new TLine(x_min_prof, 3.84, x_max_prof, 3.84);
             line2sigma_prof->SetLineColor(kOrange);
             line2sigma_prof->SetLineStyle(2);
             line2sigma_prof->SetLineWidth(3);
             line2sigma_prof->Draw("same");
 
-            // 3σ confidence interval: Δ(-2 log L) = 9.0
-            TLine *line3sigma_prof = new TLine(x_min_prof, 9.0, x_max_prof, 9.0);
+            // 99% confidence level
+            TLine *line3sigma_prof = new TLine(x_min_prof, 6.63, x_max_prof, 6.63);
             line3sigma_prof->SetLineColor(kRed);
             line3sigma_prof->SetLineStyle(2);
             line3sigma_prof->SetLineWidth(3);
             // line3sigma_prof->Draw("same");
+
+            // 99.7% confidence level
+            TLine *line4sigma_prof = new TLine(x_min_prof, 8.8, x_max_prof, 8.8);
+            line4sigma_prof->SetLineColor(kBlue);
+            line4sigma_prof->SetLineStyle(2);
+            line4sigma_prof->SetLineWidth(3);
+            // line4sigma_prof->Draw("same");
 
             // 5σ discovery threshold: Δ(-2 log L) = 25.0
             TLine *line5sigma_prof = nullptr;
@@ -1415,9 +999,9 @@ void glueball_fit_4rBW()
             leg_prof->SetBorderSize(0);
             leg_prof->SetTextSize(0.035);
             leg_prof->AddEntry(profile_f0, "Profile Likelihood", "LP");
-            leg_prof->AddEntry(line1sigma_prof, "1#sigma (68% CL)", "L");
-            leg_prof->AddEntry(line2sigma_prof, "2#sigma (95% CL)", "L");
-            // leg_prof->AddEntry(line3sigma_prof, "3#sigma (99.7% CL)", "L");
+            leg_prof->AddEntry(line1sigma_prof, "68% CL", "L");
+            leg_prof->AddEntry(line2sigma_prof, "95% CL", "L");
+            // leg_prof->AddEntry(line3sigma_prof, "99% CL", "L");
             if (line5sigma_prof != nullptr)
             {
                 leg_prof->AddEntry(line5sigma_prof, "5#sigma (discovery)", "L");
@@ -1488,25 +1072,29 @@ void glueball_fit_4rBW()
                 return make_pair(lower_bound, upper_bound);
             };
 
-            // Calculate 68%, 95%, and 99.7% confidence intervals
+            // Calculate 68%, 95%, 99%, and 99.9% confidence intervals
             auto ci_68 = findConfidenceInterval(1.0);
-            auto ci_95 = findConfidenceInterval(4.0);
-            auto ci_997 = findConfidenceInterval(9.0);
+            auto ci_95 = findConfidenceInterval(3.84);
+            auto ci_99 = findConfidenceInterval(6.63);
+            auto ci_99p9 = findConfidenceInterval(10.83);
 
-            cout << "68% CL (1σ): [" << ci_68.first << ", " << ci_68.second << "]" << endl;
-            cout << "95% CL (2σ): [" << ci_95.first << ", " << ci_95.second << "]" << endl;
-            cout << "99.7% CL (3σ): [" << ci_997.first << ", " << ci_997.second << "]" << endl;
+            cout << "68% CL: [" << ci_68.first << ", " << ci_68.second << "]" << endl;
+            cout << "95% CL: [" << ci_95.first << ", " << ci_95.second << "]" << endl;
+            cout << "99% CL: [" << ci_99.first << ", " << ci_99.second << "]" << endl;
+            cout << "99.9% CL: [" << ci_99p9.first << ", " << ci_99p9.second << "]" << endl;
 
             // Check if zero is excluded
             bool zero_excluded_68 = (0.0 < ci_68.first || 0.0 > ci_68.second);
             bool zero_excluded_95 = (0.0 < ci_95.first || 0.0 > ci_95.second);
-            bool zero_excluded_997 = (0.0 < ci_997.first || 0.0 > ci_997.second);
+            bool zero_excluded_99 = (0.0 < ci_99.first || 0.0 > ci_99.second);
+            bool zero_excluded_99p9 = (0.0 < ci_99p9.first || 0.0 > ci_99p9.second);
 
             cout << "\nZERO EXCLUSION TEST:" << endl;
             cout << "====================" << endl;
             cout << "Zero excluded at 68% CL: " << (zero_excluded_68 ? "YES" : "NO") << endl;
             cout << "Zero excluded at 95% CL: " << (zero_excluded_95 ? "YES" : "NO") << endl;
-            cout << "Zero excluded at 99.7% CL: " << (zero_excluded_997 ? "YES" : "NO") << endl;
+            cout << "Zero excluded at 99% CL: " << (zero_excluded_99 ? "YES" : "NO") << endl;
+            cout << "Zero excluded at 99.9% CL: " << (zero_excluded_99p9 ? "YES" : "NO") << endl;
 
             cout << "\n================================================================" << endl;
             cout << "END OF PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE" << endl;
@@ -1514,8 +1102,7 @@ void glueball_fit_4rBW()
                  << endl;
 
             // Function to create likelihood profiles for parameters
-            auto createLikelihoodProfile = [&](int param_index, const string &param_name, double central_value,
-                                               double param_error, double scan_range = 3.0) -> TGraph *
+            auto createLikelihoodProfile = [&](int param_index, const string &param_name, double central_value, double param_error, double scan_range = 3.0) -> TGraph *
             {
                 cout << "\nCreating likelihood profile for " << param_name << "..." << endl;
 
@@ -1574,17 +1161,19 @@ void glueball_fit_4rBW()
                 return profile;
             };
 
-            // // Create likelihood profiles for key parameters
-            // vector<TGraph *> likelihood_profiles;
-            // vector<string> profile_param_names;
-            // vector<int> profile_param_indices;
+            // Create likelihood profiles for key parameters
+            vector<TGraph *> likelihood_profiles;
+            vector<string> profile_param_names;
+            vector<int> profile_param_indices;
 
-            // // Add profiles for masses and amplitudes of each resonance
-            // string profile_names[] = {"f2_1270_mass", "f2_1270_amp", "a2_1320_mass", "a2_1320_amp",
-            //                           "f2_1525_mass", "f2_1525_amp", "f0_1710_mass", "f0_1710_amp", "f0_1710_width"};
-            // int profile_indices[] = {1, 0, 4, 3, 7, 6, 10, 9, 11}; // Parameter indices
+            // Add profiles for masses and amplitudes of each resonance
+            string profile_names[] = {"f2_1270_mass", "f2_1270_amp", "a2_1320_mass", "a2_1320_amp",
+                                      "f2_1525_mass", "f2_1525_amp", "f0_1710_mass", "f0_1710_amp", "f0_1710_width"};
+            int profile_indices[] = {1, 0, 4, 3, 7, 6, 10, 9, 11}; // Parameter indices
+            // int profile_indices[] = {11}; // check only width of glueball candidate
 
             // for (int i = 0; i < 9; i++)
+            // // for (int i = 0; i < 1; i++)
             // {
             //     double central_val = obtained_parameters[profile_indices[i]];
             //     // double param_err = BEexpol->GetParError(profile_indices[i]);
@@ -1603,65 +1192,65 @@ void glueball_fit_4rBW()
             //     }
             // }
 
-            // // Create canvas for likelihood profiles
-            // TCanvas *c_profiles = new TCanvas("c_profiles", "Likelihood Profiles", 1440, 720);
-            // SetCanvasStyle(c_profiles, 0.15, 0.06, 0.06, 0.15);
-            // c_profiles->Divide(3, 3);
+            // Create canvas for likelihood profiles
+            TCanvas *c_profiles = new TCanvas("c_profiles", "Likelihood Profiles", 1440, 720);
+            SetCanvasStyle(c_profiles, 0.15, 0.06, 0.06, 0.15);
+            c_profiles->Divide(3, 3);
 
-            // for (size_t i = 0; i < likelihood_profiles.size() && i < 9; i++)
-            // {
-            //     c_profiles->cd(i + 1);
-            //     gPad->SetLeftMargin(0.15);
-            //     gPad->SetBottomMargin(0.15);
-            //     SetGraphStyle(likelihood_profiles[i], 1, 1);
-            //     likelihood_profiles[i]->SetMarkerSize(0.7);
-            //     likelihood_profiles[i]->Draw("ALP");
+            for (size_t i = 0; i < likelihood_profiles.size() && i < 9; i++)
+            {
+                c_profiles->cd(i + 1);
+                gPad->SetLeftMargin(0.15);
+                gPad->SetBottomMargin(0.15);
+                SetGraphStyle(likelihood_profiles[i], 1, 1);
+                likelihood_profiles[i]->SetMarkerSize(0.7);
+                likelihood_profiles[i]->Draw("ALP");
 
-            //     // Add horizontal lines for confidence levels
-            //     double y_min = likelihood_profiles[i]->GetYaxis()->GetXmin();
-            //     double y_max = likelihood_profiles[i]->GetYaxis()->GetXmax();
-            //     double x_min = likelihood_profiles[i]->GetXaxis()->GetXmin();
-            //     double x_max = likelihood_profiles[i]->GetXaxis()->GetXmax();
+                // Add horizontal lines for confidence levels
+                double y_min = likelihood_profiles[i]->GetYaxis()->GetXmin();
+                double y_max = likelihood_profiles[i]->GetYaxis()->GetXmax();
+                double x_min = likelihood_profiles[i]->GetXaxis()->GetXmin();
+                double x_max = likelihood_profiles[i]->GetXaxis()->GetXmax();
 
-            //     // 1σ (68.3% CL): Δ(-2 log L) = 1.0
-            //     TLine *line1sigma = new TLine(x_min, 1.0, x_max, 1.0);
-            //     line1sigma->SetLineColor(kGreen);
-            //     line1sigma->SetLineStyle(2);
-            //     line1sigma->SetLineWidth(2);
-            //     line1sigma->Draw("same");
+                // 1σ (68.3% CL): Δ(-2 log L) = 1.0
+                TLine *line1sigma = new TLine(x_min, 1.0, x_max, 1.0);
+                line1sigma->SetLineColor(kGreen);
+                line1sigma->SetLineStyle(2);
+                line1sigma->SetLineWidth(2);
+                line1sigma->Draw("same");
 
-            //     // 2σ (95.4% CL): Δ(-2 log L) = 4.0
-            //     TLine *line2sigma = new TLine(x_min, 4.0, x_max, 4.0);
-            //     line2sigma->SetLineColor(kOrange);
-            //     line2sigma->SetLineStyle(2);
-            //     line2sigma->SetLineWidth(2);
-            //     line2sigma->Draw("same");
+                // 2σ (95.4% CL): Δ(-2 log L) = 4.0
+                TLine *line2sigma = new TLine(x_min, 4.0, x_max, 4.0);
+                line2sigma->SetLineColor(kOrange);
+                line2sigma->SetLineStyle(2);
+                line2sigma->SetLineWidth(2);
+                line2sigma->Draw("same");
 
-            //     // 3σ (99.7% CL): Δ(-2 log L) = 9.0
-            //     TLine *line3sigma = new TLine(x_min, 9.0, x_max, 9.0);
-            //     line3sigma->SetLineColor(kRed);
-            //     line3sigma->SetLineStyle(2);
-            //     line3sigma->SetLineWidth(2);
-            //     line3sigma->Draw("same");
+                // 3σ (99.7% CL): Δ(-2 log L) = 9.0
+                TLine *line3sigma = new TLine(x_min, 9.0, x_max, 9.0);
+                line3sigma->SetLineColor(kRed);
+                line3sigma->SetLineStyle(2);
+                line3sigma->SetLineWidth(2);
+                line3sigma->Draw("same");
 
-            //     // Add legend for first plot
-            //     if (i == 0)
-            //     {
-            //         TLegend *leg = new TLegend(0.6, 0.7, 0.9, 0.9);
-            //         leg->SetFillStyle(0);
-            //         leg->SetBorderSize(0);
-            //         leg->SetTextSize(0.08);
-            //         leg->AddEntry(line1sigma, "1#sigma", "L");
-            //         leg->AddEntry(line2sigma, "2#sigma", "L");
-            //         leg->AddEntry(line3sigma, "3#sigma", "L");
-            //         leg->Draw();
-            //     }
+                // Add legend for first plot
+                if (i == 0)
+                {
+                    TLegend *leg = new TLegend(0.6, 0.7, 0.9, 0.9);
+                    leg->SetFillStyle(0);
+                    leg->SetBorderSize(0);
+                    leg->SetTextSize(0.08);
+                    leg->AddEntry(line1sigma, "1#sigma", "L");
+                    leg->AddEntry(line2sigma, "2#sigma", "L");
+                    leg->AddEntry(line3sigma, "3#sigma", "L");
+                    leg->Draw();
+                }
 
-            //     likelihood_profiles[i]->GetYaxis()->SetRangeUser(0, min(20.0, y_max));
-            // }
+                likelihood_profiles[i]->GetYaxis()->SetRangeUser(0, min(20.0, y_max));
+            }
 
-            // c_profiles->SaveAs((savepath + "/likelihood_profiles_" + sysvar + ".png").c_str());
-            // cout << "\nLikelihood profiles saved as: " << savepath + "/likelihood_profiles_" + sysvar + ".png" << endl;
+            c_profiles->SaveAs((savepath + "/likelihood_profiles_" + sysvar + ".png").c_str());
+            cout << "\nLikelihood profiles saved as: " << savepath + "/likelihood_profiles_" + sysvar + ".png" << endl;
 
             // Create summary plot showing significance levels
             TCanvas *c_summary = new TCanvas("c_summary", "Likelihood Test Summary", 1200, 720);
@@ -1786,12 +1375,23 @@ void glueball_fit_4rBW()
             file << "Significance of f0(1710) amplitude: " << significance_f0_amp << " σ" << endl;
             file << "68% CL interval: [" << ci_68.first << ", " << ci_68.second << "]" << endl;
             file << "95% CL interval: [" << ci_95.first << ", " << ci_95.second << "]" << endl;
-            file << "99.7% CL interval: [" << ci_997.first << ", " << ci_997.second << "]" << endl;
+            file << "99.7% CL interval: [" << ci_99.first << ", " << ci_99.second << "]" << endl;
             file << "Zero excluded at 95% CL: " << (zero_excluded_95 ? "YES" : "NO") << endl;
             file << "=============================================" << endl;
             // cout<<"fit status code "<<fitResultptr->Status()<<endl;
 
             // */
+
+            c->cd();
+
+            for (int iparams = 0; iparams < 16; iparams++)
+            {
+                BEexpol->SetParameter(iparams, obtained_parameters[iparams]);
+            }
+
+            cout << "***********Again fitting with full model with global minima fit for plotting**********" << endl;
+
+            hinvMass->Fit("BEexpol", "RELBMS");
 
             // double *obtained_parameters = BEexpol->GetParameters();                                                  // comment when using likelihood method
             TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);             //
@@ -3142,6 +2742,7 @@ void glueball_fit_4rBW()
             }
             // c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
             c->SaveAs((savepath + "/rBWfit.png").c_str());
+            // c_reducedFit->SaveAs((savepath + "/rBWfit_reduced.png").c_str());
 
             double fitnorm1525 = BEexpol->GetParameter(6);
             double fitnorm1525_err = BEexpol->GetParError(6);
@@ -3574,6 +3175,486 @@ void glueball_fit_4rBW()
     cout << "=================================================================" << endl;
 }
 // end of main program
+
+double calculateToyMCSignificance(TH1F *data_histogram, TF1 *null_model, TF1 *full_model, TFitResultPtr full_fit, vector<vector<double>> par_limits, int nToys = 1000, bool verbose = false)
+{
+
+    cout << "\n=== ENHANCED TOY MONTE CARLO SIGNIFICANCE CALCULATION (CHERNOFF MIXTURE) ===" << endl;
+    cout << "Generating " << nToys << " toy datasets under null hypothesis..." << endl;
+    cout << "Using Chernoff mixture: q0 ~ 1/2 δ(0) + 1/2 χ²₁" << endl;
+
+    TCanvas *ctemp = new TCanvas("ctemp", "ctemp", 800, 600);
+    data_histogram->Draw();
+
+    // Fit data with null model to get test statistic
+    cout << "Calculating test statistic from data..." << endl;
+    TFitResultPtr null_fit = data_histogram->Fit(null_model, "RQELSN");
+    // if (!null_fit.Get() || null_fit->Status() != 0)
+    // {
+    //     cout << "ERROR: Could not fit null model to data. Status: " << (null_fit.Get() ? null_fit->Status() : -999) << endl;
+    //     return -1;
+    // }
+    // ctemp->SaveAs(Form("null_model_fit_%d.png", 0));
+
+    // Get the test statistic q0 from data (MinFcnValue returns -2 log L, hence nll)
+    double nll_null_data = null_fit->MinFcnValue();
+    double nll_full_data = full_fit->MinFcnValue();
+    double q0_data = nll_null_data - nll_full_data; // test statistic from data
+
+    cout << "Data: q0 = " << q0_data << endl;
+    cout << "Null model fit: -2 log L = " << nll_null_data << endl;
+    cout << "Full model: -2 log L = " << nll_full_data << endl;
+
+    // Chernoff mixture asymptotic significance
+    // For Chernoff mixture: q0 ~ 1/2 δ(0) + 1/2 χ²₁
+    // The p-value is: P(q0 ≥ q0_data) = 1/2 * P(χ²₁ ≥ q0_data) if q0_data > 0
+    double chernoff_p_value = 0.0;
+    if (q0_data > 0)
+    {
+        double chi2_p_value = TMath::Prob(q0_data, 1); // P(χ²₁ ≥ q0_data)
+        chernoff_p_value = 0.5 * (1.0 - chi2_p_value); // Chernoff mixture p-value
+    }
+    else
+    {
+        chernoff_p_value = 1.0; // If q0_data ≤ 0, p-value is 1
+    }
+    double chernoff_significance = TMath::NormQuantile(1.0 - chernoff_p_value);
+
+    // Keep the old pure χ²₁ calculation for comparison
+    double pure_chi2_significance = sqrt(q0_data);
+
+    cout << "Pure χ²₁ significance = " << pure_chi2_significance << "σ" << endl;
+    cout << "Chernoff mixture significance = " << chernoff_significance << "σ" << endl;
+    cout << "Chernoff mixture p-value = " << chernoff_p_value << endl;
+
+    // Generate toy datasets under null hypothesis
+    vector<double> q0_toys;
+    q0_toys.reserve(nToys);
+
+    // Temporary
+    vector<double> NLL_null, NLL_full;
+    NLL_null.push_back(nll_null_data);
+    NLL_full.push_back(nll_full_data);
+
+    TRandom3 rng(0); // Use fixed seed for reproducibility, or use time(nullptr) for random
+
+    // Get binning from data histogram
+    int nbins = data_histogram->GetNbinsX();
+    double xmin = data_histogram->GetXaxis()->GetXmin();
+    double xmax = data_histogram->GetXaxis()->GetXmax();
+
+    for (int itoy = 0; itoy < nToys; itoy++)
+    {
+        if (verbose && itoy % 100 == 0)
+        {
+            cout << "Processing toy " << itoy << "/" << nToys << "\r" << flush;
+        }
+
+        // Create toy histogram
+        TH1F *h_toy = new TH1F(Form("h_toy_%d", itoy), "toy", nbins, xmin, xmax);
+
+        // Fill toy histogram by sampling from fitted null model with boundary conditions
+        for (int ibin = 1; ibin <= nbins; ibin++)
+        {
+            double bin_center = h_toy->GetBinCenter(ibin);
+            double bin_width = h_toy->GetBinWidth(ibin);
+            double bin_content = data_histogram->GetBinContent(ibin);
+
+            // Expected counts in this bin from fitted null model
+            double expected = null_model->Eval(bin_center);
+
+            // Apply boundary condition: ensure non-negative expected counts
+            // expected = max(0.0, expected);
+
+            // Generate Poisson-distributed counts
+            int observed = rng.Poisson(expected);
+            // Int_t observed = rng.Poisson(bin_content);
+            h_toy->SetBinContent(ibin, observed);
+            h_toy->SetBinError(ibin, sqrt(max(1.0, double(observed)))); // Avoid zero errors
+        }
+
+        // Create fresh copies of models for this toy (fails with cloning somehow)
+        // TF1 *toy_null = (TF1 *)null_model->Clone(Form("toy_null_%d", itoy));
+        // TF1 *toy_full = (TF1 *)full_model->Clone(Form("toy_full_%d", itoy));
+
+        TF1 *toy_null = new TF1("toy_null", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+        TF1 *toy_full = new TF1("toy_full", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+        // Apply boundary conditions for signal amplitude parameters
+        // For a BWsum model, typically amplitudes are at indices 0, 3, 6, 9 (every 3rd parameter)
+        for (int ipar = 0; ipar < 10; ipar += 3)
+        {
+
+            toy_full->SetParLimits(ipar, 0.0, 1e9); // Non-negative amplitude constraint
+            if (ipar < 7)
+                toy_null->SetParLimits(ipar, 0.0, 1e9); // Non-negative amplitude constraint
+        }
+
+        // Fit toy dataset with both models
+        // set first 12 parameters temporarily and then fit freely
+        double parameters_fit[] = {2000, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 6000, f1525Mass, f1525Width, 50, f1710Mass, f1710Width};
+        for (int iparams = 0; iparams < 12; iparams++)
+        {
+            toy_full->SetParameter(iparams, parameters_fit[iparams]);
+            if (iparams < 9)
+                toy_null->SetParameter(iparams, parameters_fit[iparams]);
+            // else
+            //     toy_null->SetParameter(iparams, 0); // Set f0(1710) amplitude to 0 for null model
+        }
+        int limits_size = par_limits.size();
+        for (int i = 0; i < limits_size; i++)
+        {
+            int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+            toy_full->SetParLimits(par_limits[i][0], parameters_fit[param_index] - par_limits[i][1], parameters_fit[param_index] + par_limits[i][1]);
+            if (param_index < 9)
+                toy_null->SetParLimits(par_limits[i][0], parameters_fit[param_index] - par_limits[i][1], parameters_fit[param_index] + par_limits[i][1]);
+        }
+        toy_null->SetParLimits(10, f1710Mass - 5 * f1710Width, f1710Mass + 5 * f1710Width);
+        toy_null->SetParLimits(11, f1710Width - 20 * f1710WidthErr, f1710Width + 20 * f1710WidthErr);
+
+        toy_full->FixParameter(2, f1270Width);
+        toy_full->FixParameter(5, a1320Width);
+        toy_full->FixParameter(8, f1525Width);
+
+        toy_null->FixParameter(2, f1270Width);
+        toy_null->FixParameter(5, a1320Width);
+        toy_null->FixParameter(8, f1525Width);
+        toy_null->FixParameter(9, 0); // 0 amplitude for f0(1710) for null fit
+
+        toy_full->SetParameter(12, 3.7e5);
+        toy_full->SetParameter(13, -0.1);
+        toy_full->SetParameter(14, 2.3);
+        toy_full->SetParameter(15, 1.3);
+
+        toy_null->SetParameter(12, 3.3e5);
+        toy_null->SetParameter(13, -0.1);
+        toy_null->SetParameter(14, 2.3);
+        toy_null->SetParameter(15, 1.3);
+
+        // h_toy->Fit(toy_full, "REMSQ0");
+        TFitResultPtr toy_full_fit = h_toy->Fit(toy_full, "RELMSQ0");
+
+        // TCanvas *ctemp2 = new TCanvas("ctemp2", "toy model full fit", 800, 600);
+        // SetHistoQA(h_toy);
+        // h_toy->Draw("pe");
+        // toy_full->Draw("same");
+        // ctemp2->SaveAs(Form("toy_fit_full_%d.png", itoy));
+
+        // h_toy->Fit(toy_null, "REMSQ0");
+        TFitResultPtr toy_null_fit = h_toy->Fit(toy_null, "RELMSQ0");
+
+        // TCanvas *ctemp3 = new TCanvas("ctemp3", "toy model null fit", 800, 600);
+        // h_toy->Draw("pe");
+        // toy_null->Draw("same");
+        // ctemp3->SaveAs(Form("toy_fit_null_%d.png", itoy));
+
+        // Calculate test statistic for this toy (nll = -2 log L)
+        auto edm_full = toy_full_fit->Edm();
+        auto edm_null = toy_null_fit->Edm();
+        if (std::isnan(edm_null) || std::isnan(edm_full) || edm_null > 0.001 || edm_full > 0.001)
+        {
+            continue;
+        }
+        double q0_toy = toy_null_fit->MinFcnValue() - toy_full_fit->MinFcnValue();
+        if (q0_toy < 0 || !std::isfinite(q0_toy))
+            continue;
+
+        bool isAmpNotValid = false;
+
+        for (int ipar = 0; ipar < 10; ipar += 3)
+        {
+            if (toy_full->GetParameter(ipar) < 10)
+            {
+                isAmpNotValid = true;
+            }
+            if (ipar < 7 && toy_null->GetParameter(ipar) < 10)
+            {
+                isAmpNotValid = true;
+            }
+        }
+        if (isAmpNotValid)
+            continue;
+
+        float chi2ndf_full = toy_full->GetChisquare() / toy_full->GetNDF();
+        float chi2ndf_null = toy_null->GetChisquare() / toy_null->GetNDF();
+        if (chi2ndf_full > 5.0 || chi2ndf_null > 5.0)
+        {
+            continue;
+        }
+
+        q0_toys.push_back(q0_toy);
+        NLL_null.push_back(toy_null_fit->MinFcnValue());
+        NLL_full.push_back(toy_full_fit->MinFcnValue());
+        cout << "Iteration " << itoy << ", NLL_full: " << toy_full_fit->MinFcnValue() << ", NLL_null: " << toy_null_fit->MinFcnValue() << ", test statistic: " << q0_toy << endl;
+        cout << "Full fit status " << toy_full_fit->Status() << ", Null fit status " << toy_null_fit->Status() << endl;
+        cout << "Full fit edm " << toy_full_fit->Edm() << ", Null fit edm " << toy_null_fit->Edm() << endl;
+
+        delete h_toy;
+        delete toy_null;
+        delete toy_full;
+    }
+
+    TFile *ftemp = new TFile("toy_significance.root", "RECREATE");
+
+    // Plot the test statistic value for each iteration in toy model
+    TCanvas *c_test_stat = new TCanvas("c_test_stat", "Test Statistic Distribution", 800, 600);
+    TH1D *h_test_stat = new TH1D("h_test_stat", "Test Statistic Distribution; q0; Events", 2000, 500, 2500);
+    TH1D *h_NLL_full = new TH1D("h_NLL_full", "NLL Full Distribution; NLL; Events", 500, 0, 50);
+    TH1D *h_NLL_null = new TH1D("h_NLL_null", "NLL Null Distribution; NLL; Events", 1000, 1000, 2000);
+    for (double q0_toy : q0_toys)
+    {
+        h_test_stat->Fill(q0_toy);
+    }
+    for (double nll_full : NLL_full)
+    {
+        h_NLL_full->Fill(nll_full);
+    }
+    for (double nll_null : NLL_null)
+    {
+        h_NLL_null->Fill(nll_null);
+    }
+    h_test_stat->Draw();
+    h_test_stat->Write();
+    h_NLL_full->Write();
+    h_NLL_null->Write();
+    c_test_stat->SaveAs("test_stat_distribution.png");
+    // ftemp->Close();
+
+    // cout << "\nGenerated " << q0_toys.size() << " successful toy experiments" << endl;
+
+    // Calculate empirical p-value: fraction of toys with q0_toy >= q0_data
+    int count_extreme = 0;
+    for (double q0_toy : q0_toys)
+    {
+        if (q0_toy >= q0_data)
+        {
+            count_extreme++;
+        }
+    }
+
+    double empirical_p_value = double(count_extreme) / double(q0_toys.size());
+
+    // Enhanced significance calculation strategy using Chernoff mixture
+    double final_significance = 0.0;
+    string method_used = "";
+
+    if (chernoff_significance > 5.0 && empirical_p_value == 0.0)
+    {
+        // For very high significance with no extreme toys, use Chernoff mixture approximation
+        final_significance = chernoff_significance;
+        method_used = "Chernoff mixture (validated by toys)";
+
+        cout << "\nUSING CHERNOFF MIXTURE APPROXIMATION:" << endl;
+        cout << "Significance > 5σ and no toys exceeded data" << endl;
+        cout << "Chernoff mixture approximation is reliable for such extreme values" << endl;
+    }
+    else if (empirical_p_value > 0.0)
+    {
+        // Standard toy MC p-value conversion
+        final_significance = TMath::NormQuantile(1.0 - empirical_p_value);
+        method_used = "Empirical toys";
+    }
+    else
+    {
+        // No toys exceeded data, set conservative lower bound
+        double lower_bound_p = 1.0 / double(q0_toys.size());
+        final_significance = TMath::NormQuantile(1.0 - lower_bound_p);
+        method_used = "Conservative lower bound";
+        cout << "No toys exceeded data. Significance > " << final_significance << "σ" << endl;
+    }
+
+    cout << "\nTOY MONTE CARLO RESULTS:" << endl;
+    cout << "========================" << endl;
+    cout << "Test statistic from data: q0 = " << q0_data << endl;
+    cout << "Number of toys with q0 ≥ q0_data: " << count_extreme << " / " << q0_toys.size() << endl;
+    cout << "Empirical p-value = " << empirical_p_value << endl;
+    cout << "Method used: " << method_used << endl;
+    cout << "Final significance = " << final_significance << "σ" << endl;
+
+    // Additional diagnostics for validation
+    if (!q0_toys.empty())
+    {
+        double q0_mean = 0.0;
+        for (double q0_toy : q0_toys)
+            q0_mean += q0_toy;
+        q0_mean /= q0_toys.size();
+
+        double q0_max_toy = *max_element(q0_toys.begin(), q0_toys.end());
+
+        cout << "\nTOY DISTRIBUTION DIAGNOSTICS:" << endl;
+        cout << "Mean q0 from toys: " << q0_mean << endl;
+        cout << "Max q0 from toys:  " << q0_max_toy << endl;
+        cout << "Data vs toy max:   " << q0_data << " vs " << q0_max_toy << " (ratio: " << q0_data / q0_max_toy << ")" << endl;
+
+        // Compare toy distribution shape to Chernoff mixture expectation
+        // For Chernoff mixture: E[q0] = 1/2 * 0 + 1/2 * 1 = 0.5
+        // Var[q0] = 1/2 * 0² + 1/2 * (1 + 2) - 0.5² = 1.5 - 0.25 = 1.25
+        // So std[q0] = sqrt(1.25) ≈ 1.118
+        cout << "\nCHERNOFF MIXTURE vs TOY COMPARISON:" << endl;
+        cout << "Expected mean (Chernoff): 0.5,  Observed mean: " << q0_mean << endl;
+        cout << "Expected std (Chernoff):  √1.25 ≈ 1.118,  Observed std: ";
+
+        // Calculate standard deviation of toy distribution
+        double q0_var = 0.0;
+        for (double q0_toy : q0_toys)
+        {
+            q0_var += (q0_toy - q0_mean) * (q0_toy - q0_mean);
+        }
+        q0_var /= q0_toys.size();
+        double q0_std = sqrt(q0_var);
+        cout << q0_std << endl;
+
+        // Validation messages for Chernoff mixture
+        bool shape_ok = (abs(q0_mean - 0.5) < 0.3) && (abs(q0_std - 1.118) < 0.3);
+        if (shape_ok)
+        {
+            cout << "SHAPE VALIDATION: PASSED - Toy distribution matches Chernoff mixture expectation" << endl;
+        }
+        else
+        {
+            cout << "SHAPE VALIDATION: WARNING - Toy distribution deviates from Chernoff mixture" << endl;
+            cout << "Consider checking fit convergence or model assumptions" << endl;
+        }
+
+        if (q0_data > 50 * q0_max_toy)
+        {
+            cout << "EXTREME SIGNIFICANCE: Data test statistic is " << q0_data / q0_max_toy << "x larger than largest toy." << endl;
+            cout << "This confirms the signal is extremely significant." << endl;
+            cout << "For such extreme significances, asymptotic approximation is reliable." << endl;
+        }
+    }
+
+    // Generate theoretical Chernoff mixture samples for comparison
+    cout << "\nGenerating theoretical Chernoff mixture samples for validation..." << endl;
+    vector<double> chernoff_samples;
+    TRandom3 chernoff_rng(12345); // Different seed for theoretical samples
+
+    for (int i = 0; i < q0_toys.size(); i++)
+    {
+        double u = chernoff_rng.Uniform(0.0, 1.0);
+        if (u < 0.5)
+        {
+            // 50% probability: δ(0) - sample is exactly 0
+            chernoff_samples.push_back(0.0);
+        }
+        else
+        {
+            // 50% probability: χ²₁ distribution
+            double chi2_sample = chernoff_rng.Uniform(0.0, 1.0);
+            // Use inverse CDF of χ²₁ (approximately 2*Φ⁻¹(sqrt(u))² where Φ⁻¹ is normal quantile)
+            double normal_sample = TMath::NormQuantile(sqrt(chi2_sample));
+            chernoff_samples.push_back(normal_sample * normal_sample);
+        }
+    }
+
+    // Calculate statistics for theoretical Chernoff mixture
+    double chernoff_mean = 0.0;
+    for (double sample : chernoff_samples)
+        chernoff_mean += sample;
+    chernoff_mean /= chernoff_samples.size();
+
+    double chernoff_var = 0.0;
+    for (double sample : chernoff_samples)
+    {
+        chernoff_var += (sample - chernoff_mean) * (sample - chernoff_mean);
+    }
+    chernoff_var /= chernoff_samples.size();
+    double chernoff_std = sqrt(chernoff_var);
+
+    cout << "Theoretical Chernoff mixture: mean = " << chernoff_mean << ", std = " << chernoff_std << endl;
+
+    // Create diagnostic plot comparing toy distribution to asymptotic χ²(1)
+    TCanvas *c_toys = new TCanvas("c_toys", "Toy MC vs Asymptotic Distribution", 800, 600);
+
+    // Find appropriate range for histogram
+    double q0_min = *min_element(q0_toys.begin(), q0_toys.end());
+    double q0_max = *max_element(q0_toys.begin(), q0_toys.end());
+    double range_extend = (q0_max - q0_min) * 0.1;
+    double hist_max = max(q0_max + range_extend, min(q0_data + range_extend, 20.0)); // Cap at 20 for visibility
+
+    TH1F *h_toys = new TH1F("h_toys", "Distribution of q_{0}: Toy MC vs Chernoff Mixture;q_{0} = #Delta(-2logL);Normalized Frequency", 200, q0_min - range_extend, hist_max);
+
+    for (double q0_toy : q0_toys)
+    {
+        if (q0_toy <= hist_max)
+            h_toys->Fill(q0_toy);
+    }
+
+    // Normalize to unit area for comparison with Chernoff mixture
+    h_toys->Scale(1.0 / h_toys->Integral() / h_toys->GetBinWidth(1));
+    h_toys->SetFillColor(kBlue);
+    h_toys->SetFillStyle(3004);
+    h_toys->SetLineColor(kBlue);
+    h_toys->SetLineWidth(2);
+    h_toys->Write("Normalized_toy_null");
+    h_toys->Draw();
+
+    // Create and overlay theoretical Chernoff mixture histogram
+    TH1F *h_chernoff = new TH1F("h_chernoff", "Theoretical Chernoff Mixture", 200, q0_min - range_extend, hist_max);
+    for (double sample : chernoff_samples)
+    {
+        if (sample <= hist_max)
+            h_chernoff->Fill(sample);
+    }
+    h_chernoff->Scale(1.0 / h_chernoff->Integral() / h_chernoff->GetBinWidth(1));
+    h_chernoff->SetLineColor(kRed);
+    h_chernoff->SetLineWidth(3);
+    h_chernoff->SetLineStyle(2);
+    h_chernoff->Draw("same");
+
+    // Also overlay the pure χ²(1) for comparison
+    TF1 *chi2_1dof = new TF1("chi2_1dof", "0.5*exp(-0.5*x)/sqrt(2*TMath::Pi()*x)", 0.01, hist_max);
+    chi2_1dof->SetLineColor(kMagenta);
+    chi2_1dof->SetLineWidth(2);
+    chi2_1dof->SetLineStyle(3);
+    chi2_1dof->Draw("same");
+
+    // Mark data value if within range
+    if (q0_data <= hist_max)
+    {
+        TLine *line_data = new TLine(q0_data, 0, q0_data, h_toys->GetMaximum());
+        line_data->SetLineColor(kGreen + 2);
+        line_data->SetLineWidth(4);
+        line_data->Draw("same");
+    }
+
+    // Add legend and text
+    TLegend *leg = new TLegend(0.5, 0.60, 0.89, 0.89);
+    leg->SetFillStyle(0);
+    leg->SetBorderSize(0);
+    leg->AddEntry(h_toys, "Toy MC (null hyp.)", "f");
+    leg->AddEntry(h_chernoff, "Chernoff mixture", "l");
+    leg->AddEntry(chi2_1dof, "#chi^{2}(1) (comparison)", "l");
+    if (q0_data <= hist_max)
+    {
+        leg->AddEntry((TObject *)0, Form("Data: q_{0} = %.2f", q0_data), "");
+    }
+    else
+    {
+        leg->AddEntry((TObject *)0, Form("Data: q_{0} = %.2f (off scale)", q0_data), "");
+    }
+    leg->Draw();
+
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.035);
+    lat.DrawLatex(0.15, 0.85, Form("Empirical p-value = %.4f", empirical_p_value));
+    lat.DrawLatex(0.15, 0.80, Form("Final significance = %.2f#sigma", final_significance));
+    lat.DrawLatex(0.15, 0.75, Form("Method: %s", method_used.c_str()));
+    lat.DrawLatex(0.15, 0.70, Form("N_{toys} = %d", (int)q0_toys.size()));
+    lat.DrawLatex(0.15, 0.65, Form("Chernoff: %.2f#sigma", chernoff_significance));
+    lat.DrawLatex(0.15, 0.60, Form("Pure #chi^{2}: %.2f#sigma", pure_chi2_significance));
+
+    c_toys->SaveAs("toy_mc_vs_chernoff_distribution.png");
+    c_toys->Write("toy_mc_vs_chernoff_distribution");
+
+    delete c_toys;
+    delete h_toys;
+    delete chi2_1dof;
+
+    return final_significance;
+    // return 42;
+}
 
 // *****************************************************************************************************
 //************************************Fit functions************************************************* */

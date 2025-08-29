@@ -19,7 +19,7 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     // change here ***********************************************************
@@ -68,7 +68,7 @@ void glueball_KsKs_channel()
     if (save_invmass_distributions)
     {
         // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "cosTheta" + ".root").c_str(), "RECREATE");
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_cosTheta_pt3.root").c_str(), "RECREATE");
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_cosTheta_temp.root").c_str(), "RECREATE");
     }
 
     TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
@@ -123,9 +123,9 @@ void glueball_KsKs_channel()
         SetCanvasStyle(csigall1, 0.15, 0.03, 0.05, 0.15);
         SetCanvasStyle(csigall2, 0.15, 0.03, 0.05, 0.15);
         cbkgall1->Divide(3, 2);
-        ckbgall2->Divide(3, 2);
+        ckbgall2->Divide(2, 2);
         csigall1->Divide(3, 2);
-        csigall2->Divide(3, 2);
+        csigall2->Divide(2, 2);
 
         TH1D *hbkg_temp[Npt];
         TH1D *hbkg_nopeak_temp[Npt];
@@ -141,7 +141,7 @@ void glueball_KsKs_channel()
         //     fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_norm_%.2f_%.2f_all_pT", kNormRangepT[0][0], kNormRangepT[0][1]) + ".root").c_str(), "RECREATE");
         // }
 
-        /*
+        // /*
 
         double cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0}; // cos(theta) bins
         // double cosThetaBins[] = {-1.0, 1.0};                                              // cos(theta) bins
@@ -278,10 +278,10 @@ void glueball_KsKs_channel()
             lp2->SetTextSize(0.035);
             lp2->SetTextFont(42);
             lp2->SetFillStyle(0);
-            lp2->AddEntry((TObject *)0, "ALICE Performance", "");
+            // lp2->AddEntry((TObject *)0, "ALICE Performance", "");
             lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
             lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
-            lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+            // lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
             lp2->AddEntry((TObject *)0, Form("%.1f < cos(#theta) < %.1f", lowTheta, highTheta), "");
             lp2->Draw("same");
 
@@ -289,6 +289,14 @@ void glueball_KsKs_channel()
             {
                 c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("cosTheta_%.1f_%.1f_norm_%.1f_%.1f.", lowTheta, highTheta, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
             }
+            if (ip < 6)
+                csigall1->cd(ip + 1);
+            else
+                csigall2->cd(ip - 5);
+
+            hfsig->Draw("e");
+            linesig->Draw("same");
+            lp2->Draw("same");
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
@@ -352,7 +360,11 @@ void glueball_KsKs_channel()
             }
             c2->Write(Form("ksks_invmass_withbkg_cosTheta_%.1f_%.1f", lowTheta, highTheta));
 
-            cbkgall1->cd(ip + 1);
+            if (ip < 6)
+                cbkgall1->cd(ip + 1);
+            else
+                ckbgall2->cd(ip - 5);
+
             fHistTotal[ip]->Draw("E");
             hfbkg->Draw("E same");
             if (kResBkg == "MIX" || kResBkg == "ROTATED")
@@ -364,8 +376,12 @@ void glueball_KsKs_channel()
             hbkg_nopeak_temp[ip] = (TH1D *)hbkg_nopeak->Clone();
             hsig_temp[ip] = (TH1D *)hfsig->Clone();
         } // cos theta loop ended
+        csigall1->SaveAs((outputfolder_str + "/MultBins_glueballSignal_cosTheta1." + kResBkg + ".png").c_str());
+        csigall2->SaveAs((outputfolder_str + "/MultBins_glueballSignal_cosTheta2." + kResBkg + ".png").c_str());
+        cbkgall1->SaveAs((outputfolder_str + "/MultBins_glueballBackground_cosTheta1." + kResBkg + ".png").c_str());
+        cbkgall2->SaveAs((outputfolder_str + "/MultBins_glueballBackground_cosTheta2." + kResBkg + ".png").c_str());
 
-        */
+        // */
 
         float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
         // TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
@@ -375,7 +391,7 @@ void glueball_KsKs_channel()
         // SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
         // c2divide->Divide(2, 2);
 
-        // /*
+        /*
 
         for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
         // for (Int_t ip = 0; ip < 4; ip++) // start pt bin loop
@@ -595,7 +611,7 @@ void glueball_KsKs_channel()
             hsig_temp[ip] = (TH1D *)hfsig->Clone();
         } // pt bin loop end here
 
-        // */
+        */
 
         // c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
         // c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());
@@ -690,10 +706,13 @@ void glueball_KsKs_channel()
         //     lp2->Draw("same");
         // }
         // csignal->SaveAs((outputfolder_str + "/hglueball_invmass_allbins_signal." + kResBkg + ".pdf").c_str());
-        cbkgall1->SaveAs((outputfolder_str + "/hglueball_invmass_all." + kResBkg + ".png").c_str());
+        // cbkgall1->SaveAs((outputfolder_str + "/hglueball_invmass_all." + kResBkg + ".png").c_str());
     }
-    ////////////////////////////////////////////////////////////////////////
-    // QA plots here
+
+    ////====================================================================================////
+    ////**************************************QA PLOTS*********************************** **////
+    ////====================================================================================////
+
     if (makeQAplots)
     {
         TFile *KsInvMass = new TFile((outputQAfolder_str + "/KsInvMass.root").c_str(), "RECREATE");

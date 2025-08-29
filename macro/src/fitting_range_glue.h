@@ -1,4 +1,4 @@
-
+#include <vector>
 
 // Projection of signal in different pT bins *************************************
 
@@ -35,7 +35,6 @@ const int pt_end = Npt;
 //     {2.20, 2.30}, // 6.0-12.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
-#include <vector>
 
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c
 //     {2.20, 2.30}, // 12.0-20.0 GeV/c

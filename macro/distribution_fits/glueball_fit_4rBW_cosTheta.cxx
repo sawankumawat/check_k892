@@ -46,6 +46,7 @@ Double_t BWsum_boltzman_2(double *x, double *par);
 
 void glueball_fit_4rBW_cosTheta()
 {
+    bool isMultiPanelPlot = false;
     // systematic studies (signal extraction) ****************************
     // A. fit range: Default: 1.05-2.20 GeV/c^2, Variation1: 1.02-2.20 GeV/c^2, Variation2: 1.05-2.30 GeV/c^2, Variation3: 1.08-2.15 GeV/c^2, Variation4: 1.02-2.30 GeV/c^2
     // B. Norm range: Default: 2.50-2.60 GeV/c^2, Variation1: 2.40-2.50 GeV/c^2, Variation2: 2.60-2.70 GeV/c^2
@@ -133,25 +134,18 @@ void glueball_fit_4rBW_cosTheta()
         // const string kvariation1 = "_angsep_3_id25081";
 
         //*********for systematics and default study with full train ************************
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/351470/KsKs_Channel/higher-mass-resonances_PID3";
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/260782/KsKs_Channel/strangeness_tutorial";
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances" + kvariation1;
-        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
-
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances";
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         string path2 = path;
 
-        // //*********for temporary study with angular separation cuts************************
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
-        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
-
         string sysvar = "default"; // default
-
-        string savepath = path2 + "/fits/4rBw_fits";
-
+        string savepath = path2 + "/fits/4rBw_fits/AngularDistributions";
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt1.root").c_str(), "READ"); // default
+        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt3.root").c_str(), "READ"); // default
+        // TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_-0.6to0.6.root").c_str(), "READ"); // integrated
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol_cosTheta.root", "RECREATE");
 
@@ -184,25 +178,24 @@ void glueball_fit_4rBW_cosTheta()
         }
         int multlow = 0;
         int multhigh = 100;
-        double total_events = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
+        double total_events = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 0.0001), hmult->GetXaxis()->FindBin(multhigh - 0.0001));
+        cout << "Total number of events are " << total_events << endl;
 
         // float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
-        // float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
-        float cosThetaBins[] = {-1.0, -0.8};
+        float cosThetaBins[] = {-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6};
+        // float cosThetaBins[] = {0.6, 0.8};
         int nBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
-        // TCanvas *cplot_all = new TCanvas("cplot_all", "cplot_all", 2880, 1440);
-        // SetCanvasStyle(cplot_all, 0.14, 0.03, 0.05, 0.14);
-        // cplot_all->Divide(5, 2);
+        TCanvas *cplot_all = new TCanvas("cplot_all", "cplot_all", 2880, 1440);
+        cplot_all->Divide(3, 2);
 
         for (int icosTheta = 0; icosTheta < nBins; icosTheta++)
         {
-            // double lowTheta = -1.0;
-            // double highTheta = -0.8;
+            // hinvMass->Rebin(2);
             float lowTheta = cosThetaBins[icosTheta];
             float highTheta = cosThetaBins[icosTheta + 1];
 
             ofstream file;
-            file.open((path2 + "/fits/4rBw_fits/" + Form("fit_params_cosTheta_%.1f_%.1f.txt", lowTheta, highTheta)).c_str());
+            file.open((savepath + Form("/fit_params_cosTheta_%.1f_%.1f.txt", lowTheta, highTheta)).c_str());
 
             TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_theta_%.1f_%.1f", lowTheta, highTheta));
             TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_cosTheta_%.1f_%.1f", lowTheta, highTheta));
@@ -211,11 +204,20 @@ void glueball_fit_4rBW_cosTheta()
                 cout << "Error opening invariant mass histogram" << endl;
                 return;
             }
-
-            TCanvas *c = new TCanvas("", "", 720, 720);
-            SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
-            hinvMass->Rebin(2);
-            // cplot_all->cd(icosTheta + 1);
+            TCanvas *c;
+            if (!isMultiPanelPlot)
+            {
+                c = new TCanvas("", "", 720, 720);
+                SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
+            }
+            if (isMultiPanelPlot)
+            {
+                cplot_all->cd(icosTheta + 1);
+                gPad->SetTopMargin(0.05);
+                gPad->SetBottomMargin(0.13);
+                gPad->SetLeftMargin(0.14);
+                gPad->SetRightMargin(0.05);
+            }
             double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
             // cout<<"x max is "<<hinvMass->GetXaxis()->GetXmax()<<endl;
             // cout<<"x min is "<<hinvMass->GetXaxis()->GetXmin()<<endl;
@@ -245,9 +247,9 @@ void glueball_fit_4rBW_cosTheta()
             cout << "Fit with BW sum (mass dependent width) and modified Boltzmann" << endl;
             cout << "=============================================================" << endl;
 
-            // TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.08, 2.15, 16); // all except -1.0 to -0.8 cosTheta
+            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.08, 2.15, 16); // all except -1.0 to -0.8 cosTheta
             // TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.08, 2.08, 16); // -1.0 to -0.8 cosTheta
-            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+            // TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
 
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
             for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
@@ -255,7 +257,8 @@ void glueball_fit_4rBW_cosTheta()
                 BEexpol->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {134, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 400, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // default
+            // double parameters[] = {134, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 400, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // No pT cut
+            double parameters[] = {250, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 800, f1525Mass, f1525Width, 300, f1710Mass, f1710Width}; // default
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -271,38 +274,27 @@ void glueball_fit_4rBW_cosTheta()
                 int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
                 BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             }
+            BEexpol->SetParLimits(0, 0, 1e6);
+            BEexpol->SetParLimits(3, 0, 1e6);
+            BEexpol->SetParLimits(6, 0, 1e6);
 
             // //********systematic studies*************
-            // // for no pT cut:
+
+            // //================No pT Cut:=====================
             // double initial_param_bkg[] = {1.2e5, 0.2, 3.78, 0.6}; // cosTheta -1.0 to -0.8
-            // double initial_param_bkg[] = {6.2e4, 0.007, 3.078, 1.0}; // cosTheta -0.8 to -0.6 to 0.8
+            // double initial_param_bkg[] = {6.2e4, 0.007, 3.078, 1.0}; // cosTheta -0.8 to -0.6 (same in positive)
+            // double initial_param_bkg[] = {5.0e4, -0.07, 2.78, 1.3}; // cosTheta from -0.6 to 0.6 in interval
             // double initial_param_bkg[] = {3.2e5, 0.3, 4.478, 0.5}; // cosTheta 0.8 to 1.0
+            // double initial_param_bkg[] = {3.5e5, -0.03, 2.8, 1.1}; // cosTheta from -0.6 to 0.6 in integrated
 
-            // std::vector<double> initial_param_bkg = (icosTheta == 0)
-            //                                             ? std::vector<double>{1.2e5, 0.2, 3.78, 0.6}
-            //                                         : (icosTheta == nBins - 1) ? std::vector<double>{3.2e5, 0.3, 4.478, 0.5}
-            //                                                                    : std::vector<double>{6.2e4, 0.007, 3.078, 1.0};
+            //===================pT cut of 1 GeV/c====================
+            // double initial_param_bkg[] = {2.2e4, -0.27, 4.478, 1.5}; // -0.6 to 0.6 (all intervals)
+            // double initial_param_bkg[] = {3.2e4, -0.14, 4.078, 1.4}; // Without Likelihood
 
-            // // for pT cut of 1 GeV/c:
-            double initial_param_bkg[] = {1.2e5, 0.2, 3.78, 0.6}; // cosTheta -1.0 to -0.8
+            //===================pT cut of 2 GeV/c====================
+            double initial_param_bkg[] = {1.6e4, -0.37, 4.9, 1}; // -0.6 to 0.6 (all intervals)
 
-            // double initial_param_bkg[] = {8e3, -0.34, 3.67, 1.04}; // cosTheta all except -1.0 to -0.8
-            // double initial_param_bkg[] = {5.2e4, 0.08, 3.78, 1.4}; // cosTheta -1.0 to -0.8
             // double initial_param_bkg[4];
-            // if (icosTheta == 0)
-            // {
-            //     initial_param_bkg[0] = 5.2e3;
-            //     initial_param_bkg[1] = -0.4;
-            //     initial_param_bkg[2] = 3.78;
-            //     initial_param_bkg[3] = 1.4;
-            // }
-            // else
-            // {
-            //     initial_param_bkg[0] = 8e3;
-            //     initial_param_bkg[1] = -0.34;
-            //     initial_param_bkg[2] = 3.67;
-            //     initial_param_bkg[3] = 1.04;
-            // }
 
             // Initial parameters for background
             BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // Free
@@ -314,14 +306,14 @@ void glueball_fit_4rBW_cosTheta()
             BEexpol->FixParameter(5, a1320Width);
             BEexpol->FixParameter(8, f1525Width);
 
-            BEexpol->FixParameter(1, f1270Mass);
-            BEexpol->FixParameter(4, a1320Mass);
-            BEexpol->FixParameter(7, f1525Mass);
+            // BEexpol->FixParameter(1, f1270Mass);
+            // BEexpol->FixParameter(4, a1320Mass);
+            // BEexpol->FixParameter(7, f1525Mass);
 
-            BEexpol->FixParameter(10, f1710Mass);
+            // BEexpol->FixParameter(10, f1710Mass);
             BEexpol->FixParameter(11, f1710Width);
 
-            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
+            TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();
             cout << "chi2/ndf is " << chi2ndf << endl;
 
@@ -402,7 +394,7 @@ void glueball_fit_4rBW_cosTheta()
 
             TLatex lat1;
             lat1.SetNDC();
-            lat1.SetTextSize(0.03);
+            lat1.SetTextSize(0.04);
             lat1.SetTextFont(42);
             // lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             // lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
@@ -1070,10 +1062,11 @@ void glueball_fit_4rBW_cosTheta()
             ptstats->SetY1NDC(0.4);
             ptstats->SetY2NDC(0.92);
             ptstats->Draw("same");
-            c->SaveAs((savepath + Form("/rBWfit_cosTheta_%.1f_%.1f_default.png", lowTheta, highTheta)).c_str());
+            if (!isMultiPanelPlot)
+                c->SaveAs((savepath + Form("/rBWfit_cosTheta_%.1f_%.1f_default.png", lowTheta, highTheta)).c_str());
 
             double cosTheta_binWidth = (highTheta - lowTheta);
-            // cout << "CosTheta bin width: " << cosTheta_binWidth << endl;
+            cout << "CosTheta bin width: " << cosTheta_binWidth << endl;
 
             TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
             TMatrixDSym cov1;
@@ -1093,19 +1086,21 @@ void glueball_fit_4rBW_cosTheta()
             double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (cosTheta_binWidth * binwidthfile * total_events);
             double yieldbkg1 = expol_clone->Integral(2.20, 2.30) / (cosTheta_binWidth * binwidthfile * total_events);
             double yieldbkg2 = expol_clone->Integral(2.30, 2.40) / (cosTheta_binWidth * binwidthfile * total_events);
-            double yieldbkg3 = expol_clone->Integral(2.20, 2.50) / (cosTheta_binWidth * binwidthfile * total_events);
+            double yieldbkg3 = expol_clone->Integral(2.40, 2.50) / (cosTheta_binWidth * binwidthfile * total_events);
 
             cout << "Total events: " << total_events << endl;
             // cout << "Cos theta bin width: " << cosTheta_binWidth << endl;
             // cout << "Energy bin width: " << binwidthfile << endl;
             // cout << "Yield region for 1710 : " << f1710Mass - nsigma_yield * f1710Width << " to " << f1710Mass + nsigma_yield * f1710Width << endl;
-            // cout << "Area under the curve 1710: " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
-            // cout << "Amplitude for 1710 is " << obtained_parameters[9] << endl;
-            // cout << "Yield for 1710 is " << yield1710 << endl;
-            // cout<<endl;
-            // cout<<"Area under the curve for f1525: " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
-            // cout << "Amplitude for f1525 is " << obtained_parameters[6] << endl;
-            // cout << "Yield for f1525 is " << yield1525 << endl;
+            cout << "Area under the curve 1710: " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
+            cout << "Amplitude for 1710 is " << obtained_parameters[9] << endl;
+            cout << "Yield for 1710 is " << yield1710 << endl;
+            cout << endl;
+            cout << "Area under the curve for f1525: " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
+            cout << "Amplitude for f1525 is " << obtained_parameters[6] << endl;
+            cout << "Yield for f1525 is " << yield1525 << endl;
+            cout << endl;
+
             // cout << "Yield in bkg region 1: " << yieldbkg1 << endl;
             // cout << "Yield in bkg region 2: " << yieldbkg2 << endl;
             // cout << "Yield in bkg region 3: " << yieldbkg3 << endl;
@@ -1464,7 +1459,9 @@ void glueball_fit_4rBW_cosTheta()
 
         } // end of loop over cosTheta bins
         // plots_4BW->Close();
-        // cplot_all->SaveAs((savepath + "/rBWfit_all_cosTheta.png").c_str());
+        if (isMultiPanelPlot)
+            cplot_all->SaveAs((savepath + "/rBWfit_all_cosTheta.png").c_str());
+        cplot_all->Close();
     }
 }
 // end of main program

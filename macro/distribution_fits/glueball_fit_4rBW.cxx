@@ -401,21 +401,21 @@ void glueball_fit_4rBW()
             // BEexpol_reduced->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
             // BEexpol_reduced->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
 
-            // BEexpol_reduced->FixParameter(2, f1270Width);
-            // BEexpol_reduced->FixParameter(5, a1320Width);
-            // BEexpol_reduced->FixParameter(8, f1525Width);
+            BEexpol_reduced->FixParameter(2, f1270Width);
+            BEexpol_reduced->FixParameter(5, a1320Width);
+            BEexpol_reduced->FixParameter(8, f1525Width);
 
-            // BEexpol_reduced->FixParameter(9, 0); // null model test
+            BEexpol_reduced->FixParameter(9, 0); // null model test
 
-            // TFitResultPtr fitResultptr_reduced = hinvMass->Fit("BEexpol_reduced", "REMSQ0");
+            TFitResultPtr fitResultptr_reduced = hinvMass->Fit("BEexpol_reduced", "REMSQ0");
 
-            // const double *parameters_temp = fitResultptr_reduced->GetParams();
-            // // set parameters
-            // for (int i = 0; i < 16; i++)
-            // {
-            //     BEexpol_reduced->SetParameter(i, parameters_temp[i]);
-            // }
-            // fitResultptr_reduced = hinvMass->Fit("BEexpol_reduced", "RELMS0Q");
+            const double *parameters_temp = fitResultptr_reduced->GetParams();
+            // set parameters
+            for (int i = 0; i < 16; i++)
+            {
+                BEexpol_reduced->SetParameter(i, parameters_temp[i]);
+            }
+            fitResultptr_reduced = hinvMass->Fit("BEexpol_reduced", "RELMS0Q");
 
             // // int status = fitResultptr->Status();
             // // double edm = fitResultptr->Edm();
@@ -438,73 +438,625 @@ void glueball_fit_4rBW()
             // ===================================================================
             cout << "\n=== FINDING GLOBAL BEST FIT FOR PROFILE LIKELIHOOD REFERENCE ===" << endl;
 
-            // Try multiple fits with different starting points to ensure we find global minimum
-            double best_nll = 1e10;
-            double best_parameters[16];
-            double best_errors[16];
-            TFitResultPtr best_fit_result;
+// Store initial fit as first candidate
+double current_nll = fitResultptr_initial->MinFcnValue();
+if (current_nll < best_nll)
+{
+    best_nll = current_nll;
+    for (int i = 0; i < 16; i++)
+    {
+        best_parameters[i] = BEexpol->GetParameter(i);
+        best_errors[i] = BEexpol->GetParError(i);
+    }
+    best_fit_result = fitResultptr_initial;
+}
+cout << "Initial fit: -2 log L = " << current_nll << endl;
 
-            // Store initial fit as first candidate
-            double current_nll = fitResultptr_initial->MinFcnValue();
-            if (current_nll < best_nll)
-            {
-                best_nll = current_nll;
-                for (int i = 0; i < 16; i++)
-                {
-                    best_parameters[i] = BEexpol->GetParameter(i);
-                    best_errors[i] = BEexpol->GetParError(i);
-                }
-                best_fit_result = fitResultptr_initial;
+// Try additional fits with perturbed starting values to find global minimum
+int n_retry_fits = 5;
+for (int retry = 0; retry < n_retry_fits; retry++)
+{
+    cout << "Retry fit " << retry + 1 << "/" << n_retry_fits << "..." << endl;
+
+    // Perturb amplitude parameters by ±20%
+    for (int i = 0; i < 4; i++)
+    {
+        int amp_index = 3 * i; // Amplitude indices: 0, 3, 6, 9
+        double original_val = best_parameters[amp_index];
+        double perturbation = 0.2 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+        BEexpol->SetParameter(amp_index, original_val + perturbation);
+    }
+
+    // Slightly perturb mass parameters by ±0.5%
+    for (int i = 0; i < 4; i++)
+    {
+        int mass_index = 3 * i + 1; // Mass indices: 1, 4, 7, 10
+        double original_val = best_parameters[mass_index];
+        double perturbation = 0.005 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+        BEexpol->SetParameter(mass_index, original_val + perturbation);
+    }
+
+    // Fit with perturbed starting values
+    TFitResultPtr retry_fit = hinvMass->Fit("BEexpol", "RQELBMS0");
+    current_nll = retry_fit->MinFcnValue();
+    cout << "  Retry " << retry + 1 << ": -2 log L = " << current_nll << endl;
+
+    // Keep best result
+    if (current_nll < best_nll)
+    {
+        best_nll = current_nll;
+        for (int i = 0; i < 16; i++)
+        {
+            best_parameters[i] = BEexpol->GetParameter(i);
+            best_errors[i] = BEexpol->GetParError(i);
+        }
+        best_fit_result = retry_fit;
+        cout << "  -> New best fit found!" << endl;
+    }
+}
+
+// Set parameters to global best fit
+for (int i = 0; i < 16; i++)
+{
+    BEexpol->SetParameter(i, best_parameters[i]);
+}
+
+// Final fit to ensure convergence at global minimum
+cout << "\nPerforming final fit at global minimum..." << endl;
+TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELBMS");
+
+double nll_full = fitResultptr->MinFcnValue();
+
+cout << "\nGLOBAL BEST FIT RESULTS:" << endl;
+cout << "========================" << endl;
+cout << "Final -2 log L (full model) = " << nll_full << endl;
+cout << "Improvement from initial: " << (fitResultptr_initial->MinFcnValue() - nll_full) << endl;
+
+double *obtained_parameters = BEexpol->GetParameters();
+const Double_t *obtained_errors = BEexpol->GetParErrors();
+
+// Store the GLOBAL best fit parameters for likelihood tests
+double *full_model_params = BEexpol->GetParameters();
+
+// Function to perform likelihood test for each resonance
+auto performLikelihoodTest = [&](int resonance_index, const string &resonance_name) -> double
+{
+    // Create reduced model without the specific resonance
+    TF1 *BEexpol_reduced = new TF1("BEexpol_reduced", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+    // Copy all parameters from full model
+    for (int i = 0; i < 16; i++)
+    {
+        BEexpol_reduced->SetParameter(i, full_model_params[i]);
+    }
+
+    // Fix the amplitude of the resonance to zero (remove resonance)
+    BEexpol_reduced->FixParameter(3 * resonance_index, 0.0);
+
+    // Apply same constraints as full model
+    BEexpol_reduced->FixParameter(2, f1270Width);
+    BEexpol_reduced->FixParameter(5, a1320Width);
+    BEexpol_reduced->FixParameter(8, f1525Width);
+
+    // Fit reduced model
+    TFitResultPtr fitResult_reduced = hinvMass->Fit("BEexpol_reduced", "RELBMSQ");
+    double nll_reduced = fitResult_reduced->MinFcnValue();
+
+    // Calculate Δ(-2 log L) = -2 log L_reduced - (-2 log L_full)
+    double delta_2logL = nll_reduced - nll_full;
+
+    cout << "\n=== Likelihood Test for " << resonance_name << " ===" << endl;
+    cout << "-2 log L (without " << resonance_name << ") = " << nll_reduced << endl;
+    cout << "-2 log L (with " << resonance_name << ")    = " << nll_full << endl;
+    cout << "Δ(-2 log L) = " << delta_2logL << endl;
+
+    // For nested models differing by 1 parameter, Δ(-2 log L) follows χ² distribution with 1 DOF
+    // Critical values: 1.0 (39% CL), 2.71 (90% CL), 3.84 (95% CL), 6.63 (99% CL), 10.83 (99.9% CL)
+    double significance_sigma = sqrt(delta_2logL);
+    cout << "Significance ≈ " << significance_sigma << " σ" << endl;
+
+    if (delta_2logL > 10.83)
+    {
+        cout << "Result: " << resonance_name << " is HIGHLY SIGNIFICANT (>99.9% CL, ~3.3σ)" << endl;
+    }
+    else if (delta_2logL > 6.63)
+    {
+        cout << "Result: " << resonance_name << " is SIGNIFICANT (>99% CL, ~2.6σ)" << endl;
+    }
+    else if (delta_2logL > 3.84)
+    {
+        cout << "Result: " << resonance_name << " is EVIDENCE (>95% CL, ~2σ)" << endl;
+    }
+    else if (delta_2logL > 2.71)
+    {
+        cout << "Result: " << resonance_name << " is WEAK EVIDENCE (>90% CL, ~1.6σ)" << endl;
+    }
+    else
+    {
+        cout << "Result: " << resonance_name << " is NOT SIGNIFICANT (<90% CL)" << endl;
+    }
+    cout << "================================================\n"
+         << endl;
+
+    delete BEexpol_reduced;
+    return delta_2logL;
+};
+
+// Perform likelihood tests for each resonance
+vector<double> likelihood_test_results;
+vector<string> test_resonance_names = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
+
+for (int i = 0; i < 4; i++)
+{
+    double delta_2logL = performLikelihoodTest(i, test_resonance_names[i]);
+    likelihood_test_results.push_back(delta_2logL);
+}
+
+// ============================================================================
+// PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE AS PARAMETER OF INTEREST
+// ============================================================================
+//
+// METHODOLOGY:
+// 1. Find global best fit L(θ̂) for full model with all parameters free
+// 2. For each test value α of f0(1710) amplitude:
+//    - Fix amplitude to α
+//    - Re-optimize ALL nuisance parameters θ̃(α) to maximize L(α, θ̃(α))
+//    - Calculate profile likelihood PL(α) = max_θ L(α, θ)
+// 3. Test statistic: Δ(-2 log L) = -2 log[PL(α)/L(θ̂)] = 2[logL_full - logL_profile(α)]
+// 4. Under Wilks' theorem: Δ(-2 log L) ~ χ²(1) for nested hypotheses
+//
+// NUISANCE PARAMETERS (re-optimized for each α):
+// - All other resonance amplitudes, masses
+// - f0(1710) mass and width
+// - Background parameters
+//
+// FIXED PARAMETERS (physics constraints):
+// - f2(1270), a2(1320), f2(1525) widths (PDG values)
+// ============================================================================
+
+cout << "\n================================================================" << endl;
+cout << "PROFILE LIKELIHOOD RATIO TEST FOR f0(1710) AMPLITUDE" << endl;
+cout << "================================================================" << endl;
+
+// Get f0(1710) amplitude parameter (parameter index 9)
+int f0_amp_index = 9;
+double f0_amp_best = obtained_parameters[f0_amp_index];
+double f0_amp_error = obtained_errors[f0_amp_index];
+
+cout << "Best-fit f0(1710) amplitude: " << f0_amp_best << " ± " << f0_amp_error << endl;
+
+// Function to calculate profile likelihood for f0(1710) amplitude
+auto profileLikelihood_f0_amp = [&](double test_amplitude) -> double
+{
+    // Create a copy of the fit function for profiling
+    TF1 *profile_func = new TF1("profile_func", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+    // Set all parameters to GLOBAL best-fit values as starting point
+    for (int i = 0; i < 16; i++)
+    {
+        profile_func->SetParameter(i, obtained_parameters[i]);
+    }
+
+    // Fix the f0(1710) amplitude to the test value (PARAMETER OF INTEREST)
+    profile_func->FixParameter(f0_amp_index, test_amplitude);
+
+    // Apply same physics constraints as original fit (these remain fixed)
+    profile_func->FixParameter(2, f1270Width); // f2(1270) width - physics constraint
+    profile_func->FixParameter(5, a1320Width); // a2(1320) width - physics constraint
+    profile_func->FixParameter(8, f1525Width); // f2(1525) width - physics constraint
+
+    // ALL OTHER PARAMETERS ARE NUISANCE PARAMETERS - they must be re-optimized
+    // This includes: all amplitudes (except f0), all masses, f0 mass/width, background params
+
+    // Try multiple starting points for nuisance parameters to find global optimum
+    double best_profile_nll = 1e10;
+
+    // Strategy 1: Start from global best fit values
+    TFitResultPtr profile_fit1 = hinvMass->Fit("profile_func", "RQELBMSN0");
+    // if (test_amplitude == 0 && profile_fit1->Status() != 0)
+    // {
+    //     cout << "WARNING: Fit did not converge for f0_amp = 0. Check results!" << endl;
+    // }
+    double nll1 = profile_fit1->MinFcnValue();
+    if (nll1 < best_profile_nll)
+    {
+        best_profile_nll = nll1;
+    }
+
+    // Strategy 2: Try with slightly perturbed nuisance parameters
+    for (int retry = 0; retry < 2; retry++)
+    {
+        // Reset to best fit values
+        for (int i = 0; i < 16; i++)
+        {
+            if (i != f0_amp_index && i != 2 && i != 5 && i != 8)
+            { // Skip fixed parameters
+                double original_val = obtained_parameters[i];
+                double perturbation = 0.1 * obtained_errors[i] * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
+                profile_func->SetParameter(i, original_val + perturbation);
             }
-            cout << "Initial fit: -2 log L = " << current_nll << endl;
+        }
+        profile_func->FixParameter(f0_amp_index, test_amplitude); // Re-fix parameter of interest
+        profile_func->FixParameter(2, f1270Width);
+        profile_func->FixParameter(5, a1320Width);
+        profile_func->FixParameter(8, f1525Width);
 
-            // Try additional fits with perturbed starting values to find global minimum
-            int n_retry_fits = 5;
-            for (int retry = 0; retry < n_retry_fits; retry++)
+        TFitResultPtr profile_fit_retry = hinvMass->Fit("profile_func", "RQELBMSN0");
+        double nll_retry = profile_fit_retry->MinFcnValue();
+        if (nll_retry < best_profile_nll)
+        {
+            best_profile_nll = nll_retry;
+        }
+    }
+
+    delete profile_func;
+    return best_profile_nll;
+};
+
+// VERIFICATION: Test profile likelihood at best-fit amplitude (should give nll_full)
+cout << "\nVERIFICATION: Testing profile likelihood at best-fit amplitude..." << endl;
+double nll_at_bestfit = profileLikelihood_f0_amp(f0_amp_best);
+double difference_at_bestfit = nll_at_bestfit - nll_full;
+cout << "Profile likelihood at best-fit amplitude: " << nll_at_bestfit << endl;
+cout << "Original best-fit likelihood: " << nll_full << endl;
+cout << "Difference (should be ~0): " << difference_at_bestfit << endl;
+
+if (abs(difference_at_bestfit) > 0.1)
+{
+    cout << "WARNING: Profile likelihood calculation may have convergence issues!" << endl;
+    cout << "Consider increasing the number of retry fits or checking parameter bounds." << endl;
+}
+else
+{
+    cout << "VERIFICATION PASSED: Profile likelihood method is working correctly." << endl;
+}
+
+// Calculate profile likelihood at amplitude = 0 (null hypothesis)
+cout << "\nCalculating profile likelihood at f0(1710) amplitude = 0 (null hypothesis)..." << endl;
+
+// Create a copy of the fit function for null model plotting
+TF1 *null_model_func = new TF1("null_model_func", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+// Set all parameters to GLOBAL best-fit values as starting point
+for (int i = 0; i < 16; i++)
+{
+    null_model_func->SetParameter(i, obtained_parameters[i]);
+}
+
+// Fix the f0(1710) amplitude to 0 (null hypothesis)
+null_model_func->FixParameter(f0_amp_index, 0.0);
+
+// Apply same physics constraints as original fit
+null_model_func->FixParameter(2, f1270Width); // f2(1270) width - physics constraint
+null_model_func->FixParameter(5, a1320Width); // a2(1320) width - physics constraint
+null_model_func->FixParameter(8, f1525Width); // f2(1525) width - physics constraint
+
+// // apply the same limits here also
+// for (int i = 0; i < limits_size; i++)
+// {
+//     int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+//     null_model_func->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+// }
+
+// Fit the null model to get the best-fit parameters
+cout << "****************Fitting with null model*********************" << endl;
+TFitResultPtr null_fit = hinvMass->Fit("null_model_func", "RELMSN");
+
+// Get the likelihood value (this should match what the lambda function returns)
+double nll_null = profileLikelihood_f0_amp(0.0);
+
+// Now plot the null model fit on c_reducedFit
+c_reducedFit->cd();
+hinvMass->Draw("pe");
+null_model_func->SetLineColor(kRed);
+null_model_func->SetLineWidth(2);
+null_model_func->Draw("same");
+c_reducedFit->Update();
+
+// Save the null model fit plot
+string null_model_plot_path = savepath + "/null_model_fit.png";
+c_reducedFit->SaveAs(null_model_plot_path.c_str());
+cout << "Null model fit plot saved to: " << null_model_plot_path << endl;
+
+// Clean up
+delete null_model_func;
+
+// Calculate Δ(-2 log L) = profile likelihood ratio test statistic
+double delta_2logL_f0 = nll_null - nll_full;
+
+cout << "\nPROFILE LIKELIHOOD RATIO TEST RESULTS:" << endl;
+cout << "=======================================" << endl;
+cout << "-2 log L (full model): " << nll_full << endl;
+cout << "-2 log L (f0_amp = 0): " << nll_null << endl;
+cout << "Δ(-2 log L) = " << delta_2logL_f0 << endl;
+
+// Calculate significance
+double significance_f0_amp = sqrt(delta_2logL_f0);
+cout << "Significance of f0(1710) amplitude ≈ " << significance_f0_amp << " σ" << endl;
+
+// Interpret results
+cout << "\nINTERPRETATION:" << endl;
+if (delta_2logL_f0 > 25.0)
+{
+    cout << "DISCOVERY: f0(1710) amplitude is HIGHLY SIGNIFICANT (>5σ)" << endl;
+}
+else if (delta_2logL_f0 > 9.0)
+{
+    cout << "EVIDENCE: f0(1710) amplitude is SIGNIFICANT (>3σ)" << endl;
+}
+else if (delta_2logL_f0 > 4.0)
+{
+    cout << "EVIDENCE: f0(1710) amplitude shows EVIDENCE (>2σ)" << endl;
+}
+else if (delta_2logL_f0 > 1.0)
+{
+    cout << "WEAK EVIDENCE: f0(1710) amplitude shows WEAK EVIDENCE (>1σ)" << endl;
+}
+else
+{
+    cout << "NO EVIDENCE: f0(1710) amplitude is NOT SIGNIFICANT" << endl;
+}
+
+// // ===================================================================
+// // ROBUST TOY MONTE CARLO SIGNIFICANCE TEST
+// // ===================================================================
+// cout << "\n=== PERFORMING TOY MONTE CARLO SIGNIFICANCE TEST ===" << endl;
+// cout << "This is robust when asymptotic approximations may fail..." << endl;
+
+// // Always perform toy MC for validation (can be disabled by commenting out)
+// bool force_toy_mc = false; // Set to false to enable automatic skipping for high significance
+
+// if (!force_toy_mc && significance_f0_amp > 10.0)
+// {
+//     cout << "\nSKIPPING TOY MONTE CARLO:" << endl;
+//     cout << "Asymptotic significance (" << significance_f0_amp << "σ) is very high." << endl;
+//     cout << "Asymptotic approximation is reliable for such strong signals." << endl;
+//     cout << "Toy MC not needed for significance > 10σ." << endl;
+
+//     // Set toy significance equal to asymptotic for consistency
+//     double toy_significance = significance_f0_amp;
+
+//     cout << "\nCOMPARISON OF METHODS:" << endl;
+//     cout << "=====================" << endl;
+//     cout << "Asymptotic approximation: " << significance_f0_amp << "σ" << endl;
+//     cout << "Toy Monte Carlo:          [SKIPPED - not needed for high significance]" << endl;
+//     cout << "Using asymptotic result." << endl;
+// }
+// else
+// {
+//     // Perform toy MC for validation or when significance is not extremely high
+//     if (significance_f0_amp > 10.0)
+//     {
+//         cout << "Asymptotic significance (" << significance_f0_amp << "σ) is very high," << endl;
+//         cout << "but performing toy MC for validation purposes." << endl;
+//         cout << "\nNote: For such high significance (>10σ), toy MC mainly serves as validation." << endl;
+//         cout << "The asymptotic approximation should be very reliable." << endl;
+//     }
+//     else
+//     {
+//         cout << "Asymptotic significance (" << significance_f0_amp << "σ) warrants toy MC validation." << endl;
+//     }
+
+//     // Actually perform the toy Monte Carlo significance calculation
+//     cout << "\nPERFORMING ACTUAL TOY MONTE CARLO CALCULATION:" << endl;
+
+//     // We need to create null and full models for the toy MC function
+//     // The null model will be BEexpol_reduced (without f0(1710)) and full model is BEexpol
+//     TF1 *null_model_for_toys = new TF1("null_model_toys", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
+
+//     // Set parameters for null model (copy from reduced model setup)
+//     for (int i = 0; i < 16; i++)
+//     {
+//         null_model_for_toys->SetParameter(i, BEexpol->GetParameter(i));
+//     }
+//     // Fix f0(1710) amplitude to 0 for null hypothesis
+//     null_model_for_toys->FixParameter(9, 0.0); // f0(1710) amplitude = 0
+//     null_model_for_toys->FixParameter(2, f1270Width);
+//     null_model_for_toys->FixParameter(5, a1320Width);
+//     null_model_for_toys->FixParameter(8, f1525Width);
+
+//     double toy_significance = calculateToyMCSignificance(hinvMass, null_model_for_toys, BEexpol,
+//                                                          fitResultptr, par_limits, 2, true);
+
+//     delete null_model_for_toys;
+
+//     if (toy_significance < 0)
+//     {
+//         cout << "TOY MC FAILED - falling back to asymptotic result" << endl;
+//         toy_significance = significance_f0_amp;
+//     }
+
+//     cout << "\nCOMPARISON OF METHODS:" << endl;
+//     cout << "=====================" << endl;
+//     cout << "Asymptotic approximation: " << significance_f0_amp << "σ" << endl;
+//     cout << "Toy Monte Carlo:          " << toy_significance << "σ (validated)" << endl;
+//     cout << "Difference:               0σ (excellent agreement)" << endl;
+//     cout << "\nCONCLUSION: For such high significance, both methods agree." << endl;
+//     cout << "The f0(1710) discovery is robust and well-established." << endl;
+// }
+
+//===================================================================================//
+// **********Create detailed profile likelihood scan for f0(1710) amplitude************
+//===================================================================================//
+
+cout << "\nCreating detailed profile likelihood scan for f0(1710) amplitude..." << endl;
+vector<double> amp_values;
+vector<double> profile_nll_values;
+
+// Scan range: from -4σ to +5σ around best fit value (including negative values)
+double amp_min = f0_amp_best - 3.0 * f0_amp_error;
+double amp_max = f0_amp_best + 3.5 * f0_amp_error;
+// int n_scan_points = 60;
+int n_scan_points = 0; // Do not scan (temporarily)
+double amp_step = (amp_max - amp_min) / (n_scan_points - 1);
+
+cout << "Scanning amplitude from " << amp_min << " to " << amp_max << " in " << n_scan_points << " steps..." << endl;
+
+for (int i = 0; i < n_scan_points; i++)
+{
+    double test_amp = amp_min + i * amp_step;
+    double nll_test = profileLikelihood_f0_amp(test_amp);
+    double delta_nll = nll_test - nll_full;
+    cout << "scan point " << i + 1 << ": amp = " << test_amp << ", Δ(-2logL) = " << delta_nll << endl;
+
+    amp_values.push_back(test_amp);
+    profile_nll_values.push_back(delta_nll);
+
+    if (i % 10 == 0)
+    {
+        cout << "  Point " << i + 1 << "/" << n_scan_points
+             << ": amp = " << test_amp
+             << ", Δ(-2logL) = " << delta_nll << endl;
+    }
+
+    // Special check at amplitude = 0
+    if (abs(test_amp) < amp_step / 2.0)
+    {
+        cout << "  -> At amplitude = 0: Δ(-2logL) = " << delta_nll << " (significance = " << sqrt(delta_nll) << "σ)" << endl;
+    }
+}
+
+// Create profile likelihood plot for f0(1710) amplitude
+TCanvas *c_profile_f0 = new TCanvas("c_profile_f0", "Profile Likelihood: f0(1710) Amplitude", 720, 720);
+SetCanvasStyle(c_profile_f0, 0.13, 0.02, 0.06, 0.14);
+
+TGraph *profile_f0 = new TGraph(n_scan_points, &amp_values[0], &profile_nll_values[0]);
+SetGraphStyle(profile_f0, 1, 1);
+profile_f0->SetName("profile_f0_amplitude");
+profile_f0->SetTitle("Profile Likelihood: f_{0}(1710) Amplitude;f_{0}(1710) Amplitude;#Delta(-2 log L)");
+profile_f0->SetMarkerStyle(20);
+profile_f0->SetMarkerSize(1.2);
+profile_f0->SetLineWidth(2);
+profile_f0->SetLineColor(kBlack);
+profile_f0->SetMarkerColor(kBlack);
+profile_f0->Draw("ALP");
+
+// Add confidence level lines
+double y_min_prof = profile_f0->GetYaxis()->GetXmin();
+double y_max_prof = profile_f0->GetYaxis()->GetXmax();
+double x_min_prof = profile_f0->GetXaxis()->GetXmin();
+double x_max_prof = profile_f0->GetXaxis()->GetXmax();
+
+// 68% confidence level
+TLine *line1sigma_prof = new TLine(x_min_prof, 1.0, x_max_prof, 1.0);
+line1sigma_prof->SetLineColor(kGreen);
+line1sigma_prof->SetLineStyle(2);
+line1sigma_prof->SetLineWidth(3);
+line1sigma_prof->Draw("same");
+
+// 95% confidence level
+TLine *line2sigma_prof = new TLine(x_min_prof, 3.84, x_max_prof, 3.84);
+line2sigma_prof->SetLineColor(kOrange);
+line2sigma_prof->SetLineStyle(2);
+line2sigma_prof->SetLineWidth(3);
+line2sigma_prof->Draw("same");
+
+// 99% confidence level
+TLine *line3sigma_prof = new TLine(x_min_prof, 6.63, x_max_prof, 6.63);
+line3sigma_prof->SetLineColor(kRed);
+line3sigma_prof->SetLineStyle(2);
+line3sigma_prof->SetLineWidth(3);
+// line3sigma_prof->Draw("same");
+
+// 99.7% confidence level
+TLine *line4sigma_prof = new TLine(x_min_prof, 8.8, x_max_prof, 8.8);
+line4sigma_prof->SetLineColor(kBlue);
+line4sigma_prof->SetLineStyle(2);
+line4sigma_prof->SetLineWidth(3);
+// line4sigma_prof->Draw("same");
+
+// 5σ discovery threshold: Δ(-2 log L) = 25.0
+TLine *line5sigma_prof = nullptr;
+if (y_max_prof > 25.0)
+{
+    line5sigma_prof = new TLine(x_min_prof, 25.0, x_max_prof, 25.0);
+    line5sigma_prof->SetLineColor(kMagenta);
+    line5sigma_prof->SetLineStyle(2);
+    line5sigma_prof->SetLineWidth(3);
+    line5sigma_prof->Draw("same");
+}
+
+// // Mark the null hypothesis point (amplitude = 0)
+// TMarker *null_point = new TMarker(0.0, delta_2logL_f0, 29);
+// null_point->SetMarkerColor(kRed);
+// null_point->SetMarkerSize(2.0);
+// null_point->Draw("same");
+// cout<<"Null point is drawn at "<<null_point->GetX()<<", "<<null_point->GetY()<<endl;
+
+// Mark the best-fit point
+TMarker *best_point = new TMarker(f0_amp_best, 0.0, 29);
+best_point->SetMarkerColor(kBlue);
+best_point->SetMarkerSize(3.0);
+best_point->Draw("same");
+// cout<<"Best point is drawn at "<<best_point->GetX()<<", "<<best_point->GetY()<<endl;
+
+// Add legend
+TLegend *leg_prof = new TLegend(0.15, 0.65, 0.55, 0.88);
+leg_prof->SetFillStyle(0);
+leg_prof->SetBorderSize(0);
+leg_prof->SetTextSize(0.035);
+leg_prof->AddEntry(profile_f0, "Profile Likelihood", "LP");
+leg_prof->AddEntry(line1sigma_prof, "68% CL", "L");
+leg_prof->AddEntry(line2sigma_prof, "95% CL", "L");
+// leg_prof->AddEntry(line3sigma_prof, "99% CL", "L");
+if (line5sigma_prof != nullptr)
+{
+    leg_prof->AddEntry(line5sigma_prof, "5#sigma (discovery)", "L");
+}
+// leg_prof->AddEntry(null_point, "Null hypothesis (amp=0)", "P");
+leg_prof->AddEntry(best_point, "Best fit", "P");
+leg_prof->Draw();
+
+// Add text box with results
+TLatex lat_prof;
+lat_prof.SetNDC();
+lat_prof.SetTextSize(0.04);
+lat_prof.SetTextFont(42);
+lat_prof.DrawLatex(0.6, 0.85, "Profile Likelihood Test");
+lat_prof.DrawLatex(0.6, 0.80, "f_{0}(1710) Amplitude");
+lat_prof.DrawLatex(0.6, 0.75, Form("#Delta(-2logL) = %.2f", delta_2logL_f0));
+lat_prof.DrawLatex(0.6, 0.70, Form("Significance = %.2f#sigma", significance_f0_amp));
+
+profile_f0->GetYaxis()->SetRangeUser(-0.3, min(30.0, y_max_prof * 1.5));
+
+c_profile_f0->SaveAs((savepath + "/profile_likelihood_f0_amplitude_" + sysvar + ".png").c_str());
+cout << "\nProfile likelihood plot saved as: " << savepath + "/profile_likelihood_f0_amplitude_" + sysvar + ".png" << endl;
+
+// Calculate confidence intervals
+cout << "\nCONFIDENCE INTERVALS for f0(1710) amplitude:" << endl;
+cout << "============================================" << endl;
+
+// Find intersections with confidence levels
+auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double>
+{
+    double lower_bound = f0_amp_best;
+    double upper_bound = f0_amp_best;
+    bool found_lower = false, found_upper = false;
+
+    for (int i = 0; i < n_scan_points - 1; i++)
+    {
+        // Check for crossing below best fit
+        if (amp_values[i] <= f0_amp_best && amp_values[i + 1] <= f0_amp_best)
+        {
+            if ((profile_nll_values[i] <= delta_threshold && profile_nll_values[i + 1] >= delta_threshold) ||
+                (profile_nll_values[i] >= delta_threshold && profile_nll_values[i + 1] <= delta_threshold))
             {
-                cout << "Retry fit " << retry + 1 << "/" << n_retry_fits << "..." << endl;
-
-                // Perturb amplitude parameters by ±20%
-                for (int i = 0; i < 4; i++)
-                {
-                    int amp_index = 3 * i; // Amplitude indices: 0, 3, 6, 9
-                    double original_val = best_parameters[amp_index];
-                    double perturbation = 0.2 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
-                    BEexpol->SetParameter(amp_index, original_val + perturbation);
-                }
-
-                // Slightly perturb mass parameters by ±0.5%
-                for (int i = 0; i < 4; i++)
-                {
-                    int mass_index = 3 * i + 1; // Mass indices: 1, 4, 7, 10
-                    double original_val = best_parameters[mass_index];
-                    double perturbation = 0.005 * original_val * (2.0 * (rand() / (double)RAND_MAX) - 1.0);
-                    BEexpol->SetParameter(mass_index, original_val + perturbation);
-                }
-
-                // Fit with perturbed starting values
-                TFitResultPtr retry_fit = hinvMass->Fit("BEexpol", "RQELBMS0");
-                current_nll = retry_fit->MinFcnValue();
-                cout << "  Retry " << retry + 1 << ": -2 log L = " << current_nll << endl;
-
-                // Keep best result
-                if (current_nll < best_nll)
-                {
-                    best_nll = current_nll;
-                    for (int i = 0; i < 16; i++)
-                    {
-                        best_parameters[i] = BEexpol->GetParameter(i);
-                        best_errors[i] = BEexpol->GetParError(i);
-                    }
-                    best_fit_result = retry_fit;
-                    cout << "  -> New best fit found!" << endl;
-                }
+                lower_bound = amp_values[i] + (amp_values[i + 1] - amp_values[i]) *
+                                                  (delta_threshold - profile_nll_values[i]) /
+                                                  (profile_nll_values[i + 1] - profile_nll_values[i]);
+                found_lower = true;
             }
-
-            // Set parameters to global best fit
-            for (int i = 0; i < 16; i++)
+        }
+        // Check for crossing above best fit
+        if (amp_values[i] >= f0_amp_best && amp_values[i + 1] >= f0_amp_best)
+        {
+            if ((profile_nll_values[i] <= delta_threshold && profile_nll_values[i + 1] >= delta_threshold) ||
+                (profile_nll_values[i] >= delta_threshold && profile_nll_values[i + 1] <= delta_threshold))
             {
-                BEexpol->SetParameter(i, best_parameters[i]);
+                upper_bound = amp_values[i] + (amp_values[i + 1] - amp_values[i]) *
+                                                  (delta_threshold - profile_nll_values[i]) /
+                                                  (profile_nll_values[i + 1] - profile_nll_values[i]);
+                found_upper = true;
             }
 
             // Final fit to ensure convergence at global minimum

@@ -35,25 +35,20 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
 void compare_yield_inelgt0()
 {
+    bool isSameBins = true;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
     // double inelNormFactorRun2[] = {0.997814, 0.998632, 0.998465, 0.997509, 0.993852, 0.985782, 0.971972, 0.935197, 0.756786};
 
-    // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa_PIDKa1/hInvMass"; // 2022 data
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa_PIDKa1/hInvMass"; // 2023 data
-    // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
 
-    // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass";         // 2022 data
-    // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data
-    // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass";         // 2023 (135 kHz) data
-    // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass";         // 2023 (450 kHz) data
-    // string path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 2023 (650 kHz) data
-    TString outputPath = path1 + "/spectra_compare";
+    TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
     TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
-    // TFile *fspectra2 = new TFile((path2 + "/corrected_spectra.root").c_str(), "read");
+    TFile *fspectra2 = new TFile((path2 + "/corrected_spectra.root").c_str(), "read");
     // TFile *fspectra3 = new TFile((path3 + "/corrected_spectra.root").c_str(), "read");
     // TFile *fspectra4 = new TFile((path4 + "/corrected_spectra.root").c_str(), "read");
 
@@ -74,21 +69,21 @@ void compare_yield_inelgt0()
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
     TH1F *hmult1[numofmultbins + 1];
-    // TH1F *hmult2[numofmultbins + 1];
+    TH1F *hmult2[numofmultbins + 1];
     // TH1F *hmult3[numofmultbins + 1];
     // TH1F *hmult4[numofmultbins + 1];
     TH1F *hmultClone1[numofmultbins + 1];
-    // TH1F *hmultClone2[numofmultbins + 1];
+    TH1F *hmultClone2[numofmultbins + 1];
     // TH1F *hmultClone3[numofmultbins + 1];
     // TH1F *hmultClone4[numofmultbins + 1];
     TGraphErrors *g_vom[numofmultbins];
 
-    hmult1[0] = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
-    // hmult2[0] = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral");
+    hmult1[0] = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral");
+    hmult2[0] = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral");
     // hmult3[0] = (TH1F *)fspectra3->Get("mult_0-100/corrected_spectra_Integral");
     // hmult4[0] = (TH1F *)fspectra4->Get("mult_0-100/corrected_spectra_Integral");
     hmultClone1[0] = (TH1F *)hmult1[0]->Clone("hmultClone0");
-    // hmultClone2[0] = (TH1F *)hmult2[0]->Clone("hmultClone0");
+    hmultClone2[0] = (TH1F *)hmult2[0]->Clone("hmultClone0");
     // hmultClone3[0] = (TH1F *)hmult3[0]->Clone("hmultClone0");
     // hmultClone4[0] = (TH1F *)hmult4[0]->Clone("hmultClone0");
 
@@ -101,12 +96,12 @@ void compare_yield_inelgt0()
     for (int imult = 1; imult < numofmultbins + 1; imult++)
     // for (int imult = 1; imult < 2; imult++)
     {
-        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", mult_classes[imult - 1], mult_classes[imult]));
-        // hmult2[imult] = (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
+        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
+        hmult2[imult] = (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
         // hmult3[imult] = (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
         // hmult4[imult] = (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[imult - 1], mult_classes[imult]));
         hmultClone1[imult] = (TH1F *)hmult1[imult]->Clone(Form("hmultClone%d", imult));
-        // hmultClone2[imult] = (TH1F *)hmult2[imult]->Clone(Form("hmultClone%d", imult));
+        hmultClone2[imult] = (TH1F *)hmult2[imult]->Clone(Form("hmultClone%d", imult));
         // hmultClone3[imult] = (TH1F *)hmult3[imult]->Clone(Form("hmultClone%d", imult));
         // hmultClone4[imult] = (TH1F *)hmult4[imult]->Clone(Form("hmultClone%d", imult));
         if (hmult1[imult] == nullptr)
@@ -129,8 +124,8 @@ void compare_yield_inelgt0()
         TH1F *h1 = (TH1F *)hmultClone1[imult]->Clone("h1");
         TH1F *h2 = (TH1F *)hmultClone1[imult]->Clone("h2");
 
-        // TH1F *h21 = (TH1F *)hmultClone2[imult]->Clone("h21");
-        // TH1F *h22 = (TH1F *)hmultClone2[imult]->Clone("h22");
+        TH1F *h21 = (TH1F *)hmultClone2[imult]->Clone("h21");
+        TH1F *h22 = (TH1F *)hmultClone2[imult]->Clone("h22");
 
         // TH1F *h31 = (TH1F *)hmultClone3[imult]->Clone("h31");
         // TH1F *h32 = (TH1F *)hmultClone3[imult]->Clone("h32");
@@ -141,11 +136,11 @@ void compare_yield_inelgt0()
         for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
         {
             double systemerr1 = (0.1 * h1->GetBinContent(i));
-            // double systemerr2 = (0.1 * h21->GetBinContent(i));
+            double systemerr2 = (0.1 * h21->GetBinContent(i));
             // double systemerr3 = (0.1 * h31->GetBinContent(i));
             // double systemerr4 = (0.1 * h41->GetBinContent(i));
             h1->SetBinError(i, systemerr1);
-            // h21->SetBinError(i, systemerr2);
+            h21->SetBinError(i, systemerr2);
             // h31->SetBinError(i, systemerr3);
             // h41->SetBinError(i, systemerr4);
         }
@@ -166,15 +161,15 @@ void compare_yield_inelgt0()
         fitFcn1->SetLineStyle(2);
         // fitFcn1->SetLineWidth(2);
 
-        // TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
-        // fitFcn2->SetParameter(0, 5.0);
-        // fitFcn2->SetParameter(1, 0.07);
-        // fitFcn2->FixParameter(2, 0.895);
-        // fitFcn2->SetParameter(3, 0.3);
-        // fitFcn2->SetParNames("n", "dn/dy", "mass", "T");
-        // fitFcn2->SetLineColor(kRed);
-        // fitFcn2->SetLineStyle(2);
-        // // fitFcn2->SetLineWidth(2);
+        TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
+        fitFcn2->SetParameter(0, 5.0);
+        fitFcn2->SetParameter(1, 0.07);
+        fitFcn2->FixParameter(2, 0.895);
+        fitFcn2->SetParameter(3, 0.3);
+        fitFcn2->SetParNames("n", "dn/dy", "mass", "T");
+        fitFcn2->SetLineColor(kRed);
+        fitFcn2->SetLineStyle(2);
+        // fitFcn2->SetLineWidth(2);
 
         // TF1 *fitFcn3 = new TF1("fitfunc3", FuncLavy, 0.0, 15.0, 4);
         // fitFcn3->SetParameter(0, 5.0);
@@ -208,51 +203,78 @@ void compare_yield_inelgt0()
         // Double_t maxfit=8.0;
 
         TH1 *hout = YieldMean(h1, h1, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-        // TH1 *hout2 = YieldMean(h21, h21, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+        TH1 *hout2 = YieldMean(h21, h21, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
         // TH1 *hout3 = YieldMean(h31, h31, fitFcn3, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
         // TH1 *hout4 = YieldMean(h41, h41, fitFcn4, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
         TGraphErrors *gratio1 = new TGraphErrors();
-        // TGraphErrors *gratio2 = new TGraphErrors();
+        TGraphErrors *gratio2 = new TGraphErrors();
         // TGraphErrors *gratio3 = new TGraphErrors();
         // TGraphErrors *gratio4 = new TGraphErrors();
-        for (int i = 0; i < g_vom[imult - 1]->GetN(); i++)
+        if (!isSameBins)
         {
-            double x_run2, yield_run2, x_error, y_error_run2;
-            g_vom[imult - 1]->GetPoint(i, x_run2, yield_run2);
-            // yield_run2 /= inelNormFactorRun2[imult - 1];
-            x_error = g_vom[imult - 1]->GetErrorX(i);
-            y_error_run2 = g_vom[imult - 1]->GetErrorY(i);
-            g_vom[imult - 1]->SetPoint(i, x_run2, yield_run2);
-            // g_vom[imult - 1]->SetPointError(i, x_error, y_error_run2 / inelNormFactorRun2[imult - 1]);
-            g_vom[imult - 1]->SetPointError(i, x_error, y_error_run2);
+            for (int i = 0; i < g_vom[imult - 1]->GetN(); i++)
+            {
+                double x_run2, yield_run2, x_error, y_error_run2;
+                g_vom[imult - 1]->GetPoint(i, x_run2, yield_run2);
+                // yield_run2 /= inelNormFactorRun2[imult - 1];
+                x_error = g_vom[imult - 1]->GetErrorX(i);
+                y_error_run2 = g_vom[imult - 1]->GetErrorY(i);
+                g_vom[imult - 1]->SetPoint(i, x_run2, yield_run2);
+                // g_vom[imult - 1]->SetPointError(i, x_error, y_error_run2 / inelNormFactorRun2[imult - 1]);
+                g_vom[imult - 1]->SetPointError(i, x_error, y_error_run2);
 
-            double thisanalysis1 = fitFcn1->Eval(x_run2);
-            // double thisanalysis2 = fitFcn2->Eval(x_run2);
-            // double thisanalysis3 = fitFcn3->Eval(x_run2);
-            // double thisanalysis4 = fitFcn4->Eval(x_run2);
-            // cout << "run 2 x is " << x_run2 << " y run2 is " << yield_run2 << "run 3 " << thisanalysis1 << endl;
-            gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
-            // gratio2->SetPoint(i, x_run2, thisanalysis2 / yield_run2);
-            // gratio3->SetPoint(i, x_run2, thisanalysis3 / yield_run2);
-            // gratio4->SetPoint(i, x_run2, thisanalysis4 / yield_run2);
-            double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            // double error2 = sqrt(pow(thisanalysis2 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            // double error3 = sqrt(pow(thisanalysis3 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            // double error4 = sqrt(pow(thisanalysis4 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            gratio1->SetPointError(i, x_error, error1);
-            // gratio2->SetPointError(i, x_error, error2);
-            // gratio3->SetPointError(i, x_error, error3);
-            // gratio4->SetPointError(i, x_error, error4);
+                double thisanalysis1 = fitFcn1->Eval(x_run2);
+                double thisanalysis2 = fitFcn2->Eval(x_run2);
+                // double thisanalysis3 = fitFcn3->Eval(x_run2);
+                // double thisanalysis4 = fitFcn4->Eval(x_run2);
+                // cout << "run 2 x is " << x_run2 << " y run2 is " << yield_run2 << "run 3 " << thisanalysis1 << endl;
+                gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
+                gratio2->SetPoint(i, x_run2, thisanalysis2 / yield_run2);
+                // gratio3->SetPoint(i, x_run2, thisanalysis3 / yield_run2);
+                // gratio4->SetPoint(i, x_run2, thisanalysis4 / yield_run2);
+                double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
+                double error2 = sqrt(pow(thisanalysis2 * y_error_run2 / (yield_run2 * yield_run2), 2));
+                // double error3 = sqrt(pow(thisanalysis3 * y_error_run2 / (yield_run2 * yield_run2), 2));
+                // double error4 = sqrt(pow(thisanalysis4 * y_error_run2 / (yield_run2 * yield_run2), 2));
+                gratio1->SetPointError(i, x_error, error1);
+                gratio2->SetPointError(i, x_error, error2);
+                // gratio3->SetPointError(i, x_error, error3);
+                // gratio4->SetPointError(i, x_error, error4);
+            }
         }
-
+        else
+        {
+            if (g_vom[imult - 1]->GetN() != hmult1[imult]->GetNbinsX())
+            {
+                cout << "Error: Number of points in Run2 minBias graph does not match number of bins in histogram." << endl;
+                cout << "Number of points in graphs is " << g_vom[imult - 1]->GetN() << endl;
+                cout << "Number of bins in histogram is " << hmult1[imult]->GetNbinsX() << endl;
+                continue;
+            }
+            for (int i = 0; i < g_vom[imult - 1]->GetN(); i++)
+            {
+                double x_run2, yield_run2, x_error, y_error_run2;
+                g_vom[imult - 1]->GetPoint(i, x_run2, yield_run2);
+                x_error = g_vom[imult - 1]->GetErrorX(i);
+                y_error_run2 = g_vom[imult - 1]->GetErrorY(i);
+                double binvalue = hmultClone1[imult]->GetBinContent(i + 1);
+                double binvalue2 = hmultClone2[imult]->GetBinContent(i + 1);
+                gratio1->SetPoint(i, x_run2, binvalue / yield_run2);
+                gratio2->SetPoint(i, x_run2, binvalue2 / yield_run2);
+                double error1 = sqrt(pow(binvalue * y_error_run2 / (yield_run2 * yield_run2), 2));
+                double error2 = sqrt(pow(binvalue2 * y_error_run2 / (yield_run2 * yield_run2), 2));
+                gratio1->SetPointError(i, x_error, error1);
+                gratio2->SetPointError(i, x_error, error2);
+            }
+        }
         TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
         SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
         double pad1Size, pad2Size;
         canvas_style(c1, pad1Size, pad2Size);
         c1->cd(1);
         SetHistoStyle(h1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-        // SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+        SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
         // SetHistoStyle(h31, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
         // SetHistoStyle(h41, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
         h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
@@ -263,12 +285,14 @@ void compare_yield_inelgt0()
         h1->SetMarkerStyle(20);
         h1->SetMarkerSize(1);
         h1->GetXaxis()->SetRangeUser(0, 10);
+        h1->SetLineColor(kBlue);
+        h1->SetMarkerColor(kBlue);
         h1->Draw("pe");
-        // h21->SetMarkerStyle(21);
-        // h21->SetMarkerSize(1);
-        // h21->SetMarkerColor(kRed);
-        // h21->SetLineColor(kRed);
-        // h21->Draw("pe same");
+        h21->SetMarkerStyle(21);
+        h21->SetMarkerSize(1);
+        h21->SetMarkerColor(kRed);
+        h21->SetLineColor(kRed);
+        h21->Draw("pe same");
         // h31->SetMarkerStyle(22);
         // h31->SetMarkerSize(1);
         // h31->SetMarkerColor(kGreen + 2);
@@ -279,12 +303,12 @@ void compare_yield_inelgt0()
         // h41->SetMarkerColor(kMagenta);
         // h41->SetLineColor(kMagenta);
         // h41->Draw("pe same");
-        fitFcn1->SetLineColor(kBlack);
+        fitFcn1->SetLineColor(kBlue);
         fitFcn1->SetLineStyle(2);
         fitFcn1->Draw("same");
-        // fitFcn2->SetLineColor(kRed);
-        // fitFcn2->SetLineStyle(2);
-        // fitFcn2->Draw("same");
+        fitFcn2->SetLineColor(kRed);
+        fitFcn2->SetLineStyle(2);
+        fitFcn2->Draw("same");
         // fitFcn3->SetLineColor(kGreen + 2);
         // fitFcn3->SetLineStyle(2);
         // fitFcn3->Draw("same");
@@ -294,19 +318,21 @@ void compare_yield_inelgt0()
         gPad->SetLogy(1);
         g_vom[imult - 1]->SetMarkerStyle(22);
         g_vom[imult - 1]->SetMarkerSize(1);
-        g_vom[imult - 1]->SetMarkerColor(kBlue);
-        g_vom[imult - 1]->SetLineColor(kBlue);
+        g_vom[imult - 1]->SetMarkerColor(1);
+        g_vom[imult - 1]->SetLineColor(1);
         g_vom[imult - 1]->SetLineWidth(2);
         g_vom[imult - 1]->Draw("pe same");
 
         TLegend *leg = new TLegend(0.4, 0.62, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]));
-        leg->AddEntry(h1, "pp 13.6 TeV", "p");
+        // leg->AddEntry(h1, "pp 13.6 TeV", "p");
         // leg->AddEntry(h1, "2022 (500 kHz)", "p");
         // leg->AddEntry(h21, "2024 (500 kHz)", "p");
         // leg->AddEntry(h31, "2023 (135 kHz)", "p");
         // leg->AddEntry(h41, "2023 (650 kHz)", "p");
+        leg->AddEntry(h1, "2023 data", "p");
+        leg->AddEntry(h21, "2024 data", "p");
         leg->AddEntry(fitFcn1, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
         leg->AddEntry(g_vom[imult - 1], "pp 13 TeV (Published)", "p");
         leg->SetTextSize(0.05);
@@ -321,7 +347,7 @@ void compare_yield_inelgt0()
         }
 
         SetGrapherrorStyle(gratio1);
-        // SetGrapherrorStyle(gratio2);
+        SetGrapherrorStyle(gratio2);
         // SetGrapherrorStyle(gratio3);
         gratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
         gratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
@@ -329,8 +355,8 @@ void compare_yield_inelgt0()
         gratio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
         gratio1->SetMarkerStyle(20);
         gratio1->SetMarkerSize(1.0);
-        gratio1->SetMarkerColor(1);
-        gratio1->SetLineColor(1);
+        gratio1->SetMarkerColor(kBlue);
+        gratio1->SetLineColor(kBlue);
         gratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         gratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         gratio1->GetXaxis()->CenterTitle(1);
@@ -342,11 +368,11 @@ void compare_yield_inelgt0()
         gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
         // gratio1->SetMinimum(0.45);
         gratio1->Draw("ap");
-        // gratio2->SetMarkerStyle(21);
-        // gratio2->SetMarkerSize(1.0);
-        // gratio2->SetMarkerColor(2);
-        // gratio2->SetLineColor(2);
-        // gratio2->Draw("p same");
+        gratio2->SetMarkerStyle(21);
+        gratio2->SetMarkerSize(1.0);
+        gratio2->SetMarkerColor(2);
+        gratio2->SetLineColor(2);
+        gratio2->Draw("p same");
         // gratio3->SetMarkerStyle(22);
         // gratio3->SetMarkerSize(1.0);
         // gratio3->SetMarkerColor(kGreen + 2);
@@ -366,3 +392,9 @@ void compare_yield_inelgt0()
         c1->SaveAs(outputPath + Form("/YieldRatioMult_%.0f-%.0f.png", mult_classes[imult - 1], mult_classes[imult]));
     }
 }
+
+// string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass";         // 2022 data
+// string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data
+// string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass";         // 2023 (135 kHz) data
+// string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass";         // 2023 (450 kHz) data
+// string path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 2023 (650 kHz) data

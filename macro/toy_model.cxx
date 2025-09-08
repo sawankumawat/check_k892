@@ -17,7 +17,7 @@ void toy_model()
     double m_mother = 1.713;    // Mass of f1710
     double m_daughter1 = 0.493; // daughter 1 (Ks mass)
     double m_daughter2 = 0.493; // daughter 2 (Ks mass)
-    double m_pion = 0.13957; // charged pion mass
+    double m_pion = 0.13957;    // charged pion mass
 
     // Histogram for decay product pT
     TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
@@ -161,17 +161,17 @@ void toy_model()
     // hptvsrap->Draw("colz");
     // c5->SaveAs("toy_model_plots/pT_vs_rapidity.png");
 
-    // TCanvas *c6 = new TCanvas("c6", "Cosine of the angle between mother and daughter in CM frame", 720, 720);
-    // SetCanvasStyle(c6, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(hcosThetaStar);
-    // hcosThetaStar->GetYaxis()->SetMaxDigits(3);
-    // hcosThetaStar->GetYaxis()->SetTitle("Counts");
-    // hcosThetaStar->GetXaxis()->SetTitle("cos(#theta)");
-    // hcosThetaStar->GetXaxis()->SetRangeUser(-1, 1);
-    // hcosThetaStar->SetMinimum(0);
-    // hcosThetaStar->SetMaximum(1.2 * hcosThetaStar->GetMaximum());
-    // hcosThetaStar->Draw();
-    // c6->SaveAs("toy_model_plots/cosThetaStar_distribution.png");
+    TCanvas *c6 = new TCanvas("c6", "Cosine(#theta*) CM frame", 720, 720);
+    SetCanvasStyle(c6, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hcosThetaStar);
+    hcosThetaStar->GetYaxis()->SetMaxDigits(3);
+    hcosThetaStar->GetYaxis()->SetTitle("Counts");
+    hcosThetaStar->GetXaxis()->SetTitle("cos(#theta)");
+    hcosThetaStar->GetXaxis()->SetRangeUser(-1, 1);
+    hcosThetaStar->SetMinimum(0);
+    hcosThetaStar->SetMaximum(1.2 * hcosThetaStar->GetMaximum());
+    hcosThetaStar->Draw();
+    c6->SaveAs("toy_model_plots/cosThetaStar_distribution.png");
 
     // TCanvas *c7 = new TCanvas("c7", "Pseudo-rapidity Distribution", 720, 720);
     // SetCanvasStyle(c7, 0.15, 0.05, 0.05, 0.15);

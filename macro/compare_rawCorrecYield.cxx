@@ -29,7 +29,7 @@ void compare_rawCorrecYield()
     gStyle->SetOptFit(0);
 
     string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2022 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480448/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2023 data
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
@@ -68,8 +68,8 @@ void compare_rawCorrecYield()
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
 
-        hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
-        hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         // hmult3[imult] = (isCorrectedYield) ? (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra3->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         // hmult4[imult] = (isCorrectedYield) ? (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra4->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
 
@@ -132,8 +132,8 @@ void compare_rawCorrecYield()
         TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-        // leg->AddEntry(hmult1[imult], "2022 data", "lpe");
-        // leg->AddEntry(hmult2[imult], "2023 data", "lpe");
+        leg->AddEntry(hmult1[imult], "2023 data", "lpe");
+        leg->AddEntry(hmult2[imult], "2024 data", "lpe");
         // leg->AddEntry(hmult3[imult], "2024 data", "lpe");
         // leg->AddEntry(hmult1[imult], "Mixed-event", "lpe");
         // leg->AddEntry(hmult2[imult], "Rotated pairs", "lpe");
@@ -142,8 +142,8 @@ void compare_rawCorrecYield()
         // leg->AddEntry(hmult2[imult], "2024 (500 kHz)", "lpe");
         // leg->AddEntry(hmult3[imult], "2023 (135 kHz)", "lpe");
         // leg->AddEntry(hmult4[imult], "2023 (650 kHz)", "lpe");
-        leg->AddEntry(hmult1[imult], "No multCent", "lpe");
-        leg->AddEntry(hmult2[imult], "With multCent", "lpe");
+        // leg->AddEntry(hmult1[imult], "No multCent", "lpe");
+        // leg->AddEntry(hmult2[imult], "With multCent", "lpe");
         leg->SetTextSize(0.04);
         leg->SetTextSize(0.05);
         leg->Draw();
@@ -167,7 +167,7 @@ void compare_rawCorrecYield()
         hratio1->SetLineColor(kBlue);
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
-        hratio1->GetYaxis()->SetTitle("Ratio to 2022");
+        hratio1->GetYaxis()->SetTitle("Ratio to 2023");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
@@ -176,6 +176,7 @@ void compare_rawCorrecYield()
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
         // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
+        hratio1->GetYaxis()->SetRangeUser(0.78, 1.49);
         hratio1->Draw("p");
         // SetHistoQA(hratio2);
         // hratio2->SetMarkerStyle(21);
@@ -232,14 +233,14 @@ void compare_rawCorrecYield()
             TLegend *leg2 = new TLegend(0.46, 0.37, 0.9, 0.61);
             SetLegendStyle(leg2);
             leg2->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-            // leg2->AddEntry(hefficiency1[imult], "2022 dataset", "lpe");
-            // leg2->AddEntry(hefficiency2[imult], "2023 dataset", "lpe");
+            leg2->AddEntry(hefficiency1[imult], "2023 dataset", "lpe");
+            leg2->AddEntry(hefficiency2[imult], "2024 dataset", "lpe");
             // leg2->AddEntry(hefficiency1[imult], "2022 (500 kHz)", "lpe");
             // leg2->AddEntry(hefficiency2[imult], "2024 (500 kHz)", "lpe");
             // leg2->AddEntry(hefficiency3[imult], "2023 (135 kHz)", "lpe");
             // leg2->AddEntry(hefficiency4[imult], "2023 (650 kHz)", "lpe");
-            leg2->AddEntry(hefficiency1[imult], "No multCent", "lpe");
-            leg2->AddEntry(hefficiency2[imult], "With multCent", "lpe");
+            // leg2->AddEntry(hefficiency1[imult], "No multCent", "lpe");
+            // leg2->AddEntry(hefficiency2[imult], "With multCent", "lpe");
             leg2->SetTextSize(0.04);
             leg2->Draw();
             c2->SaveAs(outputPath + Form("/EfficiencyMult_%.0f-%.0f.png", multlow, multhigh));

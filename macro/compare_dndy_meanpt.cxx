@@ -31,10 +31,10 @@ void compare_dndy_meanpt()
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/449695/kstarqa/hInvMass"; // 2023 data
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa/hInvMass"; // 2023 data
-    string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass"; // 2024 data
-    TString outputPath = path3;
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
+    string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // dummy data
+    TString outputPath = path2;
 
     TFile *fspectra1 = new TFile((path1 + "/levy_fit.root").c_str(), "read");
     TFile *fspectra2 = new TFile((path2 + "/levy_fit.root").c_str(), "read");
@@ -82,12 +82,12 @@ void compare_dndy_meanpt()
     gMeanYieldRun3_file3->SetMarkerSize(1.2);
     gMeanYieldRun3_file3->SetMarkerColor(kMagenta);
     gMeanYieldRun3_file3->SetLineColor(kMagenta);
-    gMeanYieldRun3_file3->Draw("P same");
+    // gMeanYieldRun3_file3->Draw("P same");
     TLegend *legMeanYield = new TLegend(0.2, 0.72, 0.45, 0.93);
     legMeanYield->SetTextSize(0.04);
     legMeanYield->SetBorderSize(0);
     legMeanYield->SetFillStyle(0);
-    legMeanYield->AddEntry(gMeanYieldRun3_file3, "2024 data", "p");
+    // legMeanYield->AddEntry(gMeanYieldRun3_file3, "2024 data", "p");
     legMeanYield->AddEntry(gMeanYieldRun3_file2, "2023 data", "p");
     legMeanYield->AddEntry(gMeanYieldRun3_file1, "2022 data", "p");
     legMeanYield->AddEntry(gMeanYieldRun2, "Run 2", "p");
@@ -103,7 +103,7 @@ void compare_dndy_meanpt()
     gMeanpTRun2->SetLineColor(kRed);
     gMeanpTRun2->GetXaxis()->SetTitle("dN_{ch}/d#eta");
     gMeanpTRun2->GetYaxis()->SetTitle("<p_{T}> (GeV/c)");
-    gMeanpTRun2->SetMaximum(1.7);
+    gMeanpTRun2->SetMaximum(2.19);
     gMeanpTRun2->Draw("AP");
     SetGrapherrorStyle(gMeanpTRun3_file1);
     gMeanpTRun3_file1->SetMarkerStyle(21);
@@ -122,7 +122,7 @@ void compare_dndy_meanpt()
     gMeanpTRun3_file3->SetMarkerSize(1.2);
     gMeanpTRun3_file3->SetMarkerColor(kMagenta);
     gMeanpTRun3_file3->SetLineColor(kMagenta);
-    gMeanpTRun3_file3->Draw("P same");
+    // gMeanpTRun3_file3->Draw("P same");
     legMeanYield->Draw();
     cMeanpT->SaveAs(outputPath + "/mean_pT_compare.png");
 }

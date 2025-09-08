@@ -141,8 +141,9 @@ void glueball_KsKs_channel()
 
         // /*
 
-        double cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0}; // cos(theta) bins
-        // double cosThetaBins[] = {-0.6, 0.6};                                              // cos(theta) bins
+        // double cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0}; // cos(theta) bins
+        double cosThetaBins[] = {-1, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 1.0}; // cos(theta) bins
+        // double cosThetaBins[] = {-0.6, 0.6};// cos(theta) bins
         double numberOfCosThetaBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1; // number of cos(theta) bins
 
         for (int ip = 0; ip < numberOfCosThetaBins; ip++)

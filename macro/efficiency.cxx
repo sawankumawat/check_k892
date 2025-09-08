@@ -7,8 +7,9 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 void efficiency()
 {
-    bool makeQAplots = true;   // set to false if you do not want to make QA plots
+    bool makeQAplots = true;   // qa plots
     string outputtype = "png"; // pdf, eps
+
     TFile *fileEff2 = new TFile("/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass/efficiency/beforeCalibration/corrected_spectra.root"); // File for efficiency comparison
     // ****************Data files ********************
 
@@ -24,18 +25,13 @@ void efficiency()
 
     //*************************PID Variations for Kaon (without MID)**************************
     // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa_PIDKa1/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
-    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
+    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
 
     TString outputfolder = data_path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
 
     //********MC files *****************
-
-    // ******************TPC tune on data without NN ***********************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459909.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/460571.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459912.root", "READ"); // 2024 MC
 
     // ***********************TPC tune on data with NN ***********************************
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/TuneOnDataWithNN/465413.root", "READ"); // 2022 MC
@@ -64,7 +60,8 @@ void efficiency()
 
     //**************************After Calibrated MC from Nicolo****************************
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/483982.root", "READ"); // 2023 MC
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/484450.root", "READ"); // 2024 MC
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/491715.root", "READ"); // 2023 MC (after correction)
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/484450.root", "READ"); // 2024 MC
 
     //*******************************************************************************************************
 
@@ -75,8 +72,8 @@ void efficiency()
         cout << "Error opening files" << endl;
         return;
     }
-    const string genpath = "kstarqa_PIDKa1/hInvMass";
-    const string recpath = "kstarqa_PIDKa1/hInvMass";
+    const string genpath = "kstarqa/hInvMass";
+    const string recpath = "kstarqa/hInvMass";
     // const string genpath = "kstarqa_OCC500_id34026/hInvMass/hk892GenpT";
     // const string recpath = "kstarqa_OCC500_id34026/hInvMass/h2KstarRecpt2";
     // const string genpath = "kstarqa_PIDKa2/hInvMass/hk892GenpT";
@@ -511,7 +508,7 @@ void efficiency()
     hSignalLoss[0]->GetYaxis()->SetTitleOffset(1.6);
     hSignalLoss[0]->SetStats(0);
     hSignalLoss[0]->SetMaximum(1.01);
-    hSignalLoss[0]->SetMinimum(0.4);
+    hSignalLoss[0]->SetMinimum(0.3);
     hSignalLoss[0]->Draw("pe");
     legall->Clear();
     for (int imult = 0; imult < nmultbins + 1; imult++)
@@ -528,12 +525,12 @@ void efficiency()
         }
         hSignalLoss[imult]->SetMarkerStyle(markers[imult]);
         hSignalLoss[imult]->SetMarkerSize(1.2);
-        hSignalLoss[imult]->SetLineColor(allColors[imult]);
-        hSignalLoss[imult]->SetMarkerColor(allColors[imult]);
+        hSignalLoss[imult]->SetLineColor(allColors[imult + 1]);
+        hSignalLoss[imult]->SetMarkerColor(allColors[imult + 1]);
         hSignalLoss[imult]->Draw("pe same");
         heventloss[imult]->SetLineStyle(2);
         heventloss[imult]->SetLineWidth(2);
-        heventloss[imult]->SetLineColor(allColors[imult]);
+        heventloss[imult]->SetLineColor(allColors[imult + 1]);
         heventloss[imult]->Draw("l same");
         legall->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
     }
@@ -566,8 +563,8 @@ void efficiency()
         }
         hRatioEvBySig[imult]->SetMarkerStyle(markers[imult]);
         hRatioEvBySig[imult]->SetMarkerSize(1.2);
-        hRatioEvBySig[imult]->SetMarkerColor(allColors[imult]);
-        hRatioEvBySig[imult]->SetLineColor(allColors[imult]);
+        hRatioEvBySig[imult]->SetMarkerColor(allColors[imult + 1]);
+        hRatioEvBySig[imult]->SetLineColor(allColors[imult + 1]);
         hRatioEvBySig[imult]->Draw("pe same");
         legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
     }
@@ -875,3 +872,8 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
 ////*************************ItsTpcTracksCheck, betacutTOF**********************************
 // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/482058.root", "READ"); // 2023 MC, No effect is seen
+
+// ******************TPC tune on data without NN ***********************************
+// TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459909.root", "READ"); // 2022 MC
+// TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/460571.root", "READ"); // 2023 MC
+// TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/459912.root", "READ"); // 2024 MC

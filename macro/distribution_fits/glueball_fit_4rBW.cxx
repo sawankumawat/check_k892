@@ -204,8 +204,8 @@ void glueball_fit_4rBW()
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937";
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         string path2 = path;
 
         // //*********for temporary study with angular separation cuts************************
@@ -216,16 +216,18 @@ void glueball_fit_4rBW()
 
         ofstream file;
         // file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".csv").c_str());
-        file.open((path2 + "/fits/4rBw_fits/fit_params_temp_" + sysvar + ".txt").c_str());
+        // file.open((path2 + "/fits/4rBw_fits/fit_params_temp_" + sysvar + ".txt").c_str());
 
-        string savepath = path2 + "/fits/4rBw_fits";
+        string savepath = path2 + "/fits/4rBw_fits/pt_dependent";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
         // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_3.00_30.00.root").c_str(), "READ"); // default
-        // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_all_pT.root").c_str(), "READ"); //
+        // TFile *f = new TFile((path + "/hglue_ROTATED.root").c_str(), "READ"); //
         // TFile *f = new TFile((path + "/hglue_MIX_temp.root").c_str(), "READ");
-        TFile *f = new TFile((path + "/hglue_ROTATED.root").c_str(), "READ");
+        // TFile *f = new TFile((path + "/hglue_ROTATED_pT_0_1.root").c_str(), "READ");
+        // TFile *f = new TFile((path + "/hglue_ROTATED_pT_1.0_2.0.root").c_str(), "READ");
+        TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ");
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol.root", "RECREATE");
 
@@ -241,17 +243,17 @@ void glueball_fit_4rBW()
             return;
         }
 
-        // #define b_constantWidth_modified_Boltzmann // without mass dependent width
-        // #define b_massdepWidth_Standard_boltzman
-        #define b_massdepWidth_modifiedBoltzmann
+// #define b_constantWidth_modified_Boltzmann // without mass dependent width
+// #define b_massdepWidth_Standard_boltzman
+#define b_massdepWidth_modifiedBoltzmann
         // #define b_massdepWidth_expol2
         // #define b_massdepWidth_HERAexponential
         // #define b_modifiedBoltzmann_hera_const // for real + img part without interference
         // #define b_modifiedBoltzmann_hera // for real + img part with interference
         // #define b_modifiedBoltzmann_hera_mass_dep // for real + img part with interference and mass dependent width
-// #define b_coherentSum_modifiedBoltzmann // for coherent sum with phases
+        // #define b_coherentSum_modifiedBoltzmann // for coherent sum with phases
 
-        // #define residual_subtracted
+#define residual_subtracted
         // #define doublepanelplot
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
@@ -265,11 +267,19 @@ void glueball_fit_4rBW()
         double total_events = hmult->Integral(hmult->GetXaxis()->FindBin(multlow), hmult->GetXaxis()->FindBin(multhigh));
         double phi_mod, phi_mod2;
 
-        for (int ipt = 0; ipt < Npt; ipt++)
+        // for (int ipt = 0; ipt < Npt; ipt++)
+        for (int ipt = 0; ipt < 1; ipt++) // Temporary for single bins checking
         {
-            // TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", 3.0, 5.0));
-            TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", pT_bins[ipt], pT_bins[ipt + 1]));
-            TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_pt_%.1f_%.1f", pT_bins[ipt], pT_bins[ipt + 1]));
+            float lowpT = pT_bins[ipt];
+            float highpT = pT_bins[ipt + 1];
+            // Temporary for single bins checking
+            lowpT = 5.0;
+            highpT = 6.0;
+
+            file.open((path2 + Form("/fits/4rBw_fits/fit_params_pT_%.1f-%.1f", lowpT, highpT) + sysvar + ".txt").c_str());
+
+            TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpT, highpT));
+            TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_pt_%.1f_%.1f", lowpT, highpT));
             if (hinvMass == nullptr)
             {
                 cout << "Error opening histogram" << endl;
@@ -285,8 +295,8 @@ void glueball_fit_4rBW()
                 cout << "Error opening histogram" << endl;
                 return;
             }
-            TCanvas *c_reducedFit = new TCanvas("c_reducedFit", "Reduced Fit", 720, 720);
-            SetCanvasStyle(c_reducedFit, 0.14, 0.03, 0.05, 0.13);
+            // TCanvas *c_reducedFit = new TCanvas("c_reducedFit", "Reduced Fit", 720, 720);
+            // SetCanvasStyle(c_reducedFit, 0.14, 0.03, 0.05, 0.13);
             TCanvas *c = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c, 0.14, 0.03, 0.05, 0.14);
             c->cd();
@@ -317,7 +327,8 @@ void glueball_fit_4rBW()
 
 #ifdef b_massdepWidth_modifiedBoltzmann
 
-            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.05, 2.20, 16); // expol 3
+            TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, 1.08, 2.2, 16); // expol 3
+            TF1 *BEexpol_initial = new TF1("BEexpol_initial", BWsumMassDepWidth_exponential, 1.08, 2.2, 16);
             TF1 *BEexpol_reduced = new TF1("BEexpol_reduced", BWsumMassDepWidth_exponential, 1.05, 2.20, 16);
 
             string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
@@ -327,15 +338,14 @@ void glueball_fit_4rBW()
                 BEexpol_reduced->SetParName(i, parnames[i].c_str());
             }
 
-            double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice
-            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
+            // double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice (2022 and 2024 dataset)
+            // double parameters[] = {2.1e4, f1270Mass, f1270Width, 1.8e4, a1320Mass, a1320Width, 4.3e4, f1525Mass, f1525Width, 1.35e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
             // double parameters[] = {1500, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 3700, f1525Mass, f1525Width, 1300, f1710Mass, f1710Width}; // default
-            // double parameters[] = {1400, f1270Mass, f1270Width, 1000, a1320Mass, a1320Width, 2500, f1525Mass, f1525Width, 800, f1710Mass, f1710Width}; // medium train
             // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
             // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
             // double parameters[] = {35, f1270Mass, f1270Width, 66, a1320Mass, a1320Width, 166, f1525Mass, f1525Width, 280, f1710Mass, f1710Width}; // pt range 8-15 GeV/c rebin 3
             // double parameters[] = {690, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 2300, f1525Mass, f1525Width, 500, f1710Mass, f1710Width}; // pt range 2-3 GeV/c rebin 2 (fit 1.05-2.25)
-            // double parameters[] = {1470, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 1300, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // pt range 1-2 GeV/c rebin 2 (fit 1.05-2.20)
+            double parameters[] = {1470, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 1300, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // pt range 1-2 GeV/c rebin 2 (fit 1.05-2.20), keep fit options as REBS (remove M)
             // double parameters[] = {2000, f1270Mass, f1270Width, 1714, a1320Mass, a1320Width, 5500, f1525Mass, f1525Width, 3000, f1710Mass, f1710Width}; // ME 3-30 GeV/c
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
@@ -344,21 +354,13 @@ void glueball_fit_4rBW()
             {
                 BEexpol->SetParameter(i, parameters[i]);
                 BEexpol_reduced->SetParameter(i, parameters[i]);
-            }
-            vector<vector<double>> par_limits = {{1, 2 * f1270Width}, {2, 2 * f1270WidthErr}, {4, 2 * a1320Width}, {7, 2 * f1525Width}, {10, 1 * f1710Width}, {11, 5 * f1710WidthErr}};
-
-            int limits_size = par_limits.size();
-            for (int i = 0; i < limits_size; i++)
-            {
-                int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
-                BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
-                BEexpol_reduced->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+                BEexpol_initial->SetParameter(i, parameters[i]);
             }
 
             // //********systematic studies*************
-            // double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice
-            double initial_param_bkg[] = {2.6e6, 0.20, 3.67, 0.8}; // rebin twice (2024 dataset)
-            // double initial_param_bkg[] = {3.8e6, 0.0134, 3.071167, 1.04}; // rebin twice (2023 dataset)
+            // double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice (2022 dataset)
+            // double initial_param_bkg[] = {3.6e6, -0.04, 2.82, 1.05}; // rebin twice (2023 dataset)
+            // double initial_param_bkg[] = {2.6e6, 0.20, 3.67, 0.8}; // rebin twice (2024 dataset)
             // double initial_param_bkg[] = {2.37518e5, -0.102044, 3.071167, 1.354864}; // 0-30 GeV/c, 3sigma
             // double initial_param_bkg[] = {4.618e6, 0.00774, 2.82, 1.03}; // pass_4_thin (old)
             // double initial_param_bkg[] = {2.57518e5, 0.0424, 3.171167, 0.964}; // 0-30 GeV/c, 3sigma
@@ -368,28 +370,63 @@ void glueball_fit_4rBW()
             // double initial_param_bkg[] = {1.1e5, -0.17, 4.00, 1.4}; //rot range 2 - 30
             // double initial_param_bkg[] = {7646, -0.06, 2.15, 1.4}; // pt range 8-15 GeV/c (rebin 3)
             // double initial_param_bkg[] = {8.2e4, -0.257, 5.715, 1.8}; // pt range 2-3 GeV/c (rebin 2)
-            // double initial_param_bkg[] = {7.3e6, 0.57, 6.15, 0.4}; // pt range 1-2 GeV/c (rebin 2)
+            double initial_param_bkg[] = {7.3e6, 0.57, 6.15, 0.4}; // pt range 1-2 GeV/c (rebin 2)
             // double initial_param_bkg[] = {2.3e5, -0.12, 3.15, 1.4}; // ME 3-30 GeV/c
 
             // Initial parameters for background
-            BEexpol->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
-            BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  //Fix for medium train
-            BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
-            BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
+            BEexpol_initial->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
+            BEexpol_initial->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  //Fix for medium train
+            BEexpol_initial->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
+            BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
 
-            // BEexpol->FixParameter(2, f1270Width);
-            // BEexpol->FixParameter(5, a1320Width);
-            // BEexpol->FixParameter(8, f1525Width);
+            BEexpol_initial->FixParameter(2, f1270Width);
+            BEexpol_initial->FixParameter(5, a1320Width);
+            BEexpol_initial->FixParameter(8, f1525Width);
+
+            BEexpol_initial->FixParameter(1, f1270Mass);
+            BEexpol_initial->FixParameter(4, a1320Mass);
+            BEexpol_initial->FixParameter(7, f1525Mass);
+
+            BEexpol_initial->FixParameter(10, f1710Mass);
+            BEexpol_initial->FixParameter(11, f1710Width);
+            // TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELMS0");
+            hinvMass->Fit("BEexpol_initial", "REBS0"); // comment while using toy mc and likelihood fits
+                                                       // TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBS"); // comment while using toy mc and likelihood fits
+
+            //=============================================================//
+            // Again setting parameters for the next iteration in the fit.
+            //=============================================================//
+            for (int iparams = 0; iparams < 16; iparams++)
+            {
+                BEexpol->SetParameter(iparams, BEexpol_initial->GetParameter(iparams));
+            }
+
+            vector<vector<double>> par_limits = {{1, 2 * f1270Width}, {2, 2 * f1270WidthErr}, {4, 2 * a1320Width}, {7, 2 * f1525Width}, {10, 1 * f1710Width}, {11, 20 * f1710WidthErr}};
+            int limits_size = par_limits.size();
+            for (int i = 0; i < limits_size; i++)
+            {
+                int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
+                BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+                BEexpol_reduced->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
+            }
+
+            BEexpol->SetParLimits(0, 0, 1e6);
+            BEexpol->SetParLimits(3, 0, 1e6);
+            // BEexpol->SetParLimits(6, 0, 1e6);
+
+            BEexpol->FixParameter(2, f1270Width);
+            BEexpol->FixParameter(5, a1320Width);
+            BEexpol->FixParameter(8, f1525Width);
 
             // BEexpol->FixParameter(1, f1270Mass);
             // BEexpol->FixParameter(4, a1320Mass);
             // BEexpol->FixParameter(7, f1525Mass);
 
             // BEexpol->FixParameter(10, f1710Mass);
-            // BEexpol->FixParameter(11, f1710Width);
-            // TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "RELMS0");
+            // BEexpol->FixParameter(11, 0.19);
+
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS"); // comment while using toy mc and likelihood fits
-            double *obtained_parameters = BEexpol->GetParameters();          // comment while using toy mc and likelihood fits
+            double *obtained_parameters = BEexpol->GetParameters();         // comment while using toy mc and likelihood fits
 
             //====================================================================//
             //**********************Toy MC and Likelihood fit study***************//
@@ -1985,8 +2022,8 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             // onlyBW_clone->FixParameter(4, a1320Mass);
             // onlyBW_clone->FixParameter(7, f1525Mass);
 
-            // onlyBW_clone->FixParameter(11, f1710Width);
             // onlyBW_clone->FixParameter(10, f1710Mass);
+            // onlyBW_clone->FixParameter(11, f1710Width);
 
             onlyBW->SetLineColor(4);
             onlyBW->SetLineStyle(2);
@@ -2027,7 +2064,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2181,7 +2218,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2330,7 +2367,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2481,7 +2518,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
             // lat1.DrawLatex(0.255, )
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2636,7 +2673,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{s} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2789,7 +2826,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -2939,7 +2976,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -3094,7 +3131,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -3260,7 +3297,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat1.SetTextFont(42);
             lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat1.DrawLatex(0.255, 0.85, "FT0M (0-100%), |y|<0.5");
-            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             for (int i = 0; i < 4; i++)
             {
@@ -3298,8 +3335,9 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
                 ptstats->SetY2NDC(0.92);
                 ptstats->Draw("same");
             }
-            // c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", pT_bins[ipt], pT_bins[ipt + 1], sysvar.c_str())).c_str());
-            c->SaveAs((savepath + "/rBWfit.png").c_str());
+            // c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", lowpT, highpT, sysvar.c_str())).c_str());
+            // c->SaveAs((savepath + "/rBWfit.png").c_str());
+            c->SaveAs((savepath + Form("/rBWfit_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
             // c_reducedFit->SaveAs((savepath + "/rBWfit_reduced.png").c_str());
 
             double fitnorm1525 = BEexpol->GetParameter(6);
@@ -3370,19 +3408,19 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             // file << fitmass1710 << " ± " << fitmass1710_err << endl;
             // file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
 
-            // for table making
-            file << std::fixed << std::setprecision(2);
-            // file << chi2ndf << endl;
-            file << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
-            file << std::fixed << std::setprecision(0);
-            file << fitmass1270 * 1000 << " ± " << fitmass1270_err * 1000 << endl;
-            file << fitwidth1270 * 1000 << " ± " << fitwidth1270_err * 1000 << endl;
-            file << fitmass1320 * 1000 << " ± " << fitmass1320_err * 1000 << endl;
-            file << fitwidth1320 * 1000 << " ± " << fitwidth1320_err * 1000 << endl;
-            file << fitmass1525 * 1000 << " ± " << fitmass1525_err * 1000 << endl;
-            file << fitwidth1525 * 1000 << " ± " << fitwidth1525_err * 1000 << endl;
-            file << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << endl;
-            file << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << endl;
+            // // for table making
+            // file << std::fixed << std::setprecision(2);
+            // // file << chi2ndf << endl;
+            // file << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
+            // file << std::fixed << std::setprecision(0);
+            // file << fitmass1270 * 1000 << " ± " << fitmass1270_err * 1000 << endl;
+            // file << fitwidth1270 * 1000 << " ± " << fitwidth1270_err * 1000 << endl;
+            // file << fitmass1320 * 1000 << " ± " << fitmass1320_err * 1000 << endl;
+            // file << fitwidth1320 * 1000 << " ± " << fitwidth1320_err * 1000 << endl;
+            // file << fitmass1525 * 1000 << " ± " << fitmass1525_err * 1000 << endl;
+            // file << fitwidth1525 * 1000 << " ± " << fitwidth1525_err * 1000 << endl;
+            // file << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << endl;
+            // file << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << endl;
 
             // // Add likelihood test results
             // file << "\n=== Likelihood Test Results ===" << endl;
@@ -3455,9 +3493,60 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat2.SetTextFont(42);
             // lat2.DrawLatex(0.20, 0.89, "KsKs unlike sign pairs");
             // lat2.DrawLatex(0.20, 0.85, "Residual background subtracted");
-            c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
+            // c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
+            c2->SaveAs((savepath + Form("/rBWfit_residual_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
             // c2->Close();
 #endif
+            /*
+            // TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
+            // TMatrixDSym cov1;
+            // TMatrixDSym cov2;
+            // cov.GetSub(0, 11, 0, 11, cov1);
+            // cov.GetSub(12, 15, 12, 15, cov2);
+            // Double_t *b = cov1.GetMatrixArray();
+            // Double_t *a = cov2.GetMatrixArray();
+            // Double_t *para = onlyBW_clone->GetParameters();
+
+            // float nsigma_yield = 3.0;
+
+            // cout << "Function integration for f0(1710) " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
+            // cout << " Function integration for f2(1525) " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
+
+            // // // Yield calculation
+            // // double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (binwidthfile * total_events);
+            // // double yield1320 = singlefits[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width) / (binwidthfile * total_events);
+            // double yield1525 = singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) / (binwidthfile * total_events);
+            // double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (binwidthfile * total_events);
+
+            // // double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width);
+            // // double yield1320 = singlefits[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width);
+            // // double yield1525 = singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width);
+            // // double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width);
+
+            // // // Yield calculation after residual background subtraction
+            // // double yield1270_resSub = singlefits1[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (binwidthfile * total_events);
+            // // double yield1320_resSub = singlefits1[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width) / (binwidthfile * total_events);
+            // // double yield1525_resSub = singlefits1[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) / (binwidthfile * total_events);
+            // // double yield1710_resSub = singlefits1[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (binwidthfile * total_events);
+
+            // // // Yield errors calculation
+            // // double yield1270_err = onlyBW_clone->IntegralError((f1270Mass - nsigma_yield * f1270Width), (f1270Mass + nsigma_yield * f1270Width), &para[0], b) / (binwidthfile * total_events);
+            // // double yield1320_err = onlyBW_clone->IntegralError((a1320Mass - nsigma_yield * a1320Width), (a1320Mass + nsigma_yield * a1320Width), &para[0], b) / (binwidthfile * total_events);
+            // double yield1525_err = onlyBW_clone->IntegralError((f1525Mass - nsigma_yield * f1525Width), (f1525Mass + nsigma_yield * f1525Width), &para[0], b) / (binwidthfile * total_events);
+            // double yield1710_err = onlyBW_clone->IntegralError((f1710Mass - nsigma_yield * f1710Width), (f1710Mass + nsigma_yield * f1710Width), &para[0], b) / (binwidthfile * total_events);
+
+            // cout << "Total event count is " << total_events << endl;
+            // // cout << "Yield of f1270 is " << yield1270 << " ± " << yield1270_err << endl;
+            // // cout << "Yield of a1320 is " << yield1320 << " ± " << yield1320_err << endl;
+            // cout << "Yield of f1525 is " << yield1525 << " ± " << yield1525_err << endl;
+            // cout << "Yield of f1710 is " << yield1710 << " ± " << yield1710_err << endl;
+            // // cout << "Total yield from function integration is " << yield1270 + yield1320 + yield1525 + yield1710 << endl;
+
+            // // cout << "Total yield after residual background subtraction " << yield1270_resSub + yield1320_resSub + yield1525_resSub + yield1710_resSub << endl;
+            // // cout << "Energy bin width is " << binwidthfile << endl;
+            */
+
+            float ptBinWidth = highpT - lowpT;
 
             TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
             TMatrixDSym cov1;
@@ -3468,43 +3557,116 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             Double_t *a = cov2.GetMatrixArray();
             Double_t *para = onlyBW_clone->GetParameters();
 
-            float nsigma_yield = 3.0;
-
-            cout << "Function integration for f0(1710) " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
-            cout << " Function integration for f2(1525) " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
+            float nsigma_yield = 2.0;
 
             // // Yield calculation
-            // double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (binwidthfile * total_events);
-            // double yield1320 = singlefits[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width) / (binwidthfile * total_events);
-            double yield1525 = singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) / (binwidthfile * total_events);
-            double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (binwidthfile * total_events);
+            double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (ptBinWidth * binwidthfile * total_events);
+            double yield1320 = singlefits[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width) / (ptBinWidth * binwidthfile * total_events);
+            double yield1525 = singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) / (ptBinWidth * binwidthfile * total_events);
+            double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (ptBinWidth * binwidthfile * total_events);
+            // double yieldbkg1 = expol_clone->Integral(2.20, 2.30) / (ptBinWidth * binwidthfile * total_events);
+            // double yieldbkg2 = expol_clone->Integral(2.30, 2.40) / (ptBinWidth * binwidthfile * total_events);
+            // double yieldbkg3 = expol_clone->Integral(2.40, 2.50) / (ptBinWidth * binwidthfile * total_events);
 
-            // double yield1270 = singlefits[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width);
-            // double yield1320 = singlefits[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width);
-            // double yield1525 = singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width);
-            // double yield1710 = singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width);
+            cout << "Total events: " << total_events << endl;
+            // cout << "Cos theta bin width: " << ptBinWidth << endl;
+            // cout << "Energy bin width: " << binwidthfile << endl;
+            // cout << "Yield region for 1710 : " << f1710Mass - nsigma_yield * f1710Width << " to " << f1710Mass + nsigma_yield * f1710Width << endl;
+            cout << "Area under the curve 1710: " << singlefits[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) << endl;
+            cout << "Amplitude for 1710 is " << obtained_parameters[9] << endl;
+            cout << "Yield for 1710 is " << yield1710 << endl;
+            cout << endl;
+            cout << "Area under the curve for f1525: " << singlefits[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) << endl;
+            cout << "Amplitude for f1525 is " << obtained_parameters[6] << endl;
+            cout << "Yield for f1525 is " << yield1525 << endl;
+            cout << endl;
 
-            // // Yield calculation after residual background subtraction
-            // double yield1270_resSub = singlefits1[0]->Integral(f1270Mass - nsigma_yield * f1270Width, f1270Mass + nsigma_yield * f1270Width) / (binwidthfile * total_events);
-            // double yield1320_resSub = singlefits1[1]->Integral(a1320Mass - nsigma_yield * a1320Width, a1320Mass + nsigma_yield * a1320Width) / (binwidthfile * total_events);
-            // double yield1525_resSub = singlefits1[2]->Integral(f1525Mass - nsigma_yield * f1525Width, f1525Mass + nsigma_yield * f1525Width) / (binwidthfile * total_events);
-            // double yield1710_resSub = singlefits1[3]->Integral(f1710Mass - nsigma_yield * f1710Width, f1710Mass + nsigma_yield * f1710Width) / (binwidthfile * total_events);
+            // cout << "Yield in bkg region 1: " << yieldbkg1 << endl;
+            // cout << "Yield in bkg region 2: " << yieldbkg2 << endl;
+            // cout << "Yield in bkg region 3: " << yieldbkg3 << endl;
 
-            // // Yield errors calculation
-            // double yield1270_err = onlyBW_clone->IntegralError((f1270Mass - nsigma_yield * f1270Width), (f1270Mass + nsigma_yield * f1270Width), &para[0], b) / (binwidthfile * total_events);
-            // double yield1320_err = onlyBW_clone->IntegralError((a1320Mass - nsigma_yield * a1320Width), (a1320Mass + nsigma_yield * a1320Width), &para[0], b) / (binwidthfile * total_events);
-            double yield1525_err = onlyBW_clone->IntegralError((f1525Mass - nsigma_yield * f1525Width), (f1525Mass + nsigma_yield * f1525Width), &para[0], b) / (binwidthfile * total_events);
-            double yield1710_err = onlyBW_clone->IntegralError((f1710Mass - nsigma_yield * f1710Width), (f1710Mass + nsigma_yield * f1710Width), &para[0], b) / (binwidthfile * total_events);
+            double yield1270_err = onlyBW_clone->IntegralError((f1270Mass - nsigma_yield * f1270Width), (f1270Mass + nsigma_yield * f1270Width), &para[0], b) / (ptBinWidth * binwidthfile * total_events);
+            double yield1320_err = onlyBW_clone->IntegralError((a1320Mass - nsigma_yield * a1320Width), (a1320Mass + nsigma_yield * a1320Width), &para[0], b) / (ptBinWidth * binwidthfile * total_events);
+            double yield1525_err = onlyBW_clone->IntegralError((f1525Mass - nsigma_yield * f1525Width), (f1525Mass + nsigma_yield * f1525Width), &para[0], b) / (ptBinWidth * binwidthfile * total_events);
+            double yield1710_err = onlyBW_clone->IntegralError((f1710Mass - nsigma_yield * f1710Width), (f1710Mass + nsigma_yield * f1710Width), &para[0], b) / (ptBinWidth * binwidthfile * total_events);
 
-            cout << "Total event count is " << total_events << endl;
-            // cout << "Yield of f1270 is " << yield1270 << " ± " << yield1270_err << endl;
-            // cout << "Yield of a1320 is " << yield1320 << " ± " << yield1320_err << endl;
-            cout << "Yield of f1525 is " << yield1525 << " ± " << yield1525_err << endl;
-            cout << "Yield of f1710 is " << yield1710 << " ± " << yield1710_err << endl;
-            // cout << "Total yield from function integration is " << yield1270 + yield1320 + yield1525 + yield1710 << endl;
+            // cout << "Yield 1270: " << yield1270 << " +- " << yield1270_err << endl;
+            // cout << "Yield 1320: " << yield1320 << " +- " << yield1320_err << endl;
+            // cout << "Yield 1525: " << yield1525 << " +- " << yield1525_err << endl;
+            // cout << "Yield 1710: " << yield1710 << " +- " << yield1710_err << endl;
 
-            // cout << "Total yield after residual background subtraction " << yield1270_resSub + yield1320_resSub + yield1525_resSub + yield1710_resSub << endl;
-            // cout << "Energy bin width is " << binwidthfile << endl;
+            // Yield calculation bin counting
+            double hBCError1525;
+            int bmin1525 = hinvMass->GetXaxis()->FindBin(f1525Mass - nsigma_yield * f1525Width);
+            int bmax1525 = hinvMass->GetXaxis()->FindBin(f1525Mass + nsigma_yield * f1525Width);
+            double Yield_bincount_hist1525 = hinvMass->IntegralAndError(bmin1525, bmax1525, hBCError1525);
+            double bkgvalue1525 = expol_clone->Integral(hinvMass->GetBinLowEdge(bmin1525), hinvMass->GetBinLowEdge(bmax1525 + 1));
+            double fYield_BinCount1525 = Yield_bincount_hist1525 - (bkgvalue1525 / binwidthfile);
+            double sum_tail_correction1525 = (singlefits[2]->Integral(1.05, hinvMass->GetBinLowEdge(bmin1525)) + singlefits[2]->Integral(hinvMass->GetBinLowEdge(bmax1525 + 1), 2.2)) / binwidthfile;
+            double Total_Ybincounting1525 = (sum_tail_correction1525 + fYield_BinCount1525) / (total_events * binwidthfile * ptBinWidth);
+
+            // Error calculation
+            TF1 *fitFcn2_plusm1525 = new TF1("fitFcn2_plusm1525", single_BW_mass_dep_spin2, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+            TF1 *fitFcn2_minusm1525 = new TF1("fitFcn2_minusm1525", single_BW_mass_dep_spin2, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+            fitFcn2_plusm1525->FixParameter(0, singlefits[2]->GetParameter(0));
+            fitFcn2_plusm1525->FixParameter(1, singlefits[2]->GetParameter(1) + singlefits[2]->GetParError(1));
+            fitFcn2_plusm1525->FixParameter(2, f1525Width);
+
+            fitFcn2_minusm1525->FixParameter(0, singlefits[2]->GetParameter(0));
+            fitFcn2_minusm1525->FixParameter(1, singlefits[2]->GetParameter(1) - singlefits[2]->GetParError(1));
+            fitFcn2_minusm1525->FixParameter(2, f1525Width);
+
+            double Tail_correction_plusm1525 = (fitFcn2_plusm1525->Integral(1.05, hinvMass->GetBinLowEdge(bmin1525)) + (fitFcn2_plusm1525->Integral(hinvMass->GetBinLowEdge(bmax1525 + 1), 2.2)));
+            double Tail_correction_minusm1525 = ((fitFcn2_minusm1525->Integral(1.05, hinvMass->GetBinLowEdge(bmin1525)) + fitFcn2_minusm1525->Integral(hinvMass->GetBinLowEdge(bmax1525 + 1), 2.2)));
+            double Error1525 = sum_tail_correction1525 - Tail_correction_plusm1525;
+            double Final_pro_error1525 = TMath::Sqrt(Error1525 * Error1525 + hBCError1525 * hBCError1525) / (total_events * binwidthfile * ptBinWidth);
+
+            cout << "f1525 yield from intergration is " << yield1710 << " +- " << yield1710_err << endl;
+            cout << "f1525 yield from bincounting is " << Total_Ybincounting1525 << " +- " << Final_pro_error1525 << endl;
+
+            // // Write data (values are separated by commas) for .csv file
+            // file << "Norm range," << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << "\n";
+            // file << "Fit range," << fitrangelow << " - " << fitrangehigh << "\n";
+            // file << "Signal counts," << signal_counts << "\n";
+            // file << "Background counts," << background_counts << "\n";
+            // file << "S/B ratio," << (signal_counts / background_counts) << "\n";
+            // file << std::fixed << std::setprecision(2);
+            // file << "Significance," << significance << "\n";
+            // file << "StatSignificance," << statSignificance << "\n";
+            // file << "Chi2NDF," << (BEexpol->GetChisquare() / BEexpol->GetNDF()) << "\n";
+
+            // file << std::fixed << std::setprecision(1);
+            // // Fit parameters with ± sign
+            // file << "Fit mass," << fitmass1710 * 1000 << " ± " << fitmass1710_err * 1000 << "\n";
+            // file << "Fit width," << fitwidth1710 * 1000 << " ± " << fitwidth1710_err * 1000 << "\n";
+            // file << "Fit norm," << fitnorm1710 << " ± " << fitnorm1710_err << "\n";
+
+            // // for .txt files for systematics
+            file << "Norm range " << kNormRangepT[0][0] << " - " << kNormRangepT[0][1] << endl;
+            file << "Fit range " << fitrangelow << " - " << fitrangehigh << endl;
+            file << "Significance " << significance << endl;
+            file << "StatSignificance " << statSignificance << endl;
+            file << "Fit parameters of f1710 " << endl;
+            file << "Chi2NDF " << BEexpol->GetChisquare() / BEexpol->GetNDF() << endl;
+            file << yield1710 << " ± " << yield1710_err << endl;
+            file << fitmass1710 << " ± " << fitmass1710_err << endl;
+            file << fitwidth1710 << " ± " << fitwidth1710_err << endl;
+            file << "for f1525" << endl;
+            file << yield1525 << " ± " << yield1525_err << endl;
+            file << fitmass1525 << " ± " << fitmass1525_err << endl;
+            file << fitwidth1525 << " ± " << fitwidth1525_err << endl;
+            file << "for f1270" << endl;
+            file << yield1270 << " ± " << yield1270_err << endl;
+            file << fitmass1270 << " ± " << fitmass1270_err << endl;
+            file << fitwidth1270 << " ± " << fitwidth1270_err << endl;
+            file << "for a1320" << endl;
+            file << yield1320 << " ± " << yield1320_err << endl;
+            file << fitmass1320 << " ± " << fitmass1320_err << endl;
+            file << fitwidth1320 << " ± " << fitwidth1320_err << endl;
+            // file << "Background" << endl;
+            // file << yieldbkg1 << " ± " << expol_clone->GetParError(0) << endl;
+            // file << yieldbkg2 << " ± " << expol_clone->GetParError(1) << endl;
+            // file << yieldbkg3 << " ± " << expol_clone->GetParError(2) << endl;
 
 #ifdef doublepanelplot
             // gStyle->SetOptFit(0);
@@ -3601,7 +3763,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             // lat5.DrawLatex(0.32, 0.80, "ALICE Performance");
             lat5.DrawLatex(0.32, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV");
             lat5.DrawLatex(0.32, 0.73, "FT0M 0-100%, |#it{y}| < 0.5");
-            lat5.DrawLatex(0.32, 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pT_bins[ipt], pT_bins[ipt + 1]));
+            lat5.DrawLatex(0.32, 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
             // TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
             // text4->SetNDC();
@@ -3635,7 +3797,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             lat6.DrawLatex(0.59, 0.86, "Residual background subtraction");
             // lat6.DrawLatex(0.65, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
             // lat6.DrawLatex(0.65, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
-            // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", pT_bins[ipt], pT_bins[ipt + 1]));
+            // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", lowpT, highpT));
 
             // TLegend *leg = new TLegend(0.65, 0.50, 0.99, 0.83);
             // leg->SetFillStyle(0);
@@ -3692,7 +3854,7 @@ auto findConfidenceInterval = [&](double delta_threshold) -> pair<double, double
             textLeft1->Draw();
 
             // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
-            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.eps", sysvar.c_str())).c_str());
+            c1->SaveAs((savepath + Form("/rBWfit_doublepanel_%s.png", sysvar.c_str())).c_str());
 
 #endif
 

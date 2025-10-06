@@ -29,10 +29,23 @@ Double_t LegendrePolynomial(int n, Double_t x)
     }
 }
 
+// Define Legendre series function
+Double_t LegendreSeries(Double_t *x, Double_t *par)
+{
+    double cosTheta = x[0];
+    int Jmax = (int)par[0]; // first parameter is Jmax (integer)
+    double sum = 0.0;
+    for (int J = 0; J <= Jmax; J++)
+    {
+        sum += par[J + 1] * LegendrePolynomial(J, cosTheta); // par[J+1] = a_J
+    }
+    return sum;
+}
+
 // Function to calculate Legendre coefficients using orthogonality
 std::pair<double, double> CalculateLegendreCoeff(TH1D *hist, int l)
 {
-    // Calculate a_l = (2l+1)/2 * ∫ W(cosθ) P_l(cosθ) d(cosθ)
+    // Calculate a_l = (2l+1)/2 * ∫ (dN/dcos(θ)) P_l(cosθ) d(cosθ)
     // In discrete bins: weighted sum over bins
 
     double sum = 0.0;
@@ -61,19 +74,6 @@ std::pair<double, double> CalculateLegendreCoeff(TH1D *hist, int l)
     return std::make_pair(coeff, error);
 }
 
-// Define Legendre series function
-Double_t LegendreSeries(Double_t *x, Double_t *par)
-{
-    double cosTheta = x[0];
-    int Jmax = (int)par[0]; // first parameter is Jmax (integer)
-    double sum = 0.0;
-    for (int J = 0; J <= Jmax; J++)
-    {
-        sum += par[J + 1] * LegendrePolynomial(J, cosTheta); // par[J+1] = a_J
-    }
-    return sum;
-}
-
 void read_yield_cosTheta()
 {
     gStyle->SetOptStat(0);
@@ -81,8 +81,9 @@ void read_yield_cosTheta()
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/nopTcut/modified_boltzmann/";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/without_ptCut/";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/pTCut1/";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/WideBin_pt1/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/AngularDistributions/";
 
     // float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
     // float cosThetaBins[] = {-0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8};
@@ -552,65 +553,65 @@ void read_yield_cosTheta()
     cout << "\n==== Legendre Polynomial Fitting ====" << endl;
 
     // Define maximum order of Legendre polynomials to fit
-    int Jmax = 4;           // You can adjust this value
+    int Jmax = 3;           // You can adjust this value
     int nParams = Jmax + 2; // one for Jmax + coefficients a_J
 
     // Determine optimal Lmax to avoid overfitting
     cout << "\nDetermining optimal L_max to avoid overfitting..." << endl;
     cout << "Testing different L_max values based on statistical significance:" << endl;
 
-    // Function to test different Lmax values
-    auto testLmax = [&](TH1D *hist, const char *name, int maxL) -> int
-    {
-        cout << "\n"
-             << name << " - Testing L_max from 0 to " << maxL << ":" << endl;
-        int optimalLmax = 0;
+    // // Function to test different Lmax values
+    // auto testLmax = [&](TH1D *hist, const char *name, int maxL) -> int
+    // {
+    //     cout << "\n"
+    //          << name << " - Testing L_max from 0 to " << maxL << ":" << endl;
+    //     int optimalLmax = 0;
 
-        for (int testL = 0; testL <= maxL; testL++)
-        {
-            TF1 *testFit = new TF1(Form("test_%s_%d", name, testL), LegendreSeries, -1.0, 1.0, testL + 2);
-            testFit->FixParameter(0, testL);
+    //     for (int testL = 0; testL <= maxL; testL++)
+    //     {
+    //         TF1 *testFit = new TF1(Form("test_%s_%d", name, testL), LegendreSeries, -1.0, 1.0, testL + 2);
+    //         testFit->FixParameter(0, testL);
 
-            for (int l = 0; l <= testL; l++)
-            {
-                testFit->SetParameter(l + 1, 1.0);
-            }
+    //         for (int l = 0; l <= testL; l++)
+    //         {
+    //             testFit->SetParameter(l + 1, 1.0);
+    //         }
 
-            hist->Fit(testFit, "RQ"); // Q for quiet mode
+    //         hist->Fit(testFit, "RQ");
 
-            double chi2ndf = testFit->GetChisquare() / testFit->GetNDF();
-            int nSignificant = 0;
+    //         double chi2ndf = testFit->GetChisquare() / testFit->GetNDF();
+    //         int nSignificant = 0;
 
-            for (int l = 0; l <= testL; l++)
-            {
-                double coeff = testFit->GetParameter(l + 1);
-                double err = testFit->GetParError(l + 1);
-                double significance = (err > 0) ? TMath::Abs(coeff) / err : 0;
-                if (significance > 3.0)
-                    nSignificant++;
-            }
+    //         for (int l = 0; l <= testL; l++)
+    //         {
+    //             double coeff = testFit->GetParameter(l + 1);
+    //             double err = testFit->GetParError(l + 1);
+    //             double significance = (err > 0) ? TMath::Abs(coeff) / err : 0;
+    //             if (significance > 3.0)
+    //                 nSignificant++;
+    //         }
 
-            cout << "L_max = " << testL << ": Chi2/NDF = " << chi2ndf
-                 << ", Significant coeffs = " << nSignificant << "/" << (testL + 1) << endl;
+    //         cout << "L_max = " << testL << ": Chi2/NDF = " << chi2ndf
+    //              << ", Significant coeffs = " << nSignificant << "/" << (testL + 1) << endl;
 
-            // Update optimal Lmax if we have good fit quality and significant coefficients
-            if (chi2ndf < 2.0 && nSignificant > 0)
-            {
-                optimalLmax = testL;
-            }
+    //         // Update optimal Lmax if we have good fit quality and significant coefficients
+    //         if (chi2ndf < 2.0 && nSignificant > 0)
+    //         {
+    //             optimalLmax = testL;
+    //         }
 
-            delete testFit;
-        }
+    //         delete testFit;
+    //     }
 
-        cout << "Recommended L_max for " << name << ": " << optimalLmax << endl;
-        return optimalLmax;
-    };
+    //     cout << "Recommended L_max for " << name << ": " << optimalLmax << endl;
+    //     return optimalLmax;
+    // };
 
-    int optimalLmax1710 = testLmax(hYield1710Corrected, "f0(1710)", Jmax);
-    int optimalLmax1525 = testLmax(hYield1525Corrected, "f2(1525)", Jmax);
+    // int optimalLmax1710 = testLmax(hYield1710Corrected, "f0(1710)", Jmax);
+    // int optimalLmax1525 = testLmax(hYield1525Corrected, "f2(1525)", Jmax);
 
-    // Use the recommended Lmax or user-defined Jmax
-    cout << "\nUsing L_max = " << Jmax << " for detailed analysis (you can adjust based on recommendations above)" << endl;
+    // // Use the recommended Lmax or user-defined Jmax
+    // cout << "\nUsing L_max = " << Jmax << " for detailed analysis (you can adjust based on recommendations above)" << endl;
 
     // Fit hYield1710Corrected
     cout << "\nFitting f0(1710) corrected yield with Legendre polynomials (Jmax = " << Jmax << "):" << endl;
@@ -618,12 +619,15 @@ void read_yield_cosTheta()
     fLeg1710->SetParName(0, "Jmax");
     fLeg1710->FixParameter(0, Jmax); // keep Jmax fixed
 
+    float Parameters2022Data[] = {1.44789e-04, 0.0, -5.25351e-05, 0.0};
+
     // Initial guesses for coefficients
     for (int J = 0; J <= Jmax; J++)
     {
         fLeg1710->SetParName(J + 1, Form("a_%d", J));
-        fLeg1710->SetParameter(J + 1, 1.0);
+        fLeg1710->SetParameter(J + 1, Parameters2022Data[J]);
     }
+    // fLeg1710->SetParLimits(5, -5e-6, 5e-6); // limit a_4 to avoid overfitting
 
     // Fit the histogram
     hYield1710Corrected->Fit(fLeg1710, "REBMS");
@@ -649,6 +653,7 @@ void read_yield_cosTheta()
         fLeg1525->SetParName(J + 1, Form("a_%d", J));
         fLeg1525->SetParameter(J + 1, 1.0);
     }
+    fLeg1710->SetParLimits(5, -5e-5, 5e-5); // limit a_4 to avoid overfitting
 
     // Fit the histogram
     // TF1 *fLeg = new TF1("fLeg", "[0]*0.5*(3*x*x - 1)", -1.0, 1.0);
@@ -676,13 +681,13 @@ void read_yield_cosTheta()
     gPad->SetRightMargin(0.03);
     gPad->SetTopMargin(0.05);
     gPad->SetBottomMargin(0.14);
-    hYield1710Corrected->SetTitle("f_{0}(1710) Legendre Fit");
+    // hYield1710Corrected->SetTitle("f_{0}(1710) Legendre Fit");
     hYield1710Corrected->GetXaxis()->SetTitle("cos(#theta*)");
     hYield1710Corrected->GetYaxis()->SetTitle("Corrected Yield");
     hYield1710Corrected->SetMarkerStyle(21);
     hYield1710Corrected->SetMarkerColor(kBlue);
     hYield1710Corrected->SetLineColor(kBlue);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 2.1);
+    hYield1710Corrected->SetMaximum(hYield1525Corrected->GetMaximum());
     hYield1710Corrected->SetMinimum(0);
     hYield1710Corrected->Draw("PE");
     fLeg1710->SetLineColor(kRed);
@@ -692,7 +697,7 @@ void read_yield_cosTheta()
     TLegend *leg1 = new TLegend(0.6, 0.7, 0.9, 0.9);
     leg1->SetFillStyle(0);
     leg1->SetBorderSize(0);
-    leg1->AddEntry(hYield1710Corrected, "Data", "p");
+    leg1->AddEntry(hYield1710Corrected, "f_{0}(1710)", "p");
     leg1->AddEntry(fLeg1710, "Legendre Fit", "l");
     leg1->Draw();
 
@@ -702,7 +707,7 @@ void read_yield_cosTheta()
     gPad->SetRightMargin(0.03);
     gPad->SetTopMargin(0.05);
     gPad->SetBottomMargin(0.14);
-    hYield1525Corrected->SetTitle("f'_{2}(1525) Legendre Fit");
+    // hYield1525Corrected->SetTitle("f'_{2}(1525) Legendre Fit");
     hYield1525Corrected->GetXaxis()->SetTitle("cos(#theta*)");
     hYield1525Corrected->GetYaxis()->SetTitle("Corrected Yield");
     hYield1525Corrected->SetMarkerStyle(21);
@@ -716,7 +721,7 @@ void read_yield_cosTheta()
     TLegend *leg2 = new TLegend(0.6, 0.7, 0.9, 0.9);
     leg2->SetFillStyle(0);
     leg2->SetBorderSize(0);
-    leg2->AddEntry(hYield1525Corrected, "Data", "p");
+    leg2->AddEntry(hYield1525Corrected, "f'_{2}(1525)", "p");
     leg2->AddEntry(fLeg1525, "Legendre Fit", "l");
     leg2->Draw();
 
@@ -812,7 +817,7 @@ void read_yield_cosTheta()
     cout << "f0(1710): J_min = " << Jmin_1710 << " (l_max = " << lmax_1710 << ")" << endl;
     cout << "f2(1525): J_min = " << Jmin_1525 << " (l_max = " << lmax_1525 << ")" << endl;
 
-    // Alternative method: Calculate coefficients using orthogonality
+    // Calculate coefficients using orthogonality
     cout << "\n==== Alternative: Orthogonality Method ====" << endl;
     cout << "Calculating coefficients using orthogonality relation:" << endl;
     cout << "a_l = (2l+1)/2 * ∫ W(cosθ) P_l(cosθ) d(cosθ)" << endl;

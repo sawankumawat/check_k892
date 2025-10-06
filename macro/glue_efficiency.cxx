@@ -33,7 +33,7 @@ void glue_efficiency()
         return;
     }
 
-    float pTbins[] = {0, 1, 2, 3, 5, 7, 9, 12, 15, 20};
+    float pTbins[] = {0, 1, 2, 3, 5, 7, 10, 15, 20};
     int sizePtBins = sizeof(pTbins) / sizeof(pTbins[0]);
     float cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1};
     int sizeCosThetaBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]);
@@ -55,6 +55,9 @@ void glue_efficiency()
     TH1D *heffpTfinerf2 = (TH1D *)hrecptf2->Clone();
     heffpTfinerf2->Divide(hgenptf2);
 
+    TH1F *fracUncertf0 = new TH1F("fracUncertf0", "Fractional Uncertainty f0(1710)", sizePtBins - 1, pTbins);
+    TH1F *fracUncertf2 = new TH1F("fracUncertf2", "Fractional Uncertainty f2(1525)", sizePtBins - 1, pTbins);
+
     for (int i = 0; i < hrecpt->GetNbinsX(); i++)
     {
         // get bin content accroding to pT bins and error according to bayesian method
@@ -67,6 +70,7 @@ void glue_efficiency()
         {
             heff->SetBinContent(i + 1, recYield / genYield);
             heff->SetBinError(i + 1, recYieldError);
+            fracUncertf0->SetBinContent(i + 1, recYieldError / (recYield / genYield));
         }
 
         double genYieldf2 = hgenptf2->Integral(lowptbin, highptbin);
@@ -76,6 +80,7 @@ void glue_efficiency()
         {
             hefff2->SetBinContent(i + 1, recYieldf2 / genYieldf2);
             hefff2->SetBinError(i + 1, recYieldErrorf2);
+            fracUncertf2->SetBinContent(i + 1, recYieldErrorf2 / (recYieldf2 / genYieldf2));
         }
     }
 
@@ -138,6 +143,23 @@ void glue_efficiency()
     leg->AddEntry(hefff2, "f_{2}(1525)", "p");
     leg->Draw();
     cefficiency->SaveAs("injected_mc_plots/efficiency.png");
+
+    TCanvas *cfracUncert = new TCanvas("", "Fractional Uncertainty", 720, 720);
+    SetCanvasStyle(cfracUncert, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(fracUncertf0);
+    fracUncertf0->GetYaxis()->SetTitle("Fractional Uncertainty");
+    fracUncertf0->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fracUncertf0->GetYaxis()->SetTitleOffset(1.5);
+    fracUncertf0->GetYaxis()->SetMaxDigits(3);
+    fracUncertf0->SetMaximum(fracUncertf0->GetMaximum() * 1.2);
+    fracUncertf0->GetXaxis()->SetRangeUser(0, 20.5);
+    fracUncertf0->Draw();
+    SetHistoQA(fracUncertf2);
+    fracUncertf2->SetLineColor(2);
+    fracUncertf2->SetMarkerColor(2);
+    fracUncertf2->Draw("same");
+    leg->Draw();
+    cfracUncert->SaveAs("injected_mc_plots/fractionalUncertainty.png");
 
     TCanvas *cefficiencyfiner = new TCanvas("", "Efficiency (Finer Bins)", 720, 720);
     SetCanvasStyle(cefficiencyfiner, 0.15, 0.05, 0.05, 0.15);

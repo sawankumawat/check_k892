@@ -4,9 +4,11 @@
 
 #ifdef DATASET_LHC22o_pass7_small
 #ifdef KsKschannel
-const Int_t Npt = 1;
-double pT_bins[Npt + 1] = {2.0, 30.0};
-// double pT_bins[Npt + 1] = {0.0, 1.0, 2.0, 3.0, 5.0, 8.0};
+const Int_t Npt = 8;
+// double pT_bins[Npt + 1] = {0.0, 30.0};
+// double pT_bins[Npt + 1] = {2.0, 3.0, 5.0, 7.0, 12.0}; // 2022 data
+double pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0}; // 2023 data
+// double pT_bins[Npt + 1] = {8.0, 12.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif
@@ -57,29 +59,29 @@ const std::vector<std::vector<float>> kNormRangepT = {
 
 const std::vector<int> kRebin = {
     // // for pT bins
-    // 1, // 0.0-30.0 GeV/c
-    // 1, // 0.0-1.0 GeV/c
-    // 1, // 1.0-2.0 GeV/c
-    // 1, // 2.0-3.0 GeV/c
-    // 1, // 3.0-4.0 GeV/c
-    // 1, // 4.0-6.0 GeV/c
-    // 1, // 6.0-12.0 GeV/c
-    // 1, // 12.0-20.0 GeV/c
-    // 1, // 12.0-20.0 GeV/c
-    // 1, // 12.0-20.0 GeV/c
-    // 1, // 12.0-20.0 GeV/c
+    2, // 0.0-30.0 GeV/c
+    2, // 0.0-1.0 GeV/c
+    2, // 1.0-2.0 GeV/c
+    2, // 2.0-3.0 GeV/c
+    2, // 3.0-4.0 GeV/c
+    2, // 4.0-6.0 GeV/c
+    2, // 6.0-12.0 GeV/c
+    2, // 12.0-20.0 GeV/c
+    2, // 12.0-20.0 GeV/c
+    2, // 12.0-20.0 GeV/c
+    2, // 12.0-20.0 GeV/c
 
-    // // for cosTheta bins
-    2, // -1.0 - -0.8
-    2, // -0.8 - -0.6
-    2, // -0.6 - -0.4
-    2, // -0.4 - -0.2
-    2, // -0.2 - 0.0
-    2, // 0.0 - 0.2
-    2, // 0.2 - 0.4
-    2, // 0.4 - 0.6
-    2, // 0.6 - 0.8
-    2, // 0.8 - 1.0
+    // // // for cosTheta bins
+    // 2, // -1.0 - -0.8
+    // 2, // -0.8 - -0.6
+    // 2, // -0.6 - -0.4
+    // 2, // -0.4 - -0.2
+    // 2, // -0.2 - 0.0
+    // 2, // 0.0 - 0.2
+    // 2, // 0.2 - 0.4
+    // 2, // 0.4 - 0.6
+    // 2, // 0.6 - 0.8
+    // 2, // 0.8 - 1.0
 
 };
 #endif

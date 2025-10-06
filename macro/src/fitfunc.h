@@ -36,20 +36,20 @@ Double_t BreitWignerpoly2(Double_t *x, Double_t *par)
 Double_t voigtpol2(Double_t *x, Double_t *par)
 {
     double vgt = par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3], 4);
-    double poly2 = par[6] + par[5] * x[0] + par[4] * x[0] * x[0];
+    double poly2 = par[4] + par[5] * x[0] + par[6] * x[0] * x[0];
     return (vgt + poly2);
+}
+
+Double_t voigtpol3(Double_t *x, Double_t *par)
+{
+    double vgt = par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3], 4);
+    double poly3 = par[4] + par[5] * x[0] + par[6] * x[0] * x[0] + par[7] * x[0] * x[0] * x[0];
+    return (vgt + poly3);
 }
 
 Double_t voigt(Double_t *x, Double_t *par)
 {
     return (par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3]));
-}
-
-Double_t voigt_phi(Double_t *x, Double_t *par)
-{
-    double vgt = (par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3]));
-    double srv = (par[6] + par[5] * x[0] + par[4] * x[0] * x[0]);
-    return (vgt + srv);
 }
 
 Double_t phi_bkg(Double_t *x, Double_t *par)

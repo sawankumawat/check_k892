@@ -159,6 +159,34 @@ void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
     gr->GetYaxis()->SetTitleFont(42);
 }
 
+template <typename T>
+void SetGraphStyleCommon(T *gr)
+{
+    gr->SetTitle(0);
+    gr->SetMarkerStyle(20);
+    gr->SetMarkerSize(1.0);
+    gr->SetLineWidth(2);
+    gr->GetXaxis()->CenterTitle(true);
+    gr->GetXaxis()->SetLabelOffset(0.015);
+    gr->GetXaxis()->SetLabelFont(42);
+    gr->GetXaxis()->SetTitleFont(42);
+    gr->GetXaxis()->SetLabelSize(0.045);
+    gr->GetXaxis()->SetTitleSize(0.05);
+    gr->GetXaxis()->SetTickLength(0.04);
+    gr->GetXaxis()->SetTitleOffset(1.3);
+    gr->GetYaxis()->SetTitleOffset(1.3);
+    gr->GetYaxis()->CenterTitle(true);
+    gr->GetYaxis()->SetLabelOffset(0.015);
+    gr->GetYaxis()->SetLabelFont(42);
+    gr->GetYaxis()->SetLabelSize(0.045);
+    gr->GetYaxis()->SetTickLength(0.04);
+    gr->GetYaxis()->SetTitleSize(0.05);
+    gr->GetYaxis()->SetTitleFont(42);
+    gr->GetXaxis()->SetNdivisions(515);
+    gr->GetYaxis()->SetNdivisions(515);
+    // gr->GetYaxis()->SetDecimals(false);
+}
+
 void SetCanvasStyle(TCanvas *c, float leftmargin, float rightmargin, float topmargin, float bottommargin)
 {
     c->Range(0, 0, 1, 1);

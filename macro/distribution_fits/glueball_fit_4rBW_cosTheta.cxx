@@ -136,8 +136,8 @@ void glueball_fit_4rBW_cosTheta()
 
         //*********for systematics and default study with full train ************************
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         string path2 = path;
 
@@ -146,8 +146,9 @@ void glueball_fit_4rBW_cosTheta()
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
         // TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_pt3.root").c_str(), "READ"); // default
-        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_lastBinWide.root").c_str(), "READ"); // default
+        // TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_lastBinWide.root").c_str(), "READ"); // default
         // TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_-0.6to0.6.root").c_str(), "READ"); // integrated
+        TFile *f = new TFile((path + "/hglue_ROTATED_cosTheta_temp_pt1.root").c_str(), "READ"); // integrated
 
         TFile *plots_4BW = new TFile("root_files/4rBW_plots_expol_cosTheta.root", "RECREATE");
 
@@ -186,7 +187,7 @@ void glueball_fit_4rBW_cosTheta()
         // float cosThetaBins[] = {-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0};
         // float cosThetaBins[] = {-0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6};
         float cosThetaBins[] = {-1.0, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 1.0};
-        // float cosThetaBins[] = {-1.0, -0.6};
+        // float cosThetaBins[] = {-0.6, -0.4};
         bool folding = false;
         int nBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
         if (folding)
@@ -204,7 +205,6 @@ void glueball_fit_4rBW_cosTheta()
 
         for (int icosTheta = 0; icosTheta < nBins; icosTheta++)
         {
-            // hinvMass->Rebin(2);
             float lowTheta = cosThetaBins[icosTheta];
             float highTheta = cosThetaBins[icosTheta + 1];
             if (folding)
@@ -224,6 +224,8 @@ void glueball_fit_4rBW_cosTheta()
                 hinvMass->Add(hinvMass_fold);
             else
                 cout << "Folding not applied, using original histogram" << endl;
+
+            // hinvMass->Rebin(2);
 
             TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_cosTheta_%.1f_%.1f", lowTheta, highTheta));
             if (hinvMass == nullptr || hraw == nullptr)
@@ -292,8 +294,8 @@ void glueball_fit_4rBW_cosTheta()
             }
 
             // double parameters[] = {134, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 400, f1525Mass, f1525Width, 250, f1710Mass, f1710Width}; // No pT cut
-            // double parameters[] = {250, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 800, f1525Mass, f1525Width, 300, f1710Mass, f1710Width}; // default
-            double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
+            double parameters[] = {250, f1270Mass, f1270Width, 100, a1320Mass, a1320Width, 800, f1525Mass, f1525Width, 300, f1710Mass, f1710Width}; // default
+            // double parameters[] = {2.31e4, f1270Mass, f1270Width, 1.36e4, a1320Mass, a1320Width, 4.73e4, f1525Mass, f1525Width, 1.45e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
 
             int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -310,11 +312,9 @@ void glueball_fit_4rBW_cosTheta()
             //     int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
             //     BEexpol_initial->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
             // }
-            BEexpol_initial->SetParLimits(0, 0, 1e6);
-            BEexpol_initial->SetParLimits(3, 0, 1e6);
-            // BEexpol_initial->SetParLimits(6, 0, 1e6);
-
-            // //********systematic studies*************
+            // BEexpol_initial->SetParLimits(0, 0, 1e6); // comment for 2024 data leftmost 2 bins
+            // BEexpol_initial->SetParLimits(3, 0, 1e6); // comment for 2024 data leftmost 2 bins
+            // BEexpol_initial->SetParLimits(6, 0, 1e6); //comment for all
 
             // //================No pT Cut:=====================
             // double initial_param_bkg[] = {1.2e5, 0.2, 3.78, 0.6}; // cosTheta -1.0 to -0.8
@@ -322,10 +322,11 @@ void glueball_fit_4rBW_cosTheta()
             // double initial_param_bkg[] = {5.0e4, -0.07, 2.78, 1.3}; // cosTheta from -0.6 to 0.6 in interval
             // double initial_param_bkg[] = {3.2e5, 0.3, 4.478, 0.5}; // cosTheta 0.8 to 1.0
             // double initial_param_bkg[] = {3.5e5, -0.03, 2.8, 1.1}; // cosTheta from -0.6 to 0.6 in integrated
-            double initial_param_bkg[] = {3.8e6, 0.0134, 3.071167, 1.04}; // rebin twice (2023 dataset)
+            // double initial_param_bkg[] = {3.8e6, 0.0134, 3.071167, 1.04}; // rebin twice (2023 dataset)
 
-            //===================pT cut of 1 GeV/c====================
+            //===================pT cut of 1 GeV/c (2022 and 2024)====================
             // double initial_param_bkg[] = {2.2e4, -0.27, 4.478, 1.5}; // -0.6 to 0.6 (all intervals)
+            double initial_param_bkg[] = {4.3e7, -0.9, 8.478, 0.4}; // leftmost and rightmost bins for 2024
             // double initial_param_bkg[] = {3.2e4, -0.14, 4.078, 1.4}; // Without Likelihood
 
             //===================pT cut of 2 GeV/c====================
@@ -348,7 +349,7 @@ void glueball_fit_4rBW_cosTheta()
             BEexpol_initial->FixParameter(7, f1525Mass);
 
             BEexpol_initial->FixParameter(10, f1710Mass);
-            BEexpol_initial->FixParameter(11, f1710Width);
+            BEexpol_initial->FixParameter(11, f1710Width + 0.05); // to avoid fit to stuck at lower edge
 
             // use for last cosTheta bin for pt 1 to 30 case (2022 dataset)
             //  BEexpol_initial->SetParLimits(14, 2.0, 5.0);
@@ -380,12 +381,12 @@ void glueball_fit_4rBW_cosTheta()
             BEexpol->FixParameter(5, a1320Width);
             BEexpol->FixParameter(8, f1525Width);
 
-            // BEexpol->FixParameter(1, f1270Mass);
-            // BEexpol->FixParameter(4, a1320Mass);
-            // BEexpol->FixParameter(7, f1525Mass);
+            BEexpol->FixParameter(1, f1270Mass);
+            BEexpol->FixParameter(4, a1320Mass);
+            BEexpol->FixParameter(7, f1525Mass);
 
-            // BEexpol->FixParameter(10, f1710Mass);
-            BEexpol->FixParameter(11, f1710Width);
+            // BEexpol->FixParameter(10, f1710Mass); // check for rebin2, bin (-0.6, -0.4) for 2024 dataset
+            // BEexpol->FixParameter(11, f1710Width);
             TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
 
             chi2ndf = BEexpol->GetChisquare() / BEexpol->GetNDF();

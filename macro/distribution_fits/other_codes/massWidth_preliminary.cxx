@@ -2,10 +2,10 @@
 #include <TGraphErrors.h>
 #include <TLine.h>
 #include <TBox.h>
-#include "../src/style.h"
-#include "../src/fitfunc.h"
-#include "../src/common_glue.h"
-#include "../src/fitting_range_glue.h"
+#include "../../src/style.h"
+#include "../../src/fitfunc.h"
+#include "../../src/common_glue.h"
+#include "../../src/fitting_range_glue.h"
 
 void massWidth_preliminary()
 {
@@ -23,6 +23,9 @@ void massWidth_preliminary()
 
     float mass_PDG = 1733, pdg_stat_mass = 8;
     float width_PDG = 150, pdg_stat_width = 12;
+
+    double sigma_mass = abs(mass_alice - mass_PDG) / sqrt(sys_low_mass * sys_low_mass + stat_mass * stat_mass + pdg_stat_mass * pdg_stat_mass);
+    cout << "Sigma mass: " << sigma_mass << endl;
 
     TCanvas *c = new TCanvas("c", "Mass and Width Comparison", 720, 720);
     SetCanvasStyle(c, 0.15, 0.01, 0.01, 0.14);
@@ -196,6 +199,6 @@ void massWidth_preliminary()
     // lat3.DrawLatex(0.05, 0.79, "0.0 < #it{p}_{T} < 30 GeV/c");
     // lat3.DrawLatex(0.05, 0.79, "3.0 < #it{p}_{T} < 5 GeV/c");
 
-    c->SaveAs("/home/sawan/Music/f1710mass_width_comparison.pdf");
+    // c->SaveAs("/home/sawan/Music/f1710mass_width_comparison.pdf");
     // c->SaveAs("/home/sawan/Music/f1710mass_width_highpt1.png");
 }

@@ -104,8 +104,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -491,6 +491,8 @@ void kstar_sparse()
                 Error_2 = sum_tail_correction - Tail_correction_plusm;
                 Final_pro_error = TMath::Sqrt(Error_2 * Error_2 + hBCError_1 * hBCError_1) / (Event * ptbinwidth[ip] * dy * BR);
 
+                cout<<"Yield from bin counting is "<<Total_Ybincounting<<" +/- "<<Final_pro_error<<endl;
+
                 ////Uncorrected Yield/////////////////////////////////////////////////////////////////////////////////
 
                 hYbincount->SetBinContent(ip + 1, Total_Ybincounting);
@@ -526,6 +528,7 @@ void kstar_sparse()
 
                 hintegral_yield->SetBinContent(ip + 1, yieldcalc);
                 hintegral_yield->SetBinError(ip + 1, yielderror); // filling histogram including error
+                cout<<"Total yield from function integration is "<<yieldcalc<<" +/- "<<yielderror<<endl;
 
                 //**Filling mass and width fitting parameter in histogram*******************************************************************************
 

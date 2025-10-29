@@ -4,11 +4,11 @@
 
 #ifdef DATASET_LHC22o_pass7_small
 #ifdef KsKschannel
-const Int_t Npt = 8;
+const Int_t Npt = 5;
 // double pT_bins[Npt + 1] = {0.0, 30.0};
-// double pT_bins[Npt + 1] = {2.0, 3.0, 5.0, 7.0, 12.0}; // 2022 data
-double pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0}; // 2023 data
-// double pT_bins[Npt + 1] = {8.0, 12.0};
+double pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 5.0, 7.0, 12.0}; // 2022 data
+// double pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0}; // 2023 data
+// double pT_bins[Npt + 1] = {2.0, 12.0};
 const int pt_start = 0;
 const int pt_end = Npt;
 #endif

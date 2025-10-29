@@ -18,8 +18,8 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 void read_yield_pt()
 {
     gStyle->SetOptStat(0);
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/";
 
     TString outputPath = path + "/Spectra";
     if (gSystem->mkdir(outputPath, kTRUE))
@@ -27,10 +27,10 @@ void read_yield_pt()
         std::cout << "Folder " << outputPath << " created successfully." << std::endl;
     }
 
-    // float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 12.0};             // 2022 dataset
-    // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 12.0, 15.0}; // 2022 dataset
-    float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0};             // 2023 dataset
-    float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 12.0}; // 2023 dataset
+    float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 12.0};             // 2022 dataset
+    float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 12.0, 15.0}; // 2022 dataset
+    // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0};             // 2023 dataset
+    // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 12.0}; // 2023 dataset
 
     int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
     int nBins2 = sizeof(ptBins2) / sizeof(ptBins2[0]) - 1;
@@ -93,16 +93,30 @@ void read_yield_pt()
     TH1D *hYield1270Raw = new TH1D("hYield1270Raw", "Yield vs cosTheta", nBins, ptBins);
     TH1D *hYield1320Raw = new TH1D("hYield1320Raw", "Yield vs cosTheta", nBins, ptBins);
 
+    TH1D *hYield1710RawBinCount = new TH1D("hYield1710RawBinCount", "Yield vs cosTheta", nBins, ptBins);
+    TH1D *hYield1525RawBinCount = new TH1D("hYield1525RawBinCount", "Yield vs cosTheta", nBins, ptBins);
+    TH1D *hYield1270RawBinCount = new TH1D("hYield1270RawBinCount", "Yield vs cosTheta", nBins, ptBins);
+    TH1D *hYield1320RawBinCount = new TH1D("hYield1320RawBinCount", "Yield vs cosTheta", nBins, ptBins);
+
     TH1D *hYield1710Corrected = new TH1D("hYield1710Corrected", "Yield vs cosTheta", nBins2, ptBins2);
     TH1D *hYield1525Corrected = new TH1D("hYield1525Corrected", "Yield vs cosTheta", nBins2, ptBins2);
     TH1D *hYield1270Corrected = new TH1D("hYield1270Corrected", "Yield vs cosTheta", nBins2, ptBins2);
     TH1D *hYield1320Corrected = new TH1D("hYield1320Corrected", "Yield vs cosTheta", nBins2, ptBins2);
 
+    TH1D *hYield1710CorrBinCount = new TH1D("hYield1710CorrBinCount", "Yield vs cosTheta", nBins2, ptBins2);
+    TH1D *hYield1525CorrBinCount = new TH1D("hYield1525CorrBinCount", "Yield vs cosTheta", nBins2, ptBins2);
+    TH1D *hYield1270CorrBinCount = new TH1D("hYield1270CorrBinCount", "Yield vs cosTheta", nBins2, ptBins2);
+    TH1D *hYield1320CorrBinCount = new TH1D("hYield1320CorrBinCount", "Yield vs cosTheta", nBins2, ptBins2);
+
     TH1D *hMass1710 = new TH1D("hMass1710", "Mass vs cosTheta", nBins, ptBins);
     TH1D *hWidth1710 = new TH1D("hWidth1710", "Width vs cosTheta", nBins, ptBins);
     TH1D *hMass1525 = new TH1D("hMass1525", "Mass vs cosTheta", nBins, ptBins);
     TH1D *hWidth1525 = new TH1D("hWidth1525", "Width vs cosTheta", nBins, ptBins);
-    double totalYield1710, totalYield1525, totalYield1270, totalYield1320;
+    TH1D *hMass1270 = new TH1D("hMass1270", "Mass vs cosTheta", nBins, ptBins);
+    TH1D *hWidth1270 = new TH1D("hWidth1270", "Width vs cosTheta", nBins, ptBins);
+    TH1D *hMass1320 = new TH1D("hMass1320", "Mass vs cosTheta", nBins, ptBins);
+    TH1D *hWidth1320 = new TH1D("hWidth1320", "Width vs cosTheta", nBins, ptBins);
+    double totalYield1710, totalYield1525, totalYield1270, totalYield1320, totalYield1710BinCount, totalYield1525BinCount, totalYield1270BinCount, totalYield1320BinCount;
 
     for (int i = 0; i < nBins; i++)
     {
@@ -129,22 +143,26 @@ void read_yield_pt()
 
         // Parameters for f1710
         double yield1 = 0, yield1_err = 0;
+        double yield1Bin = 0, yield1Bin_err = 0;
         double mass1 = 0, mass1_err = 0;
         double width1 = 0, width1_err = 0;
         double bkgYield1 = 0, bkgYield1_err = 0, bkgYield2 = 0, bkgYield2_err = 0, bkgYield3 = 0, bkgYield3_err = 0;
 
         // Parameters for f1525
         double yield2 = 0, yield2_err = 0;
+        double yield2Bin = 0, yield2Bin_err = 0;
         double mass2 = 0, mass2_err = 0;
         double width2 = 0, width2_err = 0;
 
         // Parameters for f1270
         double yield3 = 0, yield3_err = 0;
+        double yield3Bin = 0, yield3Bin_err = 0;
         double mass3 = 0, mass3_err = 0;
         double width3 = 0, width3_err = 0;
 
         // Parameters for a1320
         double yield4 = 0, yield4_err = 0;
+        double yield4Bin = 0, yield4Bin_err = 0;
         double mass4 = 0, mass4_err = 0;
         double width4 = 0, width4_err = 0;
 
@@ -231,10 +249,16 @@ void read_yield_pt()
                         yield1_err = err;
                         break;
                     case 1:
+                        yield1Bin = val;
+                        yield1Bin_err = err;
+                        break;
+                    // case 1:
+                    case 2:
                         mass1 = val;
                         mass1_err = err;
                         break;
-                    case 2:
+                    // case 2:
+                    case 3:
                         width1 = val;
                         width1_err = err;
                         break;
@@ -249,10 +273,16 @@ void read_yield_pt()
                         yield2_err = err;
                         break;
                     case 1:
+                        yield2Bin = val;
+                        yield2Bin_err = err;
+                        break;
+                    // case 1:
+                    case 2:
                         mass2 = val;
                         mass2_err = err;
                         break;
-                    case 2:
+                    // case 2:
+                    case 3:
                         width2 = val;
                         width2_err = err;
                         break;
@@ -267,10 +297,16 @@ void read_yield_pt()
                         yield3_err = err;
                         break;
                     case 1:
+                        yield3Bin = val;
+                        yield3Bin_err = err;
+                        break;
+                    // case 1:
+                    case 2:
                         mass3 = val;
                         mass3_err = err;
                         break;
-                    case 2:
+                    // case 2:
+                    case 3:
                         width3 = val;
                         width3_err = err;
                         break;
@@ -285,10 +321,15 @@ void read_yield_pt()
                         yield4_err = err;
                         break;
                     case 1:
+                        yield4Bin = val;
+                        yield4Bin_err = err;
+                        break;
+                    // case 1:
+                    case 2:
                         mass4 = val;
                         mass4_err = err;
                         break;
-                    case 2:
+                    case 3:
                         width4 = val;
                         width4_err = err;
                         break;
@@ -319,23 +360,44 @@ void read_yield_pt()
         totalYield1525 += yield2;
         totalYield1270 += yield3;
         totalYield1320 += yield4;
+        totalYield1710BinCount += yield1Bin;
+        totalYield1525BinCount += yield2Bin;
+        totalYield1270BinCount += yield3Bin;
+        totalYield1320BinCount += yield4Bin;
+
         double eff1710 = hefficiencyf0->GetBinContent(i + 1);
         double eff1710_err = hefficiencyf0->GetBinError(i + 1);
         double eff1525 = hefficiencyf2->GetBinContent(i + 1);
         double eff1525_err = hefficiencyf2->GetBinError(i + 1);
+
         double corrected_yield1710 = yield1 / eff1710;
         double corrected_yield1710_err = sqrt(pow(yield1_err / eff1710, 2) + pow(yield1 * eff1710_err / pow(eff1710, 2), 2));
+        double corrected_yield1710Bin = yield1Bin / eff1710;
+        double corrected_yield1710Bin_err = sqrt(pow(yield1Bin_err / eff1710, 2) + pow(yield1Bin * eff1710_err / pow(eff1710, 2), 2));
+
         double corrected_yield1525 = yield2 / eff1525;
         double corrected_yield1525_err = sqrt(pow(yield2_err / eff1525, 2) + pow(yield2 * eff1525_err / pow(eff1525, 2), 2));
+        double corrected_yield1525Bin = yield2Bin / eff1525;
+        double corrected_yield1525Bin_err = sqrt(pow(yield2Bin_err / eff1525, 2) + pow(yield2Bin * eff1525_err / pow(eff1525, 2), 2));
+
         double corrected_yield1270 = yield3 / eff1525;
         double corrected_yield1270_err = sqrt(pow(yield3_err / eff1525, 2) + pow(yield3 * eff1525_err / pow(eff1525, 2), 2));
+        double corrected_yield1270Bin = yield3Bin / eff1525;
+        double corrected_yield1270Bin_err = sqrt(pow(yield3Bin_err / eff1525, 2) + pow(yield3Bin * eff1525_err / pow(eff1525, 2), 2));
+
         double corrected_yield1320 = yield4 / eff1525;
         double corrected_yield1320_err = sqrt(pow(yield4_err / eff1525, 2) + pow(yield4 * eff1525_err / pow(eff1525, 2), 2));
+        double corrected_yield1320Bin = yield4Bin / eff1525;
+        double corrected_yield1320Bin_err = sqrt(pow(yield4Bin_err / eff1525, 2) + pow(yield4Bin * eff1525_err / pow(eff1525, 2), 2));
 
         hYield1710Raw->SetBinContent(i + 1, yield1);
         hYield1710Raw->SetBinError(i + 1, yield1_err);
+        hYield1710RawBinCount->SetBinContent(i + 1, yield1Bin);
+        hYield1710RawBinCount->SetBinError(i + 1, yield1Bin_err);
         hYield1710Corrected->SetBinContent(i + 2, corrected_yield1710);
         hYield1710Corrected->SetBinError(i + 2, corrected_yield1710_err);
+        hYield1710CorrBinCount->SetBinContent(i + 2, corrected_yield1710Bin);
+        hYield1710CorrBinCount->SetBinError(i + 2, corrected_yield1710Bin_err);
         hMass1710->SetBinContent(i + 1, mass1);
         hMass1710->SetBinError(i + 1, mass1_err);
         hWidth1710->SetBinContent(i + 1, width1);
@@ -343,8 +405,12 @@ void read_yield_pt()
 
         hYield1525Raw->SetBinContent(i + 1, yield2);
         hYield1525Raw->SetBinError(i + 1, yield2_err);
+        hYield1525RawBinCount->SetBinContent(i + 1, yield2Bin);
+        hYield1525RawBinCount->SetBinError(i + 1, yield2Bin_err);
         hYield1525Corrected->SetBinContent(i + 2, corrected_yield1525);
         hYield1525Corrected->SetBinError(i + 2, corrected_yield1525_err);
+        hYield1525CorrBinCount->SetBinContent(i + 2, corrected_yield1525Bin);
+        hYield1525CorrBinCount->SetBinError(i + 2, corrected_yield1525Bin_err);
         hMass1525->SetBinContent(i + 1, mass2);
         hMass1525->SetBinError(i + 1, mass2_err);
         hWidth1525->SetBinContent(i + 1, width2);
@@ -352,14 +418,29 @@ void read_yield_pt()
 
         hYield1270Raw->SetBinContent(i + 1, yield3);
         hYield1270Raw->SetBinError(i + 1, yield3_err);
+        hYield1270RawBinCount->SetBinContent(i + 1, yield3Bin);
+        hYield1270RawBinCount->SetBinError(i + 1, yield3Bin_err);
         hYield1270Corrected->SetBinContent(i + 2, corrected_yield1270);
         hYield1270Corrected->SetBinError(i + 2, corrected_yield1270_err);
+        hYield1270CorrBinCount->SetBinContent(i + 2, corrected_yield1270Bin);
+        hYield1270CorrBinCount->SetBinError(i + 2, corrected_yield1270Bin_err);
+        hMass1270->SetBinContent(i + 1, mass3);
+        hMass1270->SetBinError(i + 1, mass3_err);
+        hWidth1270->SetBinContent(i + 1, width3);
+        hWidth1270->SetBinError(i + 1, width3_err);
 
         hYield1320Raw->SetBinContent(i + 1, yield4);
         hYield1320Raw->SetBinError(i + 1, yield4_err);
         hYield1320Corrected->SetBinContent(i + 2, corrected_yield1320);
         hYield1320Corrected->SetBinError(i + 2, corrected_yield1320_err);
-
+        hYield1320CorrBinCount->SetBinContent(i + 2, corrected_yield1320Bin);
+        hYield1320CorrBinCount->SetBinError(i + 2, corrected_yield1320Bin_err);
+        hYield1320RawBinCount->SetBinContent(i + 1, yield4Bin);
+        hYield1320RawBinCount->SetBinError(i + 1, yield4Bin_err);
+        hMass1320->SetBinContent(i + 1, mass4);
+        hMass1320->SetBinError(i + 1, mass4_err);
+        hWidth1320->SetBinContent(i + 1, width4);
+        hWidth1320->SetBinError(i + 1, width4_err);
         // cout << "f1525 yield is " << yield2 << " +- " << yield2_err << endl;
         // cout << "f1710 yield is " << yield1 << " +- " << yield1_err << endl;
         // cout << "f1270 yield is " << yield3 << " +- " << yield3_err << endl;
@@ -396,6 +477,23 @@ void read_yield_pt()
     leg1710Mass->Draw();
     cMass1710->SaveAs(outputPath + "/Mass1710.png");
 
+    TCanvas *cWidth1710 = new TCanvas("cWidth1710", "Width vs #it{p}_{T} for f_{0}(1710)", 720, 720);
+    SetCanvasStyle(cWidth1710, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hWidth1710);
+    hWidth1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hWidth1710->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
+    hWidth1710->GetYaxis()->SetTitleOffset(1.6);
+    hWidth1710->GetYaxis()->SetRangeUser(0.05, 0.15);
+    hWidth1710->SetMarkerStyle(21);
+    hWidth1710->Draw("pe");
+    TLine *line1710Width = new TLine(0, f1710Width, 12, f1710Width);
+    line1710Width->SetLineStyle(2);
+    line1710Width->SetLineColor(2);
+    line1710Width->Draw();
+    leg1710Mass->Draw();
+    cWidth1710->SaveAs(outputPath + "/Width1710.png");
+
     TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs #it{p}_{T} for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cMass1525, 0.18, 0.03, 0.05, 0.14);
     // gPad->SetLogy();
@@ -410,42 +508,105 @@ void read_yield_pt()
     line1525Mass->SetLineStyle(2);
     line1525Mass->SetLineColor(2);
     line1525Mass->Draw();
-    TLegend *pdg1525Mass = new TLegend(0.55, 0.75, 0.85, 0.9);
-    pdg1525Mass->SetBorderSize(0);
-    pdg1525Mass->SetFillStyle(0);
-    pdg1525Mass->SetTextSize(0.035);
-    pdg1525Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    pdg1525Mass->AddEntry(hMass1525, "This analysis", "pe");
-    pdg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
-    pdg1525Mass->Draw();
+    leg1710Mass->Draw();
     cMass1525->SaveAs(outputPath + "/Mass1525.png");
+
+    TCanvas *cWidth1525 = new TCanvas("cWidth1525", "Width vs #it{p}_{T} for f_{2}(1525)", 720, 720);
+    SetCanvasStyle(cWidth1525, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hWidth1525);
+    hWidth1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hWidth1525->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
+    hWidth1525->GetYaxis()->SetTitleOffset(1.6);
+    hWidth1525->GetYaxis()->SetRangeUser(0.05, 0.08);
+    hWidth1525->SetMarkerStyle(20);
+    hWidth1525->Draw("pe");
+    TLine *line1525Width = new TLine(0, f1525Width, 12, f1525Width);
+    line1525Width->SetLineStyle(2);
+    line1525Width->SetLineColor(2);
+    line1525Width->Draw();
+    leg1710Mass->Draw();
+    cWidth1525->SaveAs(outputPath + "/Width1525.png");
+
+    TCanvas *cMass1270 = new TCanvas("cMass1270", "Mass vs #it{p}_{T} for f_{2}(1270)", 720, 720);
+    SetCanvasStyle(cMass1270, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hMass1270);
+    hMass1270->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hMass1270->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    hMass1270->GetYaxis()->SetTitleOffset(1.6);
+    hMass1270->GetYaxis()->SetRangeUser(1.15, 1.35);
+    hMass1270->SetMarkerStyle(20);
+    hMass1270->Draw("pe");
+    TLine *line1270Mass = new TLine(0, f1270Mass, 12, f1270Mass);
+    line1270Mass->SetLineStyle(2);
+    line1270Mass->SetLineColor(2);
+    line1270Mass->Draw();
+    leg1710Mass->Draw();
+    cMass1270->SaveAs(outputPath + "/Mass1270.png");
+
+    TCanvas *cMass1320 = new TCanvas("cMass1320", "Mass vs #it{p}_{T} for a_{2}(1320)", 720, 720);
+    SetCanvasStyle(cMass1320, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hMass1320);
+    hMass1320->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hMass1320->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    hMass1320->GetYaxis()->SetTitleOffset(1.6);
+    hMass1320->GetYaxis()->SetRangeUser(1.25, 1.37);
+    hMass1320->SetMarkerStyle(20);
+    hMass1320->Draw("pe");
+    TLine *line1320Mass = new TLine(0, a1320Mass, 12, a1320Mass);
+    line1320Mass->SetLineStyle(2);
+    line1320Mass->SetLineColor(2);
+    line1320Mass->Draw();
+    leg1710Mass->Draw();
+    cMass1320->SaveAs(outputPath + "/Mass1320.png");
 
     TCanvas *cYieldCorrectedf1525 = new TCanvas("cYieldCorrectedf1525", "Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cYieldCorrectedf1525, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(hYield1525Corrected);
+    SetHistoQA(hYield1270CorrBinCount);
     hYield1525Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hYield1525Corrected->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
     hYield1525Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1525Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-    hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
+    hYield1525Corrected->SetMaximum(hYield1270CorrBinCount->GetMaximum() * 1.5);
     hYield1525Corrected->SetMarkerStyle(20);
     // hYield1525Corrected->SetMinimum(-2e-7);
     hYield1525Corrected->Draw("pe");
+    hYield1525CorrBinCount->SetMarkerStyle(22);
+    hYield1525CorrBinCount->SetMarkerColor(kBlue);
+    hYield1525CorrBinCount->SetLineColor(kBlue);
+    hYield1525CorrBinCount->Draw("pe same");
+    TLegend *legYield = new TLegend(0.55, 0.75, 0.85, 0.9);
+    legYield->SetBorderSize(0);
+    legYield->SetFillStyle(0);
+    legYield->SetTextSize(0.035);
+    legYield->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legYield->AddEntry(hYield1525Corrected, "Function integration", "pe");
+    legYield->AddEntry(hYield1525CorrBinCount, "Bin counting", "pe");
+    legYield->Draw();
     cYieldCorrectedf1525->SaveAs(outputPath + "/CorrectedYieldf2.png");
 
     TCanvas *cYieldCorrected1710 = new TCanvas("cYieldCorrected1710", "Yield vs #it{p}_{T} for f_{0}(1710)", 720, 720);
     SetCanvasStyle(cYieldCorrected1710, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(hYield1710Corrected);
+    SetHistoQA(hYield1710CorrBinCount);
     hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
     hYield1710Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1710Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
+    hYield1710Corrected->SetMaximum(hYield1710CorrBinCount->GetMaximum() * 1.5);
     hYield1710Corrected->SetMarkerStyle(21);
     // hYield1710Corrected->SetMinimum(-2e-7);
     hYield1710Corrected->Draw("pe");
+    hYield1710CorrBinCount->SetMarkerStyle(23);
+    hYield1710CorrBinCount->SetMarkerColor(kBlue);
+    hYield1710CorrBinCount->SetLineColor(kBlue);
+    hYield1710CorrBinCount->Draw("pe same");
+    legYield->Draw();
     cYieldCorrected1710->SaveAs(outputPath + "/CorrectedYieldf0.png");
 
     TCanvas *cYieldRatio = new TCanvas("cYieldRatio", "Yield ratio vs #it{p}_{T} for f_{0}(1710)/f_{2}'(1525)", 720, 720);
@@ -488,33 +649,105 @@ void read_yield_pt()
     // hYield1710Raw->Draw("pe same");
     // cRawYieldf0->SaveAs(outputPath + "/RawYieldf0.png");
 
-    // TCanvas *cEfficiencyf0f2 = new TCanvas("cEfficiencyf0f2", "Efficiency vs #it{p}_{T}", 720, 720);
-    // SetCanvasStyle(cEfficiencyf0f2, 0.18, 0.03, 0.05, 0.14);
-    // // gPad->SetLogy();
-    // SetHistoQA(hefficiencyf0);
-    // SetHistoQA(hefficiencyf2);
-    // hefficiencyf0->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    // hefficiencyf0->GetYaxis()->SetTitle("Acceptance x Efficiency");
-    // hefficiencyf0->GetYaxis()->SetTitleOffset(1.6);
-    // hefficiencyf0->SetMaximum(hefficiencyf0->GetMaximum() * 1.5);
-    // hefficiencyf0->SetMarkerStyle(21);
-    // hefficiencyf0->SetMinimum(0);
-    // hefficiencyf0->Draw("pe");
-    // hefficiencyf2->SetLineColor(kRed);
-    // hefficiencyf2->SetMarkerColor(kRed);
-    // hefficiencyf2->SetMarkerStyle(22);
-    // hefficiencyf2->Draw("pe same");
-    // TLegend *legend = new TLegend(0.75, 0.8, 0.85, 0.9);
-    // legend->SetBorderSize(0);
-    // legend->SetFillStyle(0);
-    // legend->SetTextSize(0.035);
-    // legend->AddEntry(hefficiencyf2, "f_{2}'(1525)", "pe");
-    // legend->AddEntry(hefficiencyf0, "f_{0}(1710)", "pe");
-    // legend->Draw();
-    // cEfficiencyf0f2->SaveAs(outputPath + "/Efficiencyf0f2.png");
+    TFile *fKsEffErcolessi = new TFile("../spectra/K0sEffpp2022data.root", "read");
+    if (fKsEffErcolessi->IsZombie())
+    {
+        cout << "Error opening K0s efficiency file" << endl;
+        return;
+    }
+    TH3D *hK0sNum3D = (TH3D *)fKsEffErcolessi->Get("lf-v0postprocessing/hMassVsPtK0Short_MC");
+    TH1D *hK0sNum = hK0sNum3D->ProjectionX("hK0sNum", 1, -1, 1, -1);
+    TH2D *hK0sDen2D = (TH2D *)fKsEffErcolessi->Get("lf-v0qaanalysis/Generated_MCGenRecoColl_INELgt0_K0Short");
+    TH1D *hK0sDen = hK0sDen2D->ProjectionX("hK0sDen", 1, -1);
+    if (hK0sNum == nullptr || hK0sDen == nullptr)
+    {
+        cout << "Error reading K0s histograms from efficiency file" << endl;
+        return;
+    }
+    TH1D *hK0sEff = (TH1D *)hefficiencyf0->Clone("hK0sEff");
+    TH1D *hK0sK0sEff = (TH1D *)hefficiencyf0->Clone("hK0sK0sEff");
+    int numBins = hefficiencyf0->GetNbinsX();
+    for (int i = 1; i <= numBins; i++)
+    {
+        float ptLow = hefficiencyf0->GetBinLowEdge(i);
+        float ptUp = hefficiencyf0->GetBinLowEdge(i) + hefficiencyf0->GetBinWidth(i);
+        int binLow = hK0sNum->GetXaxis()->FindBin(ptLow + 0.01);
+        int binUp = hK0sNum->GetXaxis()->FindBin(ptUp - 0.01);
+        double num = hK0sNum->Integral(binLow, binUp);
+        double den = hK0sDen->Integral(binLow, binUp);
+        if (den != 0)
+        {
+            hK0sEff->SetBinContent(i, num / den);
+            hK0sK0sEff->SetBinContent(i, num * num / (den * den));
+        }
+        else
+        {
+            hK0sEff->SetBinContent(i, 0);
+            hK0sK0sEff->SetBinContent(i, 0);
+        }
+
+        double recYieldError = TMath::Sqrt(abs(((num + 1) / (den + 2)) * ((num + 2) / (den + 3) - (num + 1) / (den + 2))));
+        double recYieldError2 = TMath::Sqrt(abs(((num * num + 1) / (den * den + 2)) * ((num * num + 2) / (den * den + 3) - (num * num + 1) / (den * den + 2))));
+        if (den != 0)
+        {
+            hK0sEff->SetBinError(i, recYieldError);
+            hK0sK0sEff->SetBinError(i, recYieldError2);
+        }
+        else
+        {
+            hK0sEff->SetBinError(i, 0);
+            hK0sK0sEff->SetBinError(i, 0);
+        }
+    }
+
+    TCanvas *cK0sEff = new TCanvas("cK0sEff", "K0s Efficiency vs #it{p}_{T}", 720, 720);
+    SetCanvasStyle(cK0sEff, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hK0sEff);
+    hK0sEff->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hK0sEff->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    hK0sEff->GetYaxis()->SetTitleOffset(1.6);
+    hK0sEff->SetMaximum(hK0sEff->GetMaximum() * 1.5);
+    hK0sEff->SetMarkerStyle(20);
+    hK0sEff->SetMinimum(0);
+    hK0sEff->Draw("pe");
+    cK0sEff->SaveAs(outputPath + "/K0s_Efficiency.png");
+
+    TCanvas *cEfficiencyf0f2 = new TCanvas("cEfficiencyf0f2", "Efficiency vs #it{p}_{T}", 720, 720);
+    SetCanvasStyle(cEfficiencyf0f2, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hefficiencyf0);
+    SetHistoQA(hefficiencyf2);
+    hefficiencyf0->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hefficiencyf0->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    hefficiencyf0->GetYaxis()->SetTitleOffset(1.6);
+    hefficiencyf0->SetMaximum(hefficiencyf0->GetMaximum() * 5);
+    hefficiencyf0->SetMarkerStyle(21);
+    hefficiencyf0->SetMinimum(0);
+    hefficiencyf0->Draw("pe");
+    hefficiencyf2->SetLineColor(kRed);
+    hefficiencyf2->SetMarkerColor(kRed);
+    hefficiencyf2->SetMarkerStyle(22);
+    hefficiencyf2->Draw("pe same");
+    SetHistoQA(hK0sK0sEff);
+    hK0sK0sEff->SetLineColor(kGreen + 2);
+    hK0sK0sEff->SetMarkerColor(kGreen + 2);
+    hK0sK0sEff->SetMarkerStyle(23);
+    hK0sK0sEff->Draw("pe same");
+    TLegend *legend = new TLegend(0.71, 0.75, 0.85, 0.9);
+    legend->SetBorderSize(0);
+    legend->SetFillStyle(0);
+    legend->SetTextSize(0.035);
+    legend->AddEntry(hefficiencyf2, "f_{2}'(1525)", "pe");
+    legend->AddEntry(hefficiencyf0, "f_{0}(1710)", "pe");
+    legend->AddEntry(hK0sK0sEff, "K0s * K0s", "pe");
+    legend->Draw();
+    cEfficiencyf0f2->SaveAs(outputPath + "/Efficiencyf0f2.png");
 
     TH1F *h1 = (TH1F *)hYield1525Corrected->Clone("h1");
     TH1F *h2 = (TH1F *)hYield1525Corrected->Clone("h2");
+    // TH1F *h1 = (TH1F *)hYield1525CorrBinCount->Clone("h1");
+    // TH1F *h2 = (TH1F *)hYield1525CorrBinCount->Clone("h2");
 
     for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -540,8 +773,8 @@ void read_yield_pt()
     fitFcn->SetParNames("n", "dn/dy", "mass", "T");
 
     TH1 *hout = YieldMean(h1, h2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    cout << "Yield dN/dy = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
-    cout << "Mean pT = " << hout->GetBinContent(5) << " +- " << hout->GetBinContent(6) << endl;
+    cout << "Yield dN/dy of f2(1525) = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
+    cout << "Mean pT of f2(1525) = " << hout->GetBinContent(5) << " +- " << hout->GetBinContent(6) << endl;
 
     TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 10.0, 4);
     fitFcn2->SetParameter(0, 5.0);
@@ -551,7 +784,19 @@ void read_yield_pt()
     fitFcn2->SetParameter(3, 0.35);
     fitFcn2->SetParNames("n", "dn/dy", "mass", "T");
 
-    TH1 *hout2 = YieldMean(hYield1710Corrected, hYield1710Corrected, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    TH1F *h11 = (TH1F *)hYield1710Corrected->Clone("h1");
+    TH1F *h21 = (TH1F *)hYield1710Corrected->Clone("h2");
+    // TH1F *h11 = (TH1F *)hYield1710CorrBinCount->Clone("h1");
+    // TH1F *h21 = (TH1F *)hYield1710CorrBinCount->Clone("h2");
+
+    for (int i = 1; i <= h21->GetNbinsX(); i++) // putting small systematic error by hand
+    {
+        double systemerr = (0.1 * h21->GetBinContent(i));
+        h21->SetBinError(i, systemerr);
+    }
+    /*************meanpT*****************byresonance*******************package*************************/
+
+    TH1 *hout2 = YieldMean(h11, h21, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
     cout << "Yield dN/dy of f0(1710) = " << hout2->GetBinContent(1) << " +- " << hout2->GetBinContent(2) << endl;
     cout << "Mean pT of f0(1710) = " << hout2->GetBinContent(5) << " +- " << hout2->GetBinContent(6) << endl;
 
@@ -578,10 +823,10 @@ void read_yield_pt()
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
-    SetHistoQA(hYield1710Corrected);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 10);
-    hYield1710Corrected->SetMinimum(5e-7);
-    hYield1710Corrected->Draw("pe");
+    SetHistoQA(h11);
+    h11->SetMaximum(h11->GetMaximum() * 10);
+    h11->SetMinimum(5e-7);
+    h11->Draw("pe");
     fitFcn2->SetLineWidth(2);
     fitFcn2->SetLineStyle(2);
     fitFcn2->Draw("l same");
@@ -590,7 +835,7 @@ void read_yield_pt()
     legend3->SetFillStyle(0);
     legend3->SetTextSize(0.035);
     legend3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legend3->AddEntry(hYield1710Corrected, "f_{0}(1710)", "pe");
+    legend3->AddEntry(h11, "f_{0}(1710)", "pe");
     legend3->AddEntry(fitFcn2, "Levy fit", "l");
     legend3->Draw();
     cCorrectedf0Fit->SaveAs(outputPath + "/LevyFitf0.png");
@@ -625,8 +870,9 @@ void read_yield_pt()
     double meanPtAt13TeV[9];
     double meanPtAt13TeV_err[9];
     TGraphErrors *gMeanPt[9];
-    TGraphErrors *gMeanPtvsMass = new TGraphErrors();
-    TGraphErrors *gdNdyvsMass = new TGraphErrors();
+    TGraphErrors *gMeanPtvsMass[11]; // Array for all particles + f2(1525) + f0(1710)
+    TGraphErrors *gdNdyvsMass[11];   // Array for all particles + f2(1525) + f0(1710)
+
     for (int i = 0; i < totalParticles; i++)
     {
         gMeanPt[i] = (TGraphErrors *)flightFlavourHadrons->Get(Form("Table %d/Graph1D_y1", 26 + i));
@@ -656,151 +902,80 @@ void read_yield_pt()
             }
         }
 
-        gMeanPtvsMass->SetPoint(i, particleMass[i], meanPtAt13TeV[i]);
-        gMeanPtvsMass->SetPointError(i, 0, meanPtAt13TeV_err[i]);
+        // Create individual graphs for mean pT vs mass
+        gMeanPtvsMass[i] = new TGraphErrors(1);
+        gMeanPtvsMass[i]->SetPoint(0, particleMass[i], meanPtAt13TeV[i]);
+        gMeanPtvsMass[i]->SetPointError(0, 0, meanPtAt13TeV_err[i]);
+        gMeanPtvsMass[i]->SetMarkerColor(colors[i]);
+        gMeanPtvsMass[i]->SetLineColor(colors[i]);
+        gMeanPtvsMass[i]->SetMarkerStyle(markers[i]);
+        gMeanPtvsMass[i]->SetMarkerSize(2.0);
 
+        // Create individual graphs for dN/dy vs mass
         double dNdy = dNdyvalues_13TeV[i][0] * dNdyvalues_13TeV[i][3];
         double dNdyStatErr = dNdyvalues_13TeV[i][1] * dNdyvalues_13TeV[i][3];
-        gdNdyvsMass->SetPoint(i, particleMass[i], dNdy);
-        gdNdyvsMass->SetPointError(i, 0, dNdyStatErr); // only stat error for now.
+        gdNdyvsMass[i] = new TGraphErrors(1);
+        gdNdyvsMass[i]->SetPoint(0, particleMass[i], dNdy);
+        gdNdyvsMass[i]->SetPointError(0, 0, dNdyStatErr);
+        gdNdyvsMass[i]->SetMarkerColor(colors[i]);
+        gdNdyvsMass[i]->SetLineColor(colors[i]);
+        gdNdyvsMass[i]->SetMarkerStyle(markers[i]);
+        gdNdyvsMass[i]->SetMarkerSize(2.0);
     }
-    SetGrapherrorStyle(gMeanPtvsMass);
-    gMeanPtvsMass->SetMarkerColor(0); // invisible marker
-    gMeanPtvsMass->SetLineColor(kBlack);
-    gMeanPtvsMass->SetPoint(totalParticles, 1.5173, hout->GetBinContent(5)); // PDG mass of f2(1525) is 1.5173GeV/c2
-    gMeanPtvsMass->SetPointError(totalParticles, 0, hout->GetBinContent(6));
-    gMeanPtvsMass->SetPoint(totalParticles + 1, 1.710, hout2->GetBinContent(5)); // PDG mass of f0(1710) is 1.710GeV/c2
-    gMeanPtvsMass->SetPointError(totalParticles + 1, 0, hout2->GetBinContent(6));
 
-    SetGrapherrorStyle(gdNdyvsMass);
-    gdNdyvsMass->SetMarkerStyle(8); // invisible marker
-    gdNdyvsMass->SetMarkerColor(0); // invisible marker
-    gdNdyvsMass->SetLineColor(kBlack);
-    gdNdyvsMass->SetPoint(totalParticles, 1.5173, hout->GetBinContent(1)); // PDG mass of f2(1525) is 1.5173GeV/c2
-    gdNdyvsMass->SetPointError(totalParticles, 0, hout->GetBinContent(2));
-    gdNdyvsMass->SetPoint(totalParticles + 1, 1.710, hout2->GetBinContent(1)); // PDG mass of f0(1710) is 1.710GeV/c2
-    gdNdyvsMass->SetPointError(totalParticles + 1, 0, hout2->GetBinContent(2));
+    // Create graphs for f2(1525) - index 9
+    gMeanPtvsMass[9] = new TGraphErrors(1);
+    gMeanPtvsMass[9]->SetPoint(0, 1.5173, hout->GetBinContent(5)); // PDG mass of f2(1525) is 1.5173GeV/c2
+    gMeanPtvsMass[9]->SetPointError(0, 0, hout->GetBinContent(6));
+    gMeanPtvsMass[9]->SetMarkerColor(kRed);
+    gMeanPtvsMass[9]->SetLineColor(kRed);
+    gMeanPtvsMass[9]->SetMarkerStyle(20);
+    gMeanPtvsMass[9]->SetMarkerSize(1.5);
+
+    gdNdyvsMass[9] = new TGraphErrors(1);
+    gdNdyvsMass[9]->SetPoint(0, 1.5173, hout->GetBinContent(1));
+    gdNdyvsMass[9]->SetPointError(0, 0, hout->GetBinContent(2));
+    gdNdyvsMass[9]->SetMarkerColor(kRed);
+    gdNdyvsMass[9]->SetLineColor(kRed);
+    gdNdyvsMass[9]->SetMarkerStyle(20);
+    gdNdyvsMass[9]->SetMarkerSize(1.5);
+
+    // Create graphs for f0(1710) - index 10
+    gMeanPtvsMass[10] = new TGraphErrors(1);
+    gMeanPtvsMass[10]->SetPoint(0, 1.710, hout2->GetBinContent(5)); // PDG mass of f0(1710) is 1.710GeV/c2
+    gMeanPtvsMass[10]->SetPointError(0, 0, hout2->GetBinContent(6));
+    gMeanPtvsMass[10]->SetMarkerColor(kBlue);
+    gMeanPtvsMass[10]->SetLineColor(kBlue);
+    gMeanPtvsMass[10]->SetMarkerStyle(21);
+    gMeanPtvsMass[10]->SetMarkerSize(1.5);
+
+    gdNdyvsMass[10] = new TGraphErrors(1);
+    gdNdyvsMass[10]->SetPoint(0, 1.710, hout2->GetBinContent(1));
+    gdNdyvsMass[10]->SetPointError(0, 0, hout2->GetBinContent(2));
+    gdNdyvsMass[10]->SetMarkerColor(kBlue);
+    gdNdyvsMass[10]->SetLineColor(kBlue);
+    gdNdyvsMass[10]->SetMarkerStyle(21);
+    gdNdyvsMass[10]->SetMarkerSize(1.5);
 
     TCanvas *cMeanPt = new TCanvas("cMeanPt", "Mean pT vs mass", 720, 720);
     SetCanvasStyle(cMeanPt, 0.18, 0.03, 0.05, 0.14);
-    // gPad->SetLogy();
-    gMeanPtvsMass->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    gMeanPtvsMass->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
-    gMeanPtvsMass->GetYaxis()->SetTitleOffset(1.6);
-    gMeanPtvsMass->SetMinimum(0.0);
-    gMeanPtvsMass->SetMaximum(2.95);
-    gMeanPtvsMass->Draw("AP");
 
-    TCanvas *cDndy = new TCanvas("cDndy", "dN/dy vs mass", 720, 720);
-    SetCanvasStyle(cDndy, 0.18, 0.03, 0.05, 0.14);
-    // gPad->SetLogy();
-    gdNdyvsMass->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    gdNdyvsMass->GetYaxis()->SetTitle("dN/dy");
-    gdNdyvsMass->GetYaxis()->SetTitleOffset(1.6);
-    // gdNdyvsMass->SetMinimum(0.0);
-    // gdNdyvsMass->SetMaximum(5.2);
-    gdNdyvsMass->Draw("AP");
+    // Draw the first graph to set up axes
+    SetGrapherrorStyle(gMeanPtvsMass[0]);
+    gMeanPtvsMass[0]->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    gMeanPtvsMass[0]->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
+    gMeanPtvsMass[0]->GetYaxis()->SetTitleOffset(1.6);
+    gMeanPtvsMass[0]->GetXaxis()->SetLimits(0.0, 2.0);
+    gMeanPtvsMass[0]->GetYaxis()->SetRangeUser(0.0, 2.95);
+    gMeanPtvsMass[0]->Draw("AP");
 
-    // Draw each point with its own marker style and color
-    for (int i = 0; i < totalParticles; i++)
+    // Draw all other graphs
+    for (int i = 1; i < 11; i++)
     {
-        cMeanPt->cd();
-        TMarker *marker = new TMarker(particleMass[i], meanPtAt13TeV[i], markers[i]);
-        marker->SetMarkerColor(colors[i]);
-        marker->SetMarkerSize(2.0); // increased size
-        marker->Draw("SAME");
-
-        // Draw error bar for this point in the same color
-        double x = particleMass[i];
-        double y = meanPtAt13TeV[i];
-        double errY = meanPtAt13TeV_err[i];
-        TLine *errBar = new TLine(x, y - errY, x, y + errY);
-        errBar->SetLineColor(colors[i]);
-        errBar->SetLineWidth(2);
-        errBar->Draw("SAME");
-        // Add horizontal lines at the ends (caps)
-        double cap = 0.01; // adjust cap width as needed
-        TLine *capLow = new TLine(x - cap, y - errY, x + cap, y - errY);
-        TLine *capHigh = new TLine(x - cap, y + errY, x + cap, y + errY);
-        capLow->SetLineColor(colors[i]);
-        capHigh->SetLineColor(colors[i]);
-        capLow->SetLineWidth(2);
-        capHigh->SetLineWidth(2);
-        capLow->Draw("SAME");
-        capHigh->Draw("SAME");
-
-        cDndy->cd();
-        TMarker *marker_dNdy = new TMarker(particleMass[i], gdNdyvsMass->GetY()[i], markers[i]);
-        marker_dNdy->SetMarkerColor(colors[i]);
-        marker_dNdy->SetMarkerSize(2.0); // increased size
-        marker_dNdy->Draw("SAME");
-        // Draw error bar for this point in the same color
-        double y_dNdy = gdNdyvsMass->GetY()[i];
-        double errY_dNdy = gdNdyvsMass->GetErrorY(i);
-        TLine *errBar_dNdy = new TLine(x, y_dNdy - errY_dNdy, x, y_dNdy + errY_dNdy);
-        errBar_dNdy->SetLineColor(colors[i]);
-        errBar_dNdy->SetLineWidth(2);
-        errBar_dNdy->Draw("SAME");
-        // Add horizontal lines at the ends (caps)
-        TLine *capLow_dNdy = new TLine(x - cap, y_dNdy - errY_dNdy, x + cap, y_dNdy - errY_dNdy);
-        TLine *capHigh_dNdy = new TLine(x - cap, y_dNdy + errY_dNdy, x + cap, y_dNdy + errY_dNdy);
-        capLow_dNdy->SetLineColor(colors[i]);
-        capHigh_dNdy->SetLineColor(colors[i]);
-        capLow_dNdy->SetLineWidth(2);
-        capHigh_dNdy->SetLineWidth(2);
-        capLow_dNdy->Draw("SAME");
-        capHigh_dNdy->Draw("SAME");
+        gMeanPtvsMass[i]->Draw("P SAME");
     }
 
-    // Draw the last marker (f2(1525)) and its error bar
-    double f2_mass = 1.5173;
-    double f2_meanpt = hout->GetBinContent(5);
-    double f2_err = hout->GetBinContent(6);
-    int f2_marker = 20;  // choose a unique marker style for f2(1525)
-    int f2_color = kRed; // choose a unique color for f2(1525)
-    TMarker *marker_f2 = new TMarker(f2_mass, f2_meanpt, f2_marker);
-    marker_f2->SetMarkerColor(f2_color);
-    marker_f2->SetMarkerSize(1.5);
-    marker_f2->Draw("SAME");
-    TLine *errBar_f2 = new TLine(f2_mass, f2_meanpt - f2_err, f2_mass, f2_meanpt + f2_err);
-    errBar_f2->SetLineColor(f2_color);
-    errBar_f2->SetLineWidth(2);
-    errBar_f2->Draw("SAME");
-    double cap_f2 = 0.01;
-    TLine *capLow_f2 = new TLine(f2_mass - cap_f2, f2_meanpt - f2_err, f2_mass + cap_f2, f2_meanpt - f2_err);
-    TLine *capHigh_f2 = new TLine(f2_mass - cap_f2, f2_meanpt + f2_err, f2_mass + cap_f2, f2_meanpt + f2_err);
-    capLow_f2->SetLineColor(f2_color);
-    capHigh_f2->SetLineColor(f2_color);
-    capLow_f2->SetLineWidth(2);
-    capHigh_f2->SetLineWidth(2);
-    capLow_f2->Draw("SAME");
-    capHigh_f2->Draw("SAME");
-
-    // Draw the last marker (f0(1710)) and its error bar
-    double f0_mass = 1.710;
-    double f0_meanpt = hout2->GetBinContent(5);
-    double f0_err = hout2->GetBinContent(6);
-    int f0_marker = 21;   // choose a unique marker style for f0(1710)
-    int f0_color = kBlue; // choose a unique color for f0(1710)
-    TMarker *marker_f0 = new TMarker(f0_mass, f0_meanpt, f0_marker);
-    marker_f0->SetMarkerColor(f0_color);
-    marker_f0->SetMarkerSize(1.5);
-    marker_f0->Draw("SAME");
-    TLine *errBar_f0 = new TLine(f0_mass, f0_meanpt - f0_err, f0_mass, f0_meanpt + f0_err);
-    errBar_f0->SetLineColor(f0_color);
-    errBar_f0->SetLineWidth(2);
-    errBar_f0->Draw("SAME");
-    double cap_f0 = 0.01;
-    TLine *capLow_f0 = new TLine(f0_mass - cap_f0, f0_meanpt - f0_err, f0_mass + cap_f0, f0_meanpt - f0_err);
-    TLine *capHigh_f0 = new TLine(f0_mass - cap_f0, f0_meanpt + f0_err, f0_mass + cap_f0, f0_meanpt + f0_err);
-    capLow_f0->SetLineColor(f0_color);
-    capHigh_f0->SetLineColor(f0_color);
-    capLow_f0->SetLineWidth(2);
-    capHigh_f0->SetLineWidth(2);
-    capLow_f0->Draw("SAME");
-    capHigh_f0->Draw("SAME");
-
-    // Add particle names below each point
+    // Add particle names below each point for mean pT plot
     TLatex latex;
     latex.SetTextAlign(22);
     latex.SetTextSize(0.035);
@@ -825,9 +1000,45 @@ void read_yield_pt()
     legend4->SetBorderSize(0);
     legend4->SetFillStyle(0);
     legend4->SetTextSize(0.035);
-    legend4->AddEntry(gMeanPtvsMass, "Light flavour hadrons (13 TeV)", "p");
-    legend4->AddEntry(marker_f2, "f'_{2}(1525) (13.6 TeV)", "p");
-    legend4->AddEntry(marker_f0, "f_{0}(1710) (13.6 TeV)", "p");
+    legend4->AddEntry(gMeanPtvsMass[0], "Light flavour hadrons (13 TeV)", "p");
+    legend4->AddEntry(gMeanPtvsMass[9], "f'_{2}(1525) (13.6 TeV)", "p");
+    legend4->AddEntry(gMeanPtvsMass[10], "f_{0}(1710) (13.6 TeV)", "p");
     legend4->Draw();
     cMeanPt->SaveAs(outputPath + "/MeanPt_vs_Mass.png");
+
+    TCanvas *cDndy = new TCanvas("cDndy", "dN/dy vs mass", 720, 720);
+    SetCanvasStyle(cDndy, 0.18, 0.03, 0.05, 0.14);
+    SetGrapherrorStyle(gdNdyvsMass[0]);
+    gdNdyvsMass[0]->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    gdNdyvsMass[0]->GetYaxis()->SetTitle("dN/dy");
+    gdNdyvsMass[0]->GetYaxis()->SetTitleOffset(1.6);
+    gdNdyvsMass[0]->GetXaxis()->SetLimits(0.0, 2.0);
+    gdNdyvsMass[0]->GetYaxis()->SetRangeUser(-0.6, 1.8);
+    gdNdyvsMass[0]->Draw("AP");
+
+    // Draw all other graphs
+    for (int i = 1; i < 11; i++)
+    {
+        gdNdyvsMass[i]->Draw("P SAME");
+    }
+
+    for (int i = 0; i < totalParticles; i++)
+    {
+        double x = particleMass[i];
+        double y = dNdyvalues_13TeV[i][0] * dNdyvalues_13TeV[i][3];
+        latex.SetTextColor(colors[i]);
+        if (i == 2)
+            latex.DrawLatex(x + 0.08, y + 0.18, particlesLatex[i].c_str());
+        else if (i <= 4)
+            latex.DrawLatex(x, y + 0.18, particlesLatex[i].c_str());
+        else
+            latex.DrawLatex(x, y - 0.16, particlesLatex[i].c_str());
+    }
+    latex.SetTextColor(kRed); // match f2(1525) marker color
+    latex.DrawLatex(1.5173, hout->GetBinContent(1) + 0.22, "f'_{2}(1525)");
+    latex.SetTextColor(kBlue); // match f0(1710) marker color
+    latex.DrawLatex(1.710, hout2->GetBinContent(1) + 0.29, "f_{0}(1710)");
+    legend4->Draw();
+
+    cDndy->SaveAs(outputPath + "/dNdy_vs_Mass.png");
 }

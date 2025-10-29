@@ -5,17 +5,17 @@ using namespace std;
 
 void doublephi()
 {
-    gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(0);
     bool MixedEventExist = true;
     bool isQA = false;
-    bool isSavePlots = true;
-    bool isPhiQA = true;
+    bool isSavePlots = false;
+    bool isPhiQA = false;
     TString dataFilePath = "../data/doublePhi/";
 
     // TString fileName = "merge"; // merged 23 and 24 dataset output for PID 0
-    TString fileName = "508501"; // LHC23 data (508501)
+    // TString fileName = "508501"; // LHC23 data (508501)
     // TString fileName = "508495"; // LHC24 data
-    // TString fileName = "LHC25ac_allWagons"; // Triggered data (LHC25ac)
+    TString fileName = "LHC25ac_allWagons"; // Triggered data (LHC25ac)
 
     TString subWagon = "";
     // TString subWagon = "_LoosePID";
@@ -303,23 +303,28 @@ void doublephi()
     hDeltaMassDifference->Write("hDeltaMassDifference");
     hNumPhi->Write("hNumPhi");
 
-    int lowbinpT = hunlike->GetAxis(1)->FindBin(2.0 + 0.01);
+    int lowbinpT = hunlike->GetAxis(1)->FindBin(10.0 + 0.01);
     int highbinpT = hunlike->GetAxis(1)->FindBin(100.0 - 0.01);
 
-    int deltaRlow = hunlike->GetAxis(2)->FindBin(0.5 + 0.01);
-    int deltaRhigh = hunlike->GetAxis(2)->FindBin(10.0 - 0.01);
+    int deltaRlow = hunlike->GetAxis(2)->FindBin(0.0 + 0.0001);
+    int deltaRhigh = hunlike->GetAxis(2)->FindBin(10.0 - 0.0001);
 
     int numPhiMesonsLow = hunlike->GetAxis(4)->FindBin(1.0 + 0.01);
     int numPhiMesonsHigh = hunlike->GetAxis(4)->FindBin(2.0 - 0.01);
 
+    int deltaMLow = hunlike->GetAxis(3)->FindBin(0.0 + 0.00001);
+    int deltaMHigh = hunlike->GetAxis(3)->FindBin(0.01 - 0.00001);
+
     hunlike->GetAxis(1)->SetRange(lowbinpT, highbinpT);
     hunlike->GetAxis(2)->SetRange(deltaRlow, deltaRhigh);
     // hunlike->GetAxis(4)->SetRange(numPhiMesonsLow, numPhiMesonsHigh);
+    hunlike->GetAxis(3)->SetRange(deltaMLow, deltaMHigh);
 
     if (MixedEventExist)
     {
         hmixed->GetAxis(1)->SetRange(lowbinpT, highbinpT);
         hmixed->GetAxis(2)->SetRange(deltaRlow, deltaRhigh);
+        hmixed->GetAxis(3)->SetRange(deltaMLow, deltaMHigh);
     }
 
     TH1D *hmass = hunlike->Projection(0, "E");
@@ -338,6 +343,7 @@ void doublephi()
     hmass->GetYaxis()->SetMaxDigits(3);
     hmass->SetMarkerSize(1.0);
     hmass->GetYaxis()->SetTitleOffset(1.8);
+    cout << "The bin width is " << hmass->GetBinWidth(1) * 1000 << " MeV/c^2" << endl;
     hmass->Rebin(2);
     hmass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hmass->GetBinWidth(1) * 1000));
     hmass->Write("rawInvMass_PhiPhi");
@@ -371,8 +377,8 @@ void doublephi()
         hmassClone->Draw("pe");
         hmassmixed = hmixed->Projection(0, "E");
         SetHistoQA(hmassmixed);
-        int normlow = hmassmixed->GetXaxis()->FindBin(2.9 + 0.01);
-        int normhigh = hmassmixed->GetXaxis()->FindBin(3.0 - 0.01);
+        int normlow = hmassmixed->GetXaxis()->FindBin(3.0 + 0.01);
+        int normhigh = hmassmixed->GetXaxis()->FindBin(3.2 - 0.01);
         auto signal_integral = hmassClone->Integral(normlow, normhigh);
         auto bkg_integral = hmassmixed->Integral(normlow, normhigh);
         auto normfactor = signal_integral / bkg_integral;

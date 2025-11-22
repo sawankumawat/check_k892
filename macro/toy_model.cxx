@@ -33,20 +33,41 @@ void toy_model()
     TH1F *decayDauAngleAfter = new TH1F("decayDauAngleAfter", "Decay angle between daughters after acceptance; Decay angle (rad); Events", 100, 0, 3.18);
 
     // Loop over multiple decay events
-    int nEvents = 1e6;
+    int nEvents = 1e5;
     TLorentzVector lvmother;
     ROOT::Math::PxPyPzMVector fourVecMother, fourVecDau1, fourVecDau2, fourVecDauCM1, fourVecDauCM2;
     ROOT::Math::XYZVector threeVecDauCM, threeVecMother;
+    TF1 ptdistribution("ptSpectra",
+                       "x * TMath::Exp(-TMath::Sqrt(0.13957*0.13957 + x*x) / 0.4)",
+                       0.1, 10.0);
+
     for (int i = 0; i < nEvents; i++)
     {
-        // Generate random transverse momentum pT
+        // // Generate random transverse momentum pT
+        // double pT = randGen.Uniform(0, 20);               // Uniform pT between 0 and 20 GeV/c
+        // // double pT = ptdistribution.GetRandom();           // pT from thermal-like distribution
+        // double phi = randGen.Uniform(0, 2 * TMath::Pi()); //  Uniform phi between -pi and pi
+        // double eta = randGen.Uniform(-1.2, 1.2);          // according to ALICE TPC acceptance
+        // // double eta = randGen.Uniform(-0.5, 0.5);
+
+        // Generate in pt, y and phi
         double pT = randGen.Uniform(0, 20);                      // Uniform pT between 0 and 20 GeV/c
-        double phi = randGen.Uniform(-TMath::Pi(), TMath::Pi()); //  Uniform phi between -pi and pi
-        double eta = randGen.Uniform(-0.8, 0.8);                 // according to ALICE TPC acceptance
-        // double eta = randGen.Uniform(-0.5, 0.5);
+        double phi = randGen.Uniform(-TMath::Pi(), TMath::Pi()); // Uniform phi between -pi and pi
+        double y = randGen.Uniform(-1.0, 1.0);                   // Uniform rapidity (the desired range)
+
+        // // Compute from pT, y, phi, and mass
+        // double mT = TMath::Sqrt(pT * pT + m_mother * m_mother);
+        double px = pT * TMath::Cos(phi);
+        double py = pT * TMath::Sin(phi);
+        double pz = pT * TMath::SinH(eta);
+        double E = std::hypot(std::hypot(pT, pz), m_mother);
+        // double Eprime = pT * TMath::CosH(y);
+        // double E = TMath::Sqrt(Eprime * Eprime + m_mother * m_mother);
+        double eta = 0.5 * TMath::Log((E + pz) / (E - pz));
 
         // Define the 4-momentum of the mother particle
         lvmother.SetPtEtaPhiM(pT, eta, phi, m_mother);
+        // lvmother.SetPxPyPzE(px, py, pz, E);
 
         // Setup the decay
         TGenPhaseSpace event;
@@ -67,16 +88,16 @@ void toy_model()
             double AngleBetweenDaughters = ks1->Angle(ks2->Vect());
             decayDauAngleBefore->Fill(AngleBetweenDaughters);
 
-            // Boost daughter TLorentzVectors to CM frame using TLorentzVector methods
-            TLorentzVector ks1CM = *ks1;
-            TLorentzVector ks2CM = *ks2;
-            ks1CM.Boost(-lvmother.BoostVector());
-            ks2CM.Boost(-lvmother.BoostVector());
-            double AngleBetweenDaughtersAfter = ks1CM.Angle(ks2CM.Vect());
-            // cout<<"Angle between daughters after boost: "<<AngleBetweenDaughtersAfter<<endl;
-            decayDauAngleAfter->Fill(AngleBetweenDaughtersAfter);
+            // // Boost daughter TLorentzVectors to CM frame using TLorentzVector methods
+            // TLorentzVector ks1CM = *ks1;
+            // TLorentzVector ks2CM = *ks2;
+            // ks1CM.Boost(-lvmother.BoostVector());
+            // ks2CM.Boost(-lvmother.BoostVector());
+            // double AngleBetweenDaughtersAfter = ks1CM.Angle(ks2CM.Vect());
+            // // cout<<"Angle between daughters after boost: "<<AngleBetweenDaughtersAfter<<endl;
+            // decayDauAngleAfter->Fill(AngleBetweenDaughtersAfter);
 
-            auto cosThetaStar = fourVecMother.Vect().Dot(fourVecDauCM1.Vect()) / (std::sqrt(fourVecDauCM1.Vect().Mag2()) * std::sqrt(fourVecMother.Vect().Mag2()));
+            // auto cosThetaStar = fourVecMother.Vect().Dot(fourVecDauCM1.Vect()) / (std::sqrt(fourVecDauCM1.Vect().Mag2()) * std::sqrt(fourVecMother.Vect().Mag2()));
 
             // Fill histogram with transverse momentum of mother
             h_pT->Fill(pT);
@@ -92,10 +113,10 @@ void toy_model()
             //     continue;
             // }
 
-            if (abs(ks1->Y()) > 0.5 || abs(ks2->Y()) > 0.5)
-            {
-                continue;
-            }
+            // if (abs(ks1->Y()) > 0.5 || abs(ks2->Y()) > 0.5)
+            // {
+            //     continue;
+            // }
 
             // // Ks1 decay
             // TGenPhaseSpace eventKs1;
@@ -126,25 +147,26 @@ void toy_model()
             // }
 
             double gen_rapidity = fourVecMother.Y();
+            h_rapidity->Fill(fourVecMother.Y());
+            // h_rapidity->Fill(y);
             hpseudoRapidity->Fill(fourVecMother.Eta());
+
             if (abs(gen_rapidity) < 0.5)
             {
-                h_rapidity->Fill(fourVecMother.Y());
                 hrec_pT->Fill(fourVecMother.Pt());
                 hptvsrap->Fill(fourVecMother.Pt(), gen_rapidity);
-                hcosThetaStar->Fill(cosThetaStar); // Fill histogram with cos(theta*)
+                // hcosThetaStar->Fill(cosThetaStar); // Fill histogram with cos(theta*)
             }
         }
         lvmother.Clear();
     }
 
-
-    // // Draw histogram
-    // TCanvas *c1 = new TCanvas("c1", "p_{T} without rapidity cut", 720, 720);
-    // SetCanvasStyle(c1, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(h_pT);
-    // h_pT->GetYaxis()->SetMaxDigits(3);
-    // h_pT->Draw();
+    // Draw histogram
+    TCanvas *c1 = new TCanvas("c1", "p_{T} without rapidity cut", 720, 720);
+    SetCanvasStyle(c1, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(h_pT);
+    h_pT->GetYaxis()->SetMaxDigits(3);
+    h_pT->Draw();
     // c1->SaveAs("toy_model_plots/pT_distribution.png");
 
     // TCanvas *c2 = new TCanvas("c2", "Angular Separation", 720, 720);
@@ -154,19 +176,31 @@ void toy_model()
     // h_angdist->Draw();
     // c2->SaveAs("angular_separation.png");
 
-    // TCanvas *c3 = new TCanvas("c3", "Reconstructed pT", 720, 720);
-    // SetCanvasStyle(c3, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(hrec_pT);
-    // hrec_pT->GetYaxis()->SetMaxDigits(3);
-    // hrec_pT->Draw();
+    TCanvas *c3 = new TCanvas("c3", "Reconstructed pT", 720, 720);
+    SetCanvasStyle(c3, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hrec_pT);
+    hrec_pT->GetYaxis()->SetMaxDigits(3);
+    hrec_pT->Draw();
     // c3->SaveAs("toy_model_plots/reconstructed_pT_distribution.png");
 
-    // TCanvas *c4 = new TCanvas("c4", "Rapidity Distribution", 720, 720);
-    // SetCanvasStyle(c4, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(h_rapidity);
-    // h_rapidity->GetYaxis()->SetMaxDigits(3);
-    // h_rapidity->Draw();
+    TCanvas *c4 = new TCanvas("c4", "Rapidity Distribution", 720, 720);
+    SetCanvasStyle(c4, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(h_rapidity);
+    h_rapidity->GetYaxis()->SetMaxDigits(3);
+    h_rapidity->Draw();
     // c4->SaveAs("toy_model_plots/rapidity_distribution.png");
+
+    TCanvas *c7 = new TCanvas("c7", "Pseudo-rapidity Distribution", 720, 720);
+    SetCanvasStyle(c7, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hpseudoRapidity);
+    hpseudoRapidity->GetYaxis()->SetMaxDigits(3);
+    hpseudoRapidity->GetYaxis()->SetTitle("Counts");
+    hpseudoRapidity->GetXaxis()->SetTitle("#eta");
+    hpseudoRapidity->GetXaxis()->SetRangeUser(-1, 1);
+    hpseudoRapidity->SetMinimum(0);
+    hpseudoRapidity->SetMaximum(1.2 * hpseudoRapidity->GetMaximum());
+    hpseudoRapidity->Draw();
+    // c7->SaveAs("toy_model_plots/pseudoRapidity_distribution.png");
 
     // TCanvas *c5 = new TCanvas("c5", "pT vs Rapidity", 720, 720);
     // SetCanvasStyle(c5, 0.15, 0.05, 0.05, 0.15);
@@ -187,39 +221,27 @@ void toy_model()
     // hcosThetaStar->Draw();
     // c6->SaveAs("toy_model_plots/cosThetaStar_distribution.png");
 
-    // TCanvas *c7 = new TCanvas("c7", "Pseudo-rapidity Distribution", 720, 720);
-    // SetCanvasStyle(c7, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(hpseudoRapidity);
-    // hpseudoRapidity->GetYaxis()->SetMaxDigits(3);
-    // hpseudoRapidity->GetYaxis()->SetTitle("Counts");
-    // hpseudoRapidity->GetXaxis()->SetTitle("#eta");
-    // hpseudoRapidity->GetXaxis()->SetRangeUser(-1, 1);
-    // hpseudoRapidity->SetMinimum(0);
-    // hpseudoRapidity->SetMaximum(1.2 * hpseudoRapidity->GetMaximum());
-    // hpseudoRapidity->Draw();
-    // c7->SaveAs("toy_model_plots/pseudoRapidity_distribution.png");
+    // TCanvas *c8 = new TCanvas("c8", "Decay angle between daughters before bosst", 720, 720);
+    // SetCanvasStyle(c8, 0.15, 0.05, 0.05, 0.15);
+    // SetHistoQA(decayDauAngleBefore);
+    // decayDauAngleBefore->GetYaxis()->SetMaxDigits(3);
+    // decayDauAngleBefore->GetYaxis()->SetTitle("Counts");
+    // decayDauAngleBefore->GetXaxis()->SetTitle("Decay angle (rad)");
+    // decayDauAngleBefore->GetXaxis()->SetRangeUser(0, 3.14);
+    // decayDauAngleBefore->SetMinimum(0);
+    // decayDauAngleBefore->SetMaximum(1.2 * decayDauAngleBefore->GetMaximum());
+    // decayDauAngleBefore->Draw();
+    // // c8->SaveAs("toy_model_plots/decayDauAngleBefore.png");
 
-    TCanvas *c8 = new TCanvas("c8", "Decay angle between daughters before bosst", 720, 720);
-    SetCanvasStyle(c8, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(decayDauAngleBefore);
-    decayDauAngleBefore->GetYaxis()->SetMaxDigits(3);
-    decayDauAngleBefore->GetYaxis()->SetTitle("Counts");
-    decayDauAngleBefore->GetXaxis()->SetTitle("Decay angle (rad)");
-    decayDauAngleBefore->GetXaxis()->SetRangeUser(0, 3.14);
-    decayDauAngleBefore->SetMinimum(0);
-    decayDauAngleBefore->SetMaximum(1.2 * decayDauAngleBefore->GetMaximum());
-    decayDauAngleBefore->Draw();
-    // c8->SaveAs("toy_model_plots/decayDauAngleBefore.png");
-
-    TCanvas *c9 = new TCanvas("c9", "Decay angle between daughters after boost", 720, 720);
-    SetCanvasStyle(c9, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(decayDauAngleAfter);
-    decayDauAngleAfter->GetYaxis()->SetMaxDigits(3);
-    decayDauAngleAfter->GetYaxis()->SetTitle("Counts");
-    decayDauAngleAfter->GetXaxis()->SetTitle("Decay angle (rad)");
-    decayDauAngleAfter->GetXaxis()->SetRangeUser(0, 3.14);
-    decayDauAngleAfter->SetMinimum(0);
-    decayDauAngleAfter->SetMaximum(1.2 * decayDauAngleAfter->GetMaximum());
-    decayDauAngleAfter->Draw();
-    // c9->SaveAs("toy_model_plots/decayDauAngleAfter.png");
+    // TCanvas *c9 = new TCanvas("c9", "Decay angle between daughters after boost", 720, 720);
+    // SetCanvasStyle(c9, 0.15, 0.05, 0.05, 0.15);
+    // SetHistoQA(decayDauAngleAfter);
+    // decayDauAngleAfter->GetYaxis()->SetMaxDigits(3);
+    // decayDauAngleAfter->GetYaxis()->SetTitle("Counts");
+    // decayDauAngleAfter->GetXaxis()->SetTitle("Decay angle (rad)");
+    // decayDauAngleAfter->GetXaxis()->SetRangeUser(0, 3.14);
+    // decayDauAngleAfter->SetMinimum(0);
+    // decayDauAngleAfter->SetMaximum(1.2 * decayDauAngleAfter->GetMaximum());
+    // decayDauAngleAfter->Draw();
+    // // c9->SaveAs("toy_model_plots/decayDauAngleAfter.png");
 }

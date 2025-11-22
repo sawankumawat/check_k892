@@ -12,11 +12,12 @@ const std::string koutputtype = "png"; // pdf, eps
 const std::string kchannel = "KsKs_Channel";
 const std::string kfoldername_temp = "higher-mass-resonances";
 
-const std::string kvariation = ""; // No variation
+// const std::string kvariation = ""; // No variation
 // const std::string kvariation = "_lambda_7";
 // const std::string kvariation = "_all_tight";
 // const std::string kvariation = "_PID3";
 // const std::string kvariation = "_3sigmaKs";
+const std::string kvariation = "_CS_Frame";
 #endif
 
 TLatex *t2 = new TLatex();

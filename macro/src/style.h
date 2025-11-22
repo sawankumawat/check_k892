@@ -82,11 +82,11 @@ void SetHistoQA2D(TH2 *h)
     h->GetXaxis()->SetLabelSize(0.045);
     h->GetXaxis()->SetTitleSize(0.05);
     h->GetXaxis()->SetTickLength(0.04);
-    h->GetXaxis()->SetTitleOffset(1.2);
+    h->GetXaxis()->SetTitleOffset(1.3);
     h->GetXaxis()->CenterTitle(true);
 
     h->GetYaxis()->CenterTitle(true);
-    h->GetYaxis()->SetTitleOffset(1.4);
+    h->GetYaxis()->SetTitleOffset(1.3);
     h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
@@ -96,7 +96,7 @@ void SetHistoQA2D(TH2 *h)
     h->GetYaxis()->SetTitleFont(42);
 
     h->GetZaxis()->CenterTitle(true);
-    h->GetZaxis()->SetTitleOffset(1.4);
+    h->GetZaxis()->SetTitleOffset(1.3);
     h->GetZaxis()->SetDecimals(false);
     h->GetZaxis()->SetLabelOffset(0.015);
     h->GetZaxis()->SetLabelFont(42);

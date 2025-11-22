@@ -90,9 +90,9 @@ void glueball_KsKs_channel()
 
     if (calculate_inv_mass)
     {
-        TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
-        double Event = hentries->GetEntries();
-        cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
+        // TH1F *hentries = (TH1F *)fInputFile->Get("event-selection-task/hColCounterAcc");
+        // double Event = hentries->GetEntries();
+        // cout << "*******number of events from the event selection histogram is *******:" << Event << endl;
 
         //**Invariant mass histograms for sig+bkg and mixed event bg***********************************************************************
 

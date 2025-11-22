@@ -5,16 +5,16 @@ using namespace std;
 
 std::vector<int> markerStyles = {20, 21, 22, 23, 29, 33, 34, 47, 48, 49};
 std::vector<int> vibrantColors = {
-    kBlack,      // #656364
-    kBlue,       // #578dff
-    kGreen + 3,  // #86c8dd
-    kMagenta,    // #adad7d
-    kRed,        // #c849a9
-    kOrange + 3, // #c91116
-    kCyan + 3,   // #1845fb
-    kSpring + 3  // #f5e002
-};
-std::vector<int> lineStyles = {1, 2, 5, 4, 9};
+    kBlack,
+    kBlue,
+    kRed,
+    kGreen + 2,
+    kOrange + 3,
+    kMagenta,
+    kCyan + 3,
+    kSpring + 3};
+// std::vector<int> lineStyles = {1, 2, 5, 4, 9};
+std::vector<int> lineStyles = {1, 1, 1, 1, 1, 1};
 
 //==================================Notes========================================//
 // No effect of deep angle cut is seen on the phi invariant mass and fit parameters
@@ -23,38 +23,47 @@ std::vector<int> lineStyles = {1, 2, 5, 4, 9};
 void compare_doublePhiPlots()
 {
     gStyle->SetOptStat(0);
-    const int TotalFiles = 5;
+    const int TotalFiles = 4;
     vector<TFile *> compareFiles(TotalFiles);
-    TString dataFilePath = "../output/doublePhi/508501/";
+    // TString dataFilePath = "../output/doublePhi/508501/";
     // TString dataFilePath = "../output/doublePhi/LHC25ac_allWagons/";
-    TString outputFilePath = dataFilePath + "ComparePlots/";
+    vector<TString> dataFilePath = {"Analysis541300PID100", "Analysis541300PID101", "Analysis541300PID4", "Analysis541300PID7"};
+    TString outputFilePath = dataFilePath[0] + "ComparePlots/";
     gSystem->Exec("mkdir -p " + outputFilePath);
     // TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi_LoosePID.root", "PhiPhi_DeepAngle.root"};
     // TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi_DeltaRDaughter2.root", "PhiPhi_DeltaRDaughter4.root"};
-    TString fileNames[TotalFiles] = {"PhiPhi_noRcut.root", "PhiPhi_R2.root", "PhiPhi_R4.root", "PhiPhi.root", "PhiPhi_R7.root"};
+    // TString fileNames[TotalFiles] = {"PhiPhi_noRcut.root", "PhiPhi_R2.root", "PhiPhi_R4.root", "PhiPhi.root", "PhiPhi_R7.root"};
+    TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi.root", "PhiPhi.root", "PhiPhi.root"};
     // TString fileNames[TotalFiles] = {"PhiPhi_LoosePID.root", "PhiPhi.root", "PhiPhi_StrategyPID1.root"};
     // TString LegendNames[TotalFiles] = {"Loose PID", "#it{p}_{T} dependent PID", "TOF Hit"};
     // TString LegendNames[TotalFiles] = {"Not cut", "#DeltaR_{K^{+}K^{-}} > 0.2", "#DeltaR_{K^{+}K^{-}} > 0.4"};
-    TString LegendNames[TotalFiles] = {"Not cut", "#DeltaR_{#Phi#Phi} > 0.2", "#DeltaR_{#Phi#Phi} > 0.4", "#DeltaR_{#Phi#Phi} > 0.5", "#DeltaR_{#Phi#Phi} > 0.7"};
+    // TString LegendNames[TotalFiles] = {"Not cut", "#DeltaR_{#Phi#Phi} > 0.2", "#DeltaR_{#Phi#Phi} > 0.4", "#DeltaR_{#Phi#Phi} > 0.5", "#DeltaR_{#Phi#Phi} > 0.7"};
+    TString LegendNames[TotalFiles] = {"PID 100", "PID 101", "PID 4", "PID 7"};
     TH1F *hPhiMassFit[TotalFiles];
     TH1F *hPhiMassResolutionFit[TotalFiles];
     TH1F *hPhiYieldFit[TotalFiles];
+    TH1F *hPhiEfficiency[TotalFiles];
     TH1F *hPurity[TotalFiles];
     TH1F *hNumPhi[TotalFiles];
     TH1F *hPhiPhiInvMass[TotalFiles];
+    TH1F *hPurityxEfficiency[TotalFiles];
 
-    TCanvas *cCompareMass = new TCanvas("cCompareMass", "Compare Phi Mass Fit Parameters", 720, 720);
-    SetCanvasStyle(cCompareMass, 0.21, 0.03, 0.05, 0.15);
-    TCanvas *cCompareMassResolution = new TCanvas("cCompareMassResolution", "Compare Phi Mass Resolution Fit Parameters", 720, 720);
-    SetCanvasStyle(cCompareMassResolution, 0.15, 0.03, 0.05, 0.15);
-    TCanvas *cCompareYield = new TCanvas("cCompareYield", "Compare Phi Yield Fit Parameters", 720, 720);
-    SetCanvasStyle(cCompareYield, 0.15, 0.03, 0.05, 0.15);
+    // TCanvas *cCompareMass = new TCanvas("cCompareMass", "Compare Phi Mass Fit Parameters", 720, 720);
+    // SetCanvasStyle(cCompareMass, 0.21, 0.03, 0.05, 0.15);
+    // TCanvas *cCompareMassResolution = new TCanvas("cCompareMassResolution", "Compare Phi Mass Resolution Fit Parameters", 720, 720);
+    // SetCanvasStyle(cCompareMassResolution, 0.15, 0.03, 0.05, 0.15);
+    // TCanvas *cCompareYield = new TCanvas("cCompareYield", "Compare Phi Yield Fit Parameters", 720, 720);
+    // SetCanvasStyle(cCompareYield, 0.15, 0.03, 0.05, 0.15);
     TCanvas *cComparePurity = new TCanvas("cComparePurity", "Compare Phi Purity", 720, 720);
     SetCanvasStyle(cComparePurity, 0.15, 0.03, 0.05, 0.15);
-    TCanvas *cCompareNumPhi = new TCanvas("cCompareNumPhi", "Compare Number of #Phi mesons in an event", 720, 720);
-    SetCanvasStyle(cCompareNumPhi, 0.15, 0.05, 0.05, 0.15);
-    TCanvas *cComparePhiPhiInvMass = new TCanvas("cComparePhiPhiInvMass", "Compare #Phi#Phi Invariant Mass", 720, 720);
-    SetCanvasStyle(cComparePhiPhiInvMass, 0.15, 0.05, 0.05, 0.15);
+    TCanvas *cCompareEfficiency = new TCanvas("cCompareEfficiency", "Compare Phi Efficiency", 720, 720);
+    SetCanvasStyle(cCompareEfficiency, 0.15, 0.03, 0.05, 0.15);
+    TCanvas *cPurityxEfficiency = new TCanvas("cPurityxEfficiency", "Compare Phi Purity x Efficiency", 720, 720);
+    SetCanvasStyle(cPurityxEfficiency, 0.15, 0.03, 0.05, 0.15);
+    // TCanvas *cCompareNumPhi = new TCanvas("cCompareNumPhi", "Compare Number of #Phi mesons in an event", 720, 720);
+    // SetCanvasStyle(cCompareNumPhi, 0.15, 0.05, 0.05, 0.15);
+    // TCanvas *cComparePhiPhiInvMass = new TCanvas("cComparePhiPhiInvMass", "Compare #Phi#Phi Invariant Mass", 720, 720);
+    // SetCanvasStyle(cComparePhiPhiInvMass, 0.15, 0.05, 0.05, 0.15);
 
     TLegend *legMass = new TLegend(0.5, 0.7, 0.9, 0.91);
     legMass->SetFillStyle(0);
@@ -83,7 +92,7 @@ void compare_doublePhiPlots()
 
     for (int i = 0; i < TotalFiles; i++)
     {
-        compareFiles[i] = new TFile(dataFilePath + fileNames[i]);
+        compareFiles[i] = new TFile("/home/sawan/check_k892/output/doublePhi/" + dataFilePath[i] + "/" + fileNames[i]);
         if (!compareFiles[i] || compareFiles[i]->IsZombie())
         {
             cerr << "Error: Could not open file " << fileNames[i] << "\n";
@@ -93,98 +102,91 @@ void compare_doublePhiPlots()
         hPhiMassFit[i] = (TH1F *)compareFiles[i]->Get("FittedPhiMass");
         hPhiMassResolutionFit[i] = (TH1F *)compareFiles[i]->Get("FittedPhiMassResolution");
         hPhiYieldFit[i] = (TH1F *)compareFiles[i]->Get("FittedPhiYield");
+        hPhiEfficiency[i] = (TH1F *)compareFiles[i]->Get("PhiEfficiency");
         hPurity[i] = (TH1F *)compareFiles[i]->Get("PhiPurity");
         hPhiPhiInvMass[i] = (TH1F *)compareFiles[i]->Get("rawInvMass_PhiPhi");
-        if (hPhiPhiInvMass[i] == nullptr)
+        hPurityxEfficiency[i] = new TH1F(Form("hPurityxEfficiency_%d", i), "hPurityxEfficiency", hPurity[i]->GetNbinsX(), hPurity[i]->GetXaxis()->GetXmin(), hPurity[i]->GetXaxis()->GetXmax());
+
+        // Compute Purity x Efficiency per pT bin for the current file index `i`.
+        // Use a separate bin index to avoid shadowing `i` (which indexes the file arrays).
+        if (hPurity[i] && hPhiEfficiency[i])
         {
-            cerr << "Error: Could not find one or more histograms in file " << fileNames[i] << "\n";
-            return;
+            int nBinsPur = hPurity[i]->GetNbinsX();
+            int nBinsEff = hPhiEfficiency[i]->GetNbinsX();
+            int nBins = (nBinsPur < nBinsEff) ? nBinsPur : nBinsEff; // common range just in case
+            for (int b = 1; b <= nBins; ++b)
+            {
+                float purity = hPurity[i]->GetBinContent(b);
+                float efficiency = hPhiEfficiency[i]->GetBinContent(b);
+                if (hPurityxEfficiency[i]) hPurityxEfficiency[i]->SetBinContent(b, purity * efficiency / 100.0);
+            }
         }
 
-        // /*
-        cCompareMass->cd();
-        SetHistoQA(hPhiMassFit[i]);
-        hPhiMassFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hPhiMassFit[i]->GetYaxis()->SetTitle("#it{M}_{#phi} (GeV/#it{c}^{2})");
-        hPhiMassFit[i]->SetMarkerStyle(markerStyles[i]);
-        hPhiMassFit[i]->SetMarkerColor(vibrantColors[i]);
-        hPhiMassFit[i]->SetLineColor(vibrantColors[i]);
-        hPhiMassFit[i]->SetMarkerSize(1.3);
-        hPhiMassFit[i]->SetLineWidth(3);
-        hPhiMassFit[i]->GetYaxis()->SetTitleOffset(2.1);
-        if (i == 0)
-        {
-            hPhiMassFit[i]->GetYaxis()->SetRangeUser(1.0175, 1.0215);
-            // hPhiMassFit[i]->SetMaximum(hPhiMassFit[i]->GetMaximum() * 1.2);
-            hPhiMassFit[i]->Draw("pe");
-        }
-        else
-        {
-            hPhiMassFit[i]->Draw("pe same");
-        }
-        TLine *linePDG = new TLine(0.4, 1.019461, 10.0, 1.019461);
-        linePDG->SetLineColor(kRed);
-        linePDG->SetLineStyle(2);
-        linePDG->SetLineWidth(3);
-        if (TotalFiles > 1)
-            legMass->AddEntry(hPhiMassFit[i], LegendNames[i], "lpe");
-        if (i == TotalFiles - 1)
-        {
-            linePDG->Draw("same");
-            legMass->AddEntry(linePDG, "#phi PDG mass", "l");
-            legMass->Draw();
-        }
+        // if (hPhiPhiInvMass[i] == nullptr)
+        // {
+        //     cerr << "Error: Could not find one or more histograms in file " << fileNames[i] << "\n";
+        //     return;
+        // }
 
-        cCompareMassResolution->cd();
-        SetHistoQA(hPhiMassResolutionFit[i]);
-        hPhiMassResolutionFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hPhiMassResolutionFit[i]->GetYaxis()->SetTitle("#sigma_{#phi} (GeV/#it{c}^{2})");
-        hPhiMassResolutionFit[i]->SetMarkerStyle(markerStyles[i]);
-        hPhiMassResolutionFit[i]->SetMarkerColor(vibrantColors[i]);
-        hPhiMassResolutionFit[i]->SetLineColor(vibrantColors[i]);
-        hPhiMassResolutionFit[i]->SetMarkerSize(1.3);
-        hPhiMassResolutionFit[i]->SetLineWidth(3);
-        if (i == 0)
-        {
-            hPhiMassResolutionFit[i]->GetYaxis()->SetRangeUser(0.0006, 0.0043);
-            // hPhiMassResolutionFit[i]->SetMaximum(hPhiMassResolutionFit[i]->GetMaximum() * 1.2);
-            hPhiMassResolutionFit[i]->Draw("pe");
-        }
-        else
-        {
-            hPhiMassResolutionFit[i]->Draw("pe same");
-        }
-        if (TotalFiles > 1)
-            legMassRes->AddEntry(hPhiMassResolutionFit[i], LegendNames[i], "lpe");
-        if (i == TotalFiles - 1)
-        {
-            legMassRes->Draw();
-        }
+        // // /*
+        // cCompareMass->cd();
+        // SetHistoQA(hPhiMassFit[i]);
+        // hPhiMassFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hPhiMassFit[i]->GetYaxis()->SetTitle("#it{M}_{#phi} (GeV/#it{c}^{2})");
+        // hPhiMassFit[i]->SetMarkerStyle(markerStyles[i]);
+        // hPhiMassFit[i]->SetMarkerColor(vibrantColors[i]);
+        // hPhiMassFit[i]->SetLineColor(vibrantColors[i]);
+        // hPhiMassFit[i]->SetMarkerSize(1.3);
+        // hPhiMassFit[i]->SetLineWidth(3);
+        // hPhiMassFit[i]->GetYaxis()->SetTitleOffset(2.1);
+        // if (i == 0)
+        // {
+        //     hPhiMassFit[i]->GetYaxis()->SetRangeUser(1.0175, 1.0215);
+        //     // hPhiMassFit[i]->SetMaximum(hPhiMassFit[i]->GetMaximum() * 1.2);
+        //     hPhiMassFit[i]->Draw("pe");
+        // }
+        // else
+        // {
+        //     hPhiMassFit[i]->Draw("pe same");
+        // }
+        // TLine *linePDG = new TLine(0.4, 1.019461, 10.0, 1.019461);
+        // linePDG->SetLineColor(kRed);
+        // linePDG->SetLineStyle(2);
+        // linePDG->SetLineWidth(3);
+        // if (TotalFiles > 1)
+        //     legMass->AddEntry(hPhiMassFit[i], LegendNames[i], "lpe");
+        // if (i == TotalFiles - 1)
+        // {
+        //     linePDG->Draw("same");
+        //     legMass->AddEntry(linePDG, "#phi PDG mass", "l");
+        //     legMass->Draw();
+        // }
 
-        cCompareYield->cd();
-        gPad->SetLogy();
-        SetHistoQA(hPhiYieldFit[i]);
-        hPhiYieldFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hPhiYieldFit[i]->GetYaxis()->SetTitle("Yield");
-        hPhiYieldFit[i]->SetMarkerStyle(markerStyles[i]);
-        hPhiYieldFit[i]->SetMarkerColor(vibrantColors[i]);
-        hPhiYieldFit[i]->SetLineColor(vibrantColors[i]);
-        hPhiYieldFit[i]->SetMarkerSize(1.3);
-        hPhiYieldFit[i]->SetLineWidth(3);
-        if (i == 0)
-        {
-            // hPhiYieldFit[i]->GetYaxis()->SetRangeUser(1, 10000);
-            hPhiYieldFit[i]->SetMaximum(hPhiYieldFit[i]->GetMaximum() * 5);
-            hPhiYieldFit[i]->Draw("pe");
-        }
-        else
-        {
-            hPhiYieldFit[i]->Draw("pe same");
-        }
-        if (i == TotalFiles - 1)
-        {
-            legMassRes->Draw();
-        }
+        // cCompareMassResolution->cd();
+        // SetHistoQA(hPhiMassResolutionFit[i]);
+        // hPhiMassResolutionFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hPhiMassResolutionFit[i]->GetYaxis()->SetTitle("#sigma_{#phi} (GeV/#it{c}^{2})");
+        // hPhiMassResolutionFit[i]->SetMarkerStyle(markerStyles[i]);
+        // hPhiMassResolutionFit[i]->SetMarkerColor(vibrantColors[i]);
+        // hPhiMassResolutionFit[i]->SetLineColor(vibrantColors[i]);
+        // hPhiMassResolutionFit[i]->SetMarkerSize(1.3);
+        // hPhiMassResolutionFit[i]->SetLineWidth(3);
+        // if (i == 0)
+        // {
+        //     hPhiMassResolutionFit[i]->GetYaxis()->SetRangeUser(0.0006, 0.0043);
+        //     // hPhiMassResolutionFit[i]->SetMaximum(hPhiMassResolutionFit[i]->GetMaximum() * 1.2);
+        //     hPhiMassResolutionFit[i]->Draw("pe");
+        // }
+        // else
+        // {
+        //     hPhiMassResolutionFit[i]->Draw("pe same");
+        // }
+        // if (TotalFiles > 1)
+        //     legMassRes->AddEntry(hPhiMassResolutionFit[i], LegendNames[i], "lpe");
+        // if (i == TotalFiles - 1)
+        // {
+        //     legMassRes->Draw();
+        // }
 
         cComparePurity->cd();
         SetHistoQA(hPurity[i]);
@@ -198,7 +200,7 @@ void compare_doublePhiPlots()
         hPurity[i]->SetLineWidth(3);
         if (i == 0)
         {
-            hPurity[i]->GetYaxis()->SetRangeUser(0, 100);
+            hPurity[i]->GetYaxis()->SetRangeUser(30, 109);
             hPurity[i]->Draw("HIST");
         }
         else
@@ -212,65 +214,140 @@ void compare_doublePhiPlots()
             legMassRes2->Draw();
         }
 
-        cCompareNumPhi->cd();
-        SetHistoQA(hNumPhi[i]);
-        hNumPhi[i]->GetXaxis()->SetTitle("Number of #Phi mesons in an event");
-        hNumPhi[i]->GetYaxis()->SetTitle("Counts");
-        // hNumPhi[i]->SetMarkerStyle(markerStyles[i]);
-        // hNumPhi[i]->SetMarkerColor(vibrantColors[i]);
-        hNumPhi[i]->SetLineColor(vibrantColors[i]);
-        hNumPhi[i]->SetLineStyle(lineStyles[i]);
-        hNumPhi[i]->SetMarkerSize(1.3);
-        hNumPhi[i]->SetLineWidth(3);
-        if (i == 0)
-        {
-            hNumPhi[i]->GetXaxis()->SetRangeUser(0, 20.0);
-            hNumPhi[i]->GetYaxis()->SetRangeUser(1, hNumPhi[i]->GetMaximum() * 15);
-            gPad->SetLogy();
-            hNumPhi[i]->Draw("HIST");
-        }
-        else
-        {
-            hNumPhi[i]->Draw("HIST same");
-        }
-        if (i == TotalFiles - 1)
-        {
-            legMassRes->Draw();
-        }
-            // */
+        // cCompareYield->cd();
+        // gPad->SetLogy();
+        // SetHistoQA(hPhiYieldFit[i]);
+        // hPhiYieldFit[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hPhiYieldFit[i]->GetYaxis()->SetTitle("Yield");
+        // hPhiYieldFit[i]->SetMarkerStyle(markerStyles[i]);
+        // hPhiYieldFit[i]->SetMarkerColor(vibrantColors[i]);
+        // hPhiYieldFit[i]->SetLineColor(vibrantColors[i]);
+        // hPhiYieldFit[i]->SetMarkerSize(1.3);
+        // hPhiYieldFit[i]->SetLineWidth(3);
+        // if (i == 0)
+        // {
+        //     // hPhiYieldFit[i]->GetYaxis()->SetRangeUser(1, 10000);
+        //     hPhiYieldFit[i]->SetMaximum(hPhiYieldFit[i]->GetMaximum() * 5);
+        //     hPhiYieldFit[i]->Draw("pe");
+        // }
+        // else
+        // {
+        //     hPhiYieldFit[i]->Draw("pe same");
+        // }
+        // if (i == TotalFiles - 1)
+        // {
+        //     legMassRes2->Draw();
+        // }
 
-        cComparePhiPhiInvMass->cd();
-        SetHistoQA(hPhiPhiInvMass[i]);
-        hPhiPhiInvMass[i]->GetXaxis()->SetTitle("#it{M}_{#Phi#Phi} (GeV/#it{c}^{2})");
-        hPhiPhiInvMass[i]->GetYaxis()->SetTitle("Counts");
-        hPhiPhiInvMass[i]->SetMarkerStyle(markerStyles[i]);
-        hPhiPhiInvMass[i]->SetMarkerColor(vibrantColors[i]);
-        hPhiPhiInvMass[i]->SetLineColor(vibrantColors[i]);
-        // hPhiPhiInvMass[i]->SetLineStyle(lineStyles[i]);
-        hPhiPhiInvMass[i]->SetMarkerSize(1.3);
-        hPhiPhiInvMass[i]->SetLineWidth(2);
+        cCompareEfficiency->cd();
+        SetHistoQA(hPhiEfficiency[i]);
+        hPhiEfficiency[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        hPhiEfficiency[i]->GetYaxis()->SetTitle("Efficiency (PID selection / PID loose) (%)");
+        hPhiEfficiency[i]->SetMarkerStyle(markerStyles[i]);
+        hPhiEfficiency[i]->SetMarkerColor(vibrantColors[i]);
+        hPhiEfficiency[i]->SetLineColor(vibrantColors[i]);
+        hPhiEfficiency[i]->SetMarkerSize(1.3);
+        hPhiEfficiency[i]->SetLineWidth(3);
         if (i == 0)
         {
-            hPhiPhiInvMass[i]->GetXaxis()->SetRangeUser(2.68, 2.84);
-            // hPhiPhiInvMass[i]->GetYaxis()->SetRangeUser(1, hPhiPhiInvMass[i]->GetMaximum() * 1.5);
-            hPhiPhiInvMass[i]->SetMinimum(34.5e3);
-            hPhiPhiInvMass[i]->Draw("pe");
+            // hPhiEfficiency[i]->GetYaxis()->SetRangeUser(1, 10000);
+            hPhiEfficiency[i]->SetMaximum(hPhiEfficiency[i]->GetMaximum() * 0.8);
+            hPhiEfficiency[i]->Draw("HIST");
         }
         else
         {
-            hPhiPhiInvMass[i]->Draw("pe same");
+            hPhiEfficiency[i]->Draw("HIST same");
         }
-        if (TotalFiles > 1)
-            legPhiPhiMass->AddEntry(hPhiPhiInvMass[i], LegendNames[i], "pe");
         if (i == TotalFiles - 1)
         {
-            legPhiPhiMass->Draw();
+            legMassRes2->Draw();
         }
+
+        cPurityxEfficiency->cd();
+        SetHistoQA(hPurityxEfficiency[i]);
+        hPurityxEfficiency[i]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        hPurityxEfficiency[i]->GetYaxis()->SetTitle("Purity x Efficiency (%)");
+        hPurityxEfficiency[i]->SetMarkerStyle(markerStyles[i]);
+        hPurityxEfficiency[i]->SetMarkerColor(vibrantColors[i]);
+        hPurityxEfficiency[i]->SetLineColor(vibrantColors[i]);
+        hPurityxEfficiency[i]->SetMarkerSize(1.3);
+        hPurityxEfficiency[i]->SetLineWidth(3);
+        if (i == 0)
+        {
+            hPurityxEfficiency[i]->GetYaxis()->SetRangeUser(0, 69);
+            // hPurityxEfficiency[i]->SetMaximum(hPurityxEfficiency[i]->GetMaximum() * 0.8);
+            hPurityxEfficiency[i]->Draw("HIST");
+        }
+        else
+        {
+            hPurityxEfficiency[i]->Draw("HIST same");
+        }
+        if (i == TotalFiles - 1)
+        {
+            legMassRes2->Draw();
+        }
+
+        // cCompareNumPhi->cd();
+        // SetHistoQA(hNumPhi[i]);
+        // hNumPhi[i]->GetXaxis()->SetTitle("Number of #Phi mesons in an event");
+        // hNumPhi[i]->GetYaxis()->SetTitle("Counts");
+        // // hNumPhi[i]->SetMarkerStyle(markerStyles[i]);
+        // // hNumPhi[i]->SetMarkerColor(vibrantColors[i]);
+        // hNumPhi[i]->SetLineColor(vibrantColors[i]);
+        // hNumPhi[i]->SetLineStyle(lineStyles[i]);
+        // hNumPhi[i]->SetMarkerSize(1.3);
+        // hNumPhi[i]->SetLineWidth(3);
+        // if (i == 0)
+        // {
+        //     hNumPhi[i]->GetXaxis()->SetRangeUser(0, 20.0);
+        //     hNumPhi[i]->GetYaxis()->SetRangeUser(1, hNumPhi[i]->GetMaximum() * 15);
+        //     gPad->SetLogy();
+        //     hNumPhi[i]->Draw("HIST");
+        // }
+        // else
+        // {
+        //     hNumPhi[i]->Draw("HIST same");
+        // }
+        // if (i == TotalFiles - 1)
+        // {
+        //     legMassRes->Draw();
+        // }
+        // // */
+
+        // cComparePhiPhiInvMass->cd();
+        // SetHistoQA(hPhiPhiInvMass[i]);
+        // hPhiPhiInvMass[i]->GetXaxis()->SetTitle("#it{M}_{#Phi#Phi} (GeV/#it{c}^{2})");
+        // hPhiPhiInvMass[i]->GetYaxis()->SetTitle("Counts");
+        // hPhiPhiInvMass[i]->SetMarkerStyle(markerStyles[i]);
+        // hPhiPhiInvMass[i]->SetMarkerColor(vibrantColors[i]);
+        // hPhiPhiInvMass[i]->SetLineColor(vibrantColors[i]);
+        // // hPhiPhiInvMass[i]->SetLineStyle(lineStyles[i]);
+        // hPhiPhiInvMass[i]->SetMarkerSize(1.3);
+        // hPhiPhiInvMass[i]->SetLineWidth(2);
+        // if (i == 0)
+        // {
+        //     hPhiPhiInvMass[i]->GetXaxis()->SetRangeUser(2.68, 2.84);
+        //     // hPhiPhiInvMass[i]->GetYaxis()->SetRangeUser(1, hPhiPhiInvMass[i]->GetMaximum() * 1.5);
+        //     hPhiPhiInvMass[i]->SetMinimum(34.5e3);
+        //     hPhiPhiInvMass[i]->Draw("pe");
+        // }
+        // else
+        // {
+        //     hPhiPhiInvMass[i]->Draw("pe same");
+        // }
+        // if (TotalFiles > 1)
+        //     legPhiPhiMass->AddEntry(hPhiPhiInvMass[i], LegendNames[i], "pe");
+        // if (i == TotalFiles - 1)
+        // {
+        //     legPhiPhiMass->Draw();
+        // }
     }
     // cCompareMass->SaveAs(outputFilePath + "Compare_Phi_Mass_Fit.png");
     // cCompareMassResolution->SaveAs(outputFilePath + "Compare_Phi_Mass_Resolution_Fit.png");
     // cCompareYield->SaveAs(outputFilePath + "Compare_Phi_Yield_Fit.png");
-    // cComparePurity->SaveAs(outputFilePath + "Compare_Phi_Purity.png");
+    cComparePurity->SaveAs(outputFilePath + "Compare_Phi_Purity.png");
+    cCompareEfficiency->SaveAs(outputFilePath + "Compare_Phi_Efficiency.png");
+    cPurityxEfficiency->SaveAs(outputFilePath + "Compare_Phi_PurityxEfficiency.png");
     // cCompareNumPhi->SaveAs(outputFilePath + "Compare_NumPhi.png");
-    cComparePhiPhiInvMass->SaveAs(outputFilePath + "Compare_PhiPhi_InvMass.png");
+    // cComparePhiPhiInvMass->SaveAs(outputFilePath + "Compare_PhiPhi_InvMass.png");
 }

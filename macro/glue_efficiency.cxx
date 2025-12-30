@@ -10,8 +10,8 @@ void glue_efficiency()
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
 
-    // TFile *f = new TFile("../mc/LHC24l1/552433.root", "read");
-    TFile *f = new TFile("/home/sawan/alice/practice/AnalysisResults.root", "read");
+    TFile *f = new TFile("../mc/LHC24l1/552433.root", "read");
+    // TFile *f = new TFile("/home/sawan/alice/practice/AnalysisResults.root", "read");
 
     if (f->IsZombie())
     {

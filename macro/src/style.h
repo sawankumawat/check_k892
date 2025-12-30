@@ -131,11 +131,9 @@ void SetGrapherrorStyle(TGraphErrors *gr)
     gr->GetYaxis()->SetTitleFont(42);
 }
 
-void SetGraphStyle(TGraph *gr, int markercolor, int linecolor)
+void SetGraphStyle(TGraph *gr)
 {
     gr->SetMarkerStyle(20);
-    gr->SetMarkerColor(markercolor);
-    gr->SetLineColor(linecolor);
     gr->SetMarkerSize(1.4);
     gr->SetLineWidth(2);
     gr->GetXaxis()->CenterTitle(true);

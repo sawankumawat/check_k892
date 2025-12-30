@@ -95,6 +95,8 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
    * STATISTICS
    */
 
+  // Delete existing canvas if it exists
+  if (gROOT->FindObject("cCanvasStat")) delete gROOT->FindObject("cCanvasStat");
   TCanvas *cCanvasStat = new TCanvas("cCanvasStat");
   cCanvasStat->Divide(2, 1);
 
@@ -118,8 +120,13 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
   hhi = YieldMean_HighExtrapolationHisto(hstat, f, max, hiprecision);
 
   /* random generation with integration (coarse) */
+  // Delete existing histograms if they exist
+  if (gROOT->FindObject("hIntegral_tmp")) delete gROOT->FindObject("hIntegral_tmp");
+  if (gROOT->FindObject("hMean_tmp")) delete gROOT->FindObject("hMean_tmp");
   TH1 *hIntegral_tmp = new TH1F("hIntegral_tmp", "", 1000, 0.75 * integral, 1.25 * integral);
+  hIntegral_tmp->SetDirectory(0);
   TH1 *hMean_tmp = new TH1F("hMean_tmp", "", 1000, 0.75 * mean, 1.25 * mean);
+  hMean_tmp->SetDirectory(0);
   for (Int_t irnd = 0; irnd < 100; irnd++)
   {
     /* get random histogram */
@@ -136,12 +143,17 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
     delete hrndhi;
   }
   /* random generation with integration (fine) */
+  // Delete existing histograms if they exist
+  if (gROOT->FindObject("hIntegral")) delete gROOT->FindObject("hIntegral");
+  if (gROOT->FindObject("hMean")) delete gROOT->FindObject("hMean");
   TH1 *hIntegral = new TH1F("hIntegral", "", 100,
                             hIntegral_tmp->GetMean() - 10. * hIntegral_tmp->GetRMS(),
                             hIntegral_tmp->GetMean() + 10. * hIntegral_tmp->GetRMS());
+  hIntegral->SetDirectory(0);
   TH1 *hMean = new TH1F("hMean", "", 100,
                         hMean_tmp->GetMean() - 10. * hMean_tmp->GetRMS(),
                         hMean_tmp->GetMean() + 10. * hMean_tmp->GetRMS());
+  hMean->SetDirectory(0);
   for (Int_t irnd = 0; irnd < 1000; irnd++)
   {
     /* get random histogram */
@@ -173,6 +185,8 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
    * SYSTEMATICS
    */
 
+  // Delete existing canvas if it exists
+  if (gROOT->FindObject("cCanvasYieldSys")) delete gROOT->FindObject("cCanvasYieldSys");
   TCanvas *cCanvasSys = new TCanvas("cCanvasYieldSys");
   cCanvasSys->Divide(2, 1);
   cCanvasSys->cd(1)->DrawFrame(min, 1.e-3, max, 1.e3);

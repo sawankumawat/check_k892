@@ -80,6 +80,13 @@
         "meanpT_dNdy_Levy.C": "cpp",
         "allinonemacromix.C": "cpp",
         "chrono": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "charconv": "cpp",
+        "ctime": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp",
+        "span": "cpp",
+        "variant": "cpp",
+        "format": "cpp"
     }
 }

@@ -23,20 +23,21 @@ void toy_model2()
     double m_kaon = 0.49367;     // charged kaon mass
 
     // Histogram for decay product pT
-    TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
+    TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", 100, 0, 10);
     TH1F *hrec_pT = new TH1F("hrec_pT", "Reconstructed p_{T} distribution of mother; p_{T} (GeV/c); Events", 150, 0, 30);
     TH1F *hPhiPhiPtCorr = new TH1F("hPhiPhiPtCorr", "pt correlaiton", 100, 0, 10);
     TH1F *hDeltaR = new TH1F("hDeltaR", "Delta R between two daughters", 200, 0, 4);
     TH2F *hDeltaRvsPt = new TH2F("hDeltaRvsPt", "Delta R vs pT of mother; p_{T} (GeV/c); #DeltaR", 100, 0, 20, 200, 0, 4);
+    TH1F *hPtPt = new TH1F("hPtPt", "#it{p}_{T}(#phi_{1}) x #it{p}_{T}(#phi_{2}); #it{p}_{T}(#phi_{1}) x #it{p}_{T}(#phi_{2}); Counts", 500, 0, 5);
 
     // Loop over multiple decay events
-    int nEvents = 1e7;
+    int nEvents = 1e6;
     TLorentzVector lvmother;
     ROOT::Math::PxPyPzMVector fourVecMother, fourVecDau1, fourVecDau2;
     ROOT::Math::XYZVector threeVecDauCM, threeVecMother;
     TF1 ptdistribution("ptSpectra",
                        "x * TMath::Exp(-TMath::Sqrt(0.13957*0.13957 + x*x) / 0.4)",
-                       0.1, 20.0); 
+                       0.0, 20.0); 
 
     for (int i = 0; i < nEvents; i++)
     {
@@ -86,6 +87,8 @@ void toy_model2()
             double deltaR = sqrt(pow(ks1->Eta() - ks2->Eta(), 2) + pow(TVector2::Phi_mpi_pi(ks1->Phi() - ks2->Phi()), 2));
             hDeltaR->Fill(deltaR);
             hDeltaRvsPt->Fill(fourVecMother.Pt(), deltaR);
+            hPtPt->Fill(ks1->Pt() * ks2->Pt());
+            // hPtPt->Fill(ks1->Pt());
 
             // Fill histogram with transverse momentum of mother
             h_pT->Fill(pT);
@@ -110,7 +113,7 @@ void toy_model2()
     SetHistoQA(h_pT);
     h_pT->GetYaxis()->SetMaxDigits(3);
     h_pT->Draw();
-    // c1->SaveAs("toy_model_plots/pT_distribution.png");
+    c1->SaveAs("toy_model_plots/MotherpT_distribution.png");
 
     TCanvas *c3 = new TCanvas("c3", "Reconstructed pT", 720, 720);
     SetCanvasStyle(c3, 0.15, 0.05, 0.05, 0.15);
@@ -144,6 +147,12 @@ void toy_model2()
     hDeltaR->GetYaxis()->SetTitle("Counts");
     hDeltaR->Draw();
     c5->SaveAs("toy_model_plots/deltaR_between_daughters.png");
+
+    TCanvas *c7 = new TCanvas("", "pT1xpT2", 720, 720);
+    SetCanvasStyle(c7, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hPtPt);
+    hPtPt->Draw();
+    c7->SaveAs("toy_model_plots/pt1pt2.png");
 
     // TCanvas *c6 = new TCanvas("c6", "Delta R vs pT of mother", 1440, 720);
     // SetCanvasStyle(c6, 0.12, 0.15, 0.05, 0.12);

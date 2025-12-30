@@ -37,10 +37,10 @@ void gaussian_fit_Ks3()
 
     //********************************************************************
 
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/QA/KsInvMass.root";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/QA/KsInvMass.root";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/QA/";
 
-    TFile *f = new TFile(path.c_str(), "read");
+    TFile *f = new TFile((path + "KsInvMass.root").c_str(), "read");
     if (f == nullptr)
     {
         cout << "File not found" << endl;
@@ -232,7 +232,7 @@ void gaussian_fit_Ks3()
     lp4->AddEntry((TObject *)0, Form("Width = %.2f #pm %.1e MeV", doubleCrystalBall->GetParameter(2) * 1000, doubleCrystalBall->GetParError(2) * 1000), "");
     lp4->Draw("same");
 
-    c1->SaveAs(Form("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/CBfit_ks_pt%.0fto%.0f.png", ptmin, ptmax));
+    c1->SaveAs((path + "KsInvMass_fit.png").c_str());
 
     TCanvas *cmass = new TCanvas("cmass", "cmass", 720, 720);
     SetCanvasStyle(cmass, 0.148, 0.01, 0.05, 0.125);
@@ -246,7 +246,7 @@ void gaussian_fit_Ks3()
     g->GetXaxis()->SetTitle("Low #it{p}_{T} cut (GeV/#it{c})");
     g->GetXaxis()->SetRangeUser(-1, 5.5);
     g->Draw("AP");
-    cmass->SaveAs("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/358932/KsKs_Channel/higher-mass-resonances_id24937/Ks_massvs_pt.png");
+    cmass->SaveAs((path + "Ks_massvs_pt.png").c_str());
 
     // // gPad->Update();
     // // TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");

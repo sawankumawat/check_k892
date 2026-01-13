@@ -16,6 +16,8 @@ std::vector<int> vibrantColors = {
     kSpring + 3  // #f5e002
 };
 
+using namespace std;
+
 void compare_multiple_spectra()
 {
     bool isCorrectedYield = true; // set false for efficency and corrected yield plots.
@@ -24,22 +26,32 @@ void compare_multiple_spectra()
     gStyle->SetOptFit(0);
 
     // std::vector<string> runNumbers = {"535069", "535545", "535645", "535999", "536106", "463114"}; // Example run numbers
-    // std::vector<string> IR = {"14", "70", "135", "330", "650", "1500"};                            // interaction rates
-    std::vector<string> runNumbers = {"535069", "535545", "535645", "536899", "537861"};                // Example run numbers
-    std::vector<string> IR = {"14", "70", "135", "1300", "2000", "500 (2022 data)", "500 (2024 data)"}; // interaction rates
-    // std::vector<string> IR = {"With NN", "Without NN"}; // checking MC with and without NN
-    // std::vector<string> IR = {"Simple", "NN", "Tune", "Tune+NN"}; // checking MC with and without NN
-    // std::vector<string> IR = {"No cut", "< 1000", "< 750", "< 500"}; // interaction rates
-    // std::vector<string> IR = {"Default", "MID", "|y|<0.3", "OnlyTPC"}; // signal shapes comparison
+    // std::vector<string> legendnames = {"14", "70", "135", "330", "650", "1500"};                            // interaction rates
+    // std::vector<string> runNumbers = {"535069", "535545", "535645", "536899", "537861"};                // Example run numbers
+    // std::vector<string> legendnames = {"14", "70", "135", "1300", "2000", "500 (2022 data)", "500 (2024 data)"}; // interaction rates
+    // std::vector<string> legendnames = {"With NN", "Without NN"}; // checking MC with and without NN
+    // std::vector<string> legendnames = {"Simple", "NN", "Tune", "Tune+NN"}; // checking MC with and without NN
+    // std::vector<string> legendnames = {"No cut", "< 1000", "< 750", "< 500"}; // interaction rates
+    // std::vector<string> legendnames = {"Default", "MID", "|y|<0.3", "OnlyTPC"}; // signal shapes comparison
+
+    // vector<string> QAVariation = {"", "_BetaTOF0p5", "_GoodFT0vsPV", "_GoodITSLayersAll", "_ITSTPCRefit", "_VertexITSTPC", "_VertexTOFMatched"};
+    // vector<string> legendnames = {"Default", "BetaTOF<0.5 ns", "GoodFT0 vs PV", "All ITS layers", "ITS-TPC refit", "Vertex ITSTPC", "Vertex TOF Matched"};
+
+    vector<string> QAVariation = {"", "_ptDepPID"};
+    vector<string> legendnames = {"Default", "pT-dependent PID"};
 
     std::vector<TString> paths;
-    // Additional push backs
-    paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
-    paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"); // 2024 data
-    for (const auto &run : runNumbers)
+    for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/%s/kstarqa/hInvMass", run.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/586469/kstarqa%s/hInvMass", variation.c_str()));
     }
+    // // Additional push backs
+    // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
+    // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"); // 2024 data
+    // for (const auto &run : runNumbers)
+    // {
+    //     paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/%s/kstarqa/hInvMass", run.c_str()));
+    // }
 
     //*********************comparing with and without NN *******************************/
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa/hInvMass/corrected_spectra_simple");
@@ -76,13 +88,13 @@ void compare_multiple_spectra()
     // // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/checks/468697/kstarqa_PtDepDCAxy/hInvMass"); // No effect
     // // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/checks/468697/kstarqa_CutsOnMotherParticle/hInvMass"); // No effect
 
-    if (IR.size() != paths.size())
+    if (legendnames.size() != paths.size())
     {
-        std::cerr << "Error: Number of IR labels does not match number of paths." << std::endl;
+        std::cerr << "Error: Number of legend names does not match number of paths." << std::endl;
         return;
     }
 
-    plot_spectra(paths, isCorrectedYield, IR, isSinglePanel);
+    plot_spectra(paths, isCorrectedYield, legendnames, isSinglePanel);
 }
 
 void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false)
@@ -107,7 +119,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
         {
             double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
             double multhigh = (imult == 0) ? 100 : mult_classes[imult];
-            hmult[imult].push_back((isCorrectedYield) ? (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh)));
+            hmult[imult].push_back((isCorrectedYield) ? (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh)));
             // hmult[imult].push_back((TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh)));
             // hmult[imult].push_back((TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/SignalInAllPtBins/hfsig_pt7", multlow, multhigh)));
             if (hmult[imult][ifiles] == nullptr)
@@ -148,7 +160,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
         TLegend *leg = new TLegend(0.5, 0.7, 0.93, 0.94);
         SetLegendStyle(leg);
         leg->SetNColumns(2);
-        (isSinglePanel) ? leg->SetTextSize(0.035) : leg->SetTextSize(0.05);
+        (isSinglePanel) ? leg->SetTextSize(0.035) : leg->SetTextSize(0.035);
         // leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
         leg->SetHeader("Interaction Rate (kHz)");
         // leg->SetHeader("Occupancy Cut");
@@ -231,8 +243,8 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                 hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
                 // hratio[imult][ifiles]->SetMinimum(0.86);
                 // hratio[imult][ifiles]->SetMaximum(3.14);
-                hratio[imult][ifiles]->SetMinimum(0.42);
-                hratio[imult][ifiles]->SetMaximum(2.9);
+                hratio[imult][ifiles]->SetMinimum(0.7);
+                hratio[imult][ifiles]->SetMaximum(1.71);
                 hratio[imult][ifiles]->Draw("pe same");
             }
             TLine *line = new TLine(0, 1, 10, 1);
@@ -242,7 +254,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
             line->Draw();
         }
 
-        // c1->SaveAs(Form("%s/compare_signal7_%.0f-%.0f.png", paths[0].Data(), multlow, multhigh));
+        c1->SaveAs(Form("%s/compare_SignalAfterLossFactors_%.0f-%.0f.png", paths[0].Data(), multlow, multhigh));
     }
 }
 

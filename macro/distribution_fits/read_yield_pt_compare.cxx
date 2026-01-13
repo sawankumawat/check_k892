@@ -20,6 +20,11 @@ void read_yield_pt_compare()
     TFile *file2 = new TFile((path + "mult_0-100/Spectra/spectra.root").c_str(), "read");
     TFile *file3 = new TFile((path2 + "WidthFree/mult_0-100/Spectra/spectra.root").c_str(), "read");
     TFile *file4 = new TFile((path2 + "mult_0-100/Spectra/spectra.root").c_str(), "read");
+
+    // TFile *file1 = new TFile((path + "mult_0-100/Spectra/spectra_pt0.root").c_str(), "read");
+    // TFile *file2 = new TFile((path + "mult_0-100/Spectra/spectra_pt1.root").c_str(), "read");
+    // TFile *file3 = new TFile((path + "mult_0-100/Spectra/spectra_pt2.root").c_str(), "read");
+    // TFile *file4 = new TFile((path + "mult_0-100/Spectra/spectra.root").c_str(), "read");
     if (file1->IsZombie() || file2->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -247,10 +252,14 @@ void read_yield_pt_compare()
     legYield->SetFillStyle(0);
     legYield->SetTextSize(0.03);
     legYield->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legYield->AddEntry(hYield1525Corrected_1, "f_{0}(1710) Width Free (2023)", "pe");
-    legYield->AddEntry(hYield1525Corrected_2, "f_{0}(1710) Width Fixed (2023)", "pe");
-    legYield->AddEntry(hYield1525Corrected_3, "f_{0}(1710) Width Free (2022)", "pe");
-    legYield->AddEntry(hYield1525Corrected_4, "f_{0}(1710) Width Fixed (2022)", "pe");
+    legYield->AddEntry(hYield1525Corrected_4, "Combined fit (p_{T} > 2 GeV/c)", "pe");
+    legYield->AddEntry(hYield1525Corrected_1, "Lowest p_{T} bin: 0-1 GeV/c", "pe");
+    legYield->AddEntry(hYield1525Corrected_2, "Lowest p_{T} bin: 1-2 GeV/c", "pe");
+    legYield->AddEntry(hYield1525Corrected_3, "Lowest p_{T} bin: 2-3 GeV/c", "pe");
+    // legYield->AddEntry(hYield1525Corrected_1, "f_{0}(1710) Width Free (2023)", "pe");
+    // legYield->AddEntry(hYield1525Corrected_2, "f_{0}(1710) Width Fixed (2023)", "pe");
+    // legYield->AddEntry(hYield1525Corrected_3, "f_{0}(1710) Width Free (2022)", "pe");
+    // legYield->AddEntry(hYield1525Corrected_4, "f_{0}(1710) Width Fixed (2022)", "pe");
 
     // /*************meanpT*****************byresonance*******************package*************************/
     Double_t min = 0.0;
@@ -444,45 +453,67 @@ void read_yield_pt_compare()
     TCanvas *cRawYieldf2 = new TCanvas("cRawYieldf2", "Raw Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cRawYieldf2, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
-    hYield1525Raw_1->SetMarkerStyle(20);
-    hYield1525Raw_1->SetMarkerColor(kRed);
-    hYield1525Raw_1->SetLineColor(kRed);
-    hYield1525Raw_1->Draw("pe");
-    hYield1525Raw_2->SetMarkerStyle(21);
-    hYield1525Raw_2->SetMarkerColor(kBlue);
-    hYield1525Raw_2->SetLineColor(kBlue);
-    hYield1525Raw_2->Draw("pe same");
-    hYield1525Raw_3->SetMarkerStyle(22);
-    hYield1525Raw_3->SetMarkerColor(kGreen + 2);
-    hYield1525Raw_3->SetLineColor(kGreen + 2);
-    hYield1525Raw_3->Draw("pe same");
-    hYield1525Raw_4->SetMarkerStyle(23);
+    hYield1525Raw_3->SetMarkerStyle(20);
+    hYield1525Raw_3->SetMarkerColor(kRed);
+    hYield1525Raw_3->SetLineColor(kRed);
+    hYield1525Raw_3->Draw("pe");
+    hYield1525Raw_4->SetMarkerStyle(21);
     hYield1525Raw_4->SetMarkerColor(kMagenta);
     hYield1525Raw_4->SetLineColor(kMagenta);
     hYield1525Raw_4->Draw("pe same");
-    legYieldRatio->Draw();
+    // hYield1525Raw_3->SetMarkerStyle(22);
+    // hYield1525Raw_3->SetMarkerColor(kGreen + 2);
+    // hYield1525Raw_3->SetLineColor(kGreen + 2);
+    // hYield1525Raw_3->Draw("pe same");
+    // hYield1525Raw_4->SetMarkerStyle(23);
+    // hYield1525Raw_4->SetMarkerColor(kBlue);
+    // hYield1525Raw_4->SetLineColor(kBlue);
+    // hYield1525Raw_4->Draw("pe same");
+    TLegend *legRawYieldf2 = new TLegend(0.63, 0.75, 0.89, 0.93);
+    legRawYieldf2->SetBorderSize(0);
+    legRawYieldf2->SetFillStyle(0);
+    legRawYieldf2->SetTextSize(0.03);
+    legRawYieldf2->SetHeader("f_2(1525) Raw p_{T} spectra");
+    // legRawYieldf2->AddEntry(hYield1525Raw_1, "Single rBW fit", "pe");
+    // legRawYieldf2->AddEntry(hYield1525Raw_4, "4 rBW fit", "pe");
+    legRawYieldf2->AddEntry(hYield1525Raw_3, "f_{0} width free", "pe");
+    legRawYieldf2->AddEntry(hYield1525Raw_4, "f_{0} width fixed", "pe");
+    legRawYieldf2->Draw();
     cRawYieldf2->SaveAs(outputPath + "/RawYieldf2.png");
+
+    TCanvas *cRawYieldRatio = new TCanvas("cRawYieldRatio", "Raw Yield ratio vs #it{p}_{T}", 720, 720);
+    SetCanvasStyle(cRawYieldRatio, 0.18, 0.03, 0.05, 0.14);
+    TH1F *hRawYieldRatio = (TH1F *)hYield1710Raw_3->Clone("hRawYieldRatio");
+    hRawYieldRatio->Divide(hYield1710Raw_4);
+    hRawYieldRatio->SetMarkerStyle(20);
+    hRawYieldRatio->SetMaximum(1.5);
+    hRawYieldRatio->SetMinimum(0.0);
+    hRawYieldRatio->SetLineColor(kRed);
+    hRawYieldRatio->SetMarkerColor(kRed);
+    hRawYieldRatio->GetYaxis()->SetTitle("Raw yield f_{0}(1710) (Width Free / Width Fixed)");
+    hRawYieldRatio->Draw("pe");
+    cRawYieldRatio->SaveAs(outputPath + "/RawYieldRatioWidthfreeFix.png");
 
     TCanvas *cRawYieldf0 = new TCanvas("cRawYieldf0", "Raw Yield vs #it{p}_{T} for f_{0}(1710)", 720, 720);
     SetCanvasStyle(cRawYieldf0, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
-    hYield1710Raw_1->SetMarkerStyle(20);
-    hYield1710Raw_1->SetMarkerColor(kRed);
-    hYield1710Raw_1->SetLineColor(kRed);
-    hYield1710Raw_1->Draw("pe");
-    hYield1710Raw_2->SetMarkerStyle(21);
-    hYield1710Raw_2->SetMarkerColor(kBlue);
-    hYield1710Raw_2->SetLineColor(kBlue);
-    hYield1710Raw_2->Draw("pe same");
-    hYield1710Raw_3->SetMarkerStyle(22);
-    hYield1710Raw_3->SetMarkerColor(kGreen + 2);
-    hYield1710Raw_3->SetLineColor(kGreen + 2);
-    hYield1710Raw_3->Draw("pe same");
-    hYield1710Raw_4->SetMarkerStyle(23);
-    hYield1710Raw_4->SetMarkerColor(kMagenta);
-    hYield1710Raw_4->SetLineColor(kMagenta);
+    hYield1710Raw_3->SetMarkerStyle(20);
+    hYield1710Raw_3->SetMarkerColor(kRed);
+    hYield1710Raw_3->SetLineColor(kRed);
+    hYield1710Raw_3->Draw("pe");
+    hYield1710Raw_4->SetMarkerStyle(21);
+    hYield1710Raw_4->SetMarkerColor(kBlue);
+    hYield1710Raw_4->SetLineColor(kBlue);
     hYield1710Raw_4->Draw("pe same");
-    legYieldRatio->Draw();
+    // hYield1710Raw_3->SetMarkerStyle(22);
+    // hYield1710Raw_3->SetMarkerColor(kGreen + 2);
+    // hYield1710Raw_3->SetLineColor(kGreen + 2);
+    // hYield1710Raw_3->Draw("pe same");
+    // hYield1710Raw_4->SetMarkerStyle(23);
+    // hYield1710Raw_4->SetMarkerColor(kMagenta);
+    // hYield1710Raw_4->SetLineColor(kMagenta);
+    // hYield1710Raw_4->Draw("pe same");
+    legRawYieldf2->Draw();
     cRawYieldf0->SaveAs(outputPath + "/RawYieldf0.png");
 
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
@@ -589,43 +620,22 @@ void read_yield_pt_compare()
     pol1_baryon->SetLineStyle(2);
     gMeanPtvsMass_baryons->Fit(pol1_baryon, "R");
 
-    // // Draw each point with its own marker style and color
-    // for (int i = 0; i < totalParticles; i++)
-    // {
-    //     cMeanPt->cd();
-    //     TMarker *marker = new TMarker(particleMass[i], meanPtAt13TeV[i], markers[i]);
-    //     marker->SetMarkerColor(colors[i]);
-    //     marker->SetMarkerSize(2.0); // increased size
-    //     marker->Draw("SAME");
-
-    //     // Draw error bar for this point in the same color
-    //     double x = particleMass[i];
-    //     double y = meanPtAt13TeV[i];
-    //     double errY = meanPtAt13TeV_err[i];
-    //     TLine *errBar = new TLine(x, y - errY, x, y + errY);
-    //     errBar->SetLineColor(colors[i]);
-    //     errBar->SetLineWidth(2);
-    //     errBar->Draw("SAME");
-    //     // Add horizontal lines at the ends (caps)
-    //     double cap = 0.01; // adjust cap width as needed
-    //     TLine *capLow = new TLine(x - cap, y - errY, x + cap, y - errY);
-    //     TLine *capHigh = new TLine(x - cap, y + errY, x + cap, y + errY);
-    //     capLow->SetLineColor(colors[i]);
-    //     capHigh->SetLineColor(colors[i]);
-    //     capLow->SetLineWidth(2);
-    //     capHigh->SetLineWidth(2);
-    //     capLow->Draw("SAME");
-    //     capHigh->Draw("SAME");
-    // }
-
     // Draw the last marker (f2(1525)) and its error bar
-    double f2_mass, f2_meanpt_1, f2_meanpt_2;
+    double f2_mass, f2_meanpt_1, f2_meanpt_2, f2_meanpt_3, f2_meanpt_4;
     gMeanPtvsMass_1->GetPoint(0, f2_mass, f2_meanpt_1);
     double f2_meanpt_err_1 = gMeanPtvsMass_1->GetErrorY(0);
     gMeanPtvsMass_2->GetPoint(0, f2_mass, f2_meanpt_2);
     double f2_meanpt_err_2 = gMeanPtvsMass_2->GetErrorY(0);
-    int f2_marker = 20;      // choose a unique marker style for f2(1525)
+    gMeanPtvsMass_3->GetPoint(0, f2_mass, f2_meanpt_3);
+    double f2_meanpt_err_3 = gMeanPtvsMass_3->GetErrorY(0);
+    gMeanPtvsMass_4->GetPoint(0, f2_mass, f2_meanpt_4);
+    double f2_meanpt_err_4 = gMeanPtvsMass_4->GetErrorY(0);
+    int f2_marker = 25;      // choose a unique marker style for f2(1525)
     int f2_color = kMagenta; // choose a unique color for f2(1525)
+    int f2_marker2 = 24;     // hollow circle marker
+    int f2_marker3 = 29;     // star marker
+    cout << "f2 mean pT single BW " << f2_meanpt_3 << " +/- " << f2_meanpt_err_3 << endl;
+    cout << "f2 mean pT 4 BW " << f2_meanpt_4 << " +/- " << f2_meanpt_err_4 << endl;
 
     TMarker *marker_f2_1 = new TMarker(f2_mass, f2_meanpt_1, f2_marker);
     marker_f2_1->SetMarkerColor(f2_color);
@@ -645,7 +655,7 @@ void read_yield_pt_compare()
     capLow_f2->Draw("SAME");
     capHigh_f2->Draw("SAME");
 
-    TMarker *marker_f2_2 = new TMarker(f2_mass, f2_meanpt_2, f2_marker);
+    TMarker *marker_f2_2 = new TMarker(f2_mass, f2_meanpt_2, f2_marker2);
     marker_f2_2->SetMarkerColor(kRed + 2);
     marker_f2_2->SetMarkerSize(1.5);
     marker_f2_2->Draw("SAME");
@@ -662,6 +672,42 @@ void read_yield_pt_compare()
     capHigh_f2_2->SetLineWidth(2);
     capLow_f2_2->Draw("SAME");
     capHigh_f2_2->Draw("SAME");
+
+    TMarker *marker_f2_3 = new TMarker(f2_mass, f2_meanpt_3, f2_marker3);
+    marker_f2_3->SetMarkerColor(kGreen + 2);
+    marker_f2_3->SetMarkerSize(1.7);
+    marker_f2_3->Draw("SAME");
+    TLine *errBar_f2_3 = new TLine(f2_mass, f2_meanpt_3 - f2_meanpt_err_3, f2_mass, f2_meanpt_3 + f2_meanpt_err_3);
+    errBar_f2_3->SetLineColor(kGreen + 2);
+    errBar_f2_3->SetLineWidth(2);
+    errBar_f2_3->Draw("SAME");
+    double cap_f2_3 = 0.01;
+    TLine *capLow_f2_3 = new TLine(f2_mass - cap_f2_3, f2_meanpt_3 - f2_meanpt_err_3, f2_mass + cap_f2_3, f2_meanpt_3 - f2_meanpt_err_3);
+    TLine *capHigh_f2_3 = new TLine(f2_mass - cap_f2_3, f2_meanpt_3 + f2_meanpt_err_3, f2_mass + cap_f2_3, f2_meanpt_3 + f2_meanpt_err_3);
+    capLow_f2_3->SetLineColor(kGreen + 2);
+    capHigh_f2_3->SetLineColor(kGreen + 2);
+    capLow_f2_3->SetLineWidth(2);
+    capHigh_f2_3->SetLineWidth(2);
+    capLow_f2_3->Draw("SAME");
+    capHigh_f2_3->Draw("SAME");
+
+    TMarker *marker_f2_4 = new TMarker(f2_mass, f2_meanpt_4, f2_marker2);
+    marker_f2_4->SetMarkerColor(kRed + 2);
+    marker_f2_4->SetMarkerSize(1.5);
+    marker_f2_4->Draw("SAME");
+    TLine *errBar_f2_4 = new TLine(f2_mass, f2_meanpt_4 - f2_meanpt_err_4, f2_mass, f2_meanpt_4 + f2_meanpt_err_4);
+    errBar_f2_4->SetLineColor(kRed + 2);
+    errBar_f2_4->SetLineWidth(2);
+    errBar_f2_4->Draw("SAME");
+    double cap_f2_4 = 0.01;
+    TLine *capLow_f2_4 = new TLine(f2_mass - cap_f2_4, f2_meanpt_4 - f2_meanpt_err_4, f2_mass + cap_f2_4, f2_meanpt_4 - f2_meanpt_err_4);
+    TLine *capHigh_f2_4 = new TLine(f2_mass - cap_f2_4, f2_meanpt_4 + f2_meanpt_err_4, f2_mass + cap_f2_4, f2_meanpt_4 + f2_meanpt_err_4);
+    capLow_f2_4->SetLineColor(kRed + 2);
+    capHigh_f2_4->SetLineColor(kRed + 2);
+    capLow_f2_4->SetLineWidth(2);
+    capHigh_f2_4->SetLineWidth(2);
+    capLow_f2_4->Draw("SAME");
+    capHigh_f2_4->Draw("SAME");
 
     // Draw the last marker (f0(1710)) and its error bar
     double f0_mass, f0_meanpt_1, f0_meanpt_2;
@@ -725,23 +771,35 @@ void read_yield_pt_compare()
             latex.DrawLatex(x, y - 0.20, particlesLatex[i].c_str());
     }
     // latex.SetTextColor(kRed); // match f2(1525) marker color
-    latex.DrawLatex(1.5173, f2_meanpt_1 - 0.22, "f'_{2}(1525)");
+    // latex.DrawLatex(1.5173, f2_meanpt_1 - 0.22, "f'_{2}(1525)");
+    latex.DrawLatex(1.5173, f2_meanpt_1 - 0.5, "f'_{2}(1525)");
     // latex.SetTextColor(kBlue); // match f0(1710) marker color
     latex.DrawLatex(1.68, f0_meanpt_1 + 0.33, "f_{0}(1710)");
 
-    TLegend *legend4 = new TLegend(0.18, 0.75, 0.85, 0.92);
-    legend4->SetBorderSize(0);
-    legend4->SetFillStyle(0);
-    legend4->SetTextSize(0.033);
-    legend4->SetNColumns(2);
-    legend4->AddEntry(gMeanPtvsMass_mesons, "Light flavour hadrons (13 TeV)", "p");
-    legend4->AddEntry((TObject *)0, "", "");
-    legend4->AddEntry((TObject *)0, "f_{0}(1710) Width free", "");
-    legend4->AddEntry((TObject *)0, "f_{0}(1710) Width fixed", "");
-    legend4->AddEntry(marker_f2_1, "f'_{2}(1525)", "p");
-    legend4->AddEntry(marker_f2_2, "f'_{2}(1525)", "p");
-    legend4->AddEntry(marker_f0_1, "f_{0}(1710)", "p");
-    legend4->AddEntry(marker_f0_2, "f_{0}(1710)", "p");
-    legend4->Draw();
+    // TLegend *legend4 = new TLegend(0.18, 0.75, 0.85, 0.92);
+    // legend4->SetBorderSize(0);
+    // legend4->SetFillStyle(0);
+    // legend4->SetTextSize(0.033);
+    // legend4->SetNColumns(2);
+    // legend4->AddEntry(gMeanPtvsMass_mesons, "Light flavour hadrons (13 TeV)", "p");
+    // legend4->AddEntry((TObject *)0, "", "");
+    // legend4->AddEntry((TObject *)0, "f_{0}(1710) Width free", "");
+    // legend4->AddEntry((TObject *)0, "f_{0}(1710) Width fixed", "");
+    // legend4->AddEntry(marker_f2_1, "f'_{2}(1525)", "p");
+    // legend4->AddEntry(marker_f2_2, "f'_{2}(1525)", "p");
+    // legend4->AddEntry(marker_f0_1, "f_{0}(1710)", "p");
+    // legend4->AddEntry(marker_f0_2, "f_{0}(1710)", "p");
+    // legend4->Draw();
+
+    TLegend *legendTemp1 = new TLegend(0.18, 0.75, 0.85, 0.92);
+    legendTemp1->SetBorderSize(0);
+    legendTemp1->SetFillStyle(0);
+    legendTemp1->SetTextSize(0.033);
+    legendTemp1->AddEntry(gMeanPtvsMass_mesons, "Light flavour hadrons (13 TeV)", "p");
+    legendTemp1->AddEntry(marker_f2_1, "Lowest p_{T} bin: 0-1 GeV/c", "p");
+    legendTemp1->AddEntry(marker_f2_2, "Lowest p_{T} bin: 1-2 GeV/c", "p");
+    legendTemp1->AddEntry(marker_f2_3, "Lowest p_{T} bin: 2-3 GeV/c", "p");
+    legendTemp1->Draw();
+
     cMeanPt->SaveAs(outputPath + "/MeanPt_vs_Mass.png");
 }

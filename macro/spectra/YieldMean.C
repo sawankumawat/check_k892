@@ -96,7 +96,8 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
    */
 
   // Delete existing canvas if it exists
-  if (gROOT->FindObject("cCanvasStat")) delete gROOT->FindObject("cCanvasStat");
+  if (gROOT->FindObject("cCanvasStat"))
+    delete gROOT->FindObject("cCanvasStat");
   TCanvas *cCanvasStat = new TCanvas("cCanvasStat");
   cCanvasStat->Divide(2, 1);
 
@@ -121,8 +122,10 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
 
   /* random generation with integration (coarse) */
   // Delete existing histograms if they exist
-  if (gROOT->FindObject("hIntegral_tmp")) delete gROOT->FindObject("hIntegral_tmp");
-  if (gROOT->FindObject("hMean_tmp")) delete gROOT->FindObject("hMean_tmp");
+  if (gROOT->FindObject("hIntegral_tmp"))
+    delete gROOT->FindObject("hIntegral_tmp");
+  if (gROOT->FindObject("hMean_tmp"))
+    delete gROOT->FindObject("hMean_tmp");
   TH1 *hIntegral_tmp = new TH1F("hIntegral_tmp", "", 1000, 0.75 * integral, 1.25 * integral);
   hIntegral_tmp->SetDirectory(0);
   TH1 *hMean_tmp = new TH1F("hMean_tmp", "", 1000, 0.75 * mean, 1.25 * mean);
@@ -144,8 +147,10 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
   }
   /* random generation with integration (fine) */
   // Delete existing histograms if they exist
-  if (gROOT->FindObject("hIntegral")) delete gROOT->FindObject("hIntegral");
-  if (gROOT->FindObject("hMean")) delete gROOT->FindObject("hMean");
+  if (gROOT->FindObject("hIntegral"))
+    delete gROOT->FindObject("hIntegral");
+  if (gROOT->FindObject("hMean"))
+    delete gROOT->FindObject("hMean");
   TH1 *hIntegral = new TH1F("hIntegral", "", 100,
                             hIntegral_tmp->GetMean() - 10. * hIntegral_tmp->GetRMS(),
                             hIntegral_tmp->GetMean() + 10. * hIntegral_tmp->GetRMS());
@@ -186,7 +191,8 @@ TH1 *YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t
    */
 
   // Delete existing canvas if it exists
-  if (gROOT->FindObject("cCanvasYieldSys")) delete gROOT->FindObject("cCanvasYieldSys");
+  if (gROOT->FindObject("cCanvasYieldSys"))
+    delete gROOT->FindObject("cCanvasYieldSys");
   TCanvas *cCanvasSys = new TCanvas("cCanvasYieldSys");
   cCanvasSys->Divide(2, 1);
   cCanvasSys->cd(1)->DrawFrame(min, 1.e-3, max, 1.e3);

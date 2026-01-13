@@ -19,8 +19,27 @@ void read_yield_pt()
 {
     gStyle->SetOptStat(0);
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/mult_0-100/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/mult_0-100/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
+
+    // Temporarily openning f1525 yield file for single BW fit
+    ifstream yieldfile;
+    yieldfile.open("/home/sawan/check_k892/macro/distribution_fits/f1525_yield_fixWidth3.txt");
+    if (!yieldfile.is_open())
+    {
+        cout << "Error opening f1525 yield file" << endl;
+        return;
+    }
+    vector<double> f1525yieldSingleBW, f1525yieldSingleBWErr;
+    double yield1525singleBW, yield1525singleBWErr;
+    string pm;
+
+    while (yieldfile >> yield1525singleBW >> pm >> yield1525singleBWErr)
+    {
+        f1525yieldSingleBW.push_back(yield1525singleBW);
+        f1525yieldSingleBWErr.push_back(yield1525singleBWErr);
+        // cout<<"Read f1525 yield: "<< yield1525singleBW << " +/- " << yield1525singleBWErr << endl;
+    }
 
     TString outputPath = path + "/Spectra";
     if (gSystem->mkdir(outputPath, kTRUE))
@@ -105,7 +124,6 @@ void read_yield_pt()
     TH1D *hMass1525 = new TH1D("hMass1525", "Mass vs cosTheta", nBins2, ptBins2);
     TH1D *hMass1270 = new TH1D("hMass1270", "Mass vs cosTheta", nBins2, ptBins2);
     TH1D *hMass1320 = new TH1D("hMass1320", "Mass vs cosTheta", nBins2, ptBins2);
-    double totalYield1710, totalYield1525, totalYield1270, totalYield1320;
 
     for (int i = 0; i < nBins; i++)
     {
@@ -159,7 +177,6 @@ void read_yield_pt()
 
         if (infile.is_open())
         {
-
             while (std::getline(infile, line))
             {
                 std::istringstream iss(line);
@@ -344,11 +361,6 @@ void read_yield_pt()
             }
         }
 
-        totalYield1710 += yield1;
-        totalYield1525 += yield2;
-        totalYield1270 += yield3;
-        totalYield1320 += yield4;
-
         double eff1710 = hefficiencyf0->GetBinContent(i + 2);
         double eff1710_err = hefficiencyf0->GetBinError(i + 2);
         double eff1525 = hefficiencyf2->GetBinContent(i + 2);
@@ -358,6 +370,11 @@ void read_yield_pt()
         double corrected_yield1710_err = sqrt(pow(yield1_err / eff1710, 2) + pow(yield1 * eff1710_err / pow(eff1710, 2), 2));
         double corrected_yield1710Bin = yield1Bin / eff1710;
         double corrected_yield1710Bin_err = sqrt(pow(yield1Bin_err / eff1710, 2) + pow(yield1Bin * eff1710_err / pow(eff1710, 2), 2));
+
+        // //================Modifying f21525 yield for single BW fit check=================//
+        // yield2 = f1525yieldSingleBW[i];
+        // yield2_err = f1525yieldSingleBWErr[i];
+        // //===============================================================================//
 
         double corrected_yield1525 = yield2 / eff1525;
         double corrected_yield1525_err = sqrt(pow(yield2_err / eff1525, 2) + pow(yield2 * eff1525_err / pow(eff1525, 2), 2));

@@ -134,11 +134,9 @@ void SetGrapherrorStyle(TGraphErrors *gr)
 void SetGraphStyle(TGraph *gr)
 {
     gr->SetMarkerStyle(20);
-    gr->SetMarkerSize(1.4);
+    gr->SetMarkerSize(1.1);
     gr->SetLineWidth(2);
     gr->GetXaxis()->CenterTitle(true);
-    gr->GetXaxis()->SetNdivisions(506);
-    gr->GetYaxis()->SetNdivisions(505);
     gr->GetXaxis()->SetLabelOffset(0.015);
     gr->GetXaxis()->SetLabelFont(42);
     gr->GetXaxis()->SetTitleFont(42);

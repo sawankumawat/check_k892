@@ -20,7 +20,7 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = false;
@@ -140,8 +140,8 @@ void kstar_sparse()
         filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
     }
 
-    for (int imult = 0; imult < nmultbins + 1; imult++)
-    // for (int imult = 0; imult < 1; imult++)
+    // for (int imult = 0; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < 1; imult++)
     {
         // basic checks
         if (kNormRangepT.size() < Npt || kFitRange.size() < Npt || kRebin.size() < Npt)

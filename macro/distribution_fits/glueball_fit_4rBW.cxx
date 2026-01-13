@@ -197,9 +197,9 @@ void glueball_fit_4rBW()
                                                                               */
 
         //*********for systematics and default study with full train ************************
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/504802/KsKs_Channel/higher-mass-resonances_CS_Frame"; // 2023 dataset (derived data)
         string path2 = path;
@@ -213,7 +213,7 @@ void glueball_fit_4rBW()
         // file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".csv").c_str());
         // file.open((path2 + "/fits/4rBw_fits/fit_params_temp_" + sysvar + ".txt").c_str());
 
-        string savepath = path2 + "/fits/4rBw_fits/pt_dependent/";
+        string savepath = path2 + "/fits/4rBw_fits/pt_dependent/WidthFree";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
@@ -249,8 +249,8 @@ void glueball_fit_4rBW()
 #define residual_subtracted
         // #define doublepanelplot
 
-// #define multiPanelPlots
-        #define singlePanelPlots
+        // #define multiPanelPlots
+#define singlePanelPlots
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
         if (hmult == nullptr)
@@ -299,14 +299,14 @@ void glueball_fit_4rBW()
                 // float highpT = pT_bins[ipt + 1];
 
                 // Temporary for single bins checking
-                float lowpT = 1.0;
-                float highpT = 2.0;
+                float lowpT = 7.0;
+                float highpT = 10.0;
 
                 ofstream file;
                 file.open((savepath_mult + Form("/fit_params_pT_%.1f-%.1f", lowpT, highpT) + sysvar + ".txt").c_str());
 
                 vector<vector<float>> fitranges = {
-                    {1.09, 2.15}, // temp
+                    {1.05, 2.20}, // temp
                     // {1.05, 2.20}, // default
                     // {1.05, 2.25},
                     // {1.05, 2.15},
@@ -369,8 +369,8 @@ void glueball_fit_4rBW()
                     hinvMass->GetXaxis()->SetRangeUser(1.00, 2.50);
                     hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
                     hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
-                    hinvMass->SetMaximum(maxRanges[ipt] * hinvMass->GetMaximum());
-// hinvMass->SetMaximum(1.6 * hinvMass->GetMaximum());
+                    // hinvMass->SetMaximum(maxRanges[ipt] * hinvMass->GetMaximum());
+hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
 #ifdef multiPanelPlots
                     hinvMass->GetYaxis()->SetTitleOffset(1.0);
 #else
@@ -378,6 +378,7 @@ void glueball_fit_4rBW()
 #endif
                     hinvMass->SetMarkerSize(1.0);
                     hinvMass->Draw("pe");
+                    double resMaximumFactor = 2.2;
                     TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
                     TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
                     // gStyle->SetOptStat(1110);
@@ -402,8 +403,8 @@ void glueball_fit_4rBW()
                         BEexpol_reduced->SetParName(i, parnames[i].c_str());
                     }
 
-                    double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice (2022 and 2024 dataset)
-                    // double parameters[] = {2.1e4, f1270Mass, f1270Width, 1.8e4, a1320Mass, a1320Width, 4.3e4, f1525Mass, f1525Width, 1.35e4, f1710Mass, f1710Width}; // LHC23_pass4_thin
+                    // double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width}; // rebin twice (2022 and 2024 dataset)
+                    double parameters[] = {1.1e4, f1270Mass, f1270Width, 5.8e3, a1320Mass, a1320Width, 1.6e4, f1525Mass, f1525Width, 3.1e3, f1710Mass, f1710Width}; // LHC23_pass4_thin
                     // double parameters[] = {400, f1270Mass, f1270Width, 370, a1320Mass, a1320Width, 1200, f1525Mass, f1525Width, 450, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c
                     // double parameters[] = {700, f1270Mass, f1270Width, 706, a1320Mass, a1320Width, 2200, f1525Mass, f1525Width, 1000, f1710Mass, f1710Width}; // pt range 3-5 GeV/c, 5-8 GeV/c rebin 2
                     // double parameters[] = {690, f1270Mass, f1270Width, 714, a1320Mass, a1320Width, 2300, f1525Mass, f1525Width, 500, f1710Mass, f1710Width}; // pt range 2-3 GeV/c rebin 2 (fit 1.05-2.25)
@@ -424,27 +425,15 @@ void glueball_fit_4rBW()
                     }
 
                     // //********systematic studies*************
-                    double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice (2022 dataset)
-                    // double initial_param_bkg[] = {3.6e6, -0.04, 2.82, 1.05}; // rebin twice (2023 dataset)
-                    // double initial_param_bkg[] = {2.6e6, 0.20, 3.67, 0.8}; // rebin twice (2024 dataset)
-                    // double initial_param_bkg[] = {4.618e6, 0.00774, 2.82, 1.03}; // pass_4_thin
-                    // double initial_param_bkg[] = {7.0e4, -0.17, 3.867, 1.8}; // pt range 3-5, 5-8 GeV/c (rebin 2)
-                    // double initial_param_bkg[] = {3.7e5, 0.07, 3.7, 0.94}; //rot range 1 - 30
-                    // double initial_param_bkg[] = {1.1e5, -0.17, 4.00, 1.4}; //rot range 2 - 30
-                    // double initial_param_bkg[] = {7646, -0.06, 2.15, 1.4}; // pt range 8-15 GeV/c (rebin 3)
-                    // double initial_param_bkg[] = {8.2e4, -0.257, 5.715, 1.8}; // pt range 2-3 GeV/c (rebin 2)
-                    // double initial_param_bkg[] = {7.3e6, 0.57, 6.15, 0.4}; // pt range 1-2 GeV/c (rebin 2)
-                    // double initial_param_bkg[] = {2.3e5, -0.12, 3.15, 1.4}; // ME 3-30 GeV/c
-
-                    //============Multiplicity dependent studies=================
-                    // 2022 Dataset
-                    // double initial_param_bkg[] = {1138, -0.03, 2.05, 1.5}; // 0 - 10%
+                    // double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice (2022 dataset)
+                    double initial_param_bkg[] = {1.37518e8, 0.6, 7.071167, 1.04}; // rebin twice (2022 dataset)
 
                     // Initial parameters for background
                     BEexpol_initial->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
                     BEexpol_initial->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  //Fix for medium train
                     BEexpol_initial->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
                     BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
+                    // BEexpol_initial->FixParameter(size_fitparams + 3, 1.0); // 1.098     // Fix
 
                     BEexpol_initial->FixParameter(2, f1270Width);
                     BEexpol_initial->FixParameter(5, a1320Width);
@@ -468,7 +457,7 @@ void glueball_fit_4rBW()
                         BEexpol->SetParameter(iparams, BEexpol_initial->GetParameter(iparams));
                     }
 
-                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {2, 3 * f1270WidthErr}, {4, 1 * a1320Width}, {5, 5 * a1320WidthErr}, {7, 1 * f1525Width}, {8, 5 * f1525WidthErr}, {10, 0.1 * f1710Width}, {11, 20 * f1710WidthErr}};
+                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {2, 3 * f1270WidthErr}, {4, 1 * a1320Width}, {5, 5 * a1320WidthErr}, {7, 1 * f1525Width}, {8, 5 * f1525WidthErr}, {10, 1.0 * f1710Width}, {11, 20 * f1710WidthErr}};
 
                     int limits_size = par_limits.size();
                     for (int i = 0; i < limits_size; i++)
@@ -481,10 +470,12 @@ void glueball_fit_4rBW()
                     BEexpol->SetParLimits(0, 0, 1e6);
                     BEexpol->SetParLimits(3, 0, 1e6);
                     // BEexpol->SetParLimits(6, 0, 1e6);
+                    // BEexpol->SetParLimits(9, 0, 1e6);
+                    // BEexpol->FixParameter(size_fitparams + 3, 1.0);
 
                     BEexpol->FixParameter(2, f1270Width);
                     BEexpol->FixParameter(5, a1320Width);
-                    BEexpol->FixParameter(8, f1525Width);
+                    // BEexpol->FixParameter(8, f1525Width);
                     // BEexpol->SetParameter(2, f1270Width);
                     // BEexpol->SetParameter(5, a1320Width);
                     // BEexpol->SetParameter(8, f1525Width);
@@ -494,7 +485,7 @@ void glueball_fit_4rBW()
                     // BEexpol->FixParameter(7, f1525Mass);
 
                     // BEexpol->FixParameter(10, f1710Mass);
-                    BEexpol->FixParameter(11, f1710Width);
+                    // BEexpol->FixParameter(11, f1710Width);
 
                     TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REMBS"); // comment while using toy mc and likelihood fits
                     double *obtained_parameters = BEexpol->GetParameters();         // comment while using toy mc and likelihood fits
@@ -2091,14 +2082,14 @@ void glueball_fit_4rBW()
 
                     onlyBW_clone->FixParameter(2, f1270Width);
                     onlyBW_clone->FixParameter(5, a1320Width);
-                    onlyBW_clone->FixParameter(8, f1525Width);
+                    // onlyBW_clone->FixParameter(8, f1525Width);
 
                     // onlyBW_clone->FixParameter(1, f1270Mass);
                     // onlyBW_clone->FixParameter(4, a1320Mass);
                     // onlyBW_clone->FixParameter(7, f1525Mass);
 
                     // onlyBW_clone->FixParameter(10, f1710Mass);
-                    onlyBW_clone->FixParameter(11, f1710Width);
+                    // onlyBW_clone->FixParameter(11, f1710Width);
 
                     onlyBW->SetLineColor(4);
                     onlyBW->SetLineStyle(2);
@@ -3774,7 +3765,7 @@ void glueball_fit_4rBW()
                     expol_clone->SetRange(0.99, 2.99);
                     hsubtracted->Add(expol_clone, -1);
                     hsubtracted->GetXaxis()->SetRangeUser(BEexpol->GetXmin(), BEexpol->GetXmax());
-                    hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 1.7);
+                    hsubtracted->SetMaximum(hsubtracted->GetMaximum() * resMaximumFactor);
                     hsubtracted->SetMinimum(-hsubtracted->GetMaximum() * 0.05);
                     hsubtracted->GetYaxis()->SetTitleOffset(1.0);
                     hsubtracted->Draw();
@@ -5003,11 +4994,6 @@ Double_t single_BW_mass_dep_spin2(double *x, double *par)
     double yield = par[0];
     double mass = par[1];
     double width = par[2] * (TMath::Power(mass / x[0], 1.0)) * TMath::Power((num) / (den), n1);
-
-    // cout << "x[0] is " << x[0] << endl;
-    // cout<< "mass is "<<mass<<endl;
-    // cout<<"num is "<<num<<endl;
-    // cout<<"den is "<<den<<endl;
 
     double fit = yield * mass * width * x[0] / (pow((x[0] * x[0] - mass * mass), 2) + pow(mass * width, 2));
 

@@ -1,14 +1,14 @@
 
 // The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
-const bool multipanel_plots = 1;
+const bool multipanel_plots = 0;
 const bool save_plots = 1;
 // const string kfoldername_temp = "kstarqa_id21631/hInvMass";
 const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-kstar892analysis";
 // const string kfoldername_temp = "lf-k892analysis";
 
-const string kvariation = ""; // change the variation here
+// const string kvariation = ""; // change the variation here
 // const string kvariation = "_CutsOnMotherParticle"; // change the variation here
 // const string kvariation = "_PtDepDCAxy"; // change the variation here
 // const string kvariation = "_RCT"; // change the variation here
@@ -22,8 +22,15 @@ const string kvariation = ""; // change the variation here
 // const string kvariation = "_TrackRapidity0p3_id34810"; // change the variation here
 // const string kvariation = "_MCclosure_id34109"; // change the variation here
 // const string kvariation = "_PIDKa2"; // change the variation here
-// const string kvariation = "_PIDKa1"; // change the variation here
+const string kvariation = "_PIDKa1_NoMID"; // change the variation here
 // const string kvariation = "_PIDKa2"; // change the variation here
+// const string kvariation = "_BetaTOF0p5";      // change the variation here
+// const string kvariation = "_GoodFT0vsPV";      // change the variation here
+// const string kvariation = "_GoodITSLayersAll"; // change the variation here
+// const string kvariation = "_ITSTPCRefit";       // change the variation here
+// const string kvariation = "_VertexITSTPC";      // change the variation here
+// const string kvariation = "_VertexTOFMatched";  // change the variation here
+// const string kvariation = "_ptDepPID";  // change the variation here
 ////********************************************************************************************
 
 // define datasets here
@@ -55,9 +62,17 @@ const string kMCDataset = "../mc/LHC24f3b/";
 
 //*************************PID Variations for Kaon (without MID)**************************
 // const string kDataFilename_temp2 = "480317.root"; // LHC22_pass7_medium dataset, INEL > 0
-const string kDataFilename_temp2 = "480447.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+// const string kDataFilename_temp2 = "480447.root"; // LHC23_pass4_thin_small dataset, INEL > 0
 // const string kDataFilename_temp2 = "480657.root"; // LHC24_pass1_minBias dataset, INEL > 0
 
+//****************************QA checks all ***************************************************
+// const string kDataFilename_temp2 = "585940.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+
+//*****************************pT-dependent PID***************************************
+// const string kDataFilename_temp2 = "586469.root";
+
+//*****************************Temporary***************************************
+const string kDataFilename_temp2 = "485163.root";
 #endif
 
 // final dataset name

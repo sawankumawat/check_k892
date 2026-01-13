@@ -37,11 +37,11 @@ void compare_yield_inelgt0_minBias()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = true;
+    bool isSameBins = false;
     // double inelNormRun2 = 0.892; event loss factor used in run 2
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/585940/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/585940/kstarqa/hInvMass"; // 2024 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -149,11 +149,6 @@ void compare_yield_inelgt0_minBias()
     }
     // leg->Draw();
     // crunMinBias->SaveAs(outputPath + "/run2_minBias_spectra_%d.png");
-
-    //// Now it is already scaled in the efficiency code
-    // hmultClone1->Scale(0.5); // In run the average of K* and anti-K* is taken. so we have to scale it.
-    // hmultClone2->Scale(0.5);
-    // hmultClone3->Scale(0.5);
 
     TH1F *h1 = (TH1F *)hmultClone1->Clone("h1");
     TH1F *h2 = (TH1F *)hmultClone1->Clone("h2");
@@ -298,11 +293,11 @@ void compare_yield_inelgt0_minBias()
     h1->SetLineColor(kBlue);
     h1->SetMarkerColor(kBlue);
     h1->Draw("pe");
-    h21->SetMarkerStyle(21);
-    h21->SetMarkerSize(1);
-    h21->SetMarkerColor(kRed);
-    h21->SetLineColor(kRed);
-    h21->Draw("pe same");
+    // h21->SetMarkerStyle(21);
+    // h21->SetMarkerSize(1);
+    // h21->SetMarkerColor(kRed);
+    // h21->SetLineColor(kRed);
+    // h21->Draw("pe same");
     // h31->SetMarkerStyle(22);
     // h31->SetMarkerSize(1);
     // h31->SetMarkerColor(kGreen +2);
@@ -311,9 +306,9 @@ void compare_yield_inelgt0_minBias()
     fitFcn1->SetLineColor(kBlue);
     fitFcn1->SetLineStyle(2);
     fitFcn1->Draw("same");
-    fitFcn2->SetLineColor(kRed);
-    fitFcn2->SetLineStyle(2);
-    fitFcn2->Draw("same");
+    // fitFcn2->SetLineColor(kRed);
+    // fitFcn2->SetLineStyle(2);
+    // fitFcn2->Draw("same");
     // fitFcn3->SetLineColor(kGreen + 2);
     // fitFcn3->SetLineStyle(2);
     // fitFcn3->Draw("same");
@@ -329,7 +324,7 @@ void compare_yield_inelgt0_minBias()
     SetLegendStyle(leg);
     leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", 0.0, 100.0));
     leg->AddEntry(h1, "2023 data", "p");
-    leg->AddEntry(h21, "2024 data", "p");
+    // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
     // leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
     leg->AddEntry(gRun2_minBias[7], "pp 13 TeV (Published)", "p");

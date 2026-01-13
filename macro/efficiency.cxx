@@ -7,10 +7,11 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 void efficiency()
 {
-    bool makeQAplots = true;   // qa plots
+    bool makePIDplots = false; // qa plots
     string outputtype = "png"; // pdf, eps
 
-    TFile *fileEff2 = new TFile("/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass/efficiency/beforeCalibration/corrected_spectra.root"); // File for efficiency comparison
+    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
+
     // ****************Data files ********************
 
     // correct placement of TPC crossed rows
@@ -25,8 +26,14 @@ void efficiency()
 
     //*************************PID Variations for Kaon (without MID)**************************
     // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
-    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
+    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
     // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+
+    //================================QA checks==================
+    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/585940/kstarqa_VertexTOFMatched/hInvMass";
+
+    //==============================Pt-dependent PID=======================
+    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586469/kstarqa/hInvMass";
 
     TString outputfolder = data_path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
@@ -60,10 +67,14 @@ void efficiency()
 
     //**************************After Calibrated MC from Nicolo****************************
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/483982.root", "READ"); // 2023 MC
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/491715.root", "READ"); // 2023 MC (after correction)
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/temp.root", "READ"); // 2023 MC
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/484450.root", "READ"); // 2024 MC
 
-    //*******************************************************************************************************
+    //*******************************************QA checks************************************************
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/585904.root", "READ"); // 2023 MC
+
+    //================================Pt-dependent PID=======================
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586252.root", "READ"); // 2023 MC
 
     TFile *fileraw = new TFile((data_path + "/yield.root").c_str(), "READ");
 
@@ -80,6 +91,7 @@ void efficiency()
     // const string recpath = "kstarqa_PIDKa2/hInvMass/h2KstarRecpt2";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0, 10.0, 30.0, 50.0, 70.0, 100.0};
     // float mult_classes[] = {0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
@@ -112,27 +124,33 @@ void efficiency()
     TH2F *hAllGenKstar = (TH2F *)fileeff->Get(Form("%s/MCcorrections/hSignalLossDenominator", genpath.c_str()));
     TH2F *hAllGenKstar1Rec = (TH2F *)fileeff->Get(Form("%s/MCcorrections/hSignalLossNumerator", recpath.c_str()));
 
-    if (hAllGenKstar == nullptr || hAllGenKstar1Rec == nullptr)
-    {
-        cout << "Error reading signal loss histograms" << endl;
-        return;
-    }
+    // // Get correlation of nchargeParticles vs multiplicity from MC
+    // TH2F *hNchVsMultGen = (TH2F *)fileeff->Get(Form("%s/CorrFactors/hMultiplicityVsMultMC", genpath.c_str()));
+    // if (hAllGenKstar == nullptr || hAllGenKstar1Rec == nullptr || hNchVsMultGen == nullptr)
+    // {
+    //     cout << "Error reading signal loss histograms" << endl;
+    //     return;
+    // }
+
+    vector<double> nChParticlesFromMult;
+    // int multLoopEnd = nmultbins + 1;
+    int multLoopEnd = 1;
+    int multlow, multhigh;
 
     TFile *spectra = new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
-    TH1F *hChi2byNDF[nmultbins + 1];
-    TH1F *hMass[nmultbins + 1];
-    TH1F *hWidth[nmultbins + 1];
-    TH1F *hSignificance[nmultbins + 1];
-    TH1F *heff[nmultbins + 1];
-    TH1F *hSignalLoss[nmultbins + 1];
+    TH1F *hChi2byNDF[multLoopEnd];
+    TH1F *hMass[multLoopEnd];
+    TH1F *hWidth[multLoopEnd];
+    TH1F *hSignificance[multLoopEnd];
+    TH1F *heff[multLoopEnd];
+    TH1F *hSignalLoss[multLoopEnd];
     int markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 47};
-    TH1F *heventloss[nmultbins + 1];
+    TH1F *heventloss[multLoopEnd];
     TH1D *h1gen;
     TH1D *h1rec;
-    TH1F *hRatioEvBySig[nmultbins + 1];
+    TH1F *hRatioEvBySig[multLoopEnd];
 
-    int multlow, multhigh;
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < multLoopEnd; imult++)
     {
 
         if (imult == 0)
@@ -176,10 +194,16 @@ void efficiency()
         heventloss[imult] = new TH1F(Form("hEventLoss_%d", imult), "Event Loss", Npt, pT_bins);
         double eventLossNum = hAllGenColl1Rec->Integral(hAllGenColl1Rec->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec->GetXaxis()->FindBin(multhigh - 0.001));
         double eventLossDen = hAllGenColl->Integral(hAllGenColl->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl->GetXaxis()->FindBin(multhigh - 0.001));
+        // TH1F *hNchInMult = (TH1F *)hNchVsMultGen->ProjectionY(Form("hNchInMult_%d", imult), hNchVsMultGen->GetXaxis()->FindBin(multlow + 0.01), hNchVsMultGen->GetXaxis()->FindBin(multhigh - 0.01));
+        // hAllGenColl1Rec->Multiply(hAllGenColl1Rec, hNchInMult);
+        // hAllGenColl->Multiply(hAllGenColl, hNchInMult);
+        // double eventLossNum = hAllGenColl1Rec->Integral();
+        // double eventLossDen = hAllGenColl->Integral();
+        // cout << "Multiplicity bin " << multlow << "-" << multhigh << ", Event Loss " << eventLossNum / eventLossDen << endl;
 
         // Signal loss calculations
-        TH1F *hSignalLossNumPt = (TH1F *)hAllGenKstar1Rec->ProjectionX(Form("SignalLossNumPt_%d", imult), hAllGenKstar1Rec->GetYaxis()->FindBin(multlow + 0.001), hAllGenKstar1Rec->GetYaxis()->FindBin(multhigh - 0.001));
-        TH1F *hSignalLossDenPt = (TH1F *)hAllGenKstar->ProjectionX(Form("SignalLossDenPt_%d", imult), hAllGenKstar->GetYaxis()->FindBin(multlow + 0.001), hAllGenKstar->GetYaxis()->FindBin(multhigh - 0.001));
+        TH1F *hSignalLossNumPt = (TH1F *)hAllGenKstar1Rec->ProjectionX(Form("SignalLossNumPt_%d", imult), hAllGenKstar1Rec->GetYaxis()->FindBin(multlow + 0.01), hAllGenKstar1Rec->GetYaxis()->FindBin(multhigh - 0.01));
+        TH1F *hSignalLossDenPt = (TH1F *)hAllGenKstar->ProjectionX(Form("SignalLossDenPt_%d", imult), hAllGenKstar->GetYaxis()->FindBin(multlow + 0.01), hAllGenKstar->GetYaxis()->FindBin(multhigh - 0.01));
 
         // TH1F *hSignalLossNumPt = (TH1F *)hAllGenKstar1Rec->ProjectionX();
         // TH1F *hSignalLossDenPt = (TH1F *)hAllGenKstar->ProjectionX();
@@ -201,15 +225,15 @@ void efficiency()
             heff[imult]->SetBinError(i + 1, efficiencyerr);
             hyieldBinCount->SetBinContent(i + 1, hyieldBinCount->GetBinContent(i + 1) / (efficiency * 2));
             hyieldIntegral->SetBinContent(i + 1, hyieldIntegral->GetBinContent(i + 1) / (efficiency * 2));
+            // Note: the efficiency is multiplied by 2, because in run2 the average of K* + anit-K* was taken.
 
             double errorinyieldBinCount = hyieldBinCount->GetBinError(i + 1);
             double rawyieldvalueBinCount = hyieldBinCount->GetBinContent(i + 1);
-            hyieldBinCount->SetBinError(i + 1, sqrt(pow(errorinyieldBinCount / efficiency, 2) + pow(rawyieldvalueBinCount * efficiencyerr / (efficiency * efficiency), 2)));
+            hyieldBinCount->SetBinError(i + 1, 0.5 * sqrt(pow(errorinyieldBinCount / efficiency, 2) + pow(rawyieldvalueBinCount * efficiencyerr / (efficiency * efficiency), 2))); // 0.5 for average of K*+ and K*-
 
             double errorinyieldIntegral = hyieldIntegral->GetBinError(i + 1);
             double rawyieldvalueIntegral = hyieldIntegral->GetBinContent(i + 1);
-            hyieldIntegral->SetBinError(i + 1, sqrt(pow(errorinyieldIntegral / efficiency, 2) + pow(rawyieldvalueIntegral * efficiencyerr / (efficiency * efficiency), 2)));
-
+            hyieldIntegral->SetBinError(i + 1, 0.5 * sqrt(pow(errorinyieldIntegral / efficiency, 2) + pow(rawyieldvalueIntegral * efficiencyerr / (efficiency * efficiency), 2))); // 0.5 for average of K*+ and K*-
             // Event loss calculations
             // if (imult > 0)
             {
@@ -295,61 +319,61 @@ void efficiency()
     // h1rec->Draw("ep");
     // cReconstructedMult->SaveAs(outputfolder + "/reconstructed_pT.png");
 
-    //************Take ratio of min bias efficiency with any other efficiency file********************
-    TH1F *hEffMinBias = (TH1F *)fileEff2->Get("mult_0-100/heff");
-    TH1F *hratio = (TH1F *)hEffMinBias->Clone("hratio");
-    hratio->Divide(heff[0]);
-    TCanvas *cRatioEff = new TCanvas("", "", 720, 720);
-    double pad1Size, pad2Size;
-    SetCanvasStyle(cRatioEff, 0.25, 0.03, 0.03, 0.15);
-    canvas_style(cRatioEff, pad1Size, pad2Size);
-    cRatioEff->cd(1);
-    SetHistoQA(heff[0]);
-    SetHistoQA(hEffMinBias);
-    heff[0]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    heff[0]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    heff[0]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-    heff[0]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    heff[0]->SetMaximum(heff[0]->GetMaximum() * 1.2);
-    heff[0]->Draw("ep");
-    hEffMinBias->SetMarkerStyle(20);
-    hEffMinBias->SetMarkerColor(kRed);
-    hEffMinBias->SetLineColor(kRed);
-    hEffMinBias->Draw("ep same");
-    TLegend *legEffRatio = new TLegend(0.20, 0.75, 0.92, 0.98);
-    legEffRatio->SetTextSize(0.03);
-    legEffRatio->SetFillStyle(0);
-    legEffRatio->SetBorderSize(0);
-    legEffRatio->AddEntry(heff[0], "Efficiency 1", "p");
-    legEffRatio->AddEntry(hEffMinBias, "Efficiency 2", "p");
-    legEffRatio->Draw();
+    // //************Take ratio of min bias efficiency with any other efficiency file********************
+    // TFile *fileEff2 = new TFile("/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass/efficiency/beforeCalibration/corrected_spectra.root"); // File for efficiency comparison
+    // TH1F *hEffMinBias = (TH1F *)fileEff2->Get("mult_0-100/heff");
+    // TH1F *hratio = (TH1F *)hEffMinBias->Clone("hratio");
+    // hratio->Divide(heff[0]);
+    // TCanvas *cRatioEff = new TCanvas("", "", 720, 720);
+    // double pad1Size, pad2Size;
+    // SetCanvasStyle(cRatioEff, 0.25, 0.03, 0.03, 0.15);
+    // canvas_style(cRatioEff, pad1Size, pad2Size);
+    // cRatioEff->cd(1);
+    // SetHistoQA(heff[0]);
+    // SetHistoQA(hEffMinBias);
+    // heff[0]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    // heff[0]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    // heff[0]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    // heff[0]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    // heff[0]->SetMaximum(heff[0]->GetMaximum() * 1.2);
+    // heff[0]->Draw("ep");
+    // hEffMinBias->SetMarkerStyle(20);
+    // hEffMinBias->SetMarkerColor(kRed);
+    // hEffMinBias->SetLineColor(kRed);
+    // hEffMinBias->Draw("ep same");
+    // TLegend *legEffRatio = new TLegend(0.20, 0.75, 0.92, 0.98);
+    // legEffRatio->SetTextSize(0.03);
+    // legEffRatio->SetFillStyle(0);
+    // legEffRatio->SetBorderSize(0);
+    // legEffRatio->AddEntry(heff[0], "Efficiency 1", "p");
+    // legEffRatio->AddEntry(hEffMinBias, "Efficiency 2", "p");
+    // legEffRatio->Draw();
 
-    cRatioEff->cd(2);
-    hratio->GetYaxis()->SetTitleSize(0.026 / pad2Size);
-    hratio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    hratio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    hratio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hratio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hratio->GetYaxis()->SetTitle("Ratio (Eff2 / Eff1)");
-    hratio->GetYaxis()->SetTitleOffset(0.75);
-    hratio->Draw();
-    TLine *line1 = new TLine(0, 1, 15, 1);
-    line1->SetLineColor(kBlack);
-    line1->SetLineStyle(2);
-    line1->Draw("same");
-    cRatioEff->SaveAs(outputfolder + "/efficiency_ratio.png");
+    // cRatioEff->cd(2);
+    // hratio->GetYaxis()->SetTitleSize(0.026 / pad2Size);
+    // hratio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    // hratio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    // hratio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    // hratio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hratio->GetYaxis()->SetTitle("Ratio (Eff2 / Eff1)");
+    // hratio->GetYaxis()->SetTitleOffset(0.75);
+    // hratio->Draw();
+    // TLine *line1 = new TLine(0, 1, 15, 1);
+    // line1->SetLineColor(kBlack);
+    // line1->SetLineStyle(2);
+    // line1->Draw("same");
+    // cRatioEff->SaveAs(outputfolder + "/efficiency_ratio.png");
 
     // Plot other plots for all multiplicity bins
     TCanvas *cefficiency = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cefficiency, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(heff[1]);
-    heff[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    heff[1]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-    heff[1]->GetYaxis()->SetTitleOffset(1.6);
-    heff[1]->SetMaximum(0.65);
-    heff[1]->Draw("pe");
-    for (int imult = 1; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < multLoopEnd; imult++)
     {
+        SetHistoQA(heff[imult]);
+        heff[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        heff[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
+        heff[imult]->GetYaxis()->SetTitleOffset(1.6);
+        heff[imult]->SetMaximum(0.65);
         heff[imult]->SetMarkerStyle(markers[imult]);
         heff[imult]->SetMarkerSize(1.2);
         heff[imult]->Draw("pe same PLC PMC");
@@ -372,98 +396,12 @@ void efficiency()
     legall->SetFillStyle(0);
     legall->SetBorderSize(0);
     // legall->AddEntry(heff[0], "0-100%", "p");
-    for (int imult = 1; imult < nmultbins + 1; imult++)
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         legall->AddEntry(heff[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "p");
     }
     legall->Draw();
     cefficiency->SaveAs(outputfolder + "/efficiency_all_mult.png");
-
-    TCanvas *cSignificance = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cSignificance, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hSignificance[1]);
-    hSignificance[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSignificance[1]->GetYaxis()->SetTitle("Significance");
-    hSignificance[1]->GetYaxis()->SetTitleOffset(1.6);
-    hSignificance[1]->SetMaximum(750);
-    hSignificance[1]->SetMinimum(-5);
-    hSignificance[1]->Draw("p");
-    for (int imult = 1; imult < nmultbins + 1; imult++)
-    {
-        hSignificance[imult]->SetMarkerStyle(markers[imult]);
-        hSignificance[imult]->SetMarkerSize(1.2);
-        hSignificance[imult]->Draw("p same PLC PMC");
-    }
-    legall->Draw();
-    cSignificance->SaveAs(outputfolder + "/significance_all_mult.png");
-
-    TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hChi2byNDF[1]);
-    hChi2byNDF[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hChi2byNDF[1]->GetYaxis()->SetTitle("#chi^{2}/NDF");
-    hChi2byNDF[1]->GetYaxis()->SetTitleOffset(1.6);
-    hChi2byNDF[1]->SetMaximum(6.5);
-    hChi2byNDF[1]->SetMinimum(0);
-    hChi2byNDF[1]->SetStats(0);
-    hChi2byNDF[1]->Draw("p");
-    for (int imult = 1; imult < nmultbins + 1; imult++)
-    {
-        hChi2byNDF[imult]->SetMarkerStyle(markers[imult]);
-        hChi2byNDF[imult]->SetMarkerSize(1.2);
-        hChi2byNDF[imult]->Draw("p same PLC PMC");
-    }
-    legall->Draw();
-    cChi2byNDF->SaveAs(outputfolder + "/chi2byNDF_all_mult.png");
-
-    TCanvas *cMass = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hMass[1]);
-    hMass[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hMass[1]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    hMass[1]->GetYaxis()->SetTitleOffset(1.6);
-    hMass[1]->GetYaxis()->SetRangeUser(0.878, 0.919);
-    hMass[1]->SetStats(0);
-    hMass[1]->Draw("pe");
-    for (int imult = 1; imult < nmultbins + 1; imult++)
-    {
-        hMass[imult]->SetMarkerStyle(markers[imult]);
-        hMass[imult]->SetMarkerSize(1.2);
-        hMass[imult]->Draw("pe same PLC PMC");
-    }
-    TLine *linePDG = new TLine(0, masspdg, 20, masspdg);
-    linePDG->SetLineStyle(2);
-    linePDG->SetLineColor(2);
-    linePDG->SetLineWidth(2);
-    linePDG->Draw();
-    legall->AddEntry(linePDG, "PDG Mass", "l");
-    legall->Draw();
-    cMass->SaveAs(outputfolder + "/mass_all_mult.png");
-
-    TCanvas *cWidth = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cWidth, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hWidth[1]);
-    hWidth[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hWidth[1]->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
-    hWidth[1]->GetYaxis()->SetTitleOffset(1.6);
-    hWidth[1]->GetYaxis()->SetRangeUser(0.047 - 0.04, 0.047 + 0.05);
-    hWidth[1]->SetStats(0);
-    hWidth[1]->Draw("pe");
-    TLine *linePDGWidth = new TLine(0, widthpdg, 20, widthpdg);
-    linePDGWidth->SetLineStyle(2);
-    linePDGWidth->SetLineColor(2);
-    linePDGWidth->SetLineWidth(2);
-    linePDGWidth->Draw();
-    legall->AddEntry(linePDGWidth, "PDG Width", "l");
-    legall->Draw();
-    for (int imult = 1; imult < nmultbins + 1; imult++)
-    {
-        hWidth[imult]->SetMarkerStyle(markers[imult]);
-        hWidth[imult]->SetMarkerSize(1.2);
-        hWidth[imult]->Draw("pe same PLC PMC");
-    }
-    legall->Draw();
-    cWidth->SaveAs(outputfolder + "/width_all_mult.png");
 
     // Generate colors
     int allColors[11];
@@ -478,19 +416,29 @@ void efficiency()
 
     TCanvas *cEventLoss = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cEventLoss, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(heventloss[1]);
-    heventloss[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    heventloss[1]->GetYaxis()->SetTitle("Event Loss");
-    heventloss[1]->GetYaxis()->SetTitleOffset(1.6);
-    heventloss[1]->SetStats(0);
-    heventloss[1]->Draw("l");
     legall->Clear();
-    for (int imult = 1; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < multLoopEnd; imult++)
     {
+        if (imult == 0)
+        {
+            multlow = 0;
+            multhigh = 100;
+        }
+        else
+        {
+            multlow = mult_classes[imult - 1];
+            multhigh = mult_classes[imult];
+        }
+        SetHistoQA(heventloss[imult]);
+        heventloss[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        heventloss[imult]->GetYaxis()->SetTitle("Event Loss");
+        heventloss[imult]->GetYaxis()->SetTitleOffset(1.6);
+        heventloss[imult]->SetStats(0);
         heventloss[imult]->SetMarkerStyle(markers[imult]);
         heventloss[imult]->SetMarkerSize(1.2);
-        heventloss[imult]->Draw("l same PLC PMC");
-        legall->AddEntry(heventloss[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "l");
+        heventloss[imult]->SetLineColor(colors[imult]);
+        heventloss[imult]->Draw("l same");
+        legall->AddEntry(heventloss[imult], Form("%d-%d%%", multlow, multhigh), "l");
     }
     legall->Draw();
     // TLine *lineEventLoss = new TLine(0, 1.0, 100, 1.0);
@@ -507,11 +455,11 @@ void efficiency()
     hSignalLoss[0]->GetYaxis()->SetTitle("Event and signal loss");
     hSignalLoss[0]->GetYaxis()->SetTitleOffset(1.6);
     hSignalLoss[0]->SetStats(0);
-    hSignalLoss[0]->SetMaximum(1.01);
+    hSignalLoss[0]->SetMaximum(1.4);
     hSignalLoss[0]->SetMinimum(0.3);
     hSignalLoss[0]->Draw("pe");
     legall->Clear();
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < multLoopEnd; imult++)
     {
         if (imult == 0)
         {
@@ -525,12 +473,12 @@ void efficiency()
         }
         hSignalLoss[imult]->SetMarkerStyle(markers[imult]);
         hSignalLoss[imult]->SetMarkerSize(1.2);
-        hSignalLoss[imult]->SetLineColor(allColors[imult + 1]);
-        hSignalLoss[imult]->SetMarkerColor(allColors[imult + 1]);
+        hSignalLoss[imult]->SetLineColor(colors[imult]);
+        hSignalLoss[imult]->SetMarkerColor(colors[imult]);
         hSignalLoss[imult]->Draw("pe same");
         heventloss[imult]->SetLineStyle(2);
         heventloss[imult]->SetLineWidth(2);
-        heventloss[imult]->SetLineColor(allColors[imult + 1]);
+        heventloss[imult]->SetLineColor(colors[imult]);
         heventloss[imult]->Draw("l same");
         legall->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
     }
@@ -549,7 +497,7 @@ void efficiency()
     hRatioEvBySig[0]->SetMinimum(0.6);
     hRatioEvBySig[0]->Draw("pe");
     legall->Clear();
-    for (int imult = 0; imult < nmultbins + 1; imult++)
+    for (int imult = 0; imult < multLoopEnd; imult++)
     {
         if (imult == 0)
         {
@@ -563,20 +511,101 @@ void efficiency()
         }
         hRatioEvBySig[imult]->SetMarkerStyle(markers[imult]);
         hRatioEvBySig[imult]->SetMarkerSize(1.2);
-        hRatioEvBySig[imult]->SetMarkerColor(allColors[imult + 1]);
-        hRatioEvBySig[imult]->SetLineColor(allColors[imult + 1]);
+        hRatioEvBySig[imult]->SetMarkerColor(colors[imult]);
+        hRatioEvBySig[imult]->SetLineColor(colors[imult]);
         hRatioEvBySig[imult]->Draw("pe same");
         legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
     }
     legall->Draw();
     cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss.png");
 
-    // TCanvas *ctemp = new TCanvas("", "", 720, 720);
-    // SetCanvasStyle(ctemp, 0.16, 0.06, 0.01, 0.14);
-    // hAllGenKstar->Draw("colz");
-    // ctemp->SaveAs(outputfolder + "/temp.png");
+    TCanvas *cSignificance = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cSignificance, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hSignificance[0]);
+    hSignificance[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignificance[0]->GetYaxis()->SetTitle("Significance");
+    hSignificance[0]->GetYaxis()->SetTitleOffset(1.6);
+    hSignificance[0]->SetMaximum(750);
+    hSignificance[0]->SetMinimum(-5);
+    hSignificance[0]->Draw("p");
+    for (int imult = 0; imult < multLoopEnd; imult++)
+    {
+        hSignificance[imult]->SetMarkerStyle(markers[imult]);
+        hSignificance[imult]->SetMarkerSize(1.2);
+        hSignificance[imult]->Draw("p same PLC PMC");
+    }
+    legall->Draw();
+    cSignificance->SaveAs(outputfolder + "/significance_all_mult.png");
 
-    if (makeQAplots)
+    TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hChi2byNDF[0]);
+    hChi2byNDF[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hChi2byNDF[0]->GetYaxis()->SetTitle("#chi^{2}/NDF");
+    hChi2byNDF[0]->GetYaxis()->SetTitleOffset(1.6);
+    hChi2byNDF[0]->SetMaximum(6.5);
+    hChi2byNDF[0]->SetMinimum(0);
+    hChi2byNDF[0]->SetStats(0);
+    hChi2byNDF[0]->Draw("p");
+    for (int imult = 0; imult < multLoopEnd; imult++)
+    {
+        hChi2byNDF[imult]->SetMarkerStyle(markers[imult]);
+        hChi2byNDF[imult]->SetMarkerSize(1.2);
+        hChi2byNDF[imult]->Draw("p same PLC PMC");
+    }
+    legall->Draw();
+    cChi2byNDF->SaveAs(outputfolder + "/chi2byNDF_all_mult.png");
+
+    TCanvas *cMass = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hMass[0]);
+    hMass[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hMass[0]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    hMass[0]->GetYaxis()->SetTitleOffset(1.6);
+    hMass[0]->GetYaxis()->SetRangeUser(0.878, 0.919);
+    hMass[0]->SetStats(0);
+    hMass[0]->Draw("pe");
+    for (int imult = 0; imult < multLoopEnd; imult++)
+    {
+        hMass[imult]->SetMarkerStyle(markers[imult]);
+        hMass[imult]->SetMarkerSize(1.2);
+        hMass[imult]->Draw("pe same PLC PMC");
+    }
+    TLine *linePDG = new TLine(0, masspdg, 20, masspdg);
+    linePDG->SetLineStyle(2);
+    linePDG->SetLineColor(2);
+    linePDG->SetLineWidth(2);
+    linePDG->Draw();
+    legall->AddEntry(linePDG, "PDG Mass", "l");
+    legall->Draw();
+    cMass->SaveAs(outputfolder + "/mass_all_mult.png");
+
+    TCanvas *cWidth = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cWidth, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hWidth[0]);
+    hWidth[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hWidth[0]->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
+    hWidth[0]->GetYaxis()->SetTitleOffset(1.6);
+    hWidth[0]->GetYaxis()->SetRangeUser(0.047 - 0.04, 0.047 + 0.05);
+    hWidth[0]->SetStats(0);
+    hWidth[0]->Draw("pe");
+    TLine *linePDGWidth = new TLine(0, widthpdg, 20, widthpdg);
+    linePDGWidth->SetLineStyle(2);
+    linePDGWidth->SetLineColor(2);
+    linePDGWidth->SetLineWidth(2);
+    linePDGWidth->Draw();
+    legall->AddEntry(linePDGWidth, "PDG Width", "l");
+    legall->Draw();
+    for (int imult = 0; imult < multLoopEnd; imult++)
+    {
+        hWidth[imult]->SetMarkerStyle(markers[imult]);
+        hWidth[imult]->SetMarkerSize(1.2);
+        hWidth[imult]->Draw("pe same PLC PMC");
+    }
+    legall->Draw();
+    cWidth->SaveAs(outputfolder + "/width_all_mult.png");
+
+    if (makePIDplots)
     {
         string QaPath = genpath.substr(0, genpath.length() - 9);
         cout << "QaPath: " << QaPath << endl;

@@ -37,13 +37,13 @@ void compare_multiple_spectra()
     // vector<string> QAVariation = {"", "_BetaTOF0p5", "_GoodFT0vsPV", "_GoodITSLayersAll", "_ITSTPCRefit", "_VertexITSTPC", "_VertexTOFMatched"};
     // vector<string> legendnames = {"Default", "BetaTOF<0.5 ns", "GoodFT0 vs PV", "All ITS layers", "ITS-TPC refit", "Vertex ITSTPC", "Vertex TOF Matched"};
 
-    vector<string> QAVariation = {"", "_ptDepPID"};
-    vector<string> legendnames = {"Default", "pT-dependent PID"};
+    vector<string> QAVariation = {"", "_hasITS"};
+    vector<string> legendnames = {"Default", "has ITS"};
 
     std::vector<TString> paths;
     for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/586469/kstarqa%s/hInvMass", variation.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa%s/hInvMass", variation.c_str()));
     }
     // // Additional push backs
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
@@ -106,9 +106,12 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
     vector<TFile *> fspectra(totalfiles);
     vector<TH1F *> hmult[numofmultbins + 1];
     vector<TH1F *> hratio[numofmultbins + 1]; // Fixed: should be numofmultbins + 1
+    vector<string> realFileNames = {"", "_ITSROF", "_Sel8"};
+
     for (int ifiles = 0; ifiles < totalfiles; ifiles++)
     {
         fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + "/corrected_spectra.root"), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
+        // fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + Form("/corrected_spectra%s.root", realFileNames[ifiles].c_str())), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
         if (fspectra[ifiles]->IsZombie())
         {
             cout << "File not found: " << paths[ifiles] << endl;

@@ -72,7 +72,7 @@ void glueball_KsKs_channel()
     // }
     // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_cosTheta_temp_pt1.root").c_str(), "RECREATE");
     // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_pT_%.1f_%.1f.root", pT_bins[0], pT_bins[1])).c_str(), "RECREATE");
-    TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPtMult3.root").c_str(), "RECREATE");
+    TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPtMultAbove1.root").c_str(), "RECREATE");
 
     TH1F *hmult = (TH1F *)fInputFile->Get((kfoldername_temp + kvariation + "/eventSelection/hmultiplicity").c_str());
     hmult->Write("multiplicity_histogram");

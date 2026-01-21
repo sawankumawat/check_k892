@@ -22,7 +22,7 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_TrackRapidity0p3_id34810"; // change the variation here
 // const string kvariation = "_MCclosure_id34109"; // change the variation here
 // const string kvariation = "_PIDKa2"; // change the variation here
-const string kvariation = "_PIDKa1_NoMID"; // change the variation here
+// const string kvariation = "_PIDKa1_NoMID"; // change the variation here
 // const string kvariation = "_PIDKa2"; // change the variation here
 // const string kvariation = "_BetaTOF0p5";      // change the variation here
 // const string kvariation = "_GoodFT0vsPV";      // change the variation here
@@ -31,6 +31,9 @@ const string kvariation = "_PIDKa1_NoMID"; // change the variation here
 // const string kvariation = "_VertexITSTPC";      // change the variation here
 // const string kvariation = "_VertexTOFMatched";  // change the variation here
 // const string kvariation = "_ptDepPID";  // change the variation here
+// const string kvariation = "_NoRCT";  // change the variation here
+// const string kvariation = "_hasITS";  // change the variation here
+const string kvariation = "_INEL";  // change the variation here
 ////********************************************************************************************
 
 // define datasets here
@@ -45,7 +48,7 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataset_temp = "LHC22o_pass7/Occupancy_effect/";
 // const string kDataset_temp = "LHC22o_pass7/IR_study/";
 // const string kDataset_temp = "LHC22o_pass7/MC_closure/";
-const string kMCDataset = "../mc/LHC24f3b/";
+const string kMCDataset = "../mc/LHC24f3c/";
 #endif
 
 #ifdef DATASET_LHC220_pass7
@@ -69,10 +72,11 @@ const string kMCDataset = "../mc/LHC24f3b/";
 // const string kDataFilename_temp2 = "585940.root"; // LHC23_pass4_thin_small dataset, INEL > 0
 
 //*****************************pT-dependent PID***************************************
-// const string kDataFilename_temp2 = "586469.root";
+// const string kDataFilename_temp2 = "586976.root"; //23 dataset
+// const string kDataFilename_temp2 = "586385.root"; // 24 dataset
 
 //*****************************Temporary***************************************
-const string kDataFilename_temp2 = "485163.root";
+const string kDataFilename_temp2 = "589661.root";
 #endif
 
 // final dataset name

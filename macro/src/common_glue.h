@@ -15,7 +15,7 @@ const std::string kfoldername_temp = "higher-mass-resonances";
 const std::string kvariation = ""; // No variation
 // const std::string kvariation = "_lambda_7";
 // const std::string kvariation = "_all_tight";
-// const std::string kvariation = "_PID3";
+// const std::string kvariation = "_TPCPID2";
 // const std::string kvariation = "_3sigmaKs";
 // const std::string kvariation = "_CS_Frame";
 #endif
@@ -35,13 +35,14 @@ const std::string kDataset_temp = "LHC22o_pass7_small/";
 #endif
 
 #ifdef DATASET_LHC22o_pass7_small
-// const std::string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7 (old)
+const std::string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7 (old)
 // const std::string kDataFilename_temp2 = "435448.root"; // Full 2022 pass 7 (new)
-const std::string kDataFilename_temp2 = "435450.root"; // LHC23_pass4_thin
+// const std::string kDataFilename_temp2 = "435450.root"; // LHC23_pass4_thin
 // const std::string kDataFilename_temp2 = "435449.root"; // LHC24_pass4_skimmed
 
 //===========Strangeness derived data==========================
 // const std::string kDataFilename_temp2 = "504802.root"; // LHC23_pass4_thin
+// const std::string kDataFilename_temp2 = "temp.root"; // LHC23_pass4_thin
 
 #endif
 

@@ -50,8 +50,12 @@ void plot_spectra()
 
     //*********************PID Variations for Kaon (without MID)************************
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // 2022 data
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
+
+    //==============================Pt-dependent PID=======================
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
 
     TString pathLevyFits = path + "/LevyFits";
     if (gSystem->mkdir(pathLevyFits, kTRUE))

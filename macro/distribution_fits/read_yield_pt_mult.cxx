@@ -99,7 +99,7 @@ void read_yield_pt_mult()
     TLine *line1710Mass = new TLine(0, f1710Mass, 12, f1710Mass);
     line1710Mass->SetLineStyle(2);
     line1710Mass->SetLineColor(2);
-    TLegend *leg1710Mass = new TLegend(0.55, 0.7, 0.9, 0.92);
+    TLegend *leg1710Mass = new TLegend(0.5, 0.7, 0.9, 0.92);
     leg1710Mass->SetBorderSize(0);
     leg1710Mass->SetFillStyle(0);
     leg1710Mass->SetTextSize(0.03);
@@ -107,7 +107,7 @@ void read_yield_pt_mult()
     // leg1710Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
     leg1710Mass->SetHeader("Multiplicity %");
 
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
     TString outputPath = path + "SpectraAll";
     gSystem->mkdir(outputPath, kTRUE);
@@ -187,8 +187,8 @@ void read_yield_pt_mult()
             std::cout << "Folder " << outputPath2 << " created successfully." << std::endl;
         }
 
-        float ptBins[] = {2.0, 3.0, 5.0, 7.0, 10.0};             // 2022 dataset
-        float ptBins2[] = {0.0, 2.0, 3.0, 5.0, 7.0, 10.0, 12.0}; // 2022 dataset
+        float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};             // 2022 dataset
+        float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 16.0}; // 2022 dataset
         // float ptBins[] = {2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
         // float ptBins2[] = {0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
 
@@ -649,7 +649,7 @@ void read_yield_pt_mult()
         hMass1710[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hMass1710[imult]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
         hMass1710[imult]->GetYaxis()->SetTitleOffset(1.6);
-        hMass1710[imult]->GetYaxis()->SetRangeUser(1.64, 1.84);
+        hMass1710[imult]->GetYaxis()->SetRangeUser(1.56, 1.89);
         hMass1710[imult]->SetLineColor(colors[imult]);
         hMass1710[imult]->SetMarkerColor(colors[imult]);
         hMass1710[imult]->SetMarkerStyle(markers[imult]);
@@ -682,7 +682,7 @@ void read_yield_pt_mult()
         hMass1525[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hMass1525[imult]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
         hMass1525[imult]->GetYaxis()->SetTitleOffset(1.6);
-        hMass1525[imult]->GetYaxis()->SetRangeUser(1.49, 1.58);
+        hMass1525[imult]->GetYaxis()->SetRangeUser(1.47, 1.61);
         hMass1525[imult]->SetLineColor(colors[imult]);
         hMass1525[imult]->SetMarkerColor(colors[imult]);
         hMass1525[imult]->SetMarkerStyle(markers[imult]);
@@ -748,7 +748,7 @@ void read_yield_pt_mult()
         hYield1525Corrected[imult]->SetLineColor(colors[imult]);
         hYield1525Corrected[imult]->SetMarkerColor(colors[imult]);
         hYield1525Corrected[imult]->SetMarkerStyle(markers[imult]);
-        hYield1525Corrected[imult]->SetMinimum(5e-7);
+        hYield1525Corrected[imult]->SetMinimum(5e-8);
         if (imult == 0)
             hYield1525Corrected[imult]->Draw("pe");
         else
@@ -773,7 +773,7 @@ void read_yield_pt_mult()
         hYield1710Corrected[imult]->SetLineColor(colors[imult]);
         hYield1710Corrected[imult]->SetMarkerColor(colors[imult]);
         hYield1710Corrected[imult]->SetMarkerStyle(markers[imult]);
-        hYield1710Corrected[imult]->SetMinimum(1e-6);
+        hYield1710Corrected[imult]->SetMinimum(1e-7);
         if (imult == 0)
             hYield1710Corrected[imult]->Draw("pe");
         else
@@ -822,7 +822,7 @@ void read_yield_pt_mult()
         hYieldRatioToMinBias->SetMarkerColor(colors[imult]);
         hYieldRatioToMinBias->SetMarkerStyle(markers[imult]);
         hYieldRatioToMinBias->GetYaxis()->SetNdivisions(505);
-        hYieldRatioToMinBias->SetMaximum(3.5);
+        hYieldRatioToMinBias->SetMaximum(2.5);
         hYieldRatioToMinBias->Draw("pe same");
 
         cRawYieldf2->cd();
@@ -835,7 +835,7 @@ void read_yield_pt_mult()
         hYield1525Raw[imult]->SetMarkerStyle(markers[imult]);
         hYield1525Raw[imult]->SetMarkerColor(colors[imult]);
         hYield1525Raw[imult]->SetLineColor(colors[imult]);
-        hYield1525Raw[imult]->SetMinimum(9e-9);
+        hYield1525Raw[imult]->SetMinimum(1e-9);
         if (imult == 0)
             hYield1525Raw[imult]->Draw("pe");
         else
@@ -856,7 +856,7 @@ void read_yield_pt_mult()
         hYield1710Raw[imult]->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
         hYield1710Raw[imult]->GetYaxis()->SetTitleOffset(1.6);
         hYield1710Raw[imult]->SetMaximum(hYield1710Raw[imult]->GetMaximum() * 30);
-        hYield1710Raw[imult]->SetMinimum(9e-9);
+        hYield1710Raw[imult]->SetMinimum(1e-9);
         hYield1710Raw[imult]->SetMarkerStyle(markers[imult]);
         hYield1710Raw[imult]->SetMarkerColor(colors[imult]);
         hYield1710Raw[imult]->SetLineColor(colors[imult]);
@@ -1259,35 +1259,6 @@ void read_yield_pt_mult()
         // delete hefficiencyf0;
         // delete hefficiencyf2;
     }
-    cMass1710->cd();
-    leg1710Mass->Draw();
-    // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
-    line1710Mass->Draw();
-    cMass1710->SaveAs(outputPath + "/Mass1710.png");
-
-    cMass1320->cd();
-    TLine *line1320Mass = new TLine(0, a1320Mass, 12, a1320Mass);
-    line1320Mass->SetLineStyle(2);
-    line1320Mass->SetLineColor(2);
-    line1320Mass->Draw();
-    leg1710Mass->Draw();
-    cMass1320->SaveAs(outputPath + "/Mass1320.png");
-
-    cMass1525->cd();
-    TLine *line1525Mass = new TLine(0, f1525Mass, 12, f1525Mass);
-    line1525Mass->SetLineStyle(2);
-    line1525Mass->SetLineColor(2);
-    line1525Mass->Draw();
-    leg1710Mass->Draw();
-    cMass1525->SaveAs(outputPath + "/Mass1525.png");
-
-    cMass1270->cd();
-    TLine *line1270Mass = new TLine(0, f1270Mass, 12, f1270Mass);
-    line1270Mass->SetLineStyle(2);
-    line1270Mass->SetLineColor(2);
-    line1270Mass->Draw();
-    leg1710Mass->Draw();
-    cMass1270->SaveAs(outputPath + "/Mass1270.png");
 
     cYieldCorrectedf1525->cd();
     leg1710Mass->Draw();
@@ -1322,12 +1293,51 @@ void read_yield_pt_mult()
     leg1710Mass->Draw();
     cRawYieldf0->SaveAs(outputPath + "/RawYieldf0.png");
 
+    cMass1710->cd();
+    // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
+    // line1710Mass->Draw();
+    TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
+    band1710Mass->SetFillColorAlpha(kRed, 0.2); // shaded
+    band1710Mass->SetLineColor(kRed);
+    band1710Mass->SetLineWidth(1);
+    band1710Mass->Draw("same");
+    leg1710Mass->AddEntry(band1710Mass, "PDG value", "f");
+    leg1710Mass->Draw();
+    cMass1710->SaveAs(outputPath + "/Mass1710.png");
+
+    cMass1320->cd();
+    TLine *line1320Mass = new TLine(0, a1320Mass, 12, a1320Mass);
+    line1320Mass->SetLineStyle(2);
+    line1320Mass->SetLineColor(2);
+    line1320Mass->Draw();
+    leg1710Mass->Draw();
+    cMass1320->SaveAs(outputPath + "/Mass1320.png");
+
+    cMass1525->cd();
+    TBox *band1525Mass = new TBox(1, f1525Mass - f1525MassErr, 15, f1525Mass + f1525MassErr);
+    band1525Mass->SetFillColorAlpha(kBlue, 0.2); // shaded
+    band1525Mass->SetLineColor(kBlue);
+    band1525Mass->SetLineWidth(1);
+    band1525Mass->Draw("same");
+    leg1710Mass->Draw();
+    cMass1525->SaveAs(outputPath + "/Mass1525.png");
+
+    cMass1270->cd();
+    TLine *line1270Mass = new TLine(0, f1270Mass, 12, f1270Mass);
+    line1270Mass->SetLineStyle(2);
+    line1270Mass->SetLineColor(2);
+    line1270Mass->Draw();
+    leg1710Mass->Draw();
+    cMass1270->SaveAs(outputPath + "/Mass1270.png");
+
     cWidth1710->cd();
     leg1710Mass->Draw();
-    TLine *lineWidth1710 = new TLine(0, f1710Width, 12, f1710Width);
-    lineWidth1710->SetLineStyle(2);
-    lineWidth1710->SetLineColor(2);
-    lineWidth1710->Draw();
+    TBox *band1710Width = new TBox(1, f1710Width - f1710WidthErr, 15, f1710Width + f1710WidthErr);
+    band1710Width->SetFillColorAlpha(kBlue, 0.2); // shaded
+    band1710Width->SetLineColor(kBlue);
+    band1710Width->SetLineWidth(1);
+    band1710Width->Draw("same");
+    leg1710Mass->Draw();
     cWidth1710->SaveAs(outputPath + "/Width1710.png");
 }
 

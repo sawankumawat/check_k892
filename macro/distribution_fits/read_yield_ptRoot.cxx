@@ -5,6 +5,7 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "../spectra/YieldMean.C"
+#include "../spectra/ReweightEfficiency.C"
 
 using namespace std;
 
@@ -15,33 +16,20 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
     return (p);
 }
 
-void read_yield_pt()
+void read_yield_ptRoot()
 {
     gStyle->SetOptStat(0);
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/mult_0-100/";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
-
-    // Temporarily openning f1525 yield file for single BW fit
-    ifstream yieldfile;
-    yieldfile.open("/home/sawan/check_k892/macro/distribution_fits/f1525_yield_fixWidth3.txt");
-    if (!yieldfile.is_open())
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    TFile *inputFile = new TFile((path + "FitParamdefault.root").c_str(), "READ");
+    if (inputFile->IsZombie())
     {
-        cout << "Error opening f1525 yield file" << endl;
-        return;
-    }
-    vector<double> f1525yieldSingleBW, f1525yieldSingleBWErr;
-    double yield1525singleBW, yield1525singleBWErr;
-    string pm;
-
-    while (yieldfile >> yield1525singleBW >> pm >> yield1525singleBWErr)
-    {
-        f1525yieldSingleBW.push_back(yield1525singleBW);
-        f1525yieldSingleBWErr.push_back(yield1525singleBWErr);
-        // cout<<"Read f1525 yield: "<< yield1525singleBW << " +/- " << yield1525singleBWErr << endl;
+        cerr << "Error opening file" << endl;
     }
 
-    TString outputPath = path + "/Spectra";
+    int multBinsUsed[] = {0, 100};
+    TString outputPath = path + Form("mult_%d-%d/Spectra", multBinsUsed[0], multBinsUsed[1]);
     if (gSystem->mkdir(outputPath, kTRUE))
     {
         std::cout << "Folder " << outputPath << " created successfully." << std::endl;
@@ -84,6 +72,9 @@ void read_yield_pt()
     TH1D *hrecptf0 = recpt1f0->Projection(1); // project on pt axis
     TH1D *hgenptf2 = GenpTf2->Projection(1);  // project on pt axis
     TH1D *hrecptf2 = recpt1f2->Projection(1); // project on pt axis
+    cout << "Number of bins in Generated " << hgenptf0->GetNbinsX() << endl;
+    cout << "Number of bins in Reconstructed " << hrecptf0->GetNbinsX() << endl;
+    cout << "Bin width of generated " << hgenptf0->GetXaxis()->GetBinWidth(1) << endl;
 
     for (int i = 0; i < nBins; i++)
     {
@@ -109,6 +100,7 @@ void read_yield_pt()
         }
     }
 
+    // For only plotting purpose
     TH1D *hYield1710Raw = new TH1D("hYield1710Raw", "Yield vs cosTheta", nBins2, ptBins2);
     TH1D *hYield1525Raw = new TH1D("hYield1525Raw", "Yield vs cosTheta", nBins2, ptBins2);
     TH1D *hYield1270Raw = new TH1D("hYield1270Raw", "Yield vs cosTheta", nBins2, ptBins2);
@@ -128,308 +120,102 @@ void read_yield_pt()
     TH1F *hSignificance1710 = new TH1F("hSignificance1710", "Significance vs pT", nBins2, ptBins2);
     TH1F *hSignificance1525 = new TH1F("hSignificance1525", "Significance vs pT", nBins2, ptBins2);
 
-    for (int i = 0; i < nBins; i++)
+    // Histograms read from the root file
+    TH1F *hYieldAll[4];
+    TH1F *hMassAll[4];
+    TH1F *hWidthAll[4];
+    TH1F *hSignificanceAll[4];
+    TH1F *hChi2NDF = (TH1F *)inputFile->Get(Form("Mult_%d_%d/hChi2NDF", multBinsUsed[0], multBinsUsed[1]));
+    if (hChi2NDF == nullptr)
     {
-        if (nBins != hefficiencyf0->GetNbinsX())
+        cout << "Error reading hChi2NDF histogram from root file" << endl;
+        return;
+    }
+    string resonance_mass[] = {"1270", "1320", "1525", "1710"};
+
+    for (int ires = 0; ires < 4; ires++)
+    {
+        hYieldAll[ires] = (TH1F *)inputFile->Get(Form("Mult_%d_%d/hYield_%s", multBinsUsed[0], multBinsUsed[1], resonance_mass[ires].c_str()));
+        hMassAll[ires] = (TH1F *)inputFile->Get(Form("Mult_%d_%d/hMass_%s", multBinsUsed[0], multBinsUsed[1], resonance_mass[ires].c_str()));
+        hWidthAll[ires] = (TH1F *)inputFile->Get(Form("Mult_%d_%d/hWidth_%s", multBinsUsed[0], multBinsUsed[1], resonance_mass[ires].c_str()));
+        hSignificanceAll[ires] = (TH1F *)inputFile->Get(Form("Mult_%d_%d/hSignificance_%s", multBinsUsed[0], multBinsUsed[1], resonance_mass[ires].c_str()));
+        if (hYieldAll[ires] == nullptr || hMassAll[ires] == nullptr || hWidthAll[ires] == nullptr || hSignificanceAll[ires] == nullptr)
         {
-            cout << "number of costheta bins " << nBins << ", number of efficiency bins " << hefficiencyf0->GetNbinsX() << endl;
-            cout << "Bins mismatch " << endl;
+            cout << "Error reading histograms for the root file " << resonance_mass[ires].c_str() << endl;
             return;
         }
-
-        ifstream infile;
-        infile.open(path + Form("fit_params_pT_%.1f-%.1fdefault.txt", ptBins[i], ptBins[i + 1]));
-        // cout << "path is " << path + "fit_params_cosTheta_" + to_string(ptBins[i]) + "_" + to_string(ptBins[i + 1]) + ".txt" << endl;
-
-        std::string line;
-
-        // Common fit info
-        double significance = 0, statSignificance = 0, chi2ndf = 0;
-
-        // Parameters for f1710
-        double yield1 = 0, yield1_err = 0;
-        double yield1Bin = 0, yield1Bin_err = 0;
-        double mass1 = 0, mass1_err = 0;
-        double width1 = 0, width1_err = 0;
-        double bkgYield1 = 0, bkgYield1_err = 0, bkgYield2 = 0, bkgYield2_err = 0, bkgYield3 = 0, bkgYield3_err = 0;
-        double signficance1{0}, signficance1_err{0};
-
-        // Parameters for f1525
-        double yield2 = 0, yield2_err = 0;
-        double yield2Bin = 0, yield2Bin_err = 0;
-        double mass2 = 0, mass2_err = 0;
-        double width2 = 0, width2_err = 0;
-        double signficance2{0}, signficance2_err{0};
-
-        // Parameters for f1270
-        double yield3 = 0, yield3_err = 0;
-        double yield3Bin = 0, yield3Bin_err = 0;
-        double mass3 = 0, mass3_err = 0;
-        double width3 = 0, width3_err = 0;
-
-        // Parameters for a1320
-        double yield4 = 0, yield4_err = 0;
-        double yield4Bin = 0, yield4Bin_err = 0;
-        double mass4 = 0, mass4_err = 0;
-        double width4 = 0, width4_err = 0;
-
-        int paramIndex = 0;
-        bool readingF1710 = false;
-        bool readingF1525 = false;
-        bool readingF1270 = false;
-        bool readingA1320 = false;
-        bool readingBkg = false;
-
-        if (infile.is_open())
+        // All the histograms have same bins
+        int totalBins = hYieldAll[ires]->GetNbinsX();
+        for (int ibins = 0; ibins < totalBins; ibins++)
         {
-            while (std::getline(infile, line))
+            double eff1710 = hefficiencyf0->GetBinContent(ibins + 1);
+            double eff1710_err = hefficiencyf0->GetBinError(ibins + 1);
+            double eff1525 = hefficiencyf2->GetBinContent(ibins + 1);
+            double eff1525_err = hefficiencyf2->GetBinError(ibins + 1);
+            double oneUponTriggerEfficiency = 70.0 / 46.1; // inverse of trigger efficiency
+            double BR_f0 = 0.1667 / 2;
+            double BR_f2 = 0.438 / 2;
+
+            float yield = hYieldAll[ires]->GetBinContent(ibins + 1);
+            float yield_err = hYieldAll[ires]->GetBinError(ibins + 1);
+            float mass = hMassAll[ires]->GetBinContent(ibins + 1);
+            float mass_err = hMassAll[ires]->GetBinError(ibins + 1);
+            float width = hWidthAll[ires]->GetBinContent(ibins + 1);
+            float width_err = hWidthAll[ires]->GetBinError(ibins + 1);
+            float significance = hSignificanceAll[ires]->GetBinContent(ibins + 1);
+            if (ires == 0)
             {
-                std::istringstream iss(line);
+                hMass1270->SetBinContent(ibins + 2, mass);
+                hMass1270->SetBinError(ibins + 2, mass_err);
+                hYield1270Raw->SetBinContent(ibins + 2, yield);
+                hYield1270Raw->SetBinError(ibins + 2, yield_err);
 
-                if (line.find("StatSignificance") != std::string::npos)
-                    iss.ignore(100, ' '), iss >> statSignificance;
+                double corrected_yield1270 = yield / eff1525;
+                double corrected_yield1270_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2));
+                hYield1270Corrected->SetBinContent(ibins + 2, corrected_yield1270);
+                hYield1270Corrected->SetBinError(ibins + 2, corrected_yield1270_err);
+            }
+            if (ires == 1)
+            {
+                hMass1320->SetBinContent(ibins + 2, mass);
+                hMass1320->SetBinError(ibins + 2, mass_err);
+                hYield1320Raw->SetBinContent(ibins + 2, yield);
+                hYield1320Raw->SetBinError(ibins + 2, yield_err);
 
-                else if (line.find("Significance") != std::string::npos && line.find("Stat") == std::string::npos)
-                    iss.ignore(100, ' '), iss >> significance;
+                double corrected_yield1320 = yield / eff1525;
+                double corrected_yield1320_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2));
+                hYield1320Corrected->SetBinContent(ibins + 2, corrected_yield1320);
+                hYield1320Corrected->SetBinError(ibins + 2, corrected_yield1320_err);
+            }
+            if (ires == 2)
+            {
+                hMass1525->SetBinContent(ibins + 2, mass);
+                hMass1525->SetBinError(ibins + 2, mass_err);
+                hYield1525Raw->SetBinContent(ibins + 2, yield);
+                hYield1525Raw->SetBinError(ibins + 2, yield_err);
+                hSignificance1525->SetBinContent(ibins + 2, significance);
 
-                else if (line.find("Chi2NDF") != std::string::npos)
-                    iss.ignore(100, ' '), iss >> chi2ndf;
+                double corrected_yield1525 = yield / (eff1525 * oneUponTriggerEfficiency * BR_f2);
+                double corrected_yield1525_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
+                hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
+                hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
+            }
+            if (ires == 3)
+            {
+                hMass1710->SetBinContent(ibins + 2, mass);
+                hMass1710->SetBinError(ibins + 2, mass_err);
+                hYield1710Raw->SetBinContent(ibins + 2, yield);
+                hYield1710Raw->SetBinError(ibins + 2, yield_err);
+                hWidth1710->SetBinContent(ibins + 2, width);
+                hWidth1710->SetBinError(ibins + 2, width_err);
+                hSignificance1710->SetBinContent(ibins + 2, significance);
 
-                else if (line.find("f1710") != std::string::npos)
-                {
-                    readingF1710 = true;
-                    readingF1525 = false;
-                    readingF1270 = false;
-                    readingA1320 = false;
-                    readingBkg = false;
-                    paramIndex = 0;
-                }
-
-                else if (line.find("f1525") != std::string::npos)
-                {
-                    readingF1525 = true;
-                    readingF1710 = false;
-                    readingF1270 = false;
-                    readingA1320 = false;
-                    readingBkg = false;
-                    paramIndex = 0;
-                }
-                else if (line.find("f1270") != std::string::npos)
-                {
-                    readingF1270 = true;
-                    readingA1320 = false;
-                    readingF1710 = false;
-                    readingF1525 = false;
-                    readingBkg = false;
-                    paramIndex = 0;
-                }
-                else if (line.find("a1320") != std::string::npos)
-                {
-                    readingA1320 = true;
-                    readingF1270 = false;
-                    readingF1710 = false;
-                    readingF1525 = false;
-                    readingBkg = false;
-                    paramIndex = 0;
-                }
-                else if (line.find("Norm range") != std::string::npos || line.find("Fit range") != std::string::npos)
-                {
-                    // Skip norm and fit range lines
-                    continue;
-                }
-                else if (line.find("Yield region") != std::string::npos)
-                {
-                    // Skip yield region lines
-                    continue;
-                }
-
-                else if (line.find("±") != std::string::npos)
-                {
-                    double val = 0, err = 0;
-                    string pm;
-                    std::istringstream(line) >> val >> pm >> err;
-
-                    if (readingF1710)
-                    {
-                        switch (paramIndex++)
-                        {
-                        case 0:
-                            yield1 = val;
-                            yield1_err = err;
-                            break;
-                        case 1:
-                            yield1Bin = val;
-                            yield1Bin_err = err;
-                            break;
-                        // case 1:
-                        case 2:
-                            mass1 = val;
-                            mass1_err = err;
-                            break;
-                        // case 2:
-                        case 3:
-                            width1 = val;
-                            width1_err = err;
-                            break;
-                        }
-                    }
-                    else if (readingF1525)
-                    {
-                        switch (paramIndex++)
-                        {
-                        case 0:
-                            yield2 = val;
-                            yield2_err = err;
-                            break;
-                        case 1:
-                            yield2Bin = val;
-                            yield2Bin_err = err;
-                            break;
-                        // case 1:
-                        case 2:
-                            mass2 = val;
-                            mass2_err = err;
-                            break;
-                        // case 2:
-                        case 3:
-                            width2 = val;
-                            width2_err = err;
-                            break;
-                        }
-                    }
-                    else if (readingF1270)
-                    {
-                        switch (paramIndex++)
-                        {
-                        case 0:
-                            yield3 = val;
-                            yield3_err = err;
-                            break;
-                        case 1:
-                            yield3Bin = val;
-                            yield3Bin_err = err;
-                            break;
-                        // case 1:
-                        case 2:
-                            mass3 = val;
-                            mass3_err = err;
-                            break;
-                        // case 2:
-                        case 3:
-                            width3 = val;
-                            width3_err = err;
-                            break;
-                        }
-                    }
-                    else if (readingA1320)
-                    {
-                        switch (paramIndex++)
-                        {
-                        case 0:
-                            yield4 = val;
-                            yield4_err = err;
-                            break;
-                        case 1:
-                            yield4Bin = val;
-                            yield4Bin_err = err;
-                            break;
-                        // case 1:
-                        case 2:
-                            mass4 = val;
-                            mass4_err = err;
-                            break;
-                        case 3:
-                            width4 = val;
-                            width4_err = err;
-                            break;
-                        }
-                    }
-                    else if (readingBkg)
-                    {
-                        switch (paramIndex++)
-                        {
-                        case 0:
-                            bkgYield1 = val;
-                            bkgYield1_err = err;
-                            break;
-                        case 1:
-                            bkgYield2 = val;
-                            bkgYield2_err = err;
-                            break;
-                        case 2:
-                            bkgYield3 = val;
-                            bkgYield3_err = err;
-                            break;
-                        }
-                    }
-                }
+                double corrected_yield1710 = yield / (eff1710 * oneUponTriggerEfficiency * BR_f0);
+                double corrected_yield1710_err = sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
+                hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
+                hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
             }
         }
-
-        double eff1710 = hefficiencyf0->GetBinContent(i + 1);
-        double eff1710_err = hefficiencyf0->GetBinError(i + 1);
-        double eff1525 = hefficiencyf2->GetBinContent(i + 1);
-        double eff1525_err = hefficiencyf2->GetBinError(i + 1);
-        double oneUponTriggerEfficiency = 70.0 / 46.1; // inverse of trigger efficiency
-        double BR_f0 = 0.1667 / 2;
-        double BR_f2 = 0.438 / 2;
-
-        double corrected_yield1710 = yield1 / (eff1710 * oneUponTriggerEfficiency * BR_f0);
-        double corrected_yield1710_err = sqrt(pow(yield1_err / eff1710, 2) + pow(yield1 * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
-        double corrected_yield1710Bin = yield1Bin / (eff1710 * oneUponTriggerEfficiency * BR_f0);
-        double corrected_yield1710Bin_err = sqrt(pow(yield1Bin_err / eff1710, 2) + pow(yield1Bin * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
-
-        // //================Modifying f21525 yield for single BW fit check=================//
-        // yield2 = f1525yieldSingleBW[i];
-        // yield2_err = f1525yieldSingleBWErr[i];
-        // //===============================================================================//
-
-        double corrected_yield1525 = yield2 / (eff1525 * oneUponTriggerEfficiency * BR_f2);
-        double corrected_yield1525_err = sqrt(pow(yield2_err / eff1525, 2) + pow(yield2 * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
-        cout << "Bin " << i << ", Raw yield f1525: " << yield2 << ", efficiency: " << eff1525 << endl;
-        double corrected_yield1525Bin = yield2Bin / (eff1525 * oneUponTriggerEfficiency * BR_f2);
-        double corrected_yield1525Bin_err = sqrt(pow(yield2Bin_err / eff1525, 2) + pow(yield2Bin * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
-
-        double corrected_yield1270 = yield3 / eff1525;
-        double corrected_yield1270_err = sqrt(pow(yield3_err / eff1525, 2) + pow(yield3 * eff1525_err / pow(eff1525, 2), 2));
-        double corrected_yield1270Bin = yield3Bin / eff1525;
-        double corrected_yield1270Bin_err = sqrt(pow(yield3Bin_err / eff1525, 2) + pow(yield3Bin * eff1525_err / pow(eff1525, 2), 2));
-
-        double corrected_yield1320 = yield4 / eff1525;
-        double corrected_yield1320_err = sqrt(pow(yield4_err / eff1525, 2) + pow(yield4 * eff1525_err / pow(eff1525, 2), 2));
-        double corrected_yield1320Bin = yield4Bin / eff1525;
-        double corrected_yield1320Bin_err = sqrt(pow(yield4Bin_err / eff1525, 2) + pow(yield4Bin * eff1525_err / pow(eff1525, 2), 2));
-
-        hYield1710Raw->SetBinContent(i + 2, yield1);
-        hYield1710Raw->SetBinError(i + 2, yield1_err);
-        hYield1710Corrected->SetBinContent(i + 2, corrected_yield1710);
-        hYield1710Corrected->SetBinError(i + 2, corrected_yield1710_err);
-        hMass1710->SetBinContent(i + 2, mass1);
-        hMass1710->SetBinError(i + 2, mass1_err);
-        hWidth1710->SetBinContent(i + 2, width1);
-        hWidth1710->SetBinError(i + 2, width1_err);
-
-        hYield1525Raw->SetBinContent(i + 2, yield2);
-        hYield1525Raw->SetBinError(i + 2, yield2_err);
-        hYield1525Corrected->SetBinContent(i + 2, corrected_yield1525);
-        hYield1525Corrected->SetBinError(i + 2, corrected_yield1525_err);
-        // cout<<"Bin "<<i<<", corrected f1525 yield: "<<corrected_yield1525<<" +/- "<<corrected_yield1525_err<<endl;
-        hMass1525->SetBinContent(i + 2, mass2);
-        hMass1525->SetBinError(i + 2, mass2_err);
-
-        hYield1270Raw->SetBinContent(i + 2, yield3);
-        hYield1270Raw->SetBinError(i + 2, yield3_err);
-        hYield1270Corrected->SetBinContent(i + 2, corrected_yield1270);
-        hYield1270Corrected->SetBinError(i + 2, corrected_yield1270_err);
-        hMass1270->SetBinContent(i + 2, mass3);
-        hMass1270->SetBinError(i + 2, mass3_err);
-
-        hYield1320Raw->SetBinContent(i + 2, yield4);
-        hYield1320Raw->SetBinError(i + 2, yield4_err);
-        hYield1320Corrected->SetBinContent(i + 2, corrected_yield1320);
-        hYield1320Corrected->SetBinError(i + 2, corrected_yield1320_err);
-        hMass1320->SetBinContent(i + 2, mass4);
-        hMass1320->SetBinError(i + 2, mass4_err);
     }
 
     TCanvas *cMass1710 = new TCanvas("cMass1710", "Mass vs #it{p}_{T} for f_{0}(1710)", 720, 720);
@@ -443,10 +229,10 @@ void read_yield_pt()
     hMass1710->SetMarkerStyle(21);
     hMass1710->Write();
     hMass1710->Draw("pe");
-    // TLine *line1710Mass = new TLine(0, f1710Mass, 12, f1710Mass);
-    // line1710Mass->SetLineStyle(2);
-    // line1710Mass->SetLineColor(2);
-    // line1710Mass->Draw();
+    TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
+    line1710Mass->SetLineStyle(2);
+    line1710Mass->SetLineColor(2);
+    line1710Mass->Draw("same");
     TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
     band1710Mass->SetFillColorAlpha(kRed, 0.2); // shaded
     band1710Mass->SetLineColor(kRed);
@@ -457,10 +243,11 @@ void read_yield_pt()
     leg1710Mass->SetFillStyle(0);
     leg1710Mass->SetTextSize(0.035);
     leg1710Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
+    leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "pe");
+    // leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
     // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
     band1710Mass->SetLineWidth(0);
-    leg1710Mass->AddEntry(band1710Mass, "World-average value", "f");
+    leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
     leg1710Mass->Draw();
     cMass1710->SaveAs(outputPath + "/Mass1710.png");
 
@@ -506,7 +293,20 @@ void read_yield_pt()
     band1525Mass->SetLineColor(kRed);
     band1525Mass->SetLineWidth(1);
     band1525Mass->Draw("same");
-    leg1710Mass->Draw();
+    // leg1710Mass->Draw();
+    TLine *line1525Mass = new TLine(1, f1525Mass, 15, f1525Mass);
+    line1525Mass->SetLineStyle(2);
+    line1525Mass->SetLineColor(2);
+    line1525Mass->Draw();
+    TLegend *leg1525Mass = new TLegend(0.55, 0.75, 0.85, 0.9);
+    leg1525Mass->SetBorderSize(0);
+    leg1525Mass->SetFillStyle(0);
+    leg1525Mass->SetTextSize(0.035);
+    leg1525Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    leg1525Mass->AddEntry(hMass1525, "f_{2}'(1525)", "pe");
+    band1525Mass->SetLineWidth(0);
+    leg1525Mass->AddEntry(line1525Mass, "PDG value", "lf");
+    leg1525Mass->Draw();
     cMass1525->SaveAs(outputPath + "/Mass1525.png");
 
     TCanvas *cMass1270 = new TCanvas("cMass1270", "Mass vs #it{p}_{T} for f_{2}(1270)", 720, 720);
@@ -545,12 +345,35 @@ void read_yield_pt()
     leg1710Mass->Draw();
     cMass1320->SaveAs(outputPath + "/Mass1320.png");
 
+    TCanvas *cSignificance = new TCanvas("cSignificance", "Significance vs #it{p}_{T}", 720, 720);
+    SetCanvasStyle(cSignificance, 0.18, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    SetHistoQA(hSignificance1710);
+    SetHistoQA(hSignificance1525);
+    hSignificance1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignificance1710->GetYaxis()->SetTitle("Significance");
+    hSignificance1710->GetYaxis()->SetTitleOffset(1.6);
+    hSignificance1710->SetMaximum(TMath::Max(hSignificance1710->GetMaximum(), hSignificance1525->GetMaximum()) * 1.1);
+    hSignificance1710->SetLineColor(kRed);
+    hSignificance1710->Draw();
+    hSignificance1525->SetLineColor(kBlue);
+    hSignificance1525->Draw("same");
+    TLegend *legSignificance = new TLegend(0.55, 0.75, 0.85, 0.9);
+    legSignificance->SetBorderSize(0);
+    legSignificance->SetFillStyle(0);
+    legSignificance->SetTextSize(0.035);
+    legSignificance->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legSignificance->AddEntry(hSignificance1710, "f_{0}(1710)", "l");
+    legSignificance->AddEntry(hSignificance1525, "f_{2}'(1525)", "l");
+    legSignificance->Draw();
+    cSignificance->SaveAs(outputPath + "/Significancef0f2.png");
+
     TCanvas *cYieldCorrectedf1525 = new TCanvas("cYieldCorrectedf1525", "Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cYieldCorrectedf1525, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(hYield1525Corrected);
     hYield1525Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1525Corrected->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
+    hYield1525Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1525Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1525Corrected->GetYaxis()->SetRangeUser(0.0, 460);
     hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
@@ -565,7 +388,7 @@ void read_yield_pt()
     gPad->SetLogy();
     SetHistoQA(hYield1710Corrected);
     hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
+    hYield1710Corrected->GetYaxis()->SetTitle("BR/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1710Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1710Corrected->GetYaxis()->SetRangeUser(0.0, 460);
     hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
@@ -584,8 +407,7 @@ void read_yield_pt()
     hYieldRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hYieldRatio->GetYaxis()->SetTitle("f_{0}(1710)/f_{2}'(1525)");
     hYieldRatio->GetYaxis()->SetTitleOffset(1.6);
-    // hYieldRatio->GetYaxis()->SetRangeUser(0.0, 460);
-    hYieldRatio->SetMaximum(2.1);
+    hYieldRatio->SetMaximum(hYieldRatio->GetMaximum() * 1.5);
     hYieldRatio->SetMarkerStyle(21);
     // hYieldRatio->SetMinimum(-2e-7);
     hYieldRatio->Write();
@@ -634,13 +456,20 @@ void read_yield_pt()
     gPad->SetLogy();
     SetHistoQA(hYield1525Raw);
     hYield1525Raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1525Raw->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
+    hYield1525Raw->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1525Raw->GetYaxis()->SetTitleOffset(1.6);
     hYield1525Raw->SetMaximum(hYield1525Raw->GetMaximum() * 1.5);
     // hYield1525Raw->SetMarkerStyle(21);
     // hYield1525Raw->SetMinimum(-2e-7);
     hYield1525Raw->Write();
     hYield1525Raw->Draw("pe");
+    TLegend *legend2 = new TLegend(0.55, 0.75, 0.85, 0.9);
+    legend2->SetBorderSize(0);
+    legend2->SetFillStyle(0);
+    legend2->SetTextSize(0.035);
+    legend2->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "pe");
+    legend2->Draw();
     cRawYieldf2->SaveAs(outputPath + "/RawYieldf2.png");
 
     TCanvas *cRawYieldf0 = new TCanvas("cRawYieldf0", "Raw #it{p}_{T} distribution for f_{0}(1710)", 720, 720);
@@ -648,12 +477,19 @@ void read_yield_pt()
     gPad->SetLogy();
     SetHistoQA(hYield1710Raw);
     hYield1710Raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1710Raw->GetYaxis()->SetTitle("1/N_{ev} * dN/(d#it{p}_{T}) (GeV/#it{c})^{-1}");
+    hYield1710Raw->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1710Raw->GetYaxis()->SetTitleOffset(1.6);
     hYield1710Raw->SetMaximum(hYield1710Raw->GetMaximum() * 1.5);
     // hYield1710Raw->SetMinimum(-2e-7);
     hYield1710Raw->Write();
     hYield1710Raw->Draw("pe same");
+    TLegend *legend3 = new TLegend(0.55, 0.75, 0.85, 0.9);
+    legend3->SetBorderSize(0);
+    legend3->SetFillStyle(0);
+    legend3->SetTextSize(0.035);
+    legend3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "pe");
+    legend3->Draw();
     cRawYieldf0->SaveAs(outputPath + "/RawYieldf0.png");
 
     TH1F *h1 = (TH1F *)hYield1525Corrected->Clone("h1");
@@ -672,7 +508,7 @@ void read_yield_pt()
     Option_t *opt = "REBMS0+";
     TString logfilename = "log.root";
     Double_t minfit = 1.0;
-    Double_t maxfit = 10.0;
+    Double_t maxfit = 15.0;
 
     TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
     fitFcn->SetParameter(0, 5.0);
@@ -702,18 +538,13 @@ void read_yield_pt()
     SetCanvasStyle(cCorrectedf2Fit, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(h1);
+    h1->SetMarkerSize(1.5);
     h1->SetMaximum(h1->GetMaximum() * 12);
-    h1->SetMinimum(9e-9);
+    h1->SetMinimum(9e-8);
     h1->Draw("pe");
     fitFcn->SetLineWidth(2);
     fitFcn->SetLineStyle(2);
     fitFcn->Draw("l same");
-    TLegend *legend2 = new TLegend(0.55, 0.75, 0.85, 0.9);
-    legend2->SetBorderSize(0);
-    legend2->SetFillStyle(0);
-    legend2->SetTextSize(0.035);
-    legend2->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legend2->AddEntry(h1, "f_{2}'(1525)", "pe");
     legend2->AddEntry(fitFcn, "Levy fit", "l");
     legend2->Draw();
     cCorrectedf2Fit->SaveAs(outputPath + "/LevyFitf2.png");
@@ -722,18 +553,13 @@ void read_yield_pt()
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(hYield1710Corrected);
+    hYield1710Corrected->SetMarkerSize(1.5);
     hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
-    hYield1710Corrected->SetMinimum(9e-8);
+    hYield1710Corrected->SetMinimum(9e-7);
     hYield1710Corrected->Draw("pe");
     fitFcn2->SetLineWidth(2);
     fitFcn2->SetLineStyle(2);
     fitFcn2->Draw("l same");
-    TLegend *legend3 = new TLegend(0.55, 0.75, 0.85, 0.9);
-    legend3->SetBorderSize(0);
-    legend3->SetFillStyle(0);
-    legend3->SetTextSize(0.035);
-    legend3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legend3->AddEntry(hYield1710Corrected, "f_{0}(1710)", "pe");
     legend3->AddEntry(fitFcn2, "Levy fit", "l");
     legend3->Draw();
     cCorrectedf0Fit->SaveAs(outputPath + "/LevyFitf0.png");
@@ -874,7 +700,7 @@ void read_yield_pt()
     double f2_mass = 1.5173;
     double f2_meanpt = hout->GetBinContent(5);
     double f2_err = hout->GetBinContent(6);
-    int f2_marker = 20;  // choose a unique marker style for f2(1525)
+    int f2_marker = 20;        // choose a unique marker style for f2(1525)
     int f2_color = kGreen + 1; // choose a unique color for f2(1525)
     TMarker *marker_f2 = new TMarker(f2_mass, f2_meanpt, f2_marker);
     marker_f2->SetMarkerColor(f2_color);
@@ -963,4 +789,10 @@ void read_yield_pt()
     cout << "dN/dy of f2(1525) = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
     cout << "Ratio dN/dy f0(1710)/f2(1525) = " << hout2->GetBinContent(1) / hout->GetBinContent(1) << " +- " << TMath::Sqrt(TMath::Power(hout2->GetBinContent(2) / hout->GetBinContent(1), 2) + TMath::Power(hout->GetBinContent(2) * hout2->GetBinContent(1) / (hout->GetBinContent(1) * hout->GetBinContent(1)), 2)) << endl;
     cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
+
+    //====Lets now rebate the MC===========
+    TFile *fReweight = new TFile("ReweightingFactorsf0.root", "recreate");
+    int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
+    TFile *fReweight2 = new TFile("ReweightingFactorsf2.root", "recreate");
+    int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
 }

@@ -33,7 +33,11 @@ void efficiency()
     // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/585940/kstarqa_VertexTOFMatched/hInvMass";
 
     //==============================Pt-dependent PID=======================
-    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586469/kstarqa/hInvMass";
+    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa/hInvMass"; // 2023
+    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024
+
+    //================================Temporary=======================
+    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass";
 
     TString outputfolder = data_path + "/efficiency";
     gSystem->mkdir(outputfolder, kTRUE);
@@ -74,7 +78,11 @@ void efficiency()
     // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/585904.root", "READ"); // 2023 MC
 
     //================================Pt-dependent PID=======================
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586252.root", "READ"); // 2023 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586966.root", "READ"); // 2023 MC
+    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586467.root", "READ"); // 2024 MC
+
+    //================================Temporary=======================
+    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/589815.root", "READ"); // 2023 MC
 
     TFile *fileraw = new TFile((data_path + "/yield.root").c_str(), "READ");
 
@@ -83,16 +91,14 @@ void efficiency()
         cout << "Error opening files" << endl;
         return;
     }
-    const string genpath = "kstarqa/hInvMass";
-    const string recpath = "kstarqa/hInvMass";
+    const string genpath = "kstarqa_INEL/hInvMass";
+    const string recpath = "kstarqa_INEL/hInvMass";
     // const string genpath = "kstarqa_OCC500_id34026/hInvMass/hk892GenpT";
     // const string recpath = "kstarqa_OCC500_id34026/hInvMass/h2KstarRecpt2";
     // const string genpath = "kstarqa_PIDKa2/hInvMass/hk892GenpT";
     // const string recpath = "kstarqa_PIDKa2/hInvMass/h2KstarRecpt2";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0, 10.0, 30.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     // THnSparseF *hSpraseGen = (THnSparseF *)fileeff->Get(Form("%s/hk892GenpT", genpath.c_str()));
@@ -109,7 +115,8 @@ void efficiency()
     // TH1F *hAllGenColl = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions", genpath.c_str()));
     // TH1F *hAllGenColl1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str()));
     TH1F *hAllGenColl = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityGen", genpath.c_str()));
-    TH1F *hAllGenColl1Rec = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityRec", recpath.c_str()));
+    TH1F *hAllGenColl1Rec = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityRec", recpath.c_str())); // without event splitting correction
+    TH1F *hAllGenColl1Rec_evsplit = (TH1F *)fileeff->Get(Form("%s/h1RecMult2", recpath.c_str()));            // with event splitting correction
 
     if (hAllGenColl == nullptr || hAllGenColl1Rec == nullptr)
     {
@@ -192,8 +199,13 @@ void efficiency()
 
         // Event loss calculations
         heventloss[imult] = new TH1F(Form("hEventLoss_%d", imult), "Event Loss", Npt, pT_bins);
-        double eventLossNum = hAllGenColl1Rec->Integral(hAllGenColl1Rec->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec->GetXaxis()->FindBin(multhigh - 0.001));
+
+        double eventLossNum = hAllGenColl1Rec->Integral(hAllGenColl1Rec->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec->GetXaxis()->FindBin(multhigh - 0.001)); // without event splitting consideration
+
+        // double eventLossNum = hAllGenColl1Rec_evsplit->Integral(hAllGenColl1Rec_evsplit->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec_evsplit->GetXaxis()->FindBin(multhigh - 0.001)); // with event splitting consideration (***Need to be fixed***)
+
         double eventLossDen = hAllGenColl->Integral(hAllGenColl->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl->GetXaxis()->FindBin(multhigh - 0.001));
+
         // TH1F *hNchInMult = (TH1F *)hNchVsMultGen->ProjectionY(Form("hNchInMult_%d", imult), hNchVsMultGen->GetXaxis()->FindBin(multlow + 0.01), hNchVsMultGen->GetXaxis()->FindBin(multhigh - 0.01));
         // hAllGenColl1Rec->Multiply(hAllGenColl1Rec, hNchInMult);
         // hAllGenColl->Multiply(hAllGenColl, hNchInMult);

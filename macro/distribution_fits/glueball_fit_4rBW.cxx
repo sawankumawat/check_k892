@@ -299,8 +299,8 @@ void glueball_fit_4rBW()
                 // float highpT = pT_bins[ipt + 1];
 
                 // Temporary for single bins checking
-                float lowpT = 7.0;
-                float highpT = 10.0;
+                float lowpT = 1.0;
+                float highpT = 2.0;
 
                 ofstream file;
                 file.open((savepath_mult + Form("/fit_params_pT_%.1f-%.1f", lowpT, highpT) + sysvar + ".txt").c_str());

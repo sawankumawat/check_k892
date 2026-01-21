@@ -33,11 +33,11 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad2->SetTopMargin(0.001);
 }
 
-void compare_yield_inelgt0_minBias()
+void compare_yield_inel()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = true;
+    bool isSameBins = false;
     // double inelNormRun2 = 0.892; event loss factor used in run 2
 
     string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass"; // 2023 data
@@ -55,7 +55,7 @@ void compare_yield_inelgt0_minBias()
         return;
     }
 
-    TFile *fpub = new TFile("pp13TeV_INELgt0.root", "READ");
+    TFile *fpub = new TFile("pp13TeV_INEL.root", "READ");
     if (fpub->IsZombie())
     {
         cout << "Error: file not found" << endl;
@@ -68,88 +68,22 @@ void compare_yield_inelgt0_minBias()
 
     TH1F *hmult1, *hmult2, *hmult3;
     TH1F *hmultClone1, *hmultClone2, *hmultClone3;
-    TGraphErrors *gRun2_spectra[numofmultbins];
-    TGraphErrors *gRun2_ratio[numofmultbins];
-    TGraphErrors *gRun2_minBias[numofmultbins];
-
     hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
     hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral_final");
+    hmult1->Scale(2.0); // for INEL it is K* + K*_bar and not their avearge (but confirm it once)
+    hmult2->Scale(2.0); //
     // hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral");
     // hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral");
     // hmult3 = (TH1F *)fspectra3->Get("mult_0-100/corrected_spectra_Integral");
     hmultClone1 = (TH1F *)hmult1->Clone("hmultClone0");
     hmultClone2 = (TH1F *)hmult2->Clone("hmultClone0");
-    // hmultClone3 = (TH1F *)hmult3->Clone("hmultClone0");
 
+    TGraphErrors *gRun2_minBias = (TGraphErrors *)fpub->Get("Table 4/Graph1D_y1");
     if (hmult1 == nullptr)
     {
         cout << "Histogram 1 not found" << endl;
         return;
     }
-
-    // TCanvas *crunMinBias = new TCanvas("", "", 720, 720);
-    // TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
-    // leg->SetTextSize(0.035);
-    // leg->SetBorderSize(0);
-    // leg->SetFillStyle(0);
-    // leg->SetNColumns(3);
-
-    // It is seen that apart from 0-1 multiplicity class, all other give same min bias (0-100) yield.
-
-    for (int imult = 0; imult < numofmultbins; imult++)
-    {
-        gRun2_spectra[imult] = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", imult + 1));
-        gRun2_minBias[imult] = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", imult + 1));
-        if (gRun2_spectra[imult] == nullptr)
-        {
-            cout << "Run2 yield graph not found for mult bin " << imult << endl;
-            return;
-        }
-        gRun2_ratio[imult] = (TGraphErrors *)fpub->Get(Form("Table %d/Graph1D_y1", imult + 1 + 9)); // ratio of given multiplicity class to 0-100% class
-        if (gRun2_ratio[imult] == nullptr)
-        {
-            cout << "Run2 ratio graph not found for mult bin " << imult << endl;
-            return;
-        }
-
-        int numPoints = gRun2_minBias[imult]->GetN();
-        for (int i = 0; i < numPoints; i++)
-        {
-            double x, ymult, yratio, xerror, yerror;
-            gRun2_minBias[imult]->GetPoint(i, x, ymult);
-            gRun2_ratio[imult]->GetPoint(i, x, yratio);
-            xerror = gRun2_minBias[imult]->GetErrorX(i);
-            yerror = gRun2_minBias[imult]->GetErrorY(i);
-            // ymult /= inelNormRun2;
-
-            // Now the yminBias is ratio of gRun2_minBias to gRun2_ratio
-            double minBiasYield = ymult / yratio;
-            double ymult_error = gRun2_minBias[imult]->GetErrorY(i);
-            double yratio_error = gRun2_ratio[imult]->GetErrorY(i);
-            double error = sqrt(pow(ymult_error / yratio, 2) + pow(ymult * yratio_error / (yratio * yratio), 2));
-            gRun2_minBias[imult]->SetPoint(i, x, minBiasYield);
-            gRun2_minBias[imult]->SetPointError(i, 0, error);
-        }
-        // TCanvas *crunMinBias = new TCanvas(Form("crunMinBias_%d", imult), Form("crunMinBias_%d", imult), 720, 720);
-        // SetCanvasStyle(crunMinBias, 0.15, 0.03, 0.03, 0.15);
-        // gPad->SetLogy();
-        // SetGrapherrorStyle(gRun2_minBias[imult]);
-        // gRun2_minBias[imult]->SetMarkerStyle(20 + imult);
-        // gRun2_minBias[imult]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        // gRun2_minBias[imult]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-        // if (imult == 0)
-        // {
-        //     gRun2_minBias[imult]->Draw("AP PLC PMC");
-        // }
-        // else
-        // {
-        //     gRun2_minBias[imult]->Draw("P PLC PMC same");
-        // }
-        // // crunMinBias->SaveAs(outputPath + Form("/run2_minBias_spectra_%d.png", imult));
-        // leg->AddEntry(gRun2_minBias[imult], Form("%.0f-%.0f", mult_classes[imult], mult_classes[imult + 1]), "p");
-    }
-    // leg->Draw();
-    // crunMinBias->SaveAs(outputPath + "/run2_minBias_spectra_%d.png");
 
     TH1F *h1 = (TH1F *)hmultClone1->Clone("h1");
     TH1F *h2 = (TH1F *)hmultClone1->Clone("h2");
@@ -208,13 +142,13 @@ void compare_yield_inelgt0_minBias()
 
     /*************meanpT*****************byresonance*******************package*************************/
     Double_t min = 0;
-    Double_t max = 10;
+    Double_t max = 15;
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.1;
     Option_t *opt = "RI0+";
     TString logfilename = "log.root";
     Double_t minfit = 0;
-    Double_t maxfit = 10;
+    Double_t maxfit = 15;
     // Double_t maxfit=8.0;
 
     TH1 *hout = YieldMean(h1, h1, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
@@ -224,16 +158,15 @@ void compare_yield_inelgt0_minBias()
     TGraphErrors *gratio1 = new TGraphErrors();
     TGraphErrors *gratio2 = new TGraphErrors();
     // TGraphErrors *gratio3 = new TGraphErrors();
-    int minBiasFromWhichGraph = 7;
 
     if (!isSameBins)
     {
-        for (int i = 0; i < gRun2_minBias[minBiasFromWhichGraph]->GetN(); i++) // took 4th for less error bar
+        for (int i = 0; i < gRun2_minBias->GetN(); i++) // took 4th for less error bar
         {
             double x_run2, yield_run2, x_error, y_error_run2;
-            gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
-            x_error = gRun2_minBias[minBiasFromWhichGraph]->GetErrorX(i);
-            y_error_run2 = gRun2_minBias[minBiasFromWhichGraph]->GetErrorY(i);
+            gRun2_minBias->GetPoint(i, x_run2, yield_run2);
+            x_error = gRun2_minBias->GetErrorX(i);
+            y_error_run2 = gRun2_minBias->GetErrorY(i);
 
             double thisanalysis1 = fitFcn1->Eval(x_run2);
             double thisanalysis2 = fitFcn2->Eval(x_run2);
@@ -253,19 +186,19 @@ void compare_yield_inelgt0_minBias()
     }
     else
     {
-        if (gRun2_minBias[minBiasFromWhichGraph]->GetN() != hmult1->GetNbinsX())
+        if (gRun2_minBias->GetN() != hmult1->GetNbinsX())
         {
             cout << "Error: Number of points in Run2 minBias graph does not match number of bins in histogram." << endl;
-            cout << "Number of points in graphs is " << gRun2_minBias[minBiasFromWhichGraph]->GetN() << endl;
+            cout << "Number of points in graphs is " << gRun2_minBias->GetN() << endl;
             cout << "Number of bins in histogram is " << hmult1->GetNbinsX() << endl;
             return;
         }
-        for (int i = 0; i < gRun2_minBias[minBiasFromWhichGraph]->GetN(); i++)
+        for (int i = 0; i < gRun2_minBias->GetN(); i++)
         {
             double x_run2, yield_run2, x_error, y_error_run2;
-            gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
-            x_error = gRun2_minBias[minBiasFromWhichGraph]->GetErrorX(i);
-            y_error_run2 = gRun2_minBias[minBiasFromWhichGraph]->GetErrorY(i);
+            gRun2_minBias->GetPoint(i, x_run2, yield_run2);
+            x_error = gRun2_minBias->GetErrorX(i);
+            y_error_run2 = gRun2_minBias->GetErrorY(i);
             double binvalue = hmultClone1->GetBinContent(i + 1);
             double binvalue2 = hmultClone2->GetBinContent(i + 1);
             gratio1->SetPoint(i, x_run2, binvalue / yield_run2);
@@ -315,12 +248,12 @@ void compare_yield_inelgt0_minBias()
     // fitFcn3->SetLineStyle(2);
     // fitFcn3->Draw("same");
     gPad->SetLogy(1);
-    gRun2_minBias[minBiasFromWhichGraph]->SetMarkerStyle(22);
-    gRun2_minBias[minBiasFromWhichGraph]->SetMarkerSize(1);
-    gRun2_minBias[minBiasFromWhichGraph]->SetMarkerColor(kBlack);
-    gRun2_minBias[minBiasFromWhichGraph]->SetLineColor(kBlack);
-    gRun2_minBias[minBiasFromWhichGraph]->SetLineWidth(2);
-    gRun2_minBias[minBiasFromWhichGraph]->Draw("pe same");
+    gRun2_minBias->SetMarkerStyle(22);
+    gRun2_minBias->SetMarkerSize(1);
+    gRun2_minBias->SetMarkerColor(kBlack);
+    gRun2_minBias->SetLineColor(kBlack);
+    gRun2_minBias->SetLineWidth(2);
+    gRun2_minBias->Draw("pe same");
 
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
@@ -329,7 +262,7 @@ void compare_yield_inelgt0_minBias()
     // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
     // leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
-    leg->AddEntry(gRun2_minBias[minBiasFromWhichGraph], "pp 13 TeV (Published)", "p");
+    leg->AddEntry(gRun2_minBias, "pp 13 TeV (Published)", "p");
     leg->SetTextSize(0.05);
     leg->Draw();
 
@@ -380,5 +313,5 @@ void compare_yield_inelgt0_minBias()
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
-    c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
+    // c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
 }

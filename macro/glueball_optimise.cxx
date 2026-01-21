@@ -43,20 +43,21 @@ void glueball_optimise()
     TH1D *deltaM = hSparseGlue->Projection(3);
 
     vector<vector<float>> ptbins = {
-        {1.0, 2.0},
-        {2.0, 3.0},
+        // {1.0, 2.0},
+        // {2.0, 3.0},
         {3.0, 5.0},
         {5.0, 7.0},
         {7.0, 10.0}};
 
-    float deltaRcut[] = {0.2, 0.2, 0.15, 0.15, 0.1};
+    // float deltaRcut[] = {0.2, 0.2, 0.15, 0.15, 0.1};
+    float deltaRcut[] = {0.15};
     int totalbins = ptbins.size();
     TLatex lat;
     lat.SetNDC();
     lat.SetTextSize(0.04);
     lat.SetTextFont(42);
 
-    for (int ipt = 0; ipt < totalbins; ipt++)
+    for (int ipt = 0; ipt < 1; ipt++)
     {
         int multLow = hSparseGlue->GetAxis(0)->FindBin(0.0 + 0.0001);
         int multHigh = hSparseGlue->GetAxis(0)->FindBin(100.0 - 0.0001);
@@ -123,42 +124,42 @@ void glueball_optimise()
         TH1F *hSignalClone = (TH1F *)hGlueMassClone->Clone(Form("hSignalClone_pt%d", ipt));
         hSignalClone->Add(hRotMassClone, -1);
 
-        int rebinFactor = 2;
-        // TCanvas *cGlueballMass = new TCanvas("", "Glueball Invariant Mass", 720, 720);
-        // SetCanvasStyle(cGlueballMass, 0.14, 0.03, 0.05, 0.13);
-        // SetHistoQA(hGlueMassClone);
-        // hGlueMassClone->GetXaxis()->SetTitle("Invariant Mass (GeV/#it{c}^{2})");
-        // hGlueMassClone->SetMarkerStyle(20);
-        // hGlueMassClone->GetYaxis()->SetMaxDigits(3);
-        // hGlueMassClone->GetYaxis()->SetTitleOffset(1.4);
-        // hGlueMassClone->SetMarkerSize(1.0);
-        // hGlueMassClone->Rebin(rebinFactor);
-        // hGlueMassClone->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hGlueMassClone->GetBinWidth(1) * 1000));
-        // hGlueMassClone->Draw("pe");
-        // SetHistoQA(hGlueMass);
-        // hGlueMass->Rebin(rebinFactor);
-        // hGlueMass->SetLineColor(kBlue);
-        // hGlueMass->SetMarkerColor(kBlue);
-        // hGlueMass->SetMarkerStyle(20);
-        // hGlueMass->SetMarkerSize(1.0);
-        // hGlueMass->Draw("pE same");
-        // hRotMass->SetMarkerStyle(21);
-        // hRotMass->SetMarkerColor(kRed);
-        // hRotMass->SetLineColor(kRed);
-        // hRotMass->SetMarkerSize(1.0);
-        // hRotMass->Draw("pE same");
-        // auto statsLost = 100 * (hGlueMassClone->GetEntries() - hGlueMass->GetEntries()) / hGlueMassClone->GetEntries();
-        // TLegend *legend = new TLegend(0.45, 0.75, 0.85, 0.9);
-        // legend->SetTextSize(0.035);
-        // legend->SetTextFont(42);
-        // legend->SetFillStyle(0);
-        // legend->SetBorderSize(0);
-        // // legend->AddEntry(hGlueMass, "Same event K^{0}_{s}K^{0}_{s} pair", "lp");
-        // // legend->AddEntry(hRotMass, "Rotated event K^{0}_{s}K^{0}_{s} pair", "lp");
-        // legend->AddEntry(hGlueMassClone, "No cut", "lp");
-        // legend->AddEntry(hGlueMass, "With cut", "lp");
-        // legend->AddEntry((TObject *)0, Form("Statistics lost: %.1f %%", statsLost), "");
-        // legend->Draw();
+        int rebinFactor = 1;
+        TCanvas *cGlueballMass = new TCanvas("", "Glueball Invariant Mass", 720, 720);
+        SetCanvasStyle(cGlueballMass, 0.14, 0.03, 0.05, 0.13);
+        SetHistoQA(hGlueMassClone);
+        hGlueMassClone->GetXaxis()->SetTitle("Invariant Mass (GeV/#it{c}^{2})");
+        hGlueMassClone->SetMarkerStyle(20);
+        hGlueMassClone->GetYaxis()->SetMaxDigits(3);
+        hGlueMassClone->GetYaxis()->SetTitleOffset(1.4);
+        hGlueMassClone->SetMarkerSize(1.0);
+        hGlueMassClone->Rebin(rebinFactor);
+        hGlueMassClone->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hGlueMassClone->GetBinWidth(1) * 1000));
+        hGlueMassClone->Draw("pe");
+        SetHistoQA(hGlueMass);
+        hGlueMass->Rebin(rebinFactor);
+        hGlueMass->SetLineColor(kBlue);
+        hGlueMass->SetMarkerColor(kBlue);
+        hGlueMass->SetMarkerStyle(20);
+        hGlueMass->SetMarkerSize(1.0);
+        hGlueMass->Draw("pE same");
+        hRotMass->SetMarkerStyle(21);
+        hRotMass->SetMarkerColor(kRed);
+        hRotMass->SetLineColor(kRed);
+        hRotMass->SetMarkerSize(1.0);
+        hRotMass->Draw("pE same");
+        auto statsLost = 100 * (hGlueMassClone->GetEntries() - hGlueMass->GetEntries()) / hGlueMassClone->GetEntries();
+        TLegend *legend = new TLegend(0.45, 0.75, 0.85, 0.9);
+        legend->SetTextSize(0.035);
+        legend->SetTextFont(42);
+        legend->SetFillStyle(0);
+        legend->SetBorderSize(0);
+        // legend->AddEntry(hGlueMass, "Same event K^{0}_{s}K^{0}_{s} pair", "lp");
+        // legend->AddEntry(hRotMass, "Rotated event K^{0}_{s}K^{0}_{s} pair", "lp");
+        legend->AddEntry(hGlueMassClone, "No cut", "lp");
+        legend->AddEntry(hGlueMass, "With cut", "lp");
+        legend->AddEntry((TObject *)0, Form("Statistics lost: %.1f %%", statsLost), "");
+        legend->Draw();
 
         TCanvas *cSignal = new TCanvas("", "Glueball Signal", 720, 720);
         SetCanvasStyle(cSignal, 0.14, 0.03, 0.05, 0.13);

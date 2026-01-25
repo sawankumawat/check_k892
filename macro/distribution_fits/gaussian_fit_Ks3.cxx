@@ -38,7 +38,7 @@ void gaussian_fit_Ks3()
     //********************************************************************
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/QA/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/QA/";
 
     TFile *f = new TFile((path + "KsInvMass.root").c_str(), "read");
     if (f == nullptr)
@@ -89,7 +89,7 @@ void gaussian_fit_Ks3()
 
     TF1 *gauspol2 = new TF1("gauspol2", fitgauspol2, 0.45, 0.55, 6);
     // gauspol2->SetParameter(0, 1e9);
-    gauspol2->SetParameter(0, 1e5);
+    gauspol2->SetParameter(0, 1e6);
     gauspol2->SetParameter(1, ksmass);
     gauspol2->SetParameter(2, kswidth);
     gauspol2->SetParameter(3, 1);
@@ -98,7 +98,7 @@ void gaussian_fit_Ks3()
     // hInvMass->Fit("gauspol2", "R");
 
     TF1 *crystalball = new TF1("crystalball", CB, 0.486, 0.508, 5); // play with fit range to fit at higher pT
-    crystalball->SetParameter(0, 1e9);
+    crystalball->SetParameter(0, 1e10);
     // crystalball->SetParameter(0, 1e7);
     crystalball->SetParameter(1, ksmass);
     crystalball->SetParLimits(1, ksmass - 2 * kswidth, ksmass + 2 * kswidth);
@@ -110,14 +110,14 @@ void gaussian_fit_Ks3()
     cout << "fit width from single crystal ball fit: " << crystalball->GetParameter(2) << endl;
 
     // /*
-    TF1 *doubleCrystalBall = new TF1("doubleCrystalBall", doubleCB, 0.487, 0.506, 9);
+    TF1 *doubleCrystalBall = new TF1("doubleCrystalBall", doubleCB, 0.486, 0.508, 7);
     doubleCrystalBall->SetParameter(0, crystalball->GetParameter(0));
     doubleCrystalBall->SetParameter(1, crystalball->GetParameter(1));
     doubleCrystalBall->SetParameter(2, crystalball->GetParameter(2));
     doubleCrystalBall->SetParameter(3, crystalball->GetParameter(3));
     doubleCrystalBall->SetParameter(4, crystalball->GetParameter(4));
-    doubleCrystalBall->SetParameter(5, crystalball->GetParameter(3));
-    doubleCrystalBall->SetParameter(6, crystalball->GetParameter(4));
+    doubleCrystalBall->SetParameter(5, 1.0);
+    doubleCrystalBall->SetParameter(6, 1.0);
     hInvMass->Fit("doubleCrystalBall", "REBMS0");
     cout << "fit width from double crystal ball fit: " << doubleCrystalBall->GetParameter(2) << endl;
 
@@ -128,11 +128,10 @@ void gaussian_fit_Ks3()
     crystalballpol1->SetParameter(2, crystalball->GetParameter(2));
     crystalballpol1->SetParameter(3, crystalball->GetParameter(3));
     crystalballpol1->SetParameter(4, crystalball->GetParameter(4));
-    crystalballpol1->SetParameter(5, 5e7);
-    crystalballpol1->SetParameter(6, 6e7);
-    // crystalballpol1->SetParameter(5, 5e5);
-    // crystalballpol1->SetParameter(6, 6e5);
-    hInvMass->Fit("crystalballpol1", "REBMS0");
+    crystalballpol1->SetParameter(5, 5e8);
+    crystalballpol1->SetParameter(6, 6e8);
+    // crystalballpol1->SetParameter(7, 6e8);
+    hInvMass->Fit("crystalballpol1", "REBMS");
     cout << "fit width from crystal ball pol1 fit: " << crystalballpol1->GetParameter(2) << endl;
 
     TF1 *doublecrystalBallpol1 = new TF1("doublecrystalBallpol1", doubleCBpol1, 0.46, 0.54, 9);
@@ -207,7 +206,7 @@ void gaussian_fit_Ks3()
     lat.SetNDC();
     lat.SetTextSize(0.035);
     lat.SetTextFont(42);
-    lat.DrawLatex(0.2019499, 0.8700575, "ALICE Performance");
+    // lat.DrawLatex(0.2019499, 0.8700575, "ALICE Performance");
 
     TLegend *lp3 = DrawLegend(0.591922, 0.6594828, 0.7952646, 0.8994253);
     lp3->SetFillStyle(0);
@@ -234,19 +233,20 @@ void gaussian_fit_Ks3()
 
     c1->SaveAs((path + "KsInvMass_fit.png").c_str());
 
-    TCanvas *cmass = new TCanvas("cmass", "cmass", 720, 720);
-    SetCanvasStyle(cmass, 0.148, 0.01, 0.05, 0.125);
-    TGraph *g = new TGraph();
-    g->SetPoint(0, 0, 3.73);
-    g->SetPoint(1, 1.0, 3.55);
-    g->SetPoint(2, 2.0, 4.30);
-    g->SetPoint(3, 3.0, 5.06);
-    SetGraphStyle(g, 1, 20);
-    g->GetYaxis()->SetTitle("K_{S}^{0} peak width (MeV/#it{c^{2}})");
-    g->GetXaxis()->SetTitle("Low #it{p}_{T} cut (GeV/#it{c})");
-    g->GetXaxis()->SetRangeUser(-1, 5.5);
-    g->Draw("AP");
-    cmass->SaveAs((path + "Ks_massvs_pt.png").c_str());
+    // TCanvas *cmass = new TCanvas("cmass", "cmass", 720, 720);
+    // SetCanvasStyle(cmass, 0.148, 0.01, 0.05, 0.125);
+    // TGraph *g = new TGraph();
+    // g->SetPoint(0, 0, 3.73);
+    // g->SetPoint(1, 1.0, 3.55);
+    // g->SetPoint(2, 2.0, 4.30);
+    // g->SetPoint(3, 3.0, 5.06);
+    // SetGraphStyle(g);
+    // g->SetMarkerStyle(20);
+    // g->GetYaxis()->SetTitle("K_{S}^{0} peak width (MeV/#it{c^{2}})");
+    // g->GetXaxis()->SetTitle("Low #it{p}_{T} cut (GeV/#it{c})");
+    // g->GetXaxis()->SetRangeUser(-1, 5.5);
+    // g->Draw("AP");
+    // cmass->SaveAs((path + "Ks_massvs_pt.png").c_str());
 
     // // gPad->Update();
     // // TPaveStats *st = (TPaveStats *)hInvMass->FindObject("stats");
@@ -340,7 +340,6 @@ Double_t CBpol1(Double_t *x, Double_t *par)
     // par[4] n
     // par[5] p0
     // par[6] p1
-    // par[7] p2
 
     double t = (x[0] - par[1]) / par[2];
     double absAlpha_L = fabs(par[3]);
@@ -439,7 +438,6 @@ Double_t doubleCBpol1(Double_t *x, Double_t *par)
     // par[6] n2
     // par[7] p0
     // par[8] p1
-    // par[9] p2
 
     double t = (x[0] - par[1]) / par[2];
     double absAlpha_L = fabs(par[3]);

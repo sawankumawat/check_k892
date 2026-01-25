@@ -127,9 +127,9 @@ void glueball_fit_4rBW_simple()
         }
 #define b_massdepWidth_modifiedBoltzmann
 #define residual_subtracted
-#define doublepanelplot
+// #define doublepanelplot
 // #define multiPanelPlots
-#define before_combinatorialPlots
+// #define before_combinatorialPlots
 #define singlePanelPlots
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
@@ -207,8 +207,8 @@ void glueball_fit_4rBW_simple()
             gSystem->Exec(("mkdir -p " + savepath_mult).c_str());
             float maxRanges[] = {1.25, 1.4, 1.6, 1.8, 1.8, 2.0, 2.2};
 
-            // for (int ipt = 0; ipt < Npt; ipt++)
-            for (int ipt = 2; ipt < 3; ipt++)
+            for (int ipt = 0; ipt < Npt; ipt++)
+            // for (int ipt = 2; ipt < 3; ipt++)
             {
                 float lowpT = pT_bins[ipt];
                 float highpT = pT_bins[ipt + 1];
@@ -265,6 +265,7 @@ void glueball_fit_4rBW_simple()
                     hinvMass->GetXaxis()->SetRangeUser(1.01, 2.20);
                     hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
                     hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
+                    TH1F *hinvMassClone = (TH1F *)hinvMass->Clone("hinvMassClone");
                     hinvMass->SetMaximum(maxRanges[ipt] * hinvMass->GetMaximum());
                     // hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
 #ifdef multiPanelPlots
@@ -272,7 +273,7 @@ void glueball_fit_4rBW_simple()
                     hinvMass->SetMarkerSize(0.8);
 #else
                     hinvMass->GetYaxis()->SetTitleOffset(1.35);
-                    hinvMass->SetMarkerSize(1.0);
+                    hinvMass->SetMarkerSize(1.3);
 #endif
                     hinvMass->Draw("pe");
                     double resMaximumFactor = 2.2;
@@ -453,6 +454,8 @@ void glueball_fit_4rBW_simple()
                         singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
                         singlefits[i]->SetLineColor(colors[i]);
                         singlefits[i]->SetLineStyle(2);
+                        if (i == 3)
+                            singlefits[i]->SetLineWidth(3);
                         singlefits[i]->Draw("same");
                     }
 
@@ -487,7 +490,7 @@ void glueball_fit_4rBW_simple()
                     lat1.SetTextFont(42);
 #ifdef singlePanelPlots
                     lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
-                    lat1.DrawLatex(0.255, 0.85, Form("FT0M (%d-%d%%)), |y|<0.5", multlow, multhigh));
+                    lat1.DrawLatex(0.255, 0.85, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
 #endif
                     lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
@@ -532,11 +535,11 @@ void glueball_fit_4rBW_simple()
                         ptstats->SetY2NDC(0.92);
                         ptstats->Draw("same");
                     }
-// c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.pdf", lowpT, highpT, sysvar.c_str())).c_str());
-// c->SaveAs((savepath + "/rBWfit.pdf").c_str());
-// c->SaveAs((savepath + Form("/rBWfit_fit_%.2f_%.2f.pdf", fitlow, fithigh)).c_str());
+// c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", lowpT, highpT, sysvar.c_str())).c_str());
+// c->SaveAs((savepath + "/rBWfit.png").c_str());
+// c->SaveAs((savepath + Form("/rBWfit_fit_%.2f_%.2f.png", fitlow, fithigh)).c_str());
 #ifdef singlePanelPlots
-                    c->SaveAs((savepath_mult + Form("/rBWfit_pt_%.1f_%.1f.pdf", lowpT, highpT)).c_str());
+                    c->SaveAs((savepath_mult + Form("/rBWfit_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
 #endif
 
                     double fitnorm1525 = BEexpol->GetParameter(6);
@@ -633,25 +636,27 @@ void glueball_fit_4rBW_simple()
                     ltemp2->AddEntry(singlefits1[1], "a_{2}(1320)^{0}", "l");
                     ltemp2->AddEntry(singlefits1[2], "f'_{2}(1525)", "l");
                     ltemp2->AddEntry(singlefits1[3], "f_{0}(1710)", "l");
-                    if (ipt == 0)
-                        ltemp2->Draw("same");
                     TLatex lat2;
                     lat2.SetNDC();
 #ifdef multiPanelPlots
                     lat2.SetTextSize(0.05);
+                    if (ipt == 0)
+                        ltemp2->Draw("same");
 #else
                     lat2.SetTextSize(0.03);
+                    ltemp2->Draw("same");
 #endif
                     lat2.SetTextFont(42);
 #ifdef singlePanelPlots
                     lat2.DrawLatex(0.215, 0.90, "Residual BG subtracted");
-                    lat2.DrawLatex(0.215, 0.86, Form("FT0M (%d-%d%%)), |y|<0.5", multlow, multhigh));
+                    lat2.DrawLatex(0.215, 0.86, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
 #endif
                     lat2.DrawLatex(0.215, 0.82, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
-// c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".pdf").c_str());
+// c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
 #ifdef singlePanelPlots
-                    c2->SaveAs((savepath_mult + Form("/rBWfit_residual_pt_%.1f_%.1f.pdf", lowpT, highpT)).c_str());
+                    c2->SaveAs((savepath_mult + Form("/rBWfit_residual_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+#ifdef before_combinatorialPlots
                     TCanvas *cSigWithBkg = new TCanvas("", "", 720, 720);
                     SetCanvasStyle(cSigWithBkg, 0.14, 0.03, 0.05, 0.14);
                     cSigWithBkg->cd();
@@ -667,7 +672,7 @@ void glueball_fit_4rBW_simple()
                     hbkg->SetLineColor(kRed);
                     hbkg->SetMarkerSize(1.0);
                     hbkg->Draw("pe,same");
-                    TLegend *lSigWithBkg = new TLegend(0.55, 0.8, 0.85, 0.9);
+                    TLegend *lSigWithBkg = new TLegend(0.55, 0.56, 0.85, 0.72);
                     lSigWithBkg->SetFillStyle(0);
                     lSigWithBkg->SetBorderSize(0);
                     lSigWithBkg->SetTextFont(42);
@@ -675,8 +680,25 @@ void glueball_fit_4rBW_simple()
                     lSigWithBkg->AddEntry(hraw, "Same event K^{0}_{s}K^{0}_{s} pair", "lpe");
                     lSigWithBkg->AddEntry(hbkg, "Same event rotational bkg", "lpe");
                     lSigWithBkg->Draw("same");
-                    lat2.DrawLatex(0.215, 0.82, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
-                    cSigWithBkg->SaveAs((savepath_mult + Form("/SignalWithBkg_pt_%.1f_%.1f.pdf", lowpT, highpT)).c_str());
+
+                    lat1.DrawLatex(0.58, 0.89, "ALICE");
+                    lat1.DrawLatex(0.58, 0.835, "pp, #sqrt{#it{s}} = 13.6 TeV");
+                    lat1.DrawLatex(0.58, 0.785, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
+                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    cSigWithBkg->SaveAs((savepath_mult + Form("/SignalWithBkg_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+
+                    TCanvas *cSignalWithoutFit = new TCanvas("", "", 720, 720);
+                    SetCanvasStyle(cSignalWithoutFit, 0.14, 0.03, 0.05, 0.14);
+                    cSignalWithoutFit->cd();
+                    SetHistoQA(hinvMassClone);
+                    hinvMassClone->GetXaxis()->SetRangeUser(1.05, 2.20);
+                    hinvMassClone->Draw("pe");
+                    lat1.DrawLatex(0.58, 0.89, "ALICE");
+                    lat1.DrawLatex(0.58, 0.835, "pp, #sqrt{#it{s}} = 13.6 TeV");
+                    lat1.DrawLatex(0.58, 0.785, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
+                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    cSignalWithoutFit->SaveAs((savepath_mult + Form("/SignalWithoutFit_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+#endif
 #endif
 #endif
 
@@ -863,10 +885,10 @@ void glueball_fit_4rBW_simple()
                     hinvMass->SetMarkerColor(1);
                     hinvMass->SetStats(0);
                     // hinvMass->SetMinimum(-40000);
-                    hinvMass->SetMinimum(-10000);
-                    // hinvMass->SetMinimum(-4000);
+                    // hinvMass->SetMinimum(-10000);
+                    hinvMass->SetMinimum(-4000);
                     // hinvMass->SetMaximum(0.9e6);
-                    hinvMass->SetMaximum(hinvMass->GetMaximum() * 1.0);
+                    hinvMass->SetMaximum(hinvMass->GetMaximum() * 0.9);
                     hinvMass->GetYaxis()->SetMaxDigits(4);
                     hinvMass->GetYaxis()->SetNdivisions(506);
                     hinvMass->GetYaxis()->SetTitle(0);
@@ -932,7 +954,7 @@ void glueball_fit_4rBW_simple()
                     lat5.SetTextFont(42);
                     // lat5.DrawLatex(0.32, 0.80, "ALICE Performance");
                     lat5.DrawLatex(0.32, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV");
-                    lat5.DrawLatex(0.32, 0.73, "FT0M 0-100%, |#it{y}| < 0.5");
+                    lat5.DrawLatex(0.32, 0.73, "FT0M: 0-100%, |#it{y}| < 0.5");
                     lat5.DrawLatex(0.32, 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpT, highpT));
 
                     // TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
@@ -967,7 +989,7 @@ void glueball_fit_4rBW_simple()
                     lat6.SetTextFont(42);
                     lat6.DrawLatex(0.59, 0.86, "Residual background subtraction");
                     // lat6.DrawLatex(0.65, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
-                    // lat6.DrawLatex(0.65, 0.60, "FT0M (0-100%), |#it{y}|<0.5");
+                    // lat6.DrawLatex(0.65, 0.60, "FT0M: 0-100%, |#it{y}|<0.5");
                     // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", lowpT, highpT));
 
                     // TLegend *leg = new TLegend(0.65, 0.50, 0.99, 0.83);
@@ -1024,8 +1046,8 @@ void glueball_fit_4rBW_simple()
                     textLeft1->SetTextFont(42);
                     textLeft1->Draw();
 
-                    // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.pdf");
-                    c1->SaveAs((savepath_mult + Form("/rBWfit_doublepanel_pt_%.1f_%.1f.pdf", lowpT, highpT)).c_str());
+                    // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
+                    c1->SaveAs((savepath_mult + Form("/rBWfit_doublepanel_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
 
 #endif
 
@@ -1048,7 +1070,7 @@ void glueball_fit_4rBW_simple()
                         ltemp3->SetBorderSize(0);
                         ltemp3->SetTextSize(0.04);
                         // ltemp3->SetHeader("With background");
-                        ltemp3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV, FT0M (0-100%)");
+                        ltemp3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV, FT0M: 0-100%");
                         ltemp3->AddEntry(hraw, "Same event K^{0}_{s}K^{0}_{s} pair", "p");
                         ltemp3->AddEntry(hbkg, "Same event rotational bkg", "p");
                         ltemp3->Draw("same");
@@ -1073,9 +1095,9 @@ void glueball_fit_4rBW_simple()
                 hStatSignificance[ires]->Write(Form("hStatSignificance_%s", resonance_mass[ires].c_str()));
             }
 #ifdef multiPanelPlots
-            cMultiPanelResidual->SaveAs((savepath_mult + Form("/rBWfit_residuals_multpanel_%s.pdf", sysvar.c_str())).c_str());
-            cMultiPanelFit->SaveAs((savepath_mult + Form("/rBWfit_fits_multpanel_%s.pdf", sysvar.c_str())).c_str());
-            cMultiPanelWithBkg->SaveAs((savepath_mult + Form("/rBWfit_withbkg_multpanel_%s.pdf", sysvar.c_str())).c_str());
+            cMultiPanelResidual->SaveAs((savepath_mult + Form("/rBWfit_residuals_multpanel_%s.png", sysvar.c_str())).c_str());
+            cMultiPanelFit->SaveAs((savepath_mult + Form("/rBWfit_fits_multpanel_%s.png", sysvar.c_str())).c_str());
+            cMultiPanelWithBkg->SaveAs((savepath_mult + Form("/rBWfit_withbkg_multpanel_%s.png", sysvar.c_str())).c_str());
 #endif
         } // end of multiplicity loop
 

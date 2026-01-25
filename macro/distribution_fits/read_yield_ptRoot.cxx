@@ -35,8 +35,8 @@ void read_yield_ptRoot()
         std::cout << "Folder " << outputPath << " created successfully." << std::endl;
     }
 
-    float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};             // 2022 dataset
-    float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 16.0}; // 2022 dataset
+    float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};              // 2022 dataset
+    float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 15.01}; // 2022 dataset
     // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
     // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
 
@@ -226,7 +226,10 @@ void read_yield_ptRoot()
     hMass1710->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
     hMass1710->GetYaxis()->SetTitleOffset(1.6);
     hMass1710->GetYaxis()->SetRangeUser(1.56, 1.89);
-    hMass1710->SetMarkerStyle(21);
+    hMass1710->SetLineColor(kBlue);
+    hMass1710->SetMarkerColor(kBlue);
+    hMass1710->SetMarkerStyle(20);
+    hMass1710->SetMarkerSize(1.5);
     hMass1710->Write();
     hMass1710->Draw("pe");
     TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
@@ -238,12 +241,14 @@ void read_yield_ptRoot()
     band1710Mass->SetLineColor(kRed);
     band1710Mass->SetLineWidth(1);
     band1710Mass->Draw("same");
-    TLegend *leg1710Mass = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *leg1710Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
     leg1710Mass->SetBorderSize(0);
     leg1710Mass->SetFillStyle(0);
     leg1710Mass->SetTextSize(0.035);
-    leg1710Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "pe");
+    leg1710Mass->AddEntry((TObject *)0, "ALICE", "");
+    leg1710Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    leg1710Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "p");
     // leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
     // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
     band1710Mass->SetLineWidth(0);
@@ -266,7 +271,7 @@ void read_yield_ptRoot()
     line1710Width->SetLineStyle(2);
     line1710Width->SetLineColor(2);
     line1710Width->Draw();
-    TLegend *leg1710Width = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *leg1710Width = new TLegend(0.55, 0.78, 0.85, 0.93);
     leg1710Width->SetBorderSize(0);
     leg1710Width->SetFillStyle(0);
     leg1710Width->SetTextSize(0.035);
@@ -280,8 +285,11 @@ void read_yield_ptRoot()
     hMass1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hMass1525->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
     hMass1525->GetYaxis()->SetTitleOffset(1.6);
-    hMass1525->GetYaxis()->SetRangeUser(1.49, 1.55);
+    hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
     hMass1525->SetMarkerStyle(20);
+    hMass1525->SetMarkerSize(1.5);
+    hMass1525->SetLineColor(kBlue);
+    hMass1525->SetMarkerColor(kBlue);
     hMass1525->Write();
     hMass1525->Draw("pe");
     // TLine *line1525Mass = new TLine(0, f1525Mass, 12, f1525Mass);
@@ -298,14 +306,16 @@ void read_yield_ptRoot()
     line1525Mass->SetLineStyle(2);
     line1525Mass->SetLineColor(2);
     line1525Mass->Draw();
-    TLegend *leg1525Mass = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *leg1525Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
     leg1525Mass->SetBorderSize(0);
     leg1525Mass->SetFillStyle(0);
     leg1525Mass->SetTextSize(0.035);
-    leg1525Mass->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    leg1525Mass->AddEntry(hMass1525, "f_{2}'(1525)", "pe");
+    leg1525Mass->AddEntry((TObject *)0, "ALICE", "");
+    leg1525Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    leg1525Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    leg1525Mass->AddEntry(hMass1525, "f_{2}'(1525)", "p");
     band1525Mass->SetLineWidth(0);
-    leg1525Mass->AddEntry(line1525Mass, "PDG value", "lf");
+    leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
     leg1525Mass->Draw();
     cMass1525->SaveAs(outputPath + "/Mass1525.png");
 
@@ -353,16 +363,21 @@ void read_yield_ptRoot()
     hSignificance1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hSignificance1710->GetYaxis()->SetTitle("Significance");
     hSignificance1710->GetYaxis()->SetTitleOffset(1.6);
-    hSignificance1710->SetMaximum(TMath::Max(hSignificance1710->GetMaximum(), hSignificance1525->GetMaximum()) * 1.1);
+    // hSignificance1710->SetMaximum(TMath::Max(hSignificance1710->GetMaximum(), hSignificance1525->GetMaximum()) * 1.1);
+    hSignificance1710->SetMaximum(101);
     hSignificance1710->SetLineColor(kRed);
+    hSignificance1710->SetLineWidth(3);
     hSignificance1710->Draw();
     hSignificance1525->SetLineColor(kBlue);
+    hSignificance1525->SetLineWidth(3);
     hSignificance1525->Draw("same");
-    TLegend *legSignificance = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *legSignificance = new TLegend(0.5, 0.63, 0.91, 0.9);
     legSignificance->SetBorderSize(0);
     legSignificance->SetFillStyle(0);
     legSignificance->SetTextSize(0.035);
-    legSignificance->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legSignificance->AddEntry((TObject *)0, "ALICE", "");
+    legSignificance->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legSignificance->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legSignificance->AddEntry(hSignificance1710, "f_{0}(1710)", "l");
     legSignificance->AddEntry(hSignificance1525, "f_{2}'(1525)", "l");
     legSignificance->Draw();
@@ -373,7 +388,7 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(hYield1525Corrected);
     hYield1525Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1525Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hYield1525Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1525Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1525Corrected->GetYaxis()->SetRangeUser(0.0, 460);
     hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
@@ -388,7 +403,7 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(hYield1710Corrected);
     hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1710Corrected->GetYaxis()->SetTitle("BR/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hYield1710Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1710Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1710Corrected->GetYaxis()->SetRangeUser(0.0, 460);
     hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
@@ -428,10 +443,11 @@ void read_yield_ptRoot()
     hefficiencyf0->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hefficiencyf0->GetYaxis()->SetTitle("Acceptance x Efficiency");
     hefficiencyf0->GetYaxis()->SetTitleOffset(1.6);
-    hefficiencyf0->SetMaximum(hefficiencyf0->GetMaximum() * 1.5);
+    hefficiencyf0->SetMaximum(hefficiencyf0->GetMaximum() * 1.3);
     hefficiencyf0->SetMarkerStyle(21);
     hefficiencyf0->SetLineColor(kRed);
     hefficiencyf0->SetMarkerColor(kRed);
+    hefficiencyf0->SetMarkerSize(1.5);
     // hefficiencyf0->SetMinimum(-2e-7);
     hefficiencyf0->Write();
     hefficiencyf0->Draw("pe same");
@@ -439,15 +455,18 @@ void read_yield_ptRoot()
     hefficiencyf2->SetMarkerStyle(20);
     hefficiencyf2->SetLineColor(kBlue);
     hefficiencyf2->SetMarkerColor(kBlue);
+    hefficiencyf2->SetMarkerSize(1.5);
     hefficiencyf2->Write();
     hefficiencyf2->Draw("pe same");
-    TLegend *legEff = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *legEff = new TLegend(0.55, 0.68, 0.91, 0.93);
     legEff->SetBorderSize(0);
     legEff->SetFillStyle(0);
     legEff->SetTextSize(0.035);
-    legEff->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legEff->AddEntry(hefficiencyf0, "f_{0}(1710)", "pe");
-    legEff->AddEntry(hefficiencyf2, "f_{2}'(1525)", "pe");
+    legEff->AddEntry((TObject *)0, "ALICE", "");
+    legEff->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legEff->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legEff->AddEntry(hefficiencyf0, "f_{0}(1710)", "p");
+    legEff->AddEntry(hefficiencyf2, "f_{2}'(1525)", "p");
     legEff->Draw();
     cEfficiencyf0f2->SaveAs(outputPath + "/Efficiencyf0f2.png");
 
@@ -456,19 +475,25 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(hYield1525Raw);
     hYield1525Raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1525Raw->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hYield1525Raw->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1525Raw->GetYaxis()->SetTitleOffset(1.6);
-    hYield1525Raw->SetMaximum(hYield1525Raw->GetMaximum() * 1.5);
+    // hYield1525Raw->SetMaximum(hYield1525Raw->GetMaximum() * 1.8);
     // hYield1525Raw->SetMarkerStyle(21);
-    // hYield1525Raw->SetMinimum(-2e-7);
+    hYield1525Raw->SetMaximum(2e-5);
+    hYield1525Raw->SetMinimum(2e-9);
+    hYield1525Raw->SetMarkerSize(1.5);
+    hYield1525Raw->SetMarkerColor(kBlue);
+    hYield1525Raw->SetLineColor(kBlue);
     hYield1525Raw->Write();
     hYield1525Raw->Draw("pe");
-    TLegend *legend2 = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *legend2 = new TLegend(0.55, 0.67, 0.91, 0.93);
     legend2->SetBorderSize(0);
     legend2->SetFillStyle(0);
     legend2->SetTextSize(0.035);
-    legend2->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "pe");
+    legend2->AddEntry((TObject *)0, "ALICE", "");
+    legend2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legend2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "p");
     legend2->Draw();
     cRawYieldf2->SaveAs(outputPath + "/RawYieldf2.png");
 
@@ -477,18 +502,25 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(hYield1710Raw);
     hYield1710Raw->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1710Raw->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hYield1710Raw->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1710Raw->GetYaxis()->SetTitleOffset(1.6);
-    hYield1710Raw->SetMaximum(hYield1710Raw->GetMaximum() * 1.5);
+    // hYield1710Raw->SetMaximum(hYield1710Raw->GetMaximum() * 1.8);
     // hYield1710Raw->SetMinimum(-2e-7);
+    hYield1710Raw->SetMaximum(2e-5);
+    hYield1710Raw->SetMinimum(2e-9);
+    hYield1710Raw->SetMarkerSize(1.5);
+    hYield1710Raw->SetMarkerColor(kBlue);
+    hYield1710Raw->SetLineColor(kBlue);
     hYield1710Raw->Write();
     hYield1710Raw->Draw("pe same");
-    TLegend *legend3 = new TLegend(0.55, 0.75, 0.85, 0.9);
+    TLegend *legend3 = new TLegend(0.55, 0.67, 0.91, 0.93);
     legend3->SetBorderSize(0);
     legend3->SetFillStyle(0);
     legend3->SetTextSize(0.035);
-    legend3->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "pe");
+    legend3->AddEntry((TObject *)0, "ALICE", "");
+    legend3->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legend3->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "p");
     legend3->Draw();
     cRawYieldf0->SaveAs(outputPath + "/RawYieldf0.png");
 
@@ -508,7 +540,7 @@ void read_yield_ptRoot()
     Option_t *opt = "REBMS0+";
     TString logfilename = "log.root";
     Double_t minfit = 1.0;
-    Double_t maxfit = 15.0;
+    Double_t maxfit = 10.0;
 
     TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
     fitFcn->SetParameter(0, 5.0);
@@ -539,13 +571,17 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(h1);
     h1->SetMarkerSize(1.5);
-    h1->SetMaximum(h1->GetMaximum() * 12);
-    h1->SetMinimum(9e-8);
+    // h1->SetMaximum(h1->GetMaximum() * 12);
+    h1->SetMaximum(9e-2);
+    h1->SetMinimum(9e-7);
+    h1->SetMarkerColor(kBlue);
+    h1->SetLineColor(kBlue);
     h1->Draw("pe");
     fitFcn->SetLineWidth(2);
     fitFcn->SetLineStyle(2);
+    fitFcn->SetLineColor(kRed);
     fitFcn->Draw("l same");
-    legend2->AddEntry(fitFcn, "Levy fit", "l");
+    legend2->AddEntry(fitFcn, "Levy-Tsallis fit", "l");
     legend2->Draw();
     cCorrectedf2Fit->SaveAs(outputPath + "/LevyFitf2.png");
 
@@ -554,13 +590,17 @@ void read_yield_ptRoot()
     gPad->SetLogy();
     SetHistoQA(hYield1710Corrected);
     hYield1710Corrected->SetMarkerSize(1.5);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
+    // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
+    hYield1710Corrected->SetMaximum(9e-2);
     hYield1710Corrected->SetMinimum(9e-7);
+    hYield1710Corrected->SetMarkerColor(kBlue);
+    hYield1710Corrected->SetLineColor(kBlue);
     hYield1710Corrected->Draw("pe");
     fitFcn2->SetLineWidth(2);
     fitFcn2->SetLineStyle(2);
+    fitFcn2->SetLineColor(kRed);
     fitFcn2->Draw("l same");
-    legend3->AddEntry(fitFcn2, "Levy fit", "l");
+    legend3->AddEntry(fitFcn2, "Levy-Tsallis fit", "l");
     legend3->Draw();
     cCorrectedf0Fit->SaveAs(outputPath + "/LevyFitf0.png");
 

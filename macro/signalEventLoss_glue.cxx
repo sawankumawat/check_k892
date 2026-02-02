@@ -31,46 +31,46 @@ void signalEventLoss_glue()
     TH1F *hEventLossNumf0 = (TH1F *)fInputFile->Get(Form("%s/MCcorrections/MultiplicityRec", histpathf01710.c_str()));
     TH1F *hEventLossDenf0 = (TH1F *)fInputFile->Get(Form("%s/MCcorrections/MultiplicityGen", histpathf01710.c_str()));
 
-    // Method 2 (from generated process function)
-    TH1F *hEventLossNumf0 = (TH1F *)fInputFile->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
+    // // Method 2 (from generated process function)
+    // TH1F *hEventLossNumf0 = (TH1F *)fInputFile->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
 
-    // // // Signal loss histograms
-    // // Method 1 (from signalsignalloss function)
-    // TH2F *h2DSignalLossNumf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossNumerator", histpathf01710.c_str()));
-    // TH2F *h2DSignalLossDenf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossDenominator", histpathf01710.c_str()));
-    // int multBinlow = h2DSignalLossDenf0->GetYaxis()->FindBin(0 + 0.001);
-    // int multBinhigh = h2DSignalLossDenf0->GetYaxis()->FindBin(100 - 0.001);
-
-    // TH1F *hSignalLossNumf0 = (TH1F *)h2DSignalLossNumf0->ProjectionX("hSignalLossNumf0", multBinlow, multBinhigh);
-    // TH1F *hSignalLossDenf0 = (TH1F *)h2DSignalLossDenf0->ProjectionX("hSignalLossDenf0", multBinlow, multBinhigh);
-
-    // Method 2 (from generated process function)
-    THnSparseF *hSparseSignalLossNumf0 = (THnSparseF *)fInputFile->Get(Form("%s/Genf1710", histpathf01710.c_str()));
-    TH2F *h2DSignalLossDenf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossDenominator4", histpathf01710.c_str()));
+    // // Signal loss histograms
+    // Method 1 (from signalsignalloss function)
+    TH2F *h2DSignalLossNumf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossNumerator", histpathf01710.c_str()));
+    TH2F *h2DSignalLossDenf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossDenominator", histpathf01710.c_str()));
     int multBinlow = h2DSignalLossDenf0->GetYaxis()->FindBin(0 + 0.001);
     int multBinhigh = h2DSignalLossDenf0->GetYaxis()->FindBin(100 - 0.001);
 
-    hSparseSignalLossNumf0->GetAxis(0)->SetRange(multBinlow, multBinhigh);  // setting multiplicity range
-    TH1F *hSignalLossNumf0 = (TH1F *)hSparseSignalLossNumf0->Projection(1); // projecting pt axis
+    TH1F *hSignalLossNumf0 = (TH1F *)h2DSignalLossNumf0->ProjectionX("hSignalLossNumf0", multBinlow, multBinhigh);
     TH1F *hSignalLossDenf0 = (TH1F *)h2DSignalLossDenf0->ProjectionX("hSignalLossDenf0", multBinlow, multBinhigh);
+
+    // // Method 2 (from generated process function)
+    // THnSparseF *hSparseSignalLossNumf0 = (THnSparseF *)fInputFile->Get(Form("%s/Genf1710", histpathf01710.c_str()));
+    // TH2F *h2DSignalLossDenf0 = (TH2F *)fInputFile->Get(Form("%s/MCcorrections/hSignalLossDenominator4", histpathf01710.c_str()));
+    // int multBinlow = h2DSignalLossDenf0->GetYaxis()->FindBin(0 + 0.001);
+    // int multBinhigh = h2DSignalLossDenf0->GetYaxis()->FindBin(100 - 0.001);
+
+    // hSparseSignalLossNumf0->GetAxis(0)->SetRange(multBinlow, multBinhigh);  // setting multiplicity range
+    // TH1F *hSignalLossNumf0 = (TH1F *)hSparseSignalLossNumf0->Projection(1); // projecting pt axis
+    // TH1F *hSignalLossDenf0 = (TH1F *)h2DSignalLossDenf0->ProjectionX("hSignalLossDenf0", multBinlow, multBinhigh);
 
     for (int ipt = 0; ipt < sizePtBins; ipt++)
     {
-        // // // Event loss (method 1)
-        // double eventLossNum = hEventLossNumf0->Integral();
-        // double eventLossDen = hEventLossDenf0->Integral();
-        // double eventLoss = 0.0;
-        // if (eventLossDen > 0)
-        //     eventLoss = eventLossNum / eventLossDen;
-        // hEventLossf0->SetBinContent(ipt + 1, eventLoss);
-
-        // // Event loss (method 2)
-        double eventLossDen = hEventLossNumf0->GetBinContent(1);
-        double eventLossNum = hEventLossNumf0->GetBinContent(2);
+        // // Event loss (method 1)
+        double eventLossNum = hEventLossNumf0->Integral();
+        double eventLossDen = hEventLossDenf0->Integral();
         double eventLoss = 0.0;
         if (eventLossDen > 0)
             eventLoss = eventLossNum / eventLossDen;
         hEventLossf0->SetBinContent(ipt + 1, eventLoss);
+
+        // // // Event loss (method 2)
+        // double eventLossDen = hEventLossNumf0->GetBinContent(1);
+        // double eventLossNum = hEventLossNumf0->GetBinContent(2);
+        // double eventLoss = 0.0;
+        // if (eventLossDen > 0)
+        //     eventLoss = eventLossNum / eventLossDen;
+        // hEventLossf0->SetBinContent(ipt + 1, eventLoss);
 
         if (ipt == 0)
             cout << "Event loss is " << eventLoss << endl;

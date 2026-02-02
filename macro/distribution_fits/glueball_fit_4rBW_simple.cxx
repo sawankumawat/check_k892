@@ -19,101 +19,56 @@ Double_t BWsumMassDepWidth_exponential(double *x, double *par);
 Double_t single_BW_mass_dep_spin0(double *x, double *par);
 Double_t single_BW_mass_dep_spin2(double *x, double *par);
 Double_t exponential_bkg_3(double *x, double *par); // 4 parameters
+Double_t BWsum_expol_chkstar(double *x, double *par);
+Double_t expol_chkstar(double *x, double *par);
+Double_t BWsumMassDepWidth_simple_exponential(double *x, double *par);
+Double_t simple_exponential(double *x, double *par);
+Double_t BWsum_ConstWidth_ModBolt(double *x, double *par);
+Double_t BWsum_constWidth(double *x, double *par);
 
 void glueball_fit_4rBW_simple()
 {
-    string sysallvar[] = {"default", "varTrA1", "varTrA2", "varTrB1", "varTrB2", "varTrC1", "varTrC2", "varTrD1", "varTrD2", "varToA1", "varToA2", "varToB1", "varToB2", "varToC1", "varToC2", "varToD1", "varToD2", "varToE1", "varToE2", "varToF1", "varToF2"}; // only for track, pid and topological variations
+    // Note that the main source of systematic i.e. signal extraction is still remaining to be done
+    std::vector<std::string> variations = {
+        "", "_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
+    int totalVar = variations.size();
 
-    string kvariation1names[] = {"_id24937", "_DCA0p04_id24940", "_DCA0p06_id24940", "_TPCPID4_id24937", "_TPCPID6_id24937", "_TPCcr100_id24937", "_TPCcr120_id24937", "_TPCcrfc0p9_id24940", "_TPCcrfc1p0_id24940", "_cospa0p95_id24938", "_cospa0p99_id24938", "_decay_rad0p4_id24938", "_decay_rad0p6_id24938", "_DCAv0dau0p3_id24938", "_DCAv0dau1_id24938", "_lifetime15_id24939", "_lifetime25_id24939", "_lambda_rej4_id24939", "_lambda_rej6_id24939", "_Ks_selection4_id24939", "_Ks_selection5_id24939"}; // only for track, pid and topological variations
-
-    int sizeofsysallvar = sizeof(sysallvar) / sizeof(sysallvar[0]);
-    int sizeofkvariation1names = sizeof(kvariation1names) / sizeof(kvariation1names[0]);
-    if (sizeofsysallvar != sizeofkvariation1names)
+    for (int isysvars = 0; isysvars < 1; isysvars++)
     {
-        cout << "Size of variations and names are not same" << endl;
-        return;
-    }
-
-    // for (int isysvars = 0; isysvars < sizeofsysallvar; isysvars++)
-    {
-
-        // string kvariation1 = kvariation1names[isysvars];
-        // string sysvar = sysallvar[isysvars];
 
         //****************systematics train*******************************
-        // Defaults
-        const string kvariation1 = ""; // for other trains
-        /*   const string kvariation1 = "_id24937"; // first four are same
-             const string kvariation1 = "_id24938";
-             const string kvariation1 = "_id24939";
-             const string kvariation1 = "_id24940";
-             // Track selections
-             const string kvariation1 = "_DCA0p04_id24940"; //DCA track to PV
-             const string kvariation1 = "_DCA0p06_id24940"; //DCA track to PV
-             const string kvariation1 = "_TPCPID3_id24937"; //TPC PID
-             const string kvariation1 = "_TPCPID4_id24937"; //TPC PID
-             const string kvariation1 = "_TPCPID6_id24937"; //TPC PID
-             const string kvariation1 = "_TPCcr100_id24937"; //TPC crossed rows
-             const string kvariation1 = "_TPCcr120_id24937"; //TPC crossed rows
-             const string kvariation1 = "_TPCcrfc0p9_id24940"; //TPC crosse over findable clusters
-             const string kvariation1 = "_TPCcrfc1p0_id24940"; // TPC crosse over findable clusters
-             // Topological selections
-             const string kvariation1 = "_cospa0p95_id24938"; //Cosine PA
-             const string kvariation1 = "_cospa0p99_id24938";
-             const string kvariation1 = "_decay_rad0p4_id24938"; //Transverse radius
-             const string kvariation1 = "_decay_rad0p6_id24938";
-             const string kvariation1 = "_DCAv0dau0p3_id24938"; //DCA b/w V0 daughters
-             const string kvariation1 = "_DCAv0dau1_id24938";
-             const string kvariation1 = "_lifetime15_id24939"; //Lifetime
-             const string kvariation1 = "_lifetime25_id24939";
-             const string kvariation1 = "_lambda_rej4_id24939";
-             const string kvariation1 = "_lambda_rej6_id24939";
-             const string kvariation1 = "_Ks_selection4_id24939";
-             const string kvariation1 = "_Ks_selection5_id24939";
+        const string kvariation1 = variations[isysvars];
+        //======== For fitting and normalization range variations ==========
+        // const string kvariation1 = "_fitLow1p07";
+        // const string kvariation1 = "_fitHigh2p17";
+        // const string kvariation1 = "_fitHigh2p25"; // Low fit is 1.045 (without it same as default)
+        // const string kvariation1 = "_normLeft"; //2.4-2.5 (fitlow 1.07 for 7-10 GeV/c)
+        // const string kvariation1 = "_normRight"; // 2.6-2.7
+        // const string kvariation1 = "_AllParametersFree";
+        // const string kvariation1 = "_AllParametersFixed";
+        //======== For fit function variation =============================
+        // const string kvariation1 = "_FitChKstar";
+        // const string kvariation1 = "_FitExpoHERA";
+        // const string kvariation1 = "_ConstWidth";
 
-             // *******************variations for Ks cuts and angular separation************************
-             //Defaults
-             const string kvariation1 = "_id24794";
-             const string kvariation1 = "_id25081";
-             //Variations
-             const string kvariation1 = "_1Kscut_id24794";
-             const string kvariation1 = "_1p5Kscut_id24794";
-             const string kvariation1 = "_2Kscut_id24794";
-             const string kvariation1 = "_4Kscut_id24794";
-             const string kvariation1 = "_angsep_0p5_id25081";
-             const string kvariation1 = "_angsep_1_id25081";
-             const string kvariation1 = "_angsep_1p5_id25081";
-             const string kvariation1 = "_angsep_2_id25081";
-             const string kvariation1 = "_angsep_3_id25081";
-        */
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
 
-        //*********for systematics and default study with full train ************************
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances"; // for systematics studies (excluding signal extraction)
+
+        //******************for default study with full train ************************
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/504802/KsKs_Channel/higher-mass-resonances_CS_Frame"; // 2023 dataset (derived data)
         string path2 = path;
 
-        // //*********for temporary study with angular separation cuts************************
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances" + kvariation1;
-        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/362701/KsKs_Channel/higher-mass-resonances_id24794";
-
-        string sysvar = "default"; // default
-
-        // file.open((path2 + "/fits/4rBw_fits/fit_params_" + sysvar + ".csv").c_str());
-        // file.open((path2 + "/fits/4rBw_fits/fit_params_temp_" + sysvar + ".txt").c_str());
-
-        string savepath = path2 + "/fits/4rBw_fits/pt_dependent";
+        string savepath = path2 + "/fits/";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        // TFile *f = new TFile((path + "/hglue_ROTATED_norm_2.50_2.60_pt_3.00_30.00.root").c_str(), "READ"); // default
-        // TFile *f = new TFile((path + "/hglue_ROTATED.root").c_str(), "READ"); //
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ");
-        TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
-        // TFile *f = new TFile((path + "/hglue_MIX_allPtMult.root").c_str(), "READ");
-
+        TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ");
+        // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_normleft.root").c_str(), "READ");
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
         double widths[] = {f1270Width, a1320Width, f1525Width, f1710Width};
@@ -128,9 +83,9 @@ void glueball_fit_4rBW_simple()
 #define b_massdepWidth_modifiedBoltzmann
 #define residual_subtracted
 // #define doublepanelplot
-// #define multiPanelPlots
-// #define before_combinatorialPlots
-#define singlePanelPlots
+#define multiPanelPlots
+        // #define before_combinatorialPlots
+        // #define singlePanelPlots
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
         if (hmult == nullptr)
@@ -165,7 +120,7 @@ void glueball_fit_4rBW_simple()
         //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
         //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}}}; // 70-100%
 
-        TFile *fDefault = new TFile((savepath + "/FitParam" + sysvar + ".root").c_str(), "recreate");
+        TFile *fDefault = new TFile((savepath + "/FitParam" + kvariation1 + ".root").c_str(), "recreate");
 
         // for (int imult = 0; imult < Nmult + 1; imult++)
         for (int imult = 0; imult < 1; imult++)
@@ -218,7 +173,7 @@ void glueball_fit_4rBW_simple()
                 // float highpT = 15.0;
 
                 // ofstream file;
-                // file.open((savepath_mult + Form("/fit_params_pT_%.1f-%.1f", lowpT, highpT) + sysvar + ".txt").c_str());
+                // file.open((savepath_mult + Form("/fit_params_pT_%.1f-%.1f", lowpT, highpT) + kvariation1 + ".txt").c_str());
 
                 // for (int irange = 0; irange < fitranges.size(); irange++)
                 for (int irange = 0; irange < 1; irange++)
@@ -291,17 +246,28 @@ void glueball_fit_4rBW_simple()
 
 #ifdef b_massdepWidth_modifiedBoltzmann
 
+                    //======================Default fit function==============================
                     TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_exponential, fitlow, fithigh, 16); // expol 3
                     TF1 *BEexpol_initial = new TF1("BEexpol_initial", BWsumMassDepWidth_exponential, fitlow, fithigh, 16);
-                    TF1 *BEexpol_reduced = new TF1("BEexpol_reduced", BWsumMassDepWidth_exponential, fitlow, fithigh, 16);
-                    string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"};
+
+                    // //======================Background function Charge K*======================
+                    // TF1 *BEexpol = new TF1("BEexpol", BWsum_expol_chkstar, fitlow, fithigh, 16);
+                    // TF1 *BEexpol_initial = new TF1("BEexpol_initial", BWsum_expol_chkstar, fitlow, fithigh, 16);
+
+                    // //======================Background function expo HERA======================
+                    // TF1 *BEexpol = new TF1("BEexpol", BWsumMassDepWidth_simple_exponential, fitlow, fithigh, 15);
+                    // TF1 *BEexpol_initial = new TF1("BEexpol_initial", BWsumMassDepWidth_simple_exponential, fitlow, fithigh, 15);
+
+                    // //======================BW with constant width=============================
+                    // TF1 *BEexpol = new TF1("BEexpol", BWsum_ConstWidth_ModBolt, fitlow, fithigh, 16);
+                    // TF1 *BEexpol_initial = new TF1("BEexpol_initial", BWsum_ConstWidth_ModBolt, fitlow, fithigh, 16);
+
+                    string parnames[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma", "a", "b", "c", "d"}; // remove name "d" when using expo HERA
                     for (int i = 0; i < sizeof(parnames) / sizeof(parnames[0]); i++)
                     {
                         BEexpol->SetParName(i, parnames[i].c_str());
-                        BEexpol_reduced->SetParName(i, parnames[i].c_str());
                     }
 
-                    // double parameters[] = {3500, f1270Mass, f1270Width, 2000, a1320Mass, a1320Width, 7000, f1525Mass, f1525Width, 2200, f1710Mass, f1710Width};
                     double parameters[] = {1.1e4, f1270Mass, f1270Width, 5.8e3, a1320Mass, a1320Width, 1.6e4, f1525Mass, f1525Width, 3.1e3, f1710Mass, f1710Width};
 
                     if ((imult == 3 && ipt == 3) || (imult == 4 && ipt == 3) || (imult == 4 && ipt == 4))
@@ -317,20 +283,21 @@ void glueball_fit_4rBW_simple()
                     for (int i = 0; i < size_fitparams; i++)
                     {
                         BEexpol->SetParameter(i, parameters[i]);
-                        BEexpol_reduced->SetParameter(i, parameters[i]);
                         BEexpol_initial->SetParameter(i, parameters[i]);
                     }
 
                     // //********systematic studies*************
-                    // double initial_param_bkg[] = {7.37518e5, 0.0134, 3.071167, 1.04}; // rebin twice (2022 dataset)
-                    double initial_param_bkg[] = {1.37518e5, 0.6, 6.071167, 1.04}; // rebin twice (2022 dataset)
+                    double initial_param_bkg[] = {1.37518e5, 0.6, 6.071167, 1.04}; // default fit
+                    // double initial_param_bkg[] = {9.5e6, -0.007, -2.4, -0.15}; // for expol charged K*
+                    // double initial_param_bkg[] = {6.8e5, -0.2, 2.8}; // for Exponential HERA
+                    // double initial_param_bkg[] = {1.4e5, -0.006, 6.071167, 1.0}; // const width BW
 
                     // Initial parameters for background
                     BEexpol_initial->SetParameter(size_fitparams + 0, initial_param_bkg[0]); // 5.562e5   // Free
                     BEexpol_initial->SetParameter(size_fitparams + 1, initial_param_bkg[1]); // -0.09379  //Fix for medium train
                     BEexpol_initial->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
                     BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
-                    // BEexpol_initial->FixParameter(size_fitparams + 3, 1.0); // 1.098     // Fix
+                    // BEexpol_initial->FixParameter(size_fitparams + 3, 1.1); // Fix for Constant width case
 
                     BEexpol_initial->FixParameter(2, f1270Width);
                     BEexpol_initial->FixParameter(5, a1320Width);
@@ -361,7 +328,6 @@ void glueball_fit_4rBW_simple()
                     {
                         int param_index = static_cast<int>(par_limits[i][0]); // Cast the first element to int
                         BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
-                        BEexpol_reduced->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
                     }
 
                     if (!(imult == 4 && ipt == 4) && !(imult == 1 && ipt == 0)) // second condition added for temp fix for 2023 data
@@ -395,8 +361,19 @@ void glueball_fit_4rBW_simple()
 
                     double *obtained_parameters = BEexpol->GetParameters(); // comment while using toy mc and likelihood fits
 
+                    //========================For default fit====================================
                     TF1 *expol = new TF1("expol", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);
-                    TF1 *expol_clone = new TF1("expol_clone", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);
+                    TF1 *expol_clone = new TF1("expol_clone", exponential_bkg_3, BEexpol->GetXmin(), BEexpol->GetXmax(), 4); // Do not forget to change number of parameters in below for loop
+
+                    // //=======================For Expol charged K*====================================
+                    // TF1 *expol = new TF1("expol", expol_chkstar, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);
+                    // TF1 *expol_clone = new TF1("expol_clone", expol_chkstar, BEexpol->GetXmin(), BEexpol->GetXmax(), 4);
+
+                    // //=======================For Exponential (HERA)============================
+                    // // since it has 3 parameters, changed the loop number also below
+                    // TF1 *expol = new TF1("expol", simple_exponential, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
+                    // TF1 *expol_clone = new TF1("expol_clone", simple_exponential, BEexpol->GetXmin(), BEexpol->GetXmax(), 3); // Do not forget to change number of parameters in below for loop to 3
+
                     for (int i = 0; i < 4; i++)
                     {
                         expol->SetParameter(i, obtained_parameters[size_fitparams + i]);
@@ -408,8 +385,14 @@ void glueball_fit_4rBW_simple()
                     expol_clone->SetLineStyle(2);
                     expol->Draw("same");
 
-                    TF1 *onlyBW = new TF1("onlyBW", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
-                    TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+                    // // //=====================Default fit=======================================
+                    // TF1 *onlyBW = new TF1("onlyBW", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+                    // TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsumMassDepWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+
+                    // // =======================BW with constant width=============================
+                    TF1 *onlyBW = new TF1("onlyBW", BWsum_constWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+                    TF1 *onlyBW_clone = new TF1("onlyBW_clone", BWsum_constWidth, BEexpol->GetXmin(), BEexpol->GetXmax(), 12);
+
                     string parameter_names[] = {"f_{2}(1270) Amp", "f_{2}(1270) Mass", "f_{2}(1270) #Gamma", "a_{2}(1320)^{0} Amp", "a_{2}(1320)^{0} Mass", "a_{2}(1320)^{0} #Gamma", "f'_{2}(1525) Amp", "f'_{2}(1525) Mass", "f'_{2}(1525) #Gamma", "f_{0}(1710) Amp", "f_{0}(1710) Mass", "f_{0}(1710) #Gamma"};
                     for (int i = 0; i < 12; i++)
                     {
@@ -447,8 +430,8 @@ void glueball_fit_4rBW_simple()
                     TF1 *singlefits[4];
                     for (int i = 0; i < 4; i++)
                     {
-                        // singlefits[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, BEexpol->GetXmin(), BEexpol->GetXmax(), 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, BEexpol->GetXmin(), BEexpol->GetXmax(), 3);
-                        singlefits[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, 1.00, 3.0, 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, 1.00, 3.0, 3);
+                        singlefits[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, 1.00, 3.0, 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, 1.00, 3.0, 3); // Default
+                        // singlefits[i] = new TF1(Form("singlef%d", i), single_BW, 1.00, 3.0, 3); // Constant width BW
                         singlefits[i]->SetParameter(0, obtained_parameters[3 * i]);
                         singlefits[i]->SetParameter(1, obtained_parameters[3 * i + 1]);
                         singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
@@ -535,7 +518,7 @@ void glueball_fit_4rBW_simple()
                         ptstats->SetY2NDC(0.92);
                         ptstats->Draw("same");
                     }
-// c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", lowpT, highpT, sysvar.c_str())).c_str());
+// c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", lowpT, highpT, kvariation1.c_str())).c_str());
 // c->SaveAs((savepath + "/rBWfit.png").c_str());
 // c->SaveAs((savepath + Form("/rBWfit_fit_%.2f_%.2f.png", fitlow, fithigh)).c_str());
 #ifdef singlePanelPlots
@@ -653,7 +636,7 @@ void glueball_fit_4rBW_simple()
 #endif
                     lat2.DrawLatex(0.215, 0.82, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
 
-// c2->SaveAs((savepath + "/rBWfit_residual_" + sysvar + ".png").c_str());
+// c2->SaveAs((savepath + "/rBWfit_residual_" + kvariation1 + ".png").c_str());
 #ifdef singlePanelPlots
                     c2->SaveAs((savepath_mult + Form("/rBWfit_residual_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
 #ifdef before_combinatorialPlots
@@ -1095,9 +1078,9 @@ void glueball_fit_4rBW_simple()
                 hStatSignificance[ires]->Write(Form("hStatSignificance_%s", resonance_mass[ires].c_str()));
             }
 #ifdef multiPanelPlots
-            cMultiPanelResidual->SaveAs((savepath_mult + Form("/rBWfit_residuals_multpanel_%s.png", sysvar.c_str())).c_str());
-            cMultiPanelFit->SaveAs((savepath_mult + Form("/rBWfit_fits_multpanel_%s.png", sysvar.c_str())).c_str());
-            cMultiPanelWithBkg->SaveAs((savepath_mult + Form("/rBWfit_withbkg_multpanel_%s.png", sysvar.c_str())).c_str());
+            cMultiPanelResidual->SaveAs((savepath_mult + Form("/rBWfit_residuals_multpanel_%s.png", kvariation1.c_str())).c_str());
+            cMultiPanelFit->SaveAs((savepath_mult + Form("/rBWfit_fits_multpanel_%s.png", kvariation1.c_str())).c_str());
+            cMultiPanelWithBkg->SaveAs((savepath_mult + Form("/rBWfit_withbkg_multpanel_%s.png", kvariation1.c_str())).c_str());
 #endif
         } // end of multiplicity loop
 
@@ -1399,7 +1382,7 @@ Double_t single_BW(double *x, double *par)
     return fit;
 }
 
-Double_t BWsum(double *x, double *par)
+Double_t BWsum_constWidth(double *x, double *par)
 {
     double yield1270 = par[0];
     double mass1270 = par[1];
@@ -1531,9 +1514,9 @@ Double_t single_BW_expol3_hera(double *x, double *par)
     return (single_BW_hera(x, par) + exponential_bkg_3(x, &par[3]));
 }
 
-Double_t BWsum_expol3(double *x, double *par)
+Double_t BWsum_ConstWidth_ModBolt(double *x, double *par)
 {
-    return (BWsum(x, par) + exponential_bkg_3(x, &par[12]));
+    return (BWsum_constWidth(x, par) + exponential_bkg_3(x, &par[12]));
 }
 
 Double_t BWsum_expol3_hera(double *x, double *par)
@@ -1560,7 +1543,7 @@ Double_t BWsum_boltzman_1(double *x, double *par)
 
 Double_t BWsum_boltzman_2(double *x, double *par)
 {
-    return (BWsum(x, par) + Boltzmann_bkg_2(x, &par[12]));
+    return (BWsum_constWidth(x, par) + Boltzmann_bkg_2(x, &par[12]));
 }
 Double_t expol_chkstar(double *x, double *par)
 {

@@ -134,7 +134,11 @@ void different_rot_kstar()
     hratio_rot3->SetLineColor(kGreen);
     hratio_rot3->SetMarkerColor(kGreen);
     hratio_rot3->Draw("pe same");
-    c->SaveAs("kstar_different_rotBkg.png");
+    TLine *line = new TLine(0.6, 1.0, 1.35, 1.0);
+    line->SetLineStyle(2);
+    line->SetLineColor(kBlue);
+    line->Draw();
+    c->SaveAs("kstar_different_rotBkg.pdf");
 
     TH1F *invsub_like = (TH1F *)hkstar_unlike->Clone();
     invsub_like->Add(hkstar_like, -1);

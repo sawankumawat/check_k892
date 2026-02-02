@@ -12,7 +12,7 @@ void glue_efficiency()
 
     // TFile *f = new TFile("../mc/LHC24l1/590796.root", "read");
     TFile *f = new TFile("/home/sawan/Downloads/AnalysisResults.root", "read");
-    // TFile *f = new TFile("/home/sawan/alice/practice/AnalysisResults.root", "read");
+    // TFile *f = new TFile("../mc/LHC24l1/599934.root", "read");
 
     if (f->IsZombie())
     {
@@ -20,22 +20,22 @@ void glue_efficiency()
         return;
     }
 
-    string histpathf01710 = "higher-mass-resonances/hMChists";
-    string histpathf21525 = "higher-mass-resonances_f21525/hMChists";
+    string histpathf01710 = "higher-mass-resonances_lambda_rej4/hMChists";
+    // string histpathf21525 = "higher-mass-resonances_f21525/hMChists";
     // string histpatha21320 = "higher-mass-resonances_a21320/hMChists";
     // string histpathf21270 = "higher-mass-resonances_f21270/hMChists";
     // mcQAplots(f, histpathf01710);
 
     THnSparseD *GenpTf01710 = (THnSparseD *)f->Get(Form("%s/Genf1710", histpathf01710.c_str()));     // axis: multiplicity, pt, helicity angle
-    THnSparseD *recptf01710 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpathf01710.c_str()));  // axis: multiplicity, pt, mass, helicity angle
-    THnSparseD *GenpTf21525 = (THnSparseD *)f->Get(Form("%s/Genf17102", histpathf21525.c_str()));     // axis: multiplicity, pt, helicity angle
-    THnSparseD *recpt1f21525 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpathf21525.c_str())); // axis: multiplicity, pt, mass, helicity angle
+    THnSparseD *recptf01710 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpathf01710.c_str())); // axis: multiplicity, pt, mass, helicity angle
+    // THnSparseD *GenpTf21525 = (THnSparseD *)f->Get(Form("%s/Genf17102", histpathf21525.c_str()));     // axis: multiplicity, pt, helicity angle
+    // THnSparseD *recpt1f21525 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpathf21525.c_str())); // axis: multiplicity, pt, mass, helicity angle
     // THnSparseD *GenpTa21320 = (THnSparseD *)f->Get(Form("%s/Genf17102", histpatha21320.c_str()));     // axis: multiplicity, pt, helicity angle
     // THnSparseD *recpta21320 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpatha21320.c_str()));  // axis: multiplicity, pt, mass, helicity angle
     // THnSparseD *GenpTf21270 = (THnSparseD *)f->Get(Form("%s/Genf17102", histpathf21270.c_str()));     // axis: multiplicity, pt, helicity angle
     // THnSparseD *recptf21270 = (THnSparseD *)f->Get(Form("%s/Recf1710_pt2", histpathf21270.c_str()));  // axis: multiplicity, pt, mass, helicity angle
 
-    if (GenpTf01710 == nullptr || recptf01710 == nullptr || GenpTf21525 == nullptr || recpt1f21525 == nullptr)
+    if (GenpTf01710 == nullptr || recptf01710 == nullptr)
     {
         cout << "Error reading histogram" << endl;
         return;
@@ -46,14 +46,14 @@ void glue_efficiency()
     float cosThetaBins[] = {-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1};
     int sizeCosThetaBins = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]);
 
-    TH1D *hgenpt1710 = GenpTf01710->Projection(1);            // project on pt axis
-    TH1D *hgencosThetaStar1710 = GenpTf01710->Projection(2);  // project on helicity angle axis
-    TH1D *hrecpt1710 = recptf01710->Projection(1);            // project on pt axis
-    TH1D *hreccosThetaStar1710 = recptf01710->Projection(3);  // project on helicity angle axis
-    TH1D *hgenpt1525 = GenpTf21525->Projection(1);            // project on pt axis
-    TH1D *hreccosThetaStar1525 = recpt1f21525->Projection(3); // project on helicity angle axis
-    TH1D *hrecpt1525 = recpt1f21525->Projection(1);           // project on pt axis
-    TH1D *hgencosThetaStar1525 = GenpTf21525->Projection(2);  // project on helicity angle axis
+    TH1D *hgenpt1710 = GenpTf01710->Projection(1); // project on pt axis
+    // TH1D *hgencosThetaStar1710 = GenpTf01710->Projection(2);  // project on helicity angle axis
+    TH1D *hrecpt1710 = recptf01710->Projection(1); // project on pt axis
+    // TH1D *hreccosThetaStar1710 = recptf01710->Projection(3);  // project on helicity angle axis
+    // TH1D *hgenpt1525 = GenpTf21525->Projection(1);            // project on pt axis
+    // TH1D *hreccosThetaStar1525 = recpt1f21525->Projection(3); // project on helicity angle axis
+    // TH1D *hrecpt1525 = recpt1f21525->Projection(1);           // project on pt axis
+    // TH1D *hgencosThetaStar1525 = GenpTf21525->Projection(2);  // project on helicity angle axis
     // TH1D *hgenpt1320 = GenpTa21320->Projection(1);            // project on pt axis
     // TH1D *hreccosThetaStar1320 = recpta21320->Projection(3);  // project on helicity angle axis
     // TH1D *hrecpt1320 = recpta21320->Projection(1);           // project on pt axis
@@ -76,26 +76,25 @@ void glue_efficiency()
     TH1D *hEventLoss1710 = new TH1D("hEventLoss1710", "Event Loss for f0(1710)", sizePtBins - 1, pTbins);
     TH1D *hSignalLoss1710 = new TH1D("hSignalLoss1710", "Signal Loss for f0(1710)", sizePtBins - 1, pTbins);
 
-    TH1F *fracUncert1710 = new TH1F("fracUncert1710", "Fractional Uncertainty f0(1710)", sizePtBins - 1, pTbins);
-    TH1F *fracUncert1525 = new TH1F("fracUncert1525", "Fractional Uncertainty f2(1525)", sizePtBins - 1, pTbins);
+    // TH1F *fracUncert1710 = new TH1F("fracUncert1710", "Fractional Uncertainty f0(1710)", sizePtBins - 1, pTbins);
+    // TH1F *fracUncert1525 = new TH1F("fracUncert1525", "Fractional Uncertainty f2(1525)", sizePtBins - 1, pTbins);
 
-    // Event loss histograms
-    // TH1F *hAllGenColl = (TH1F *)f->Get(Form("%s/MCcorrections/MultiplicityGen", histpathf01710.c_str()));
-    // TH1F *hAllGenColl1Rec = (TH1F *)f->Get(Form("%s/MCcorrections/MultiplicityRec", histpathf01710.c_str()));
-    TH1F *hAllGenColl = (TH1F *)f->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
-    TH1F *hAllGenColl1Rec = (TH1F *)f->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
+    // // Event loss histograms
+    // // TH1F *hAllGenColl = (TH1F *)f->Get(Form("%s/MCcorrections/MultiplicityGen", histpathf01710.c_str()));
+    // // TH1F *hAllGenColl1Rec = (TH1F *)f->Get(Form("%s/MCcorrections/MultiplicityRec", histpathf01710.c_str()));
+    // TH1F *hAllGenColl = (TH1F *)f->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
+    // TH1F *hAllGenColl1Rec = (TH1F *)f->Get(Form("%s/MCcorrections/hGenNo", histpathf01710.c_str()));
 
-    if (hAllGenColl == nullptr || hAllGenColl1Rec == nullptr)
-    {
-        cout << "Error reading event loss histograms" << endl;
-        cout << "Path is " << Form("%s/MCcorrections/MultiplicityRec", histpathf01710.c_str()) << endl;
-        return;
-    }
+    // if (hAllGenColl == nullptr || hAllGenColl1Rec == nullptr)
+    // {
+    //     cout << "Error reading event loss histograms" << endl;
+    //     cout << "Path is " << Form("%s/MCcorrections/MultiplicityRec", histpathf01710.c_str()) << endl;
+    //     return;
+    // }
 
-    // Signal loss histograms
-    TH2F *hAllGenKstar = (TH2F *)f->Get(Form("%s/MCcorrections/hSignalLossDenominator4", histpathf01710.c_str()));
-    TH2F *hAllGenKstar1Rec = (TH2F *)f->Get(Form("%s/MCcorrections/hSignalLossNumerator", histpathf01710.c_str()));
-
+    // // Signal loss histograms
+    // TH2F *hAllGenKstar = (TH2F *)f->Get(Form("%s/MCcorrections/hSignalLossDenominator4", histpathf01710.c_str()));
+    // TH2F *hAllGenKstar1Rec = (TH2F *)f->Get(Form("%s/MCcorrections/hSignalLossNumerator", histpathf01710.c_str()));
 
     for (int i = 0; i < sizePtBins - 1; i++)
     {
@@ -109,57 +108,57 @@ void glue_efficiency()
         {
             heff1710->SetBinContent(i + 1, recYield1710 / genYield1710);
             heff1710->SetBinError(i + 1, recYieldError1710);
-            fracUncert1710->SetBinContent(i + 1, recYieldError1710 / (recYield1710 / genYield1710));
+            // fracUncert1710->SetBinContent(i + 1, recYieldError1710 / (recYield1710 / genYield1710));
         }
-
-        double genYield1525 = hgenpt1525->Integral(lowptbin, highptbin);
-        double recYield1525 = hrecpt1525->Integral(lowptbin, highptbin);
-        double recYieldError1525 = TMath::Sqrt(abs(((recYield1525 + 1) / (genYield1525 + 2)) * ((recYield1525 + 2) / (genYield1525 + 3) - (recYield1525 + 1) / (genYield1525 + 2))));
-        if (genYield1525 > 0)
-        {
-            heff1525->SetBinContent(i + 1, recYield1525 / genYield1525);
-            heff1525->SetBinError(i + 1, recYieldError1525);
-            fracUncert1525->SetBinContent(i + 1, recYieldError1525 / (recYield1525 / genYield1525));
-        }
-        int multlbinlow = hAllGenKstar->GetXaxis()->FindBin(0.01);
-        int multlbinhigh = hAllGenKstar->GetXaxis()->FindBin(100.0 - 0.01);
-        
-        // Event loss
-        // double eventLossNum1710 = hAllGenColl1Rec->Integral(multlbinlow, multlbinhigh);
-        // double eventLossDen1710 = hAllGenColl->Integral(multlbinlow, multlbinhigh);
-        double eventLossDen1710 = hAllGenColl->GetBinContent(1);
-        double eventLossNum1710 = hAllGenColl1Rec->GetBinContent(2);
-        double eventLoss1710 = eventLossNum1710 / eventLossDen1710;
-        hEventLoss1710->SetBinContent(i + 1, eventLoss1710);
-
-        // Signal loss
-        TH1D *hSignalLossDenPt1710 = hAllGenKstar->ProjectionX(Form("SignalLossDenPt1710_%d", i), multlbinlow, multlbinhigh);
-        TH1D *hSignalLossNumPt1710 = hAllGenKstar1Rec->ProjectionX(Form("SignalLossNumPt1710_%d", i), multlbinlow, multlbinhigh);
-        double signalLossDen1710 = hSignalLossDenPt1710->Integral(hSignalLossDenPt1710->GetXaxis()->FindBin(pTbins[i] + 0.01), hSignalLossDenPt1710->GetXaxis()->FindBin(pTbins[i + 1] - 0.01));
-        // double signalLossNum1710 = hSignalLossNumPt1710->Integral(hSignalLossNumPt1710->GetXaxis()->FindBin(pTbins[i] + 0.01), hSignalLossNumPt1710->GetXaxis()->FindBin(pTbins[i + 1] - 0.01));
-        double signalLossNum1710 = hgenpt1710->Integral(lowptbin, highptbin);
-        double signalLoss1710 = signalLossNum1710 / signalLossDen1710;
-        hSignalLoss1710->SetBinContent(i + 1, signalLoss1710);
-
-        cout << "pT bin " << i << " event loss " << eventLoss1710 << " signal loss " << signalLoss1710 << endl;
-
-        // double genYield1320 = hgenpt1320->Integral(lowptbin, highptbin);
-        // double recYield1320 = hrecpt1320->Integral(lowptbin, highptbin);
-        // double recYieldError1320 = TMath::Sqrt(abs(((recYield1320 + 1) / (genYield1320 + 2)) * ((recYield1320 + 2) / (genYield1320 + 3) - (recYield1320 + 1) / (genYield1320 + 2))));
-        // if (genYield1320 > 0)
-        // {
-        //     heff1320->SetBinContent(i + 1, recYield1320 / genYield1320);
-        //     heff1320->SetBinError(i + 1, recYieldError1320);
-        // }
-        // double genYield1270 = hgenpt1270->Integral(lowptbin, highptbin);
-        // double recYield1270 = hrecpt1270->Integral(lowptbin, highptbin);
-        // double recYieldError1270 = TMath::Sqrt(abs(((recYield1270 + 1) / (genYield1270 + 2)) * ((recYield1270 + 2) / (genYield1270 + 3) - (recYield1270 + 1) / (genYield1270 + 2))));
-        // if (genYield1270 > 0)
-        // {
-        //     heff1270->SetBinContent(i + 1, recYield1270 / genYield1270);
-        //     heff1270->SetBinError(i + 1, recYieldError1270);
-        // }
     }
+
+    //     double genYield1525 = hgenpt1525->Integral(lowptbin, highptbin);
+    //     double recYield1525 = hrecpt1525->Integral(lowptbin, highptbin);
+    //     double recYieldError1525 = TMath::Sqrt(abs(((recYield1525 + 1) / (genYield1525 + 2)) * ((recYield1525 + 2) / (genYield1525 + 3) - (recYield1525 + 1) / (genYield1525 + 2))));
+    //     if (genYield1525 > 0)
+    //     {
+    //         heff1525->SetBinContent(i + 1, recYield1525 / genYield1525);
+    //         heff1525->SetBinError(i + 1, recYieldError1525);
+    //         fracUncert1525->SetBinContent(i + 1, recYieldError1525 / (recYield1525 / genYield1525));
+    //     }
+    //     int multlbinlow = hAllGenKstar->GetXaxis()->FindBin(0.01);
+    //     int multlbinhigh = hAllGenKstar->GetXaxis()->FindBin(100.0 - 0.01);
+
+    //     // Event loss
+    //     // double eventLossNum1710 = hAllGenColl1Rec->Integral(multlbinlow, multlbinhigh);
+    //     // double eventLossDen1710 = hAllGenColl->Integral(multlbinlow, multlbinhigh);
+    //     double eventLossDen1710 = hAllGenColl->GetBinContent(1);
+    //     double eventLossNum1710 = hAllGenColl1Rec->GetBinContent(2);
+    //     double eventLoss1710 = eventLossNum1710 / eventLossDen1710;
+    //     hEventLoss1710->SetBinContent(i + 1, eventLoss1710);
+
+    //     // Signal loss
+    //     TH1D *hSignalLossDenPt1710 = hAllGenKstar->ProjectionX(Form("SignalLossDenPt1710_%d", i), multlbinlow, multlbinhigh);
+    //     TH1D *hSignalLossNumPt1710 = hAllGenKstar1Rec->ProjectionX(Form("SignalLossNumPt1710_%d", i), multlbinlow, multlbinhigh);
+    //     double signalLossDen1710 = hSignalLossDenPt1710->Integral(hSignalLossDenPt1710->GetXaxis()->FindBin(pTbins[i] + 0.01), hSignalLossDenPt1710->GetXaxis()->FindBin(pTbins[i + 1] - 0.01));
+    //     // double signalLossNum1710 = hSignalLossNumPt1710->Integral(hSignalLossNumPt1710->GetXaxis()->FindBin(pTbins[i] + 0.01), hSignalLossNumPt1710->GetXaxis()->FindBin(pTbins[i + 1] - 0.01));
+    //     double signalLossNum1710 = hgenpt1710->Integral(lowptbin, highptbin);
+    //     double signalLoss1710 = signalLossNum1710 / signalLossDen1710;
+    //     hSignalLoss1710->SetBinContent(i + 1, signalLoss1710);
+
+    //     cout << "pT bin " << i << " event loss " << eventLoss1710 << " signal loss " << signalLoss1710 << endl;
+
+    // double genYield1320 = hgenpt1320->Integral(lowptbin, highptbin);
+    // double recYield1320 = hrecpt1320->Integral(lowptbin, highptbin);
+    // double recYieldError1320 = TMath::Sqrt(abs(((recYield1320 + 1) / (genYield1320 + 2)) * ((recYield1320 + 2) / (genYield1320 + 3) - (recYield1320 + 1) / (genYield1320 + 2))));
+    // if (genYield1320 > 0)
+    // {
+    //     heff1320->SetBinContent(i + 1, recYield1320 / genYield1320);
+    //     heff1320->SetBinError(i + 1, recYieldError1320);
+    // }
+    // double genYield1270 = hgenpt1270->Integral(lowptbin, highptbin);
+    // double recYield1270 = hrecpt1270->Integral(lowptbin, highptbin);
+    // double recYieldError1270 = TMath::Sqrt(abs(((recYield1270 + 1) / (genYield1270 + 2)) * ((recYield1270 + 2) / (genYield1270 + 3) - (recYield1270 + 1) / (genYield1270 + 2))));
+    // if (genYield1270 > 0)
+    // {
+    //     heff1270->SetBinContent(i + 1, recYield1270 / genYield1270);
+    //     heff1270->SetBinError(i + 1, recYieldError1270);
+    // }
 
     // for (int i = 0; i < hreccosThetaStar1710->GetNbinsX(); i++)
     // {
@@ -189,19 +188,19 @@ void glue_efficiency()
     // heff1710->Write();
     // heffCosTheta1710->Write();
 
-    // TCanvas *cefficiency = new TCanvas("", "Efficiency", 720, 720);
-    // SetCanvasStyle(cefficiency, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(heff1710);
-    // heff1710->GetYaxis()->SetTitle("Efficiency");
-    // heff1710->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    // heff1710->GetYaxis()->SetTitleOffset(1.5);
-    // heff1710->GetYaxis()->SetMaxDigits(3);
-    // // heff1710->SetMaximum(heff1710->GetMaximum() * 1.6);
-    // heff1710->SetMaximum(61e-3);
-    // heff1710->GetXaxis()->SetRangeUser(0, 20.5);
-    // heff1710->Draw("HIST");
-    // // TCanvas *cefficiencyf2 = new TCanvas("", "Efficiency for f21525", 720, 720);
-    // // SetCanvasStyle(cefficiencyf2, 0.15, 0.05, 0.05, 0.15);
+    TCanvas *cefficiency = new TCanvas("", "Efficiency", 720, 720);
+    SetCanvasStyle(cefficiency, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(heff1710);
+    heff1710->GetYaxis()->SetTitle("Efficiency");
+    heff1710->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    heff1710->GetYaxis()->SetTitleOffset(1.5);
+    heff1710->GetYaxis()->SetMaxDigits(3);
+    // heff1710->SetMaximum(heff1710->GetMaximum() * 1.6);
+    heff1710->SetMaximum(61e-3);
+    heff1710->GetXaxis()->SetRangeUser(0, 20.5);
+    heff1710->Draw("pe");
+    // TCanvas *cefficiencyf2 = new TCanvas("", "Efficiency for f21525", 720, 720);
+    // SetCanvasStyle(cefficiencyf2, 0.15, 0.05, 0.05, 0.15);
     // SetHistoQA(heff1525);
     // // heff1525->GetYaxis()->SetTitle("Efficiency");
     // // heff1525->GetXaxis()->SetTitle("p_{T} (GeV/c)");
@@ -211,16 +210,16 @@ void glue_efficiency()
     // heff1525->SetMarkerStyle(21);
     // heff1525->SetMarkerColor(kRed);
     // heff1525->Draw("HIST same");
-    // // SetHistoQA(heff1320);
-    // // heff1320->SetLineColor(kGreen + 2);
-    // // heff1320->SetMarkerStyle(22);
-    // // heff1320->SetMarkerColor(kGreen + 2);
-    // // heff1320->Draw("HIST same");
-    // // SetHistoQA(heff1270);
-    // // heff1270->SetLineColor(kBlue);
-    // // heff1270->SetMarkerStyle(23);
-    // // heff1270->SetMarkerColor(kBlue);
-    // // heff1270->Draw("HIST same");
+    // SetHistoQA(heff1320);
+    // heff1320->SetLineColor(kGreen + 2);
+    // heff1320->SetMarkerStyle(22);
+    // heff1320->SetMarkerColor(kGreen + 2);
+    // heff1320->Draw("HIST same");
+    // SetHistoQA(heff1270);
+    // heff1270->SetLineColor(kBlue);
+    // heff1270->SetMarkerStyle(23);
+    // heff1270->SetMarkerColor(kBlue);
+    // heff1270->Draw("HIST same");
     // TLegend *leg = new TLegend(0.45, 0.3, 0.65, 0.45);
     // leg->SetFillStyle(0);
     // leg->SetBorderSize(0);
@@ -233,20 +232,20 @@ void glue_efficiency()
     // leg->Draw();
     // cefficiency->SaveAs("injected_mc_plots/efficiency.png");
 
-    TCanvas *ceventSigLoss = new TCanvas("", "Event and Signal Loss", 720, 720);
-    SetCanvasStyle(ceventSigLoss, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(hEventLoss1710);
-    hEventLoss1710->GetYaxis()->SetTitle("Event and signal loss");
-    hEventLoss1710->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    hEventLoss1710->GetYaxis()->SetTitleOffset(1.5);
-    hEventLoss1710->GetYaxis()->SetMaxDigits(3);
-    // hEventLoss1710->SetMaximum(1.8);
-    // hEventLoss1710->GetXaxis()->SetRangeUser(0, 20.5);
-    hEventLoss1710->Draw("HIST");
-    SetHistoQA(hSignalLoss1710);
-    hSignalLoss1710->SetLineColor(kRed);
-    hSignalLoss1710->SetMarkerColor(kRed);
-    hSignalLoss1710->Draw("p same");
+    // TCanvas *ceventSigLoss = new TCanvas("", "Event and Signal Loss", 720, 720);
+    // SetCanvasStyle(ceventSigLoss, 0.15, 0.05, 0.05, 0.15);
+    // SetHistoQA(hEventLoss1710);
+    // hEventLoss1710->GetYaxis()->SetTitle("Event and signal loss");
+    // hEventLoss1710->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    // hEventLoss1710->GetYaxis()->SetTitleOffset(1.5);
+    // hEventLoss1710->GetYaxis()->SetMaxDigits(3);
+    // // hEventLoss1710->SetMaximum(1.8);
+    // // hEventLoss1710->GetXaxis()->SetRangeUser(0, 20.5);
+    // hEventLoss1710->Draw("HIST");
+    // SetHistoQA(hSignalLoss1710);
+    // hSignalLoss1710->SetLineColor(kRed);
+    // hSignalLoss1710->SetMarkerColor(kRed);
+    // hSignalLoss1710->Draw("p same");
 
     // TCanvas *cfracUncert = new TCanvas("", "Fractional Uncertainty", 720, 720);
     // SetCanvasStyle(cfracUncert, 0.15, 0.05, 0.05, 0.15);

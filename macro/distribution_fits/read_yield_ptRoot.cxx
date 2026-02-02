@@ -19,10 +19,11 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 void read_yield_ptRoot()
 {
     gStyle->SetOptStat(0);
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
-    TFile *inputFile = new TFile((path + "FitParamdefault.root").c_str(), "READ");
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    // TFile *inputFile = new TFile((path + "FitParamdefault.root").c_str(), "READ");
+    TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
     if (inputFile->IsZombie())
     {
         cerr << "Error opening file" << endl;
@@ -40,24 +41,40 @@ void read_yield_ptRoot()
     // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
     // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
 
+    TFile *fSigEventLoss = new TFile((path + "mult_0-100/Spectra/Loss_phi_mult0-100.root").c_str(), "READ");
+    if (fSigEventLoss->IsZombie())
+    {
+        cerr << "Error opening event/signal loss file" << endl;
+    }
+    TH1F *hEvbySigLoss = (TH1F *)fSigEventLoss->Get("hRatio");
+    int binsLoss = hEvbySigLoss->GetNbinsX();
+    if (binsLoss != (sizeof(ptBins) / sizeof(ptBins[0]) - 1))
+    {
+        cerr << "Mismatch in number of pT bins for event/signal loss" << endl;
+        return;
+    }
+
     int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
     int nBins2 = sizeof(ptBins2) / sizeof(ptBins2[0]) - 1;
 
     // efficiency file
-    TFile *feff = new TFile("/home/sawan/check_k892/mc/LHC24l1/463655.root", "read");
-    if (feff->IsZombie())
+    // TFile *feff = new TFile("/home/sawan/check_k892/mc/LHC24l1/463655.root", "read");
+    TFile *feff_f0 = new TFile("/home/sawan/check_k892/mc/LHC24l1/599933.root", "read");
+    TFile *feff_f2 = new TFile("/home/sawan/check_k892/mc/LHC24l1/599934.root", "read");
+    if (feff_f0->IsZombie() || feff_f2->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
     }
     string histpath = "higher-mass-resonances/hMChists";
-    string histpathf2 = "higher-mass-resonances_f21525/hMChists";
+    // string histpathf2 = "higher-mass-resonances_f21525/hMChists";
+    string histpathf2 = "higher-mass-resonances/hMChists";
     TFile *fOutput = new TFile(Form("%s/spectra.root", outputPath.Data()), "RECREATE");
 
-    THnSparseD *GenpTf0 = (THnSparseD *)feff->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
-    THnSparseD *GenpTf2 = (THnSparseD *)feff->Get(Form("%s/Genf17102", histpathf2.c_str()));
-    THnSparseD *recpt1f0 = (THnSparseD *)feff->Get(Form("%s/Recf1710_pt2", histpath.c_str())); // axis: multiplicity, pt, mass, helicity angle
-    THnSparseD *recpt1f2 = (THnSparseD *)feff->Get(Form("%s/Recf1710_pt2", histpathf2.c_str()));
+    THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
+    THnSparseD *recpt1f0 = (THnSparseD *)feff_f0->Get(Form("%s/Recf1710_pt2", histpath.c_str()));
+    THnSparseD *GenpTf2 = (THnSparseD *)feff_f2->Get(Form("%s/Genf17102", histpathf2.c_str()));
+    THnSparseD *recpt1f2 = (THnSparseD *)feff_f2->Get(Form("%s/Recf1710_pt2", histpathf2.c_str()));
 
     if (GenpTf0 == nullptr || recpt1f0 == nullptr || GenpTf2 == nullptr || recpt1f2 == nullptr)
     {
@@ -152,9 +169,16 @@ void read_yield_ptRoot()
             double eff1710_err = hefficiencyf0->GetBinError(ibins + 1);
             double eff1525 = hefficiencyf2->GetBinContent(ibins + 1);
             double eff1525_err = hefficiencyf2->GetBinError(ibins + 1);
-            double oneUponTriggerEfficiency = 70.0 / 46.1; // inverse of trigger efficiency
-            double BR_f0 = 0.1667 / 2;
+            // double oneUponTriggerEfficiency = 70.0 / 46.1; // (this was for 5.36 in pp dataset)
+            double INELCrossSection = 77.904;  // in mb for 13.6 TeV calculated from interpolation (PHYSICAL REVIEW C 97, 054910 (2018))
+            double visibleCrossSection = 52.8; // 52.8 mb +- 10% (https://indico.cern.ch/event/1633849/contributions/6884528/attachments/3201859/5700356/PAG_Lumi_16Jan2026.pdf)
+            double oneUponTriggerEfficiency = INELCrossSection / visibleCrossSection;
+            // double BR_f0 = 0.1667 / 2; (from thermal fist model)
+            double BR_f0 = 1.0;
             double BR_f2 = 0.438 / 2;
+            double signalLossFactor = hEvbySigLoss->GetBinContent(ibins + 1);
+            cout << "Signal loss factor for pT bin " << ibins << " is " << signalLossFactor << endl;
+            // double signalLossFactor = 1.0;
 
             float yield = hYieldAll[ires]->GetBinContent(ibins + 1);
             float yield_err = hYieldAll[ires]->GetBinError(ibins + 1);
@@ -195,8 +219,8 @@ void read_yield_ptRoot()
                 hYield1525Raw->SetBinError(ibins + 2, yield_err);
                 hSignificance1525->SetBinContent(ibins + 2, significance);
 
-                double corrected_yield1525 = yield / (eff1525 * oneUponTriggerEfficiency * BR_f2);
-                double corrected_yield1525_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
+                double corrected_yield1525 = yield * signalLossFactor / (eff1525 * oneUponTriggerEfficiency * BR_f2);
+                double corrected_yield1525_err = signalLossFactor * sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
                 hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
                 hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
             }
@@ -210,8 +234,8 @@ void read_yield_ptRoot()
                 hWidth1710->SetBinError(ibins + 2, width_err);
                 hSignificance1710->SetBinContent(ibins + 2, significance);
 
-                double corrected_yield1710 = yield / (eff1710 * oneUponTriggerEfficiency * BR_f0);
-                double corrected_yield1710_err = sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
+                double corrected_yield1710 = yield * signalLossFactor / (eff1710 * oneUponTriggerEfficiency * BR_f0);
+                double corrected_yield1710_err = signalLossFactor * sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
                 hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
                 hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
             }
@@ -544,8 +568,7 @@ void read_yield_ptRoot()
 
     TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
     fitFcn->SetParameter(0, 5.0);
-    // fitFcn->SetParameter(1, 0.05);
-    fitFcn->SetParameter(1, 0.5);
+    fitFcn->SetParameter(1, 0.015);
     fitFcn->FixParameter(2, 1.525);
     fitFcn->SetParameter(3, 0.35);
     fitFcn->SetParNames("n", "dn/dy", "mass", "T");
@@ -556,8 +579,7 @@ void read_yield_ptRoot()
 
     TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
     fitFcn2->SetParameter(0, 5.0);
-    // fitFcn2->SetParameter(1, 0.05);
-    fitFcn2->SetParameter(1, 0.5);
+    fitFcn2->SetParameter(1, 0.015);
     fitFcn2->FixParameter(2, 1.710);
     fitFcn2->SetParameter(3, 0.35);
     fitFcn2->SetParNames("n", "dn/dy", "mass", "T");

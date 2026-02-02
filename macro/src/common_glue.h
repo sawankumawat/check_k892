@@ -35,7 +35,7 @@ const std::string kDataset_temp = "LHC22o_pass7_small/";
 #endif
 
 #ifdef DATASET_LHC22o_pass7_small
-const std::string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7 (old)
+// const std::string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7 (old)
 // const std::string kDataFilename_temp2 = "435448.root"; // Full 2022 pass 7 (new)
 // const std::string kDataFilename_temp2 = "435450.root"; // LHC23_pass4_thin
 // const std::string kDataFilename_temp2 = "435449.root"; // LHC24_pass4_skimmed
@@ -44,6 +44,12 @@ const std::string kDataFilename_temp2 = "433479.root"; // Full 2022 pass 7 (old)
 // const std::string kDataFilename_temp2 = "504802.root"; // LHC23_pass4_thin
 // const std::string kDataFilename_temp2 = "temp.root"; // LHC23_pass4_thin
 
+//===============Systematics study in the 2022 dataset=================
+// (Both trains have less statistics but both topological and track selection variations)
+// const std::string kDataFilename_temp2 = "593402.root"; // topological selections (do not use)
+// const std::string kDataFilename_temp2 = "593251.root"; // track selections (do not use)
+const std::string kDataFilename_temp2 = "systematic2022_new.root"; // combined above files
+
 #endif
 
 // final dataset name
@@ -51,7 +57,6 @@ const std::string kDataset = kDataFilename_temp1 + kDataset_temp;
 const std::string kSignalOutput = kSignalOutput_temp + kDataset_temp + kDataFilename_temp2.substr(0, kDataFilename_temp2.rfind("."));
 const std::string kDataFilename = kDataset + kDataFilename_temp2;
 const std::string kfoldername = kfoldername_temp + kvariation;
-const std::string koutputfolder = kSignalOutput + "/" + kfoldername;
 
 // Canvas dimensions
 const int klowerpad = 2;

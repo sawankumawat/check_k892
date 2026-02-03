@@ -24,13 +24,13 @@ void read_yield_ptRoot()
     vector<string> variationSigExt = {"", "_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed"};
     int totalVarSigExt = variationSigExt.size();
 
-    for (int ivar = 0; ivar < totalVar; ivar++)
-    // for (int ivar = 0; ivar < totalVarSigExt; ivar++)
+    // for (int ivar = 0; ivar < totalVar; ivar++)
+    for (int ivar = 0; ivar < totalVarSigExt; ivar++)
     {
-        string CurrentVariation = variations[ivar];
-        // string CurrentVariation = variationSigExt[ivar];
+        // string CurrentVariation = variations[ivar];
+        string CurrentVariation = variationSigExt[ivar];
         cout << "Current variation is " << CurrentVariation << endl;
-        // gStyle->SetOptStat(0);
+        gStyle->SetOptStat(0);
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
 
@@ -65,7 +65,7 @@ void read_yield_ptRoot()
         }
 
         float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};              // 2022 dataset
-        float ptBins2[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
+        float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 15.01}; // 2022 dataset
         // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
         // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
 
@@ -228,55 +228,55 @@ void read_yield_ptRoot()
                 float significance = hSignificanceAll[ires]->GetBinContent(ibins + 1);
                 // if (ires == 0)
                 // {
-                //     hMass1270->SetBinContent(ibins + 1, mass);
-                //     hMass1270->SetBinError(ibins + 1, mass_err);
-                //     hYield1270Raw->SetBinContent(ibins + 1, yield);
-                //     hYield1270Raw->SetBinError(ibins + 1, yield_err);
+                //     hMass1270->SetBinContent(ibins + 2, mass);
+                //     hMass1270->SetBinError(ibins + 2, mass_err);
+                //     hYield1270Raw->SetBinContent(ibins + 2, yield);
+                //     hYield1270Raw->SetBinError(ibins + 2, yield_err);
 
                 //     double corrected_yield1270 = yield / eff1525;
                 //     double corrected_yield1270_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2));
-                //     hYield1270Corrected->SetBinContent(ibins + 1, corrected_yield1270);
-                //     hYield1270Corrected->SetBinError(ibins + 1, corrected_yield1270_err);
+                //     hYield1270Corrected->SetBinContent(ibins + 2, corrected_yield1270);
+                //     hYield1270Corrected->SetBinError(ibins + 2, corrected_yield1270_err);
                 // }
                 // if (ires == 1)
                 // {
-                //     hMass1320->SetBinContent(ibins + 1, mass);
-                //     hMass1320->SetBinError(ibins + 1, mass_err);
-                //     hYield1320Raw->SetBinContent(ibins + 1, yield);
-                //     hYield1320Raw->SetBinError(ibins + 1, yield_err);
+                //     hMass1320->SetBinContent(ibins + 2, mass);
+                //     hMass1320->SetBinError(ibins + 2, mass_err);
+                //     hYield1320Raw->SetBinContent(ibins + 2, yield);
+                //     hYield1320Raw->SetBinError(ibins + 2, yield_err);
 
                 //     double corrected_yield1320 = yield / eff1525;
                 //     double corrected_yield1320_err = sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2));
-                //     hYield1320Corrected->distribution_fits/read_yield_ptRoot.cxxSetBinContent(ibins + 1, corrected_yield1320);
-                //     hYield1320Corrected->SetBinError(ibins + 1, corrected_yield1320_err);
+                //     hYield1320Corrected->SetBinContent(ibins + 2, corrected_yield1320);
+                //     hYield1320Corrected->SetBinError(ibins + 2, corrected_yield1320_err);
                 // }
                 if (ires == 0)
                 {
-                    hMass1525->SetBinContent(ibins + 1, mass);
-                    hMass1525->SetBinError(ibins + 1, mass_err);
-                    hYield1525Raw->SetBinContent(ibins + 1, yield);
-                    hYield1525Raw->SetBinError(ibins + 1, yield_err);
-                    hSignificance1525->SetBinContent(ibins + 1, significance);
+                    hMass1525->SetBinContent(ibins + 2, mass);
+                    hMass1525->SetBinError(ibins + 2, mass_err);
+                    hYield1525Raw->SetBinContent(ibins + 2, yield);
+                    hYield1525Raw->SetBinError(ibins + 2, yield_err);
+                    hSignificance1525->SetBinContent(ibins + 2, significance);
 
                     double corrected_yield1525 = yield * signalLossFactor / (eff1525 * oneUponTriggerEfficiency * BR_f2);
                     double corrected_yield1525_err = signalLossFactor * sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
-                    hYield1525Corrected->SetBinContent(ibins + 1, corrected_yield1525);
-                    hYield1525Corrected->SetBinError(ibins + 1, corrected_yield1525_err);
+                    hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
+                    hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
                 }
                 if (ires == 1)
                 {
-                    hMass1710->SetBinContent(ibins + 1, mass);
-                    hMass1710->SetBinError(ibins + 1, mass_err);
-                    hYield1710Raw->SetBinContent(ibins + 1, yield);
-                    hYield1710Raw->SetBinError(ibins + 1, yield_err);
-                    hWidth1710->SetBinContent(ibins + 1, width);
-                    hWidth1710->SetBinError(ibins + 1, width_err);
-                    hSignificance1710->SetBinContent(ibins + 1, significance);
+                    hMass1710->SetBinContent(ibins + 2, mass);
+                    hMass1710->SetBinError(ibins + 2, mass_err);
+                    hYield1710Raw->SetBinContent(ibins + 2, yield);
+                    hYield1710Raw->SetBinError(ibins + 2, yield_err);
+                    hWidth1710->SetBinContent(ibins + 2, width);
+                    hWidth1710->SetBinError(ibins + 2, width_err);
+                    hSignificance1710->SetBinContent(ibins + 2, significance);
 
                     double corrected_yield1710 = yield * signalLossFactor / (eff1710 * oneUponTriggerEfficiency * BR_f0);
                     double corrected_yield1710_err = signalLossFactor * sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
-                    hYield1710Corrected->SetBinContent(ibins + 1, corrected_yield1710);
-                    hYield1710Corrected->SetBinError(ibins + 1, corrected_yield1710_err);
+                    hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
+                    hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
                 }
             }
         }
@@ -284,11 +284,11 @@ void read_yield_ptRoot()
         TCanvas *cMass1710 = new TCanvas("cMass1710", "Mass vs #it{p}_{T} for f_{0}(1710)", 720, 720);
         SetCanvasStyle(cMass1710, 0.18, 0.03, 0.05, 0.14);
         // gPad->SetLogy();
-        // SetHistoQA(hMass1710);
+        SetHistoQA(hMass1710);
         hMass1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hMass1710->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
         hMass1710->GetYaxis()->SetTitleOffset(1.6);
-        // hMass1710->GetYaxis()->SetRangeUser(1.56, 1.89);
+        hMass1710->GetYaxis()->SetRangeUser(1.56, 1.89);
         hMass1710->SetLineColor(kBlue);
         hMass1710->SetMarkerColor(kBlue);
         hMass1710->SetMarkerStyle(20);
@@ -344,11 +344,11 @@ void read_yield_ptRoot()
         TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs #it{p}_{T} for f_{2}(1525)", 720, 720);
         SetCanvasStyle(cMass1525, 0.18, 0.03, 0.05, 0.14);
         // gPad->SetLogy();
-        // SetHistoQA(hMass1525);
+        SetHistoQA(hMass1525);
         hMass1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hMass1525->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
         hMass1525->GetYaxis()->SetTitleOffset(1.6);
-        // hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
+        hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
         hMass1525->SetMarkerStyle(20);
         hMass1525->SetMarkerSize(1.5);
         hMass1525->SetLineColor(kBlue);
@@ -449,12 +449,12 @@ void read_yield_ptRoot()
         TCanvas *cYieldCorrectedf1525 = new TCanvas("cYieldCorrectedf1525", "Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
         SetCanvasStyle(cYieldCorrectedf1525, 0.18, 0.03, 0.05, 0.14);
         gPad->SetLogy();
-        // SetHistoQA(hYield1525Corrected);
+        SetHistoQA(hYield1525Corrected);
         hYield1525Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hYield1525Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
         hYield1525Corrected->GetYaxis()->SetTitleOffset(1.6);
         // hYield1525Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-        // hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
+        hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
         hYield1525Corrected->SetMarkerStyle(20);
         // hYield1525Corrected->SetMinimum(-2e-7);
         hYield1525Corrected->Write();
@@ -464,12 +464,12 @@ void read_yield_ptRoot()
         TCanvas *cYieldCorrected1710 = new TCanvas("cYieldCorrected1710", "Yield vs #it{p}_{T} for f_{0}(1710)", 720, 720);
         SetCanvasStyle(cYieldCorrected1710, 0.18, 0.03, 0.05, 0.14);
         gPad->SetLogy();
-        // SetHistoQA(hYield1710Corrected);
+        SetHistoQA(hYield1710Corrected);
         hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
         hYield1710Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
         hYield1710Corrected->GetYaxis()->SetTitleOffset(1.6);
         // hYield1710Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-        // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
+        hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
         hYield1710Corrected->SetMarkerStyle(21);
         // hYield1710Corrected->SetMinimum(-2e-7);
         hYield1710Corrected->Write();

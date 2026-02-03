@@ -53,21 +53,22 @@ void systematics_pt()
     checkVectorSizeMatch(TopologicalSelectionVars, nVarTop, "Topological Selection");
 
     // We have to do variations in the mass and raw yield of f2(1525) and f0(1710) resonances
-    // TFile *fDefault = new TFile((path + "/fits/FitParam.root").c_str(), "READ");
-    TFile *fDefault = new TFile((path + "/mult_0-100/Spectra/spectra_.root").c_str(), "READ");
+    TFile *fDefault = new TFile((path + "/fits/FitParam.root").c_str(), "READ");
+    // TFile *fCorrYield = new TFile((path + "/mult_0-100/Spectra/ReweightedSpectra_.root").c_str(), "READ");
+    TFile *fCorrYield = new TFile((path + "/mult_0-100/Spectra/spectra_.root").c_str(), "READ");
     if (fDefault->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
     }
-    // TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
-    // TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
-    // TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
-    // TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
-    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass1525");
-    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass1710");
-    TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("hYield1525Corrected");
-    TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("hYield1710Corrected");
+    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
+    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
+    TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
+    TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
+    // TH1F *hYield_f1525_Default = (TH1F *)fCorrYield->Get("f21525_Reweighted_Yield");
+    // TH1F *hYield_f1710_Default = (TH1F *)fCorrYield->Get("f01710_Reweighted_Yield");
+    // TH1F *hYield_f1525_Default = (TH1F *)fCorrYield->Get("hYield1525Corrected");
+    // TH1F *hYield_f1710_Default = (TH1F *)fCorrYield->Get("hYield1710Corrected");
     if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hYield_f1525_Default == nullptr || hYield_f1710_Default == nullptr)
     {
         cout << "Error: One of the default histograms not found!" << endl;
@@ -80,11 +81,15 @@ void systematics_pt()
     TFile *fVarSignalExtraction[totalVariationsSignalExtraction];
     TFile *fVarTrackSelection[totalVariationsTrackSelection];
     TFile *fVarTopologicalSelection[totalVariationsTopologicalSelection];
+    TFile *fVarSignalCorrYield[totalVariationsSignalExtraction];
+    TFile *fVarTrackCorrYield[totalVariationsTrackSelection];
+    TFile *fVarTopologicalCorrYield[totalVariationsTopologicalSelection];
     for (int i = 0; i < totalVariationsSignalExtraction; i++)
     {
-        // fVarSignalExtraction[i] = new TFile((path + "/fits/FitParam" + SignalExtractionVars[i] + ".root").c_str(), "READ");
-        fVarSignalExtraction[i] = new TFile((path + "/mult_0-100/Spectra/spectra_" + SignalExtractionVars[i] + ".root").c_str(), "READ");
-        if (fVarSignalExtraction[i]->IsZombie())
+        fVarSignalExtraction[i] = new TFile((path + "/fits/FitParam" + SignalExtractionVars[i] + ".root").c_str(), "READ");
+        // fVarSignalCorrYield[i] = new TFile((path + "/mult_0-100/Spectra/ReweightedSpectra_" + SignalExtractionVars[i] + ".root").c_str(), "READ");
+        fVarSignalCorrYield[i] = new TFile((path + "/mult_0-100/Spectra/spectra_" + SignalExtractionVars[i] + ".root").c_str(), "READ");
+        if (fVarSignalExtraction[i]->IsZombie() || fVarSignalCorrYield[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << SignalExtractionVars[i] << endl;
             return;
@@ -92,9 +97,10 @@ void systematics_pt()
     }
     for (int i = 0; i < totalVariationsTrackSelection; i++)
     {
-        // fVarTrackSelection[i] = new TFile((path + TrackSelectionVars[i] + "/fits/FitParam" + TrackSelectionVars[i] + ".root").c_str(), "READ");
-        fVarTrackSelection[i] = new TFile((path + TrackSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TrackSelectionVars[i] + ".root").c_str(), "READ");
-        if (fVarTrackSelection[i]->IsZombie())
+        fVarTrackSelection[i] = new TFile((path + TrackSelectionVars[i] + "/fits/FitParam" + TrackSelectionVars[i] + ".root").c_str(), "READ");
+        // fVarTrackCorrYield[i] = new TFile((path + TrackSelectionVars[i] + "/mult_0-100/Spectra/ReweightedSpectra_" + TrackSelectionVars[i] + ".root").c_str(), "READ");
+        fVarTrackCorrYield[i] = new TFile((path + TrackSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TrackSelectionVars[i] + ".root").c_str(), "READ");
+        if (fVarTrackSelection[i]->IsZombie() || fVarTrackCorrYield[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << TrackSelectionVars[i] << endl;
             return;
@@ -102,9 +108,10 @@ void systematics_pt()
     }
     for (int i = 0; i < totalVariationsTopologicalSelection; i++)
     {
-        // fVarTopologicalSelection[i] = new TFile((path + TopologicalSelectionVars[i] + "/fits/FitParam" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
-        fVarTopologicalSelection[i] = new TFile((path + TopologicalSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
-        if (fVarTopologicalSelection[i]->IsZombie())
+        fVarTopologicalSelection[i] = new TFile((path + TopologicalSelectionVars[i] + "/fits/FitParam" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
+        // fVarTopologicalCorrYield[i] = new TFile((path + TopologicalSelectionVars[i] + "/mult_0-100/Spectra/ReweightedSpectra_" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
+        fVarTopologicalCorrYield[i] = new TFile((path + TopologicalSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
+        if (fVarTopologicalSelection[i]->IsZombie() || fVarTopologicalCorrYield[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << TopologicalSelectionVars[i] << endl;
             return;
@@ -113,10 +120,16 @@ void systematics_pt()
 
     // Arrays for each category type
     string CanvasTypes[4] = {"Mass1525", "Mass1710", "Yield1525", "Yield1710"};
-    // string histPaths[4] = {"Mult_0_100/hMass_1525", "Mult_0_100/hMass_1710", "Mult_0_100/hYield_1525", "Mult_0_100/hYield_1710"};
-    string histPaths[4] = {"hMass1525", "hMass1710", "hYield1525Corrected", "hYield1710Corrected"};
+    // string histPaths[4] = {"Mult_0_100/hMass_1525", "Mult_0_100/hMass_1710", "f21525_Reweighted_Yield", "f01710_Reweighted_Yield"};
+    string histPaths[4] = {"Mult_0_100/hMass_1525", "Mult_0_100/hMass_1710", "hYield1525Corrected", "hYield1710Corrected"};
     TH1F *defaultHists[4] = {hMass_f1525_Default, hMass_f1710_Default, hYield_f1525_Default, hYield_f1710_Default};
     string suffixes[4] = {"_Mass1525", "_Mass1710", "_Yield1525", "_Yield1710"};
+    vector<TFile **> fVarSignalExtractionVec = {fVarSignalExtraction, fVarSignalExtraction, fVarSignalExtraction, fVarSignalExtraction};
+    vector<TFile **> fVarTrackSelectionVec = {fVarTrackSelection, fVarTrackSelection, fVarTrackSelection, fVarTrackSelection};
+    vector<TFile **> fVarTopologicalSelectionVec = {fVarTopologicalSelection, fVarTopologicalSelection, fVarTopologicalSelection, fVarTopologicalSelection};
+    // vector<TFile **> fVarSignalExtractionVec = {fVarSignalExtraction, fVarSignalExtraction, fVarSignalCorrYield, fVarSignalCorrYield};
+    // vector<TFile **> fVarTrackSelectionVec = {fVarTrackSelection, fVarTrackSelection, fVarTrackCorrYield, fVarTrackCorrYield};
+    // vector<TFile **> fVarTopologicalSelectionVec = {fVarTopologicalSelection, fVarTopologicalSelection, fVarTopologicalCorrYield, fVarTopologicalCorrYield};
 
     // Loop over 4 category types
     for (int typeIdx = 0; typeIdx < 4; typeIdx++)
@@ -145,31 +158,31 @@ void systematics_pt()
         cTopSelect_Barlow->Divide(4, 3);
 
         // Process variations for Signal Extraction
-        processVariations(fVarSignalExtraction, SignalExtractionVars, defaultHist, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
+        processVariations(fVarSignalExtractionVec[typeIdx], SignalExtractionVars, defaultHist, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
         cout << "Size of relative uncertainty vector for signal extraction: " << hMassVar_relUncert_sigExt.size() << endl;
 
         if (saveRelUncertHisto)
         {
             cSigExtract->SaveAs(Form("%s/fits/SystematicPlots/SignalExtrct_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cSigExtract_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/SignalExtrct_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cSigExtract_Barlow->SaveAs(Form("%s/fits/SystematicPlots/SignalExtrct_Barlow_%s.png", path.c_str(), canvasType.c_str()));
         }
 
         // Process variations for Track Selection
-        processVariations(fVarTrackSelection, TrackSelectionVars, defaultHist, cTrackSelect, cTrackSelect_Barlow, &hMassVar_relUncert_trackSel, histPath, suffix, path, "TrackSelect", "Track Selection");
+        processVariations(fVarTrackSelectionVec[typeIdx], TrackSelectionVars, defaultHist, cTrackSelect, cTrackSelect_Barlow, &hMassVar_relUncert_trackSel, histPath, suffix, path, "TrackSelect", "Track Selection");
 
         if (saveRelUncertHisto)
         {
             cTrackSelect->SaveAs(Form("%s/fits/SystematicPlots/TrackSelect_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cTrackSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/TrackSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cTrackSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/TrackSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
         }
 
         // Process variations for Topological Selection
-        processVariations(fVarTopologicalSelection, TopologicalSelectionVars, defaultHist, cTopSelect, cTopSelect_Barlow, &hMassVar_relUncert_topSel, histPath, suffix, path, "TopologicalSelect", "Topological Selection");
+        processVariations(fVarTopologicalSelectionVec[typeIdx], TopologicalSelectionVars, defaultHist, cTopSelect, cTopSelect_Barlow, &hMassVar_relUncert_topSel, histPath, suffix, path, "TopologicalSelect", "Topological Selection");
 
         if (saveRelUncertHisto)
         {
             cTopSelect->SaveAs(Form("%s/fits/SystematicPlots/TopologicalSelect_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cTopSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/TopologicalSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cTopSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/TopologicalSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
         }
 
         // Now lets calculate the average quadrature sum for each systematic source in signal extraction

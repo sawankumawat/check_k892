@@ -194,11 +194,16 @@ void systematics_pt()
         QuadratureSum(vec_total, hSigExt_total);
 
         TCanvas *cSigExt_sys = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(cSigExt_sys, 0.15, 0.03, 0.06, 0.15);
         SetHistoQA(hSigExt_source1);
         hSigExt_source1->SetTitle(Form("%s", canvasType.c_str()));
         hSigExt_source1->SetLineColor(lineColors[0]);
-        hSigExt_source1->SetMaximum(0.8);
+        if (typeIdx < 2)
+            hSigExt_source1->SetMaximum(0.03);
+        else
+            hSigExt_source1->SetMaximum(0.8);
         hSigExt_source1->SetMinimum(0);
+        hSigExt_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hSigExt_source1->Draw("HIST");
         hSigExt_source2->SetLineColor(lineColors[1]);
         hSigExt_source2->Draw("HIST SAME");
@@ -236,11 +241,16 @@ void systematics_pt()
         QuadratureSum(vec_trk_total, hTrkSel_total);
 
         TCanvas *cTrkSel_sys = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(cTrkSel_sys, 0.15, 0.03, 0.06, 0.15);
         SetHistoQA(hTrkSel_source1);
         hTrkSel_source1->SetTitle(Form("%s", canvasType.c_str()));
         hTrkSel_source1->SetLineColor(lineColors[0]);
-        hTrkSel_source1->SetMaximum(0.8);
+        if (typeIdx < 2)
+            hTrkSel_source1->SetMaximum(0.01);
+        else
+            hTrkSel_source1->SetMaximum(0.8);
         hTrkSel_source1->SetMinimum(0);
+        hTrkSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hTrkSel_source1->Draw("HIST");
         hTrkSel_source2->SetLineColor(lineColors[1]);
         hTrkSel_source2->Draw("HIST SAME");
@@ -287,11 +297,16 @@ void systematics_pt()
         QuadratureSum(vec_top_total, hTopSel_total);
 
         TCanvas *cTopSel_sys = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(cTopSel_sys, 0.15, 0.03, 0.06, 0.15);
         SetHistoQA(hTopSel_source1);
         hTopSel_source1->SetTitle(Form("%s", canvasType.c_str()));
         hTopSel_source1->SetLineColor(lineColors[0]);
-        hTopSel_source1->SetMaximum(0.8);
+        if (typeIdx < 2)
+            hTopSel_source1->SetMaximum(0.02);
+        else
+            hTopSel_source1->SetMaximum(0.8);
         hTopSel_source1->SetMinimum(0);
+        hTopSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hTopSel_source1->Draw("HIST");
         hTopSel_source2->SetLineColor(lineColors[1]);
         hTopSel_source2->Draw("HIST SAME");
@@ -322,11 +337,16 @@ void systematics_pt()
         vector<TH1F *> vec_allSys = {hSigExt_total, hTrkSel_total, hTopSel_total};
         QuadratureSum(vec_allSys, hTotalSys);
         TCanvas *cTotalSys = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(cTotalSys, 0.15, 0.03, 0.06, 0.15);
         SetHistoQA(hSigExt_total);
         hSigExt_total->SetTitle(Form("%s", canvasType.c_str()));
         hSigExt_total->SetLineColor(lineColors[0]);
-        hSigExt_total->SetMaximum(0.8);
+        if (typeIdx < 2)
+            hSigExt_total->SetMaximum(0.15);
+        else
+            hSigExt_total->SetMaximum(0.8);
         hSigExt_total->SetMinimum(0);
+        hSigExt_total->GetYaxis()->SetTitle("Fractional Uncertainty");
         hSigExt_total->Draw("HIST");
         hTrkSel_total->SetLineColor(lineColors[1]);
         hTrkSel_total->Draw("HIST SAME");
@@ -493,13 +513,15 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
         // Create relative uncertainty histogram and calculate
         TH1F *hRelUncert = (TH1F *)defaultHist->Clone(Form("hRelUncert_%s_%s", suffix.c_str(), varNames[i].c_str()));
         hRelUncert->SetTitle(Form("Variation: %s", varNames[i].c_str()));
-
+        
         calculateRelativeUncertainty(defaultHist, hist, hRelUncert);
         resultVector->push_back(hRelUncert);
-
+        
         // Draw on canvas
         canvas->cd(i + 1);
+        SetHistoQA(hRelUncert);
         hRelUncert->Draw("HIST");
+        lat.DrawLatex(0.2, 0.6, Form("%s", varNames[i].c_str()));
     }
 }
 

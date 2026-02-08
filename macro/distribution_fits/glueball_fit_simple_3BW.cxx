@@ -44,15 +44,14 @@ void glueball_fit_simple_3BW()
 
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
 
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances"; // for systematics studies (for only signal extraction)
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
+        string path2 = path + "/fits/4rBw_fits/pt_dependent/mult_0-100/";
 
-        string path2 = path;
-
-        string savepath = path2 + "/fits/";
+         string savepath = path + "/fits/4rBw_fits/pt_dependent/";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ");
+        TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
         // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_norm2p67.root").c_str(), "READ");
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, f1525Mass, f1710Mass};
@@ -91,7 +90,7 @@ void glueball_fit_simple_3BW()
 #endif
         // (2022 data)
         vector<vector<pair<float, float>>> fitRanges = {
-            {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
+            {{1.07, 2.10}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
             {{1.05, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-20%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.03, 2.20}, {1.05, 2.20}},  // 20-50%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
@@ -228,7 +227,6 @@ void glueball_fit_simple_3BW()
 
                     double parameters[] = {1.0e4, f1270Mass, f1270Width, 2.0e4, f1525Mass, f1525Width, 1.5e4, f1710Mass, f1710Width};
 
-
                     int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
                     for (int i = 0; i < size_fitparams; i++)
@@ -248,6 +246,7 @@ void glueball_fit_simple_3BW()
                     BEexpol_initial->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
                     BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
                     // BEexpol_initial->FixParameter(size_fitparams + 3, 1.0); // 1.098     // Fix
+                    BEexpol_initial->SetParLimits(size_fitparams + 3, 0.5, 3.0);
 
                     BEexpol_initial->FixParameter(2, f1270Width);
                     BEexpol_initial->FixParameter(5, f1525Width);
@@ -284,7 +283,6 @@ void glueball_fit_simple_3BW()
                         BEexpol->SetParLimits(3, 0, 1e6);
                     }
                     // BEexpol->SetParLimits(6, 0, 1e6);
-                    // BEexpol->SetParLimits(9, 0, 1e6);
                     // BEexpol->FixParameter(size_fitparams + 3, 1.0);
 
                     BEexpol->FixParameter(2, f1270Width);

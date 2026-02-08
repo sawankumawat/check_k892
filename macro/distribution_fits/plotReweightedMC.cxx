@@ -17,14 +17,14 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 int FindHighestIndex(TFile *file, const string &baseHistoName)
 {
     int maxIndex = -1;
-    for (int i = 10; i >= 0; i--)  // Check from i10 down to i0
+    for (int i = 10; i >= 0; i--) // Check from i10 down to i0
     {
         string histoName = baseHistoName + "i" + to_string(i);
         TObject *obj = file->Get(histoName.c_str());
         if (obj != nullptr)
         {
             maxIndex = i;
-            break;  // Found the highest index
+            break; // Found the highest index
         }
     }
     return maxIndex;

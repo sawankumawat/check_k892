@@ -36,8 +36,13 @@ void toy_model_ptSmear()
                           8, 9,
                           10, 12,
                           15};
-    TH1F *hOriginalK0sEff = (TH1F *)h1rec->Clone();
-    hOriginalK0sEff->Divide(h1gen);
+    // TH1F *hOriginalK0sEff = (TH1F *)h1rec->Clone();
+    // hOriginalK0sEff->Divide(h1gen);
+    // TFile *fK0sEffTemp = new TFile("K0sEff.root", "recreate");
+    // h1gen->Write("K0s_generated_pT");
+    // h1rec->Write("K0s_reconstructed_pT");
+    // hOriginalK0sEff->Write("K0s_efficiency");
+    // fK0sEffTemp->Close();
 
     int nFineBins = sizeof(finepTbins) / sizeof(finepTbins[0]) - 1;
     TH1F *hEffK0s = new TH1F("hEffK0s", "K0s Acceptance #times Efficiency vs p_{T}; #it{p}_{T} (GeV/#it{c}); Acceptance #times Efficiency", nFineBins, finepTbins);
@@ -51,7 +56,7 @@ void toy_model_ptSmear()
 
     gStyle->SetOptStat(0);
     // Define masses (GeV/c^2)
-    double m_mother = 1.525;       // Mass of f1525
+    double m_mother = 1.710;       // Mass of f1525
     double m_daughter1 = 0.497611; // daughter 1 (K0s mass)
     double m_daughter2 = 0.497611; // daughter 2 (K0s mass)
 
@@ -104,10 +109,27 @@ void toy_model_ptSmear()
 
             if (abs(gen_rapidity) < 0.5)
             {
+                double pt1_gen = ks1->Pt();
+                double pt2_gen = ks2->Pt();
+
+                // Apply pT smearing based on K0s efficiency histogram
+                double pt1_rec = randGen.Gaus(pt1_gen, pt1_gen * 0.1); // Taking 10 MeV/c (1%) resolution
+                double pt2_rec = randGen.Gaus(pt2_gen, pt2_gen * 0.1); // Taking 10 MeV/c (1%) resolution
+
+                // Protect against negative pT
+                if (pt1_rec < 0 || pt2_rec < 0)
+                    continue;
+
                 hrec_pT->Fill(fourVecMother.Pt());
+
                 // calculate the efficiency of both k0s based on their pT
-                double eff_ks1 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(ks1->Pt()));
-                double eff_ks2 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(ks2->Pt()));
+                // Without pT smearing
+                // double eff_ks1 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt1_gen));
+                // double eff_ks2 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt2_gen));
+
+                // using pT smearing
+                double eff_ks1 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt1_rec));
+                double eff_ks2 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt2_rec));
                 double combined_eff = eff_ks1 * eff_ks2;
 
                 if (fourVecMother.Pt() >= 1 && fourVecMother.Pt() < 2)
@@ -153,7 +175,7 @@ void toy_model_ptSmear()
     };
 
     string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/pTSmearing/";
-    TFile *fout = new TFile((savepath + "f1525_ptSmearing_results.root").c_str(), "recreate");
+    TFile *fout = new TFile((savepath + "f1710_effToy_smeared.root").c_str(), "recreate");
 
     double avgEff1 = calculateAverageEfficiency(EffpT1);
     double avgEff2 = calculateAverageEfficiency(EffpT2);

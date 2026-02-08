@@ -22,8 +22,10 @@ void toy_model_ptSmearPlot()
 {
     gStyle->SetOptStat(0);
     TString path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
-    TFile *f1710 = new TFile(path + "pTSmearing/f1710_ptSmearing_results.root", "read");
-    TFile *f1525 = new TFile(path + "pTSmearing/f1525_ptSmearing_results.root", "read");
+    TFile *f1710 = new TFile(path + "pTSmearing/f1710_effToy_smeared.root", "read");
+    TFile *f1525 = new TFile(path + "pTSmearing/f1525_effToy_smeared.root", "read");
+    TFile *f1710_noSmear = new TFile(path + "pTSmearing/f1710_effToy.root", "read");
+    TFile *f1525_noSmear = new TFile(path + "pTSmearing/f1525_effToy.root", "read");
     TFile *fEffReweighted = new TFile(path + "ReweightedSpectra.root", "read");
     if (f1710->IsZombie() || f1525->IsZombie() || fEffReweighted->IsZombie())
     {
@@ -36,6 +38,8 @@ void toy_model_ptSmearPlot()
     TH1F *hrec_pT_1525 = (TH1F *)f1525->Get("recpt");
     TH1F *hEff_1710 = (TH1F *)f1710->Get("eff");
     TH1F *hEff_1525 = (TH1F *)f1525->Get("eff");
+    TH1F *hEff_1710_noSmear = (TH1F *)f1710_noSmear->Get("eff");
+    TH1F *hEff_1525_noSmear = (TH1F *)f1525_noSmear->Get("eff");
     TH1F *hK0sEff = (TH1F *)f1710->Get("K0s_eff");
     hK0sEff->Write("K0s_efficiency_MC");
     TH1F *hEffReweighted_1710 = (TH1F *)fEffReweighted->Get("Eff_f0Reweighted");
@@ -69,6 +73,26 @@ void toy_model_ptSmearPlot()
     leg->AddEntry(hrec_pT_1710, "f_{0}(1710)", "lep");
     leg->Draw();
     cRecpT->SaveAs(path + "pTSmearing/f0_f2_rec_pT_compare.png");
+
+    TCanvas *cCompareSmearing = new TCanvas("cCompareSmearing", "Efficiency Comparison with and without p_{T} Smearing", 720, 720);
+    SetCanvasStyle(cCompareSmearing, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hEff_1710);
+    SetHistoQA(hEff_1710_noSmear);
+    hEff_1710->Draw("HIST");
+    hEff_1710_noSmear->SetLineColor(kRed);
+    hEff_1710_noSmear->SetMarkerColor(kRed);
+    hEff_1710_noSmear->Draw("HIST SAME");
+    TLegend *legSmearing = new TLegend(0.35, 0.3, 0.6, 0.5);
+    legSmearing->SetBorderSize(0);
+    legSmearing->SetFillStyle(0);
+    legSmearing->SetTextSize(0.035);
+    legSmearing->SetTextFont(42);
+    legSmearing->SetHeader("f_{0}(1710) efficiency");
+    legSmearing->AddEntry(hEff_1710, "With p_{T} Smearing", "l");
+    legSmearing->AddEntry(hEff_1710_noSmear, "Without p_{T} Smearing", "l");
+    legSmearing->Draw();
+    cCompareSmearing->SaveAs(path + "pTSmearing/f0_efficiency_smearing_compare.png");
+
 
     TCanvas *cEffResults = new TCanvas("cEffResults", "Average Efficiency vs p_{T} bin Comparison", 720, 720);
     SetCanvasStyle(cEffResults, 0.15, 0.05, 0.05, 0.15);

@@ -237,15 +237,15 @@ void glueball_fit_4rBW()
             return;
         }
 
-        #define b_constantWidth_modified_Boltzmann // without mass dependent width
+        // #define b_constantWidth_modified_Boltzmann // without mass dependent width
         // #define b_massdepWidth_Standard_boltzman
-// #define b_massdepWidth_modifiedBoltzmann
+        // #define b_massdepWidth_modifiedBoltzmann
         // #define b_massdepWidth_expol2
         // #define b_massdepWidth_HERAexponential
         // #define b_modifiedBoltzmann_hera_const // for real + img part without interference
         // #define b_modifiedBoltzmann_hera // for real + img part with interference
         // #define b_modifiedBoltzmann_hera_mass_dep // for real + img part with interference and mass dependent width
-        // #define b_coherentSum_modifiedBoltzmann // for coherent sum with phases
+#define b_coherentSum_modifiedBoltzmann // for coherent sum with phases
 #define residual_subtracted
         // #define doublepanelplot
 
@@ -299,8 +299,8 @@ void glueball_fit_4rBW()
                 // float highpT = pT_bins[ipt + 1];
 
                 // Temporary for single bins checking
-                float lowpT = 1.0;
-                float highpT = 2.0;
+                float lowpT = 7.0;
+                float highpT = 10.0;
 
                 ofstream file;
                 file.open((savepath_mult + Form("/fit_params_pT_%.1f-%.1f", lowpT, highpT) + sysvar + ".txt").c_str());
@@ -370,7 +370,7 @@ void glueball_fit_4rBW()
                     hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
                     hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
                     // hinvMass->SetMaximum(maxRanges[ipt] * hinvMass->GetMaximum());
-hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
+                    hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
 #ifdef multiPanelPlots
                     hinvMass->GetYaxis()->SetTitleOffset(1.0);
 #else
@@ -3410,9 +3410,9 @@ hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
                         BEexpol->SetParName(i, parnames[i].c_str());
                     }
 
-                    // double parameters[] = {45, f1270Mass, f1270Width, 30, a1320Mass, a1320Width, 70, f1525Mass, f1525Width, 35, f1710Mass, f1710Width, TMath::Pi(), 0.0};
+                    double parameters[] = {45, f1270Mass, f1270Width, 30, a1320Mass, a1320Width, 70, f1525Mass, f1525Width, 35, f1710Mass, f1710Width, TMath::Pi(), 0.0};
                     // double parameters[] = {45, f1270Mass, f1270Width, 29, a1320Mass, a1320Width, 65, f1525Mass, f1525Width, 45, f1710Mass, f1710Width, TMath::Pi(), 0.0}; // 2022 dataset
-                    double parameters[] = {800, f1270Mass, f1270Width, 770, a1320Mass, a1320Width, 270, f1525Mass, f1525Width, 100, f1710Mass, f1710Width, TMath::Pi(), 0.0}; // 2023 dataset
+                    // double parameters[] = {800, f1270Mass, f1270Width, 770, a1320Mass, a1320Width, 270, f1525Mass, f1525Width, 100, f1710Mass, f1710Width, TMath::Pi(), 0.0}; // 2023 dataset
                     // double parameters[] = {180, f1270Mass, f1270Width, 80, a1320Mass, a1320Width, 70, f1525Mass, f1525Width, 50, f1710Mass, f1710Width, TMath::Pi(), 0.0}; // 2024 dataset
 
                     int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
@@ -3441,11 +3441,9 @@ hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
                     // BEexpol_initial->SetParLimits(0, 0, 1e8);
                     // BEexpol_initial->SetParLimits(3, 0, 1e8);
                     // BEexpol_initial->SetParLimits(6, 0, 1e8);
-
                     // BEexpol_initial->FixParameter(2, f1270Width);
                     // BEexpol_initial->FixParameter(5, a1320Width);
                     // BEexpol_initial->FixParameter(8, f1525Width);
-
                     // BEexpol_initial->FixParameter(1, f1270Mass);
                     // BEexpol_initial->FixParameter(4, a1320Mass);
                     // BEexpol_initial->FixParameter(7, f1525Mass);
@@ -3464,7 +3462,7 @@ hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
                     //     BEexpol->SetParameter(iparams, BEexpol_initial->GetParameter(iparams));
                     // }
 
-                    vector<vector<double>> par_limits = {{1, 2 * f1270Width}, {2, 2 * f1270WidthErr}, {4, 2 * a1320Width}, {7, 1 * f1525Width}, {10, 2 * f1710Width}, {11, 1 * f1710WidthErr}};
+                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 0.1 * f1710Width}, {11, 10 * f1710WidthErr}};
 
                     int limits_size = par_limits.size();
                     for (int i = 0; i < limits_size; i++)
@@ -3478,9 +3476,9 @@ hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
                     BEexpol->SetParLimits(6, 0, 1e6);
                     BEexpol->SetParLimits(9, 0, 1e6);
 
-                    // double initial_param_bkg[] = {1.14e7, 0.0012, -2.83, -0.03}; // for expol
+                    double initial_param_bkg[] = {6.6e4, -0.2, 3.7, 1.1}; // for expol
                     // double initial_param_bkg[] = {5.3e5, -0.036, 2.702, 1.09}; // for modified Boltzmann
-                    double initial_param_bkg[] = {3.3e6, -0.05, 2.802, 1.12}; // 2023 dataset
+                    // double initial_param_bkg[] = {3.3e5, -0.08, 3.12, 1.04}; // 2023 dataset
                     // double initial_param_bkg[] = {2.2e6, 0.15, 3.402, 0.8}; // 2024 dataset
 
                     // Initial parameters for background
@@ -3489,24 +3487,24 @@ hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
                     BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]);
                     BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]);
 
-                    // BEexpol->FixParameter(2, f1270Width);
-                    // BEexpol->FixParameter(5, a1320Width);
-                    // BEexpol->FixParameter(8, f1525Width);
-                    BEexpol->SetParameter(2, f1270Width);
-                    BEexpol->SetParameter(5, a1320Width);
-                    BEexpol->SetParameter(8, f1525Width);
+                    BEexpol->FixParameter(2, f1270Width);
+                    BEexpol->FixParameter(5, a1320Width);
+                    BEexpol->FixParameter(8, f1525Width);
+                    // BEexpol->SetParameter(2, f1270Width);
+                    // BEexpol->SetParameter(5, a1320Width);
+                    // BEexpol->SetParameter(8, f1525Width);
 
-                    BEexpol->SetParameter(1, f1270Mass);
-                    BEexpol->SetParameter(4, a1320Mass);
-                    BEexpol->SetParameter(7, f1525Mass);
+                    // BEexpol->SetParameter(1, f1270Mass);
+                    // BEexpol->SetParameter(4, a1320Mass);
+                    // BEexpol->SetParameter(7, f1525Mass);
 
-                    BEexpol->SetParameter(10, f1710Mass);
-                    BEexpol->SetParameter(11, f1710Width);
+                    // BEexpol->SetParameter(10, f1710Mass);
+                    BEexpol->FixParameter(11, f1710Width);
 
-                    // BEexpol->FixParameter(12, TMath::Pi()); // Fix phase 1
-                    // BEexpol->FixParameter(13, 0.0);         // Fix phase 2
-                    BEexpol->SetParLimits(12, -TMath::Pi(), TMath::Pi()); // Set limits for phase 1
-                    BEexpol->SetParLimits(13, -TMath::Pi(), TMath::Pi()); // Set limits for phase 2
+                    BEexpol->FixParameter(12, 0.0);         // Fix phase 1
+                    BEexpol->FixParameter(13, TMath::Pi()); // Fix phase 2
+                    // BEexpol->SetParLimits(12, 0, 2 * TMath::Pi()); // Set limits for phase 1
+                    // BEexpol->SetParLimits(13, 0, 2 * TMath::Pi()); // Set limits for phase 2
 
                     TFitResultPtr fitResultptr = hinvMass->Fit("BEexpol", "REBMS"); // comment while using toy mc and likelihood fits
                     double *obtained_parameters = BEexpol->GetParameters();         // comment while using toy mc and likelihood fits

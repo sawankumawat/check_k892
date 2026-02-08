@@ -21,17 +21,22 @@ void read_yield_ptRoot()
     vector<string> variations = {"_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
     int totalVar = variations.size();
 
-    vector<string> variationSigExt = {"", "_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed"};
+    // vector<string> variationSigExt = {"", "_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed"}; 
+    // vector<string> variationSigExt = {"_CoherentSum"}; // Coherent sum is placed here temporarily
+    vector<string> variationSigExt = {"_temp"}; // Coherent sum is placed here temporarily
+
     int totalVarSigExt = variationSigExt.size();
 
-    for (int ivar = 0; ivar < totalVar; ivar++)
+    for (int ivar = 0; ivar < 1; ivar++)
+    // for (int ivar = 0; ivar < totalVar; ivar++)
     // for (int ivar = 0; ivar < totalVarSigExt; ivar++)
     {
         string CurrentVariation = variations[ivar];
         // string CurrentVariation = variationSigExt[ivar];
         cout << "Current variation is " << CurrentVariation << endl;
         // gStyle->SetOptStat(0);
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/";
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
 
         string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
@@ -156,21 +161,21 @@ void read_yield_ptRoot()
         }
 
         // For only plotting purpose
-        TH1D *hYield1710Raw = new TH1D("hYield1710Raw", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1525Raw = new TH1D("hYield1525Raw", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1270Raw = new TH1D("hYield1270Raw", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1320Raw = new TH1D("hYield1320Raw", "Yield vs cosTheta", nBins2, ptBins2);
+        TH1D *hYield1710Raw = new TH1D("hYield1710Raw", "Yield", nBins2, ptBins2);
+        TH1D *hYield1525Raw = new TH1D("hYield1525Raw", "Yield", nBins2, ptBins2);
+        TH1D *hYield1270Raw = new TH1D("hYield1270Raw", "Yield", nBins2, ptBins2);
+        TH1D *hYield1320Raw = new TH1D("hYield1320Raw", "Yield", nBins2, ptBins2);
 
-        TH1D *hYield1710Corrected = new TH1D("hYield1710Corrected", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1525Corrected = new TH1D("hYield1525Corrected", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1270Corrected = new TH1D("hYield1270Corrected", "Yield vs cosTheta", nBins2, ptBins2);
-        TH1D *hYield1320Corrected = new TH1D("hYield1320Corrected", "Yield vs cosTheta", nBins2, ptBins2);
+        TH1D *hYield1710Corrected = new TH1D("hYield1710Corrected", "Yield", nBins2, ptBins2);
+        TH1D *hYield1525Corrected = new TH1D("hYield1525Corrected", "Yield", nBins2, ptBins2);
+        TH1D *hYield1270Corrected = new TH1D("hYield1270Corrected", "Yield", nBins2, ptBins2);
+        TH1D *hYield1320Corrected = new TH1D("hYield1320Corrected", "Yield", nBins2, ptBins2);
 
-        TH1D *hMass1710 = new TH1D("hMass1710", "Mass vs cosTheta", nBins2, ptBins2);
-        TH1D *hWidth1710 = new TH1D("hWidth1710", "Width vs cosTheta", nBins2, ptBins2);
-        TH1D *hMass1525 = new TH1D("hMass1525", "Mass vs cosTheta", nBins2, ptBins2);
-        TH1D *hMass1270 = new TH1D("hMass1270", "Mass vs cosTheta", nBins2, ptBins2);
-        TH1D *hMass1320 = new TH1D("hMass1320", "Mass vs cosTheta", nBins2, ptBins2);
+        TH1D *hMass1710 = new TH1D("hMass1710", "Mass", nBins2, ptBins2);
+        TH1D *hWidth1710 = new TH1D("hWidth1710", "Width", nBins2, ptBins2);
+        TH1D *hMass1525 = new TH1D("hMass1525", "Mass", nBins2, ptBins2);
+        TH1D *hMass1270 = new TH1D("hMass1270", "Mass", nBins2, ptBins2);
+        TH1D *hMass1320 = new TH1D("hMass1320", "Mass", nBins2, ptBins2);
 
         TH1F *hSignificance1710 = new TH1F("hSignificance1710", "Significance vs pT", nBins2, ptBins2);
         TH1F *hSignificance1525 = new TH1F("hSignificance1525", "Significance vs pT", nBins2, ptBins2);

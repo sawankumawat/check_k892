@@ -6,27 +6,44 @@ void systematics_single()
     bool isSimple = true;
     float bins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};
 
+    // This code will calculate the relative uncertainty in mass and raw yield for f0 and f2 resonance and also check Barlow for a single variation only.
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
+
     if (isSimple)
     {
-        // This code will calculate the relative uncertainty in mass and raw yield for f0 and f2 resonance and also check Barlow for a single variation only.
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
-        TFile *fDefault = new TFile((path + "/FitParam.root").c_str(), "READ");
-        TFile *fVariation = new TFile((path + "/FitParam_TPCPID2.root").c_str(), "READ");
+
+        // TFile *fDefault = new TFile((path + "/FitParam.root").c_str(), "READ");
+        // TFile *fVariation = new TFile((path + "/FitParam_TPCPID2.root").c_str(), "READ");
+
+        TFile *fDefault = new TFile((path + "/mult_0-100/Spectra/spectra.root").c_str(), "READ");
+        TFile *fVariation = new TFile((path + "/mult_0-100/Spectra/spectra_TPCMinCls100.root").c_str(), "READ");
+
         if (fDefault->IsZombie() || fVariation->IsZombie())
         {
             cout << "Error opening file" << endl;
             return;
         }
-        TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
-        TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
-        TH1F *hMass_f1525_Variation = (TH1F *)fVariation->Get("Mult_0_100/hMass_1525");
-        TH1F *hMass_f1710_Variation = (TH1F *)fVariation->Get("Mult_0_100/hMass_1710");
 
-        TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
-        TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
-        TH1F *hYield_f1525_Variation = (TH1F *)fVariation->Get("Mult_0_100/hYield_1525");
-        TH1F *hYield_f1710_Variation = (TH1F *)fVariation->Get("Mult_0_100/hYield_1710");
+        // TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
+        // TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
+        // TH1F *hMass_f1525_Variation = (TH1F *)fVariation->Get("Mult_0_100/hMass_1525");
+        // TH1F *hMass_f1710_Variation = (TH1F *)fVariation->Get("Mult_0_100/hMass_1710");
+
+        TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
+        TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
+        TH1F *hMass_f1525_Variation = (TH1F *)fVariation->Get("hMass_1525");
+        TH1F *hMass_f1710_Variation = (TH1F *)fVariation->Get("hMass_1710");
+
+        // TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
+        // TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
+        // TH1F *hYield_f1525_Variation = (TH1F *)fVariation->Get("Mult_0_100/hYield_1525");
+        // TH1F *hYield_f1710_Variation = (TH1F *)fVariation->Get("Mult_0_100/hYield_1710");
+
+        TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("hYield1525Corrected");
+        TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("hYield1710Corrected");
+        TH1F *hYield_f1525_Variation = (TH1F *)fVariation->Get("hYield1525Corrected");
+        TH1F *hYield_f1710_Variation = (TH1F *)fVariation->Get("hYield1710Corrected");
 
         if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hMass_f1525_Variation == nullptr || hMass_f1710_Variation == nullptr || hYield_f1525_Default == nullptr || hYield_f1710_Default == nullptr || hYield_f1525_Variation == nullptr || hYield_f1710_Variation == nullptr)
         {
@@ -49,7 +66,7 @@ void systematics_single()
                     relativeUncertainty = fabs(variationValue - defaultValue) / fabs(defaultValue);
                 }
                 hRelativeUncertainty->SetBinContent(i, relativeUncertainty);
-                if (i == 2)
+                // if (i == 2)
                 {
                     cout << name << " - Default: " << defaultValue << ", Variation: " << variationValue << ", Relative Uncertainty: " << relativeUncertainty << endl;
                 }
@@ -92,15 +109,23 @@ void systematics_single()
     }
     else
     {
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
-        TFile *fDefault = new TFile((path + "/FitParam_Default.root").c_str(), "READ");
-        string variations[] = {"_AllParametersFree", "_AllParametersFixed", "_f0WidthFree", "_f2WidthFree"};
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
+        path = path + "/mult_0-100/Spectra/";
+        TFile *fDefault = new TFile((path + "/spectra.root").c_str(), "READ");
+        string variations[] = {"_TPCPID2", "_TPCPID5"};
         int totalVariations = sizeof(variations) / sizeof(variations[0]);
         TFile *fVariations[totalVariations];
-        TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
-        TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
-        TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
-        TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
+
+        // TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1525");
+        // TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
+        // TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
+        // TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
+
+        TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
+        TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
+        TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("hYield1525Corrected");
+        TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("hYield1710Corrected");
+
         TH1F *hMass_f1525_Variation[totalVariations];
         TH1F *hMass_f1710_Variation[totalVariations];
         TH1F *hYield_f1525_Variation[totalVariations];
@@ -134,16 +159,23 @@ void systematics_single()
         };
         for (int i = 0; i < totalVariations; i++)
         {
-            fVariations[i] = new TFile((path + "/FitParam" + variations[i] + ".root").c_str(), "READ");
+            // fVariations[i] = new TFile((path + "/FitParam" + variations[i] + ".root").c_str(), "READ");
+            fVariations[i] = new TFile((path + "/spectra" + variations[i] + ".root").c_str(), "READ");
             if (fVariations[i]->IsZombie())
             {
                 cout << "Error opening file for variation: " << variations[i] << endl;
                 return;
             }
-            hMass_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hMass_1525");
-            hMass_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hMass_1710");
-            hYield_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hYield_1525");
-            hYield_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hYield_1710");
+            // hMass_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hMass_1525");
+            // hMass_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hMass_1710");
+            // hYield_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hYield_1525");
+            // hYield_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("Mult_0_100/hYield_1710");
+
+            hMass_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("hMass_1525");
+            hMass_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("hMass_1710");
+            hYield_f1525_Variation[i] = (TH1F *)fVariations[i]->Get("hYield1525Corrected");
+            hYield_f1710_Variation[i] = (TH1F *)fVariations[i]->Get("hYield1710Corrected");
+
             if (hMass_f1525_Variation[i] == nullptr || hMass_f1710_Variation[i] == nullptr || hYield_f1525_Variation[i] == nullptr || hYield_f1710_Variation[i] == nullptr)
             {
                 cout << "Error: One of the histograms not found for variation: " << variations[i] << endl;

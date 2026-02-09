@@ -33,17 +33,17 @@ int FindHighestIndex(TFile *file, const string &baseHistoName)
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
-void plotReweightedMC_single()
+void plotReweightedSpectra_single()
 {
-    bool otherQAPlots = false;
+    bool otherQAPlots = true;
     gStyle->SetOptStat(0);
     // gStyle->SetOptFit(1111);
 
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
     string savePath = path + "/mult_0-100/Spectra";
-    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_coherent.root").c_str(), "read");
-    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_coherent.root").c_str(), "read");
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default2.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default2.root").c_str(), "read");
 
     // TFile *fReweightf0 = new TFile(Form("%s/ReweighFacf0_%s.root", savePath.c_str(), CurrentVariation.c_str()), "read");
     // TFile *fReweightf2 = new TFile(Form("%s/ReweighFacf2_%s.root", savePath.c_str(), CurrentVariation.c_str()), "read");
@@ -53,7 +53,7 @@ void plotReweightedMC_single()
         cout << "Error opening reweighting files" << endl;
         return;
     }
-    TFile *fOutput = new TFile(Form("%s/ReweightedSpectra_coherent.root", savePath.c_str()), "RECREATE");
+    TFile *fOutput = new TFile(Form("%s/ReweightedSpectra.root", savePath.c_str()), "RECREATE");
 
     // Find the highest available index for reweighted histograms
     int maxIndexReweightedf0 = FindHighestIndex(fReweightf0, "Genf17102_proj_1_");
@@ -73,6 +73,22 @@ void plotReweightedMC_single()
     TH1F *hGenReweighted2 = (TH1F *)fReweightf2->Get(Form("Genf17102_proj_1_%s", indexStr2.c_str()));
     TH1F *hRecReweighted2 = (TH1F *)fReweightf2->Get(Form("Recf1710_pt2_proj_1_%s", indexStr2.c_str()));
     TH1F *hYieldReweighted2 = (TH1F *)fReweightf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
+
+    // // Ensure all histograms have positive values for log scale drawing
+    // for (int i = 1; i <= hGenReweighted->GetNbinsX(); i++)
+    // {
+    //     if (hGenReweighted->GetBinContent(i) <= 0)
+    //         cout << "Warning: Bin " << i << " in hGenReweighted has non-positive content with value " << hGenReweighted->GetBinContent(i) << endl;
+    //     if (hRecReweighted->GetBinContent(i) <= 0)
+    //         cout << "Warning: Bin " << i << " in hRecReweighted has non-positive content with value " << hRecReweighted->GetBinContent(i) << endl;
+    // }
+    // for (int i = 1; i <= hGenReweighted2->GetNbinsX(); i++)
+    // {
+    //     if (hGenReweighted2->GetBinContent(i) <= 0)
+    //         cout << "Warning: Bin " << i << " in hGenReweighted2 has non-positive content with value " << hGenReweighted2->GetBinContent(i) << endl;
+    //     if (hRecReweighted2->GetBinContent(i) <= 0)
+    //         cout << "Warning: Bin " << i << " in hRecReweighted2 has non-positive content with value " << hRecReweighted2->GetBinContent(i) << endl;
+    // }
 
     TH1F *hGenUnweighted = (TH1F *)fReweightf0->Get("Genf17102_proj_1_i0");
     TH1F *hRecUnweighted = (TH1F *)fReweightf0->Get("Recf1710_pt2_proj_1_i0");
@@ -163,13 +179,13 @@ void plotReweightedMC_single()
     hGenReweighted2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hGenReweighted2->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hGenReweighted2->GetYaxis()->SetTitleOffset(1.7);
-    hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 1.5);
+    // hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 1.5);
     hGenReweighted2->SetMarkerStyle(53);
     hGenReweighted2->SetMarkerColor(kGreen);
     hGenReweighted2->SetLineColor(kGreen);
     hGenReweighted2->GetXaxis()->SetRangeUser(0.0, 15.5);
-    hGenReweighted2->SetMinimum(1e-9);
     hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 500);
+    hGenReweighted2->SetMinimum(2e-7);
     hGenReweighted2->SetMarkerSize(1.5);
     hGenReweighted2->Draw("pe");
     SetHistoQA(hRecReweighted2);
@@ -214,6 +230,22 @@ void plotReweightedMC_single()
     hYieldReweighted2->Write("f21525_Reweighted_Yield");
 
     ////****************************Levy-Tsallis fit**********************************////
+    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
+    if (fSys->IsZombie())
+    {
+        cout << "Error opening systematic uncertainty file" << endl;
+        return;
+    }
+    TH1F *hYieldSysf0 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1710");
+    TH1F *hYieldSysf2 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1525");
+    if (hYieldSysf0 == nullptr || hYieldSysf2 == nullptr)
+    {
+        cout << "Error reading systematic uncertainty histograms from file " << Form("%s/SystematicUncertainties.root", (path + "mult_0-100/Spectra/").c_str()) << endl;
+        return;
+    }
+
+    cout << "Total bins in the yield histogram is " << hYieldReweighted->GetNbinsX() << endl;
+
     // For f2'(1525)
     TH1F *hf21 = (TH1F *)hYieldReweighted2->Clone("hf21");
     TH1F *hf22 = (TH1F *)hYieldReweighted2->Clone("hf22");
@@ -222,12 +254,23 @@ void plotReweightedMC_single()
     TH1F *hf01 = (TH1F *)hYieldReweighted->Clone("hf01");
     TH1F *hf02 = (TH1F *)hYieldReweighted->Clone("hf02");
 
+    // Enable error tracking for histograms with manual error setting
+    hf01->Sumw2();
+    hf02->Sumw2();
+    hf21->Sumw2();
+    hf22->Sumw2();
+
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
-        double systemerr = (0.1 * hf22->GetBinContent(i));
-        hf22->SetBinError(i, systemerr);
-        double systemerr0 = (0.1 * hf02->GetBinContent(i));
-        hf02->SetBinError(i, systemerr0);
+        double sys1710 = hYieldSysf0->GetBinContent(i);
+        double sys1525 = hYieldSysf2->GetBinContent(i);
+        double yield1710 = hf01->GetBinContent(i + 1);
+        double yield1525 = hf21->GetBinContent(i + 1);
+        cout << "Bin " << i << ": Yield f0(1710) = " << yield1710 << " with sys error = " << sys1710 << " and Yield f2'(1525) = " << yield1525 << " with sys error = " << sys1525 << endl;
+        hf02->SetBinContent(i + 1, yield1710);
+        hf02->SetBinError(i + 1, sys1710 * yield1710);
+        hf22->SetBinContent(i + 1, yield1525);
+        hf22->SetBinError(i + 1, sys1525 * yield1525);
     }
     Double_t min = 0.0;
     Double_t max = 15.0;
@@ -278,6 +321,10 @@ void plotReweightedMC_single()
     hf01->SetMarkerColor(kBlue);
     hf01->SetLineColor(kBlue);
     hf01->Draw("pe");
+    hf02->SetMarkerColor(kBlue);
+    hf02->SetLineColor(kBlue);
+    hf02->SetFillStyle(0);
+    hf02->Draw("e2 same");
     fitFcnf0->SetLineWidth(2);
     fitFcnf0->SetLineStyle(2);
     fitFcnf0->SetLineColor(kRed);
@@ -294,32 +341,6 @@ void plotReweightedMC_single()
     leg->SetFillStyle(0);
     leg->SetTextSize(0.035);
     leg->Draw();
-    // // Create statistics box with fit parameters
-    // Double_t chi2f0 = fitFcnf0->GetChisquare();
-    // Int_t ndff0 = fitFcnf0->GetNDF();
-    // Double_t chi2ndff0 = chi2f0 / ndff0;
-    // Double_t probf0 = TMath::Prob(chi2f0, ndff0);
-    // Double_t nf0 = fitFcnf0->GetParameter(0);
-    // Double_t dndyf0 = fitFcnf0->GetParameter(1);
-    // Double_t Tf0 = fitFcnf0->GetParameter(3);
-    // TPaveText *ptvf0 = new TPaveText(0.55, 0.72, 0.9, 0.93, "NDC");
-    // // Statbox-like styling
-    // ptvf0->SetBorderSize(1);
-    // ptvf0->SetFillStyle(0); // transparent background
-    // ptvf0->SetFillColor(0);
-    // ptvf0->SetTextFont(42); // same as statbox
-    // ptvf0->SetTextSize(0.030);
-    // ptvf0->SetTextAlign(12); // left-aligned, vertically centered
-    // ptvf0->SetMargin(0.02);
-    // // Content
-    // ptvf0->AddText(Form("#chi^{2}/NDF = %.2f / %d", chi2f0, ndff0));
-    // ptvf0->AddText(Form("Prob = %.4f", probf0));
-    // ptvf0->AddText(" ");
-    // ptvf0->AddText(Form("n = %.3f", nf0));
-    // ptvf0->AddText(Form("dn/dy = %.4f", dndyf0));
-    // ptvf0->AddText(Form("T = %.3f GeV", Tf0));
-    // ptvf0->Draw();
-    // cout << "Chi2 " << chi2f0 << ", NDF " << ndff0 << ", Chi2/NDF " << chi2ndff0 << ", Prob " << probf0 << endl;
     cCorrectedf0Fit->SaveAs((savePath + "/plots/LevyFitf0_reweighted.png").c_str());
 
     TCanvas *cCorrectedf2Fit = new TCanvas("cCorrectedf2Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
@@ -336,6 +357,10 @@ void plotReweightedMC_single()
     hf21->SetMarkerColor(kBlue);
     hf21->SetLineColor(kBlue);
     hf21->Draw("pe");
+    hf22->SetMarkerColor(kBlue);
+    hf22->SetLineColor(kBlue);
+    hf22->SetFillStyle(0);
+    hf22->Draw("e2 same");
     fitFcnf2->SetLineWidth(2);
     fitFcnf2->SetLineStyle(2);
     fitFcnf2->SetLineColor(kRed);
@@ -352,28 +377,6 @@ void plotReweightedMC_single()
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.035);
     leg2->Draw();
-
-    // // Create statistics box with fit parameters
-    // Double_t chi2f2 = fitFcnf2->GetChisquare();
-    // Int_t ndff2 = fitFcnf2->GetNDF();
-    // Double_t chi2ndff2 = chi2f2 / ndff2;
-    // Double_t probf2 = TMath::Prob(chi2f2, ndff2);
-    // Double_t nf2 = fitFcnf2->GetParameter(0);
-    // Double_t dndyf2 = fitFcnf2->GetParameter(1);
-    // Double_t Tf2 = fitFcnf2->GetParameter(3);
-    // TPaveText *ptvf2 = new TPaveText(0.55, 0.72, 0.9, 0.93, "NDC");
-    // ptvf2->SetBorderSize(1);
-    // ptvf2->SetFillColor(kWhite);
-    // ptvf2->SetTextFont(42);
-    // ptvf2->SetTextSize(0.032);
-    // ptvf2->AddText(Form("#chi^{2}/NDF = %.2f / %d", chi2f2, ndff2));
-    // ptvf2->AddText(Form("Prob = %.4f", probf2));
-    // ptvf2->AddText("");
-    // ptvf2->AddText(Form("n = %.3f", nf2));
-    // ptvf2->AddText(Form("dn/dy = %.4f", dndyf2));
-    // ptvf2->AddText(Form("T = %.3f GeV", Tf2));
-    // ptvf2->Draw();
-    // cout << "Chi2 " << chi2f2 << ", NDF " << ndff2 << ", Chi2/NDF " << chi2ndff2 << ", Prob " << probf2 << endl;
     cCorrectedf2Fit->SaveAs((savePath + "/plots/LevyFitf2_reweighted.png").c_str());
 
     // /*
@@ -483,20 +486,23 @@ void plotReweightedMC_single()
     // Draw the last marker (f2(1525)) and its error bar
     double f2_mass = 1.5173;
     double f2_meanpt = hout2->GetBinContent(5);
-    double f2_err = hout2->GetBinContent(6);
+    double f2_Staterr = hout2->GetBinContent(6);
+    double f2_SysErrLow = hout2->GetBinContent(7);
+    double f2_SysErrHigh = hout2->GetBinContent(8);
+    
     int f2_marker = 20;        // choose a unique marker style for f2(1525)
     int f2_color = kGreen + 1; // choose a unique color for f2(1525)
     TMarker *marker_f2 = new TMarker(f2_mass, f2_meanpt, f2_marker);
     marker_f2->SetMarkerColor(f2_color);
     marker_f2->SetMarkerSize(1.7);
     marker_f2->Draw("SAME");
-    TLine *errBar_f2 = new TLine(f2_mass, f2_meanpt - f2_err, f2_mass, f2_meanpt + f2_err);
+    TLine *errBar_f2 = new TLine(f2_mass, f2_meanpt - f2_Staterr, f2_mass, f2_meanpt + f2_Staterr);
     errBar_f2->SetLineColor(f2_color);
     errBar_f2->SetLineWidth(2);
     errBar_f2->Draw("SAME");
     double cap_f2 = 0.01;
-    TLine *capLow_f2 = new TLine(f2_mass - cap_f2, f2_meanpt - f2_err, f2_mass + cap_f2, f2_meanpt - f2_err);
-    TLine *capHigh_f2 = new TLine(f2_mass - cap_f2, f2_meanpt + f2_err, f2_mass + cap_f2, f2_meanpt + f2_err);
+    TLine *capLow_f2 = new TLine(f2_mass - cap_f2, f2_meanpt - f2_Staterr, f2_mass + cap_f2, f2_meanpt - f2_Staterr);
+    TLine *capHigh_f2 = new TLine(f2_mass - cap_f2, f2_meanpt + f2_Staterr, f2_mass + cap_f2, f2_meanpt + f2_Staterr);
     capLow_f2->SetLineColor(f2_color);
     capHigh_f2->SetLineColor(f2_color);
     capLow_f2->SetLineWidth(2);
@@ -570,217 +576,217 @@ void plotReweightedMC_single()
     legend5->Draw();
     // cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
 
-    // */
+    /*
 
-    // Reading by from the root file
-    float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
-    int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
+    // // Reading by from the root file
+    // float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
+    // int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
 
-    TH1F *hEfficiencyReweighted = new TH1F("hEfficiencyReweighted", "Reweighted Efficiency vs pT", nBins, ptBins);
-    TH1F *hEfficiencyUnweighted = new TH1F("hEfficiencyUnweighted", "Unweighted Efficiency vs pT", nBins, ptBins);
-    TH1F *hEfficiencyReweighted2 = new TH1F("hEfficiencyReweighted2", "Reweighted Efficiency vs pT for f2(1525)", nBins, ptBins);
-    TH1F *hEfficiencyUnweighted2 = new TH1F("hEfficiencyUnweighted2", "Unweighted Efficiency vs pT for f2(1525)", nBins, ptBins);
+    // TH1F *hEfficiencyReweighted = new TH1F("hEfficiencyReweighted", "Reweighted Efficiency vs pT", nBins, ptBins);
+    // TH1F *hEfficiencyUnweighted = new TH1F("hEfficiencyUnweighted", "Unweighted Efficiency vs pT", nBins, ptBins);
+    // TH1F *hEfficiencyReweighted2 = new TH1F("hEfficiencyReweighted2", "Reweighted Efficiency vs pT for f2(1525)", nBins, ptBins);
+    // TH1F *hEfficiencyUnweighted2 = new TH1F("hEfficiencyUnweighted2", "Unweighted Efficiency vs pT for f2(1525)", nBins, ptBins);
 
-    for (int i = 0; i < nBins; i++)
-    {
-        float lowpt = ptBins[i] + 0.01;
-        float highpt = ptBins[i + 1] - 0.01; //
-        // For reweighted efficiency
-        int lowptBin = hGenReweighted->GetXaxis()->FindBin(lowpt);
-        int highptBin = hGenReweighted->GetXaxis()->FindBin(highpt);
-        Double_t recErrW = 0, genErrW = 0;
-        Double_t recYieldReweighted = hRecReweighted->IntegralAndError(lowptBin, highptBin, recErrW);
-        Double_t genYieldReweighted = hGenReweighted->IntegralAndError(lowptBin, highptBin, genErrW);
-        if (genYieldReweighted > 0 && recYieldReweighted > 0)
-        {
-            Double_t effRW = recYieldReweighted / genYieldReweighted;
-            Double_t errRW = effRW * TMath::Sqrt(TMath::Power(recErrW / recYieldReweighted, 2) + TMath::Power(genErrW / genYieldReweighted, 2));
-            hEfficiencyReweighted->SetBinContent(i + 1, effRW);
-            hEfficiencyReweighted->SetBinError(i + 1, errRW);
-        }
+    // for (int i = 0; i < nBins; i++)
+    // {
+    //     float lowpt = ptBins[i] + 0.01;
+    //     float highpt = ptBins[i + 1] - 0.01; //
+    //     // For reweighted efficiency
+    //     int lowptBin = hGenReweighted->GetXaxis()->FindBin(lowpt);
+    //     int highptBin = hGenReweighted->GetXaxis()->FindBin(highpt);
+    //     Double_t recErrW = 0, genErrW = 0;
+    //     Double_t recYieldReweighted = hRecReweighted->IntegralAndError(lowptBin, highptBin, recErrW);
+    //     Double_t genYieldReweighted = hGenReweighted->IntegralAndError(lowptBin, highptBin, genErrW);
+    //     if (genYieldReweighted > 0 && recYieldReweighted > 0)
+    //     {
+    //         Double_t effRW = recYieldReweighted / genYieldReweighted;
+    //         Double_t errRW = effRW * TMath::Sqrt(TMath::Power(recErrW / recYieldReweighted, 2) + TMath::Power(genErrW / genYieldReweighted, 2));
+    //         hEfficiencyReweighted->SetBinContent(i + 1, effRW);
+    //         hEfficiencyReweighted->SetBinError(i + 1, errRW);
+    //     }
 
-        // Unweighted efficiency from pre-scaled count clones; use binomial approximation
-        Double_t recErrU = 0, genErrU = 0;
-        Double_t recCounts = hRecUnweightedCounts ? hRecUnweightedCounts->IntegralAndError(lowptBin, highptBin, recErrU) : 0.0;
-        Double_t genCounts = hGenUnweightedCounts ? hGenUnweightedCounts->IntegralAndError(lowptBin, highptBin, genErrU) : 0.0;
-        if (genCounts > 0 && recCounts >= 0)
-        {
-            Double_t effU = recCounts / genCounts;
-            // Binomial error with genCounts as trials; guard numerical range
-            Double_t errU = TMath::Sqrt(TMath::Max(0.0, effU * (1.0 - effU) / genCounts));
-            hEfficiencyUnweighted->SetBinContent(i + 1, effU);
-            hEfficiencyUnweighted->SetBinError(i + 1, errU);
-        }
+    //     // Unweighted efficiency from pre-scaled count clones; use binomial approximation
+    //     Double_t recErrU = 0, genErrU = 0;
+    //     Double_t recCounts = hRecUnweightedCounts ? hRecUnweightedCounts->IntegralAndError(lowptBin, highptBin, recErrU) : 0.0;
+    //     Double_t genCounts = hGenUnweightedCounts ? hGenUnweightedCounts->IntegralAndError(lowptBin, highptBin, genErrU) : 0.0;
+    //     if (genCounts > 0 && recCounts >= 0)
+    //     {
+    //         Double_t effU = recCounts / genCounts;
+    //         // Binomial error with genCounts as trials; guard numerical range
+    //         Double_t errU = TMath::Sqrt(TMath::Max(0.0, effU * (1.0 - effU) / genCounts));
+    //         hEfficiencyUnweighted->SetBinContent(i + 1, effU);
+    //         hEfficiencyUnweighted->SetBinError(i + 1, errU);
+    //     }
 
-        // Now calculate for f2'(1525) as well
-        // For reweighted efficiency
-        lowptBin = hGenReweighted2->GetXaxis()->FindBin(lowpt);
-        highptBin = hGenReweighted2->GetXaxis()->FindBin(highpt);
-        Double_t recErrW2 = 0, genErrW2 = 0;
-        Double_t recYieldReweighted2 = hRecReweighted2->IntegralAndError(lowptBin, highptBin, recErrW2);
-        Double_t genYieldReweighted2 = hGenReweighted2->IntegralAndError(lowptBin, highptBin, genErrW2);
-        if (genYieldReweighted2 > 0 && recYieldReweighted2 > 0)
-        {
-            Double_t effRW2 = recYieldReweighted2 / genYieldReweighted2;
-            Double_t errRW2 = effRW2 * TMath::Sqrt(TMath::Power(recErrW2 / recYieldReweighted2, 2) + TMath::Power(genErrW2 / genYieldReweighted2, 2));
-            hEfficiencyReweighted2->SetBinContent(i + 1, effRW2);
-            hEfficiencyReweighted2->SetBinError(i + 1, errRW2);
-        }
-        // Unweighted efficiency from pre-scaled count clones; use binomial approximation
-        Double_t recErrU2 = 0, genErrU2 = 0;
-        Double_t recCounts2 = hRecUnweightedCounts2 ? hRecUnweightedCounts2->IntegralAndError(lowptBin, highptBin, recErrU2) : 0.0;
-        Double_t genCounts2 = hGenUnweightedCounts2 ? hGenUnweightedCounts2->IntegralAndError(lowptBin, highptBin, genErrU2) : 0.0;
-        if (genCounts2 > 0 && recCounts2 >= 0)
-        {
-            Double_t effU2 = recCounts2 / genCounts2;
-            // Binomial error with genCounts as trials; guard numerical range
-            Double_t errU2 = TMath::Sqrt(TMath::Max(0.0, effU2 * (1.0 - effU2) / genCounts2));
-            hEfficiencyUnweighted2->SetBinContent(i + 1, effU2);
-            hEfficiencyUnweighted2->SetBinError(i + 1, errU2);
-        }
-    }
+    //     // Now calculate for f2'(1525) as well
+    //     // For reweighted efficiency
+    //     lowptBin = hGenReweighted2->GetXaxis()->FindBin(lowpt);
+    //     highptBin = hGenReweighted2->GetXaxis()->FindBin(highpt);
+    //     Double_t recErrW2 = 0, genErrW2 = 0;
+    //     Double_t recYieldReweighted2 = hRecReweighted2->IntegralAndError(lowptBin, highptBin, recErrW2);
+    //     Double_t genYieldReweighted2 = hGenReweighted2->IntegralAndError(lowptBin, highptBin, genErrW2);
+    //     if (genYieldReweighted2 > 0 && recYieldReweighted2 > 0)
+    //     {
+    //         Double_t effRW2 = recYieldReweighted2 / genYieldReweighted2;
+    //         Double_t errRW2 = effRW2 * TMath::Sqrt(TMath::Power(recErrW2 / recYieldReweighted2, 2) + TMath::Power(genErrW2 / genYieldReweighted2, 2));
+    //         hEfficiencyReweighted2->SetBinContent(i + 1, effRW2);
+    //         hEfficiencyReweighted2->SetBinError(i + 1, errRW2);
+    //     }
+    //     // Unweighted efficiency from pre-scaled count clones; use binomial approximation
+    //     Double_t recErrU2 = 0, genErrU2 = 0;
+    //     Double_t recCounts2 = hRecUnweightedCounts2 ? hRecUnweightedCounts2->IntegralAndError(lowptBin, highptBin, recErrU2) : 0.0;
+    //     Double_t genCounts2 = hGenUnweightedCounts2 ? hGenUnweightedCounts2->IntegralAndError(lowptBin, highptBin, genErrU2) : 0.0;
+    //     if (genCounts2 > 0 && recCounts2 >= 0)
+    //     {
+    //         Double_t effU2 = recCounts2 / genCounts2;
+    //         // Binomial error with genCounts as trials; guard numerical range
+    //         Double_t errU2 = TMath::Sqrt(TMath::Max(0.0, effU2 * (1.0 - effU2) / genCounts2));
+    //         hEfficiencyUnweighted2->SetBinContent(i + 1, effU2);
+    //         hEfficiencyUnweighted2->SetBinError(i + 1, errU2);
+    //     }
+    // }
 
-    fOutput->cd();
-    TCanvas *cNewEfficiency = new TCanvas("cNewEfficiency", "New Efficiency Comparison for f0(1710)", 720, 720);
-    SetCanvasStyle(cNewEfficiency, 0.18, 0.03, 0.05, 0.14);
-    double pad1Size, pad2Size;
-    canvas_style(cNewEfficiency, pad1Size, pad2Size);
-    cNewEfficiency->cd(1);
-    SetHistoQA(hEfficiencyReweighted);
-    hEfficiencyReweighted->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-    hEfficiencyReweighted->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    hEfficiencyReweighted->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hEfficiencyReweighted->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    hEfficiencyReweighted->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hEfficiencyReweighted->GetYaxis()->SetTitle("Acceptance x Efficiency");
-    hEfficiencyReweighted->GetYaxis()->SetTitleOffset(1.2);
-    hEfficiencyReweighted->SetMaximum(hEfficiencyReweighted->GetMaximum() * 1.8);
-    hEfficiencyReweighted->SetMarkerStyle(20);
-    hEfficiencyReweighted->SetMarkerColor(kRed);
-    hEfficiencyReweighted->SetLineColor(kRed);
-    hEfficiencyReweighted->SetMarkerSize(1.5);
-    hEfficiencyReweighted->Draw("pe");
-    hEfficiencyReweighted->Write("Eff_f0Reweighted");
-    SetHistoQA(hEfficiencyUnweighted);
-    hEfficiencyUnweighted->SetMarkerStyle(20);
-    hEfficiencyUnweighted->SetMarkerColor(kBlue);
-    hEfficiencyUnweighted->SetLineColor(kBlue);
-    hEfficiencyUnweighted->SetMarkerSize(1.5);
-    hEfficiencyUnweighted->Draw("pe same");
-    TLegend *legNewEfficiency = new TLegend(0.4, 0.67, 0.9, 0.93);
-    legNewEfficiency->SetBorderSize(0);
-    legNewEfficiency->SetFillStyle(0);
-    legNewEfficiency->SetTextSize(0.05);
-    legNewEfficiency->AddEntry((TObject *)nullptr, "pp #sqrt{#it{s}} = 13.6 TeV", "");
-    legNewEfficiency->AddEntry((TObject *)nullptr, "f_{0}(1710)", "");
-    legNewEfficiency->AddEntry(hEfficiencyUnweighted, "Unweighted Efficiency", "pe");
-    legNewEfficiency->AddEntry(hEfficiencyReweighted, "Reweighted Efficiency", "pe");
-    legNewEfficiency->Draw();
+    // fOutput->cd();
+    // TCanvas *cNewEfficiency = new TCanvas("cNewEfficiency", "New Efficiency Comparison for f0(1710)", 720, 720);
+    // SetCanvasStyle(cNewEfficiency, 0.18, 0.03, 0.05, 0.14);
+    // double pad1Size, pad2Size;
+    // canvas_style(cNewEfficiency, pad1Size, pad2Size);
+    // cNewEfficiency->cd(1);
+    // SetHistoQA(hEfficiencyReweighted);
+    // hEfficiencyReweighted->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    // hEfficiencyReweighted->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    // hEfficiencyReweighted->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    // hEfficiencyReweighted->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    // hEfficiencyReweighted->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hEfficiencyReweighted->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    // hEfficiencyReweighted->GetYaxis()->SetTitleOffset(1.2);
+    // hEfficiencyReweighted->SetMaximum(hEfficiencyReweighted->GetMaximum() * 1.8);
+    // hEfficiencyReweighted->SetMarkerStyle(20);
+    // hEfficiencyReweighted->SetMarkerColor(kRed);
+    // hEfficiencyReweighted->SetLineColor(kRed);
+    // hEfficiencyReweighted->SetMarkerSize(1.5);
+    // hEfficiencyReweighted->Draw("pe");
+    // hEfficiencyReweighted->Write("Eff_f0Reweighted");
+    // SetHistoQA(hEfficiencyUnweighted);
+    // hEfficiencyUnweighted->SetMarkerStyle(20);
+    // hEfficiencyUnweighted->SetMarkerColor(kBlue);
+    // hEfficiencyUnweighted->SetLineColor(kBlue);
+    // hEfficiencyUnweighted->SetMarkerSize(1.5);
+    // hEfficiencyUnweighted->Draw("pe same");
+    // TLegend *legNewEfficiency = new TLegend(0.4, 0.67, 0.9, 0.93);
+    // legNewEfficiency->SetBorderSize(0);
+    // legNewEfficiency->SetFillStyle(0);
+    // legNewEfficiency->SetTextSize(0.05);
+    // legNewEfficiency->AddEntry((TObject *)nullptr, "pp #sqrt{#it{s}} = 13.6 TeV", "");
+    // legNewEfficiency->AddEntry((TObject *)nullptr, "f_{0}(1710)", "");
+    // legNewEfficiency->AddEntry(hEfficiencyUnweighted, "Unweighted Efficiency", "pe");
+    // legNewEfficiency->AddEntry(hEfficiencyReweighted, "Reweighted Efficiency", "pe");
+    // legNewEfficiency->Draw();
 
-    cNewEfficiency->cd(2);
-    TH1F *hEfficiencyRatio = (TH1F *)hEfficiencyReweighted->Clone("hEfficiencyRatio");
-    hEfficiencyRatio->Divide(hEfficiencyUnweighted);
-    SetHistoQA(hEfficiencyRatio);
-    hEfficiencyRatio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    hEfficiencyRatio->GetYaxis()->SetTitleSize(0.02 / pad2Size);
-    hEfficiencyRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hEfficiencyRatio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    hEfficiencyRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hEfficiencyRatio->GetYaxis()->SetTitle("Reweighted / Unweighted");
-    hEfficiencyRatio->GetYaxis()->SetTitleOffset(0.9);
-    hEfficiencyRatio->SetMaximum(1.3);
-    hEfficiencyRatio->SetMinimum(0.7);
-    hEfficiencyRatio->SetMarkerStyle(20);
-    hEfficiencyRatio->SetMarkerColor(kBlack);
-    hEfficiencyRatio->SetLineColor(kBlack);
-    hEfficiencyRatio->SetMarkerSize(1.5);
-    hEfficiencyRatio->GetYaxis()->SetNdivisions(505);
-    hEfficiencyRatio->Draw("lp");
-    TLine *lineUnity = new TLine(hEfficiencyRatio->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio->GetXaxis()->GetXmax(), 1.0);
-    lineUnity->SetLineColor(kRed);
-    lineUnity->SetLineStyle(2);
-    lineUnity->Draw("same");
+    // cNewEfficiency->cd(2);
+    // TH1F *hEfficiencyRatio = (TH1F *)hEfficiencyReweighted->Clone("hEfficiencyRatio");
+    // hEfficiencyRatio->Divide(hEfficiencyUnweighted);
+    // SetHistoQA(hEfficiencyRatio);
+    // hEfficiencyRatio->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    // hEfficiencyRatio->GetYaxis()->SetTitleSize(0.02 / pad2Size);
+    // hEfficiencyRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    // hEfficiencyRatio->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    // hEfficiencyRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hEfficiencyRatio->GetYaxis()->SetTitle("Reweighted / Unweighted");
+    // hEfficiencyRatio->GetYaxis()->SetTitleOffset(0.9);
+    // hEfficiencyRatio->SetMaximum(1.3);
+    // hEfficiencyRatio->SetMinimum(0.7);
+    // hEfficiencyRatio->SetMarkerStyle(20);
+    // hEfficiencyRatio->SetMarkerColor(kBlack);
+    // hEfficiencyRatio->SetLineColor(kBlack);
+    // hEfficiencyRatio->SetMarkerSize(1.5);
+    // hEfficiencyRatio->GetYaxis()->SetNdivisions(505);
+    // hEfficiencyRatio->Draw("lp");
+    // TLine *lineUnity = new TLine(hEfficiencyRatio->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio->GetXaxis()->GetXmax(), 1.0);
+    // lineUnity->SetLineColor(kRed);
+    // lineUnity->SetLineStyle(2);
+    // lineUnity->Draw("same");
 
-    cNewEfficiency->SaveAs((savePath + "/plots/EfficiencyComparisonf0.png").c_str());
+    // cNewEfficiency->SaveAs((savePath + "/plots/EfficiencyComparisonf0.png").c_str());
 
-    TCanvas *cNewEfficiency2 = new TCanvas("cNewEfficiency2", "New Efficiency Comparison for f2(1525)", 720, 720);
-    SetCanvasStyle(cNewEfficiency2, 0.18, 0.03, 0.05, 0.14);
-    canvas_style(cNewEfficiency2, pad1Size, pad2Size);
-    cNewEfficiency2->cd(1);
-    SetHistoQA(hEfficiencyReweighted2);
-    hEfficiencyReweighted2->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-    hEfficiencyReweighted2->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    hEfficiencyReweighted2->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hEfficiencyReweighted2->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    hEfficiencyReweighted2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hEfficiencyReweighted2->GetYaxis()->SetTitle("Acceptance x Efficiency");
-    hEfficiencyReweighted2->GetYaxis()->SetTitleOffset(1.2);
-    hEfficiencyReweighted2->SetMaximum(hEfficiencyReweighted2->GetMaximum() * 1.8);
-    hEfficiencyReweighted2->SetMarkerStyle(20);
-    hEfficiencyReweighted2->SetMarkerColor(kRed);
-    hEfficiencyReweighted2->SetLineColor(kRed);
-    hEfficiencyReweighted2->SetMarkerSize(1.5);
-    hEfficiencyReweighted2->Write("Eff_f2Reweighted");
-    hEfficiencyReweighted2->Draw("pe");
-    SetHistoQA(hEfficiencyUnweighted2);
-    hEfficiencyUnweighted2->SetMarkerStyle(20);
-    hEfficiencyUnweighted2->SetMarkerColor(kBlue);
-    hEfficiencyUnweighted2->SetLineColor(kBlue);
-    hEfficiencyUnweighted2->SetMarkerSize(1.5);
-    hEfficiencyUnweighted2->Draw("pe same");
+    // TCanvas *cNewEfficiency2 = new TCanvas("cNewEfficiency2", "New Efficiency Comparison for f2(1525)", 720, 720);
+    // SetCanvasStyle(cNewEfficiency2, 0.18, 0.03, 0.05, 0.14);
+    // canvas_style(cNewEfficiency2, pad1Size, pad2Size);
+    // cNewEfficiency2->cd(1);
+    // SetHistoQA(hEfficiencyReweighted2);
+    // hEfficiencyReweighted2->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    // hEfficiencyReweighted2->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    // hEfficiencyReweighted2->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    // hEfficiencyReweighted2->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    // hEfficiencyReweighted2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hEfficiencyReweighted2->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    // hEfficiencyReweighted2->GetYaxis()->SetTitleOffset(1.2);
+    // hEfficiencyReweighted2->SetMaximum(hEfficiencyReweighted2->GetMaximum() * 1.8);
+    // hEfficiencyReweighted2->SetMarkerStyle(20);
+    // hEfficiencyReweighted2->SetMarkerColor(kRed);
+    // hEfficiencyReweighted2->SetLineColor(kRed);
+    // hEfficiencyReweighted2->SetMarkerSize(1.5);
+    // hEfficiencyReweighted2->Write("Eff_f2Reweighted");
+    // hEfficiencyReweighted2->Draw("pe");
+    // SetHistoQA(hEfficiencyUnweighted2);
+    // hEfficiencyUnweighted2->SetMarkerStyle(20);
+    // hEfficiencyUnweighted2->SetMarkerColor(kBlue);
+    // hEfficiencyUnweighted2->SetLineColor(kBlue);
+    // hEfficiencyUnweighted2->SetMarkerSize(1.5);
+    // hEfficiencyUnweighted2->Draw("pe same");
 
-    TLegend *legNewEfficiency2 = new TLegend(0.4, 0.67, 0.9, 0.93);
-    legNewEfficiency2->SetBorderSize(0);
-    legNewEfficiency2->SetFillStyle(0);
-    legNewEfficiency2->SetTextSize(0.05);
-    legNewEfficiency2->AddEntry((TObject *)nullptr, "pp #sqrt{#it{s}} = 13.6 TeV", "");
-    legNewEfficiency2->AddEntry((TObject *)nullptr, "f'_{2}(1525)", "");
-    legNewEfficiency2->AddEntry(hEfficiencyUnweighted2, "Unweighted Efficiency", "pe");
-    legNewEfficiency2->AddEntry(hEfficiencyReweighted2, "Reweighted Efficiency", "pe");
-    legNewEfficiency2->Draw();
+    // TLegend *legNewEfficiency2 = new TLegend(0.4, 0.67, 0.9, 0.93);
+    // legNewEfficiency2->SetBorderSize(0);
+    // legNewEfficiency2->SetFillStyle(0);
+    // legNewEfficiency2->SetTextSize(0.05);
+    // legNewEfficiency2->AddEntry((TObject *)nullptr, "pp #sqrt{#it{s}} = 13.6 TeV", "");
+    // legNewEfficiency2->AddEntry((TObject *)nullptr, "f'_{2}(1525)", "");
+    // legNewEfficiency2->AddEntry(hEfficiencyUnweighted2, "Unweighted Efficiency", "pe");
+    // legNewEfficiency2->AddEntry(hEfficiencyReweighted2, "Reweighted Efficiency", "pe");
+    // legNewEfficiency2->Draw();
 
-    cNewEfficiency2->cd(2);
-    TH1F *hEfficiencyRatio2 = (TH1F *)hEfficiencyReweighted2->Clone("hEfficiencyRatio2");
-    hEfficiencyRatio2->Divide(hEfficiencyUnweighted2);
-    SetHistoQA(hEfficiencyRatio2);
-    hEfficiencyRatio2->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    hEfficiencyRatio2->GetYaxis()->SetTitleSize(0.02 / pad2Size);
-    hEfficiencyRatio2->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hEfficiencyRatio2->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    hEfficiencyRatio2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hEfficiencyRatio2->GetYaxis()->SetTitle("Reweighted / Unweighted");
-    hEfficiencyRatio2->GetYaxis()->SetTitleOffset(0.9);
-    hEfficiencyRatio2->SetMaximum(1.3);
-    hEfficiencyRatio2->SetMinimum(0.7);
-    hEfficiencyRatio2->SetMarkerStyle(20);
-    hEfficiencyRatio2->SetMarkerColor(kBlack);
-    hEfficiencyRatio2->SetLineColor(kBlack);
-    hEfficiencyRatio2->SetMarkerSize(1.5);
-    hEfficiencyRatio2->GetYaxis()->SetNdivisions(505);
-    hEfficiencyRatio2->Draw("p");
-    TLine *lineUnity2 = new TLine(hEfficiencyRatio2->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio2->GetXaxis()->GetXmax(), 1.0);
-    lineUnity2->SetLineColor(kRed);
-    lineUnity2->SetLineStyle(2);
-    lineUnity2->Draw("same");
-    cNewEfficiency2->SaveAs((savePath + "/plots/EfficiencyComparisonf2.png").c_str());
-    if (!otherQAPlots)
-    {
-        cNewEfficiency->Close();
-        cNewEfficiency2->Close();
-    }
+    // cNewEfficiency2->cd(2);
+    // TH1F *hEfficiencyRatio2 = (TH1F *)hEfficiencyReweighted2->Clone("hEfficiencyRatio2");
+    // hEfficiencyRatio2->Divide(hEfficiencyUnweighted2);
+    // SetHistoQA(hEfficiencyRatio2);
+    // hEfficiencyRatio2->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    // hEfficiencyRatio2->GetYaxis()->SetTitleSize(0.02 / pad2Size);
+    // hEfficiencyRatio2->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    // hEfficiencyRatio2->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    // hEfficiencyRatio2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hEfficiencyRatio2->GetYaxis()->SetTitle("Reweighted / Unweighted");
+    // hEfficiencyRatio2->GetYaxis()->SetTitleOffset(0.9);
+    // hEfficiencyRatio2->SetMaximum(1.3);
+    // hEfficiencyRatio2->SetMinimum(0.7);
+    // hEfficiencyRatio2->SetMarkerStyle(20);
+    // hEfficiencyRatio2->SetMarkerColor(kBlack);
+    // hEfficiencyRatio2->SetLineColor(kBlack);
+    // hEfficiencyRatio2->SetMarkerSize(1.5);
+    // hEfficiencyRatio2->GetYaxis()->SetNdivisions(505);
+    // hEfficiencyRatio2->Draw("p");
+    // TLine *lineUnity2 = new TLine(hEfficiencyRatio2->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio2->GetXaxis()->GetXmax(), 1.0);
+    // lineUnity2->SetLineColor(kRed);
+    // lineUnity2->SetLineStyle(2);
+    // lineUnity2->Draw("same");
+    // cNewEfficiency2->SaveAs((savePath + "/plots/EfficiencyComparisonf2.png").c_str());
+    // if (!otherQAPlots)
+    // {
+    //     cNewEfficiency->Close();
+    //     cNewEfficiency2->Close();
+    // }
 
-    TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
-    SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
-    TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
-    SetHistoQA(hReweightFactor);
-    hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
-    hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
-    hReweightFactor->SetMaximum(1.5);
-    hReweightFactor->SetMinimum(0.3);
-    hReweightFactor->Draw("HIST");
-    if (!otherQAPlots)
-        cReweightFactor->Close();
+    // TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
+    // SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
+    // TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
+    // SetHistoQA(hReweightFactor);
+    // hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
+    // hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
+    // hReweightFactor->SetMaximum(1.5);
+    // hReweightFactor->SetMinimum(0.3);
+    // hReweightFactor->Draw("HIST");
+    // if (!otherQAPlots)
+    //     cReweightFactor->Close();
 
     // TFile *file2 = new TFile((savePath + "/spectra_.root").c_str(), "read");
     // TH1F *hYield1710Corrected = (TH1F *)file2->Get("hYield1710Corrected");
@@ -818,6 +824,7 @@ void plotReweightedMC_single()
     // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
     // if (!otherQAPlots)
     //     cYieldCompare->Close();
+    */
 
     cout << "Finished processing plotting the reweighted MC spectra" << endl;
 }

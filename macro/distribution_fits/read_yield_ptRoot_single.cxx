@@ -18,18 +18,18 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 void read_yield_ptRoot_single()
 {
     gStyle->SetOptStat(0);
-    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
 
-    TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
+    // TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
     // TFile *inputFile = new TFile((path + "FitParam_temp.root").c_str(), "READ");
-    // TFile *inputFile = new TFile((path + "FitParamdefault.root").c_str(), "READ");
+    TFile *inputFile = new TFile((path + "FitParam_Default2.root").c_str(), "READ");
     if (inputFile->IsZombie())
     {
-        cerr << "Error opening data file " << (path + "/fits/FitParam.root") << endl;
+        cerr << "Error opening data file " << (path + "/fits/FitParam_Default2.root") << endl;
         return;
     }
 
@@ -77,7 +77,7 @@ void read_yield_ptRoot_single()
     }
     string histpath = "higher-mass-resonances/hMChists";
     string histpathf2 = "higher-mass-resonances_f21525/hMChists";
-    TFile *fOutput = new TFile(Form("%s/spectra_coherent.root", outputPath.Data()), "RECREATE");
+    TFile *fOutput = new TFile(Form("%s/spectra_Default2.root", outputPath.Data()), "RECREATE");
 
     // THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
     // THnSparseD *recpt1f0 = (THnSparseD *)feff_f0->Get(Form("%s/Recf1710_pt2", histpath.c_str()));
@@ -101,6 +101,10 @@ void read_yield_ptRoot_single()
     TH1D *hrecptf0 = recpt1f0->Projection(1); // project on pt axis
     TH1D *hgenptf2 = GenpTf2->Projection(1);  // project on pt axis
     TH1D *hrecptf2 = recpt1f2->Projection(1); // project on pt axis
+    hgenptf0->GetXaxis()->SetRangeUser(0.0, 15.0);
+    hrecptf0->GetXaxis()->SetRangeUser(0.0, 15.0);
+    hgenptf2->GetXaxis()->SetRangeUser(0.0, 15.0);
+    hrecptf2->GetXaxis()->SetRangeUser(0.0, 15.0);
     cout << "Number of bins in Generated " << hgenptf0->GetNbinsX() << endl;
     cout << "Number of bins in Reconstructed " << hrecptf0->GetNbinsX() << endl;
     cout << "Bin width of generated " << hgenptf0->GetXaxis()->GetBinWidth(1) << endl;
@@ -249,15 +253,15 @@ void read_yield_ptRoot_single()
 
                 double corrected_yield1710 = yield * signalLossFactor / (eff1710 * oneUponTriggerEfficiency * BR_f0);
                 double corrected_yield1710_err = signalLossFactor * sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
-                if (ibins == 0)
-                {
-                    corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.3;
-                    corrected_yield1710_err = 1.5 * corrected_yield1710_err;
-                }
-                if (ibins == 1)
-                {
-                    corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.1;
-                }
+                // if (ibins == 0)
+                // {
+                //     corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.3;
+                //     corrected_yield1710_err = 1.5 * corrected_yield1710_err;
+                // }
+                // if (ibins == 1)
+                // {
+                //     corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.1;
+                // }
                 hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
                 hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
             }
@@ -276,7 +280,7 @@ void read_yield_ptRoot_single()
     hMass1710->SetMarkerColor(kBlue);
     hMass1710->SetMarkerStyle(20);
     hMass1710->SetMarkerSize(1.5);
-    hMass1710->Write();
+    hMass1710->Write("hMass_1710");
     hMass1710->Draw("pe");
     TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
     line1710Mass->SetLineStyle(2);
@@ -336,7 +340,7 @@ void read_yield_ptRoot_single()
     hMass1525->SetMarkerSize(1.5);
     hMass1525->SetLineColor(kBlue);
     hMass1525->SetMarkerColor(kBlue);
-    hMass1525->Write();
+    hMass1525->Write("hMass_1525");
     hMass1525->Draw("pe");
     // TLine *line1525Mass = new TLine(0, f1525Mass, 12, f1525Mass);
     // line1525Mass->SetLineStyle(2);
@@ -374,7 +378,7 @@ void read_yield_ptRoot_single()
     // hMass1270->GetYaxis()->SetTitleOffset(1.6);
     // hMass1270->GetYaxis()->SetRangeUser(1.1, 1.4);
     // hMass1270->SetMarkerStyle(20);
-    // hMass1270->Write();
+    // hMass1270->Write("hMass_1270");
     // hMass1270->Draw("pe");
     // TLine *line1270Mass = new TLine(0, f1270Mass, 12, f1270Mass);
     // line1270Mass->SetLineStyle(2);
@@ -875,8 +879,8 @@ void read_yield_ptRoot_single()
     cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
 
     //====Lets now rebate the MC===========
-    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_coherent.root", outputPath.Data()), "recreate");
+    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_Default2.root", outputPath.Data()), "recreate");
     int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
-    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_coherent.root", outputPath.Data()), "recreate");
+    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_Default2.root", outputPath.Data()), "recreate");
     int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
 }

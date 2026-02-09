@@ -3,11 +3,12 @@
 using namespace std;
 
 void checkVectorSizeMatch(const vector<string> &varNames, const vector<int> &nVariations, const string &categoryName);
-void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUncertainty);
+void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUncertainty, string suffix);
 void checkBarlowSignificance(TH1F *hDefault, TH1F *hVariation, TH1F *hBarlow, string variationName, string type, bool &barlowPassed);
 void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F *defaultHist, TCanvas *canvas, TCanvas *canvasBarlow, vector<TH1F *> *resultVector, const string &histPath, const string &suffix, const string &path, const string &categoryName, const string &categoryType);
 void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, const int nVariations, TH1F *&hAvgQuadratureSum, const char *name);
 void QuadratureSum(const vector<TH1F *> &hVariationHistos, TH1F *&hQuadratureSum);
+void Smoothening(TH1F *h, int iterations = 2);
 
 void systematics_pt()
 {
@@ -32,19 +33,22 @@ void systematics_pt()
     // 3e. Lambda rejection: 2 Variations
     // 3f. Lifetime cut: 2 Variations
 
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
+    string path_SigExt = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
     Color_t lineColors[6] = {kRed, kBlue, kGreen + 2, kMagenta, kCyan + 2, kOrange + 7};
 
-    vector<string> SignalExtractionVars = {"_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed"};
-    vector<string> TrackSelectionVars = {"_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60"};
-    vector<string> TopologicalSelectionVars = {"_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"};
+    TFile *fout = new TFile((path_SigExt + "SystematicPlots/SystematicUncertainties.root").c_str(), "RECREATE");
 
-    vector<int> nVarSigExt = {3, 2, 4, 2};    // total 11
-    vector<int> nVarTrk = {1, 2, 2};          // total 5
-    vector<int> nVarTop = {2, 1, 2, 2, 2, 2}; // total 11
+    vector<string> SignalExtractionVars = {"_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed", "_f0WidthFree", "_f2WidthFree"};
+    vector<string> TrackSelectionVars = {"_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60"};
+    vector<string> TopologicalSelectionVars = {"_cospa0p992", "_decay_rad1p0", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"};
+
+    vector<int> nVarSigExt = {3, 2, 3, 4};    // total 12
+    vector<int> nVarTrk = {2, 2};             // total 4
+    vector<int> nVarTop = {1, 1, 2, 2, 2, 2}; // total 10
 
     vector<string> SourcesSignalExtraction = {"Fit Range", "Normalization Range", "Fit Function", "Fit Parameters Free/Fixed"};
-    vector<string> SourcesTrackSelection = {"DCA to PV", "TPC PID", "TPC Min Clusters"};
+    vector<string> SourcesTrackSelection = {"TPC PID", "TPC Min Clusters"};
     vector<string> SourcesTopologicalSelection = {"CosPA", "Decay Radius", "DCA between Daughters", "Mass Tolerance", "Lambda Rejection", "Lifetime Cut"};
 
     // Check size matches
@@ -54,8 +58,9 @@ void systematics_pt()
 
     // We have to do variations in the mass and raw yield of f2(1525) and f0(1710) resonances
     // TFile *fDefault = new TFile((path + "/fits/FitParam.root").c_str(), "READ");
-    TFile *fDefault = new TFile((path + "/mult_0-100/Spectra/spectra_.root").c_str(), "READ");
-    if (fDefault->IsZombie())
+    TFile *fDefault = new TFile((path + "spectra.root").c_str(), "READ");
+    TFile *fDefault_SigExt = new TFile((path_SigExt + "spectra_Default.root").c_str(), "READ");
+    if (fDefault->IsZombie() || fDefault_SigExt->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
@@ -64,13 +69,26 @@ void systematics_pt()
     // TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hMass_1710");
     // TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1525");
     // TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("Mult_0_100/hYield_1710");
-    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass1525");
-    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass1710");
+
+    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
+    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
     TH1F *hYield_f1525_Default = (TH1F *)fDefault->Get("hYield1525Corrected");
     TH1F *hYield_f1710_Default = (TH1F *)fDefault->Get("hYield1710Corrected");
+
+    TH1F *hMass_f1525_SigExtDefault = (TH1F *)fDefault_SigExt->Get("hMass_1525");
+    TH1F *hMass_f1710_SigExtDefault = (TH1F *)fDefault_SigExt->Get("hMass_1710");
+    TH1F *hYield_f1525_SigExtDefault = (TH1F *)fDefault_SigExt->Get("hYield1525Corrected");
+    TH1F *hYield_f1710_SigExtDefault = (TH1F *)fDefault_SigExt->Get("hYield1710Corrected");
+
     if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hYield_f1525_Default == nullptr || hYield_f1710_Default == nullptr)
     {
-        cout << "Error: One of the default histograms not found!" << endl;
+        cout << "Error: One of the default histograms not found for trk and top sel!" << endl;
+        return;
+    }
+
+    if (hMass_f1525_SigExtDefault == nullptr || hMass_f1710_SigExtDefault == nullptr || hYield_f1525_SigExtDefault == nullptr || hYield_f1710_SigExtDefault == nullptr)
+    {
+        cout << "Error: One of the default histograms not found for signal extraction!" << endl;
         return;
     }
 
@@ -82,8 +100,7 @@ void systematics_pt()
     TFile *fVarTopologicalSelection[totalVariationsTopologicalSelection];
     for (int i = 0; i < totalVariationsSignalExtraction; i++)
     {
-        // fVarSignalExtraction[i] = new TFile((path + "/fits/FitParam" + SignalExtractionVars[i] + ".root").c_str(), "READ");
-        fVarSignalExtraction[i] = new TFile((path + "/mult_0-100/Spectra/spectra_" + SignalExtractionVars[i] + ".root").c_str(), "READ");
+        fVarSignalExtraction[i] = new TFile((path_SigExt + "/spectra" + SignalExtractionVars[i] + ".root").c_str(), "READ");
         if (fVarSignalExtraction[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << SignalExtractionVars[i] << endl;
@@ -93,7 +110,7 @@ void systematics_pt()
     for (int i = 0; i < totalVariationsTrackSelection; i++)
     {
         // fVarTrackSelection[i] = new TFile((path + TrackSelectionVars[i] + "/fits/FitParam" + TrackSelectionVars[i] + ".root").c_str(), "READ");
-        fVarTrackSelection[i] = new TFile((path + TrackSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TrackSelectionVars[i] + ".root").c_str(), "READ");
+        fVarTrackSelection[i] = new TFile((path + "/spectra" + TrackSelectionVars[i] + ".root").c_str(), "READ");
         if (fVarTrackSelection[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << TrackSelectionVars[i] << endl;
@@ -103,7 +120,7 @@ void systematics_pt()
     for (int i = 0; i < totalVariationsTopologicalSelection; i++)
     {
         // fVarTopologicalSelection[i] = new TFile((path + TopologicalSelectionVars[i] + "/fits/FitParam" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
-        fVarTopologicalSelection[i] = new TFile((path + TopologicalSelectionVars[i] + "/mult_0-100/Spectra/spectra_" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
+        fVarTopologicalSelection[i] = new TFile((path + "/spectra" + TopologicalSelectionVars[i] + ".root").c_str(), "READ");
         if (fVarTopologicalSelection[i]->IsZombie())
         {
             cout << "Error opening file for variation: " << TopologicalSelectionVars[i] << endl;
@@ -114,14 +131,16 @@ void systematics_pt()
     // Arrays for each category type
     string CanvasTypes[4] = {"Mass1525", "Mass1710", "Yield1525", "Yield1710"};
     // string histPaths[4] = {"Mult_0_100/hMass_1525", "Mult_0_100/hMass_1710", "Mult_0_100/hYield_1525", "Mult_0_100/hYield_1710"};
-    string histPaths[4] = {"hMass1525", "hMass1710", "hYield1525Corrected", "hYield1710Corrected"};
+    string histPaths[4] = {"hMass_1525", "hMass_1710", "hYield1525Corrected", "hYield1710Corrected"};
     TH1F *defaultHists[4] = {hMass_f1525_Default, hMass_f1710_Default, hYield_f1525_Default, hYield_f1710_Default};
+    TH1F *defaultHists_SigExt[4] = {hMass_f1525_SigExtDefault, hMass_f1710_SigExtDefault, hYield_f1525_SigExtDefault, hYield_f1710_SigExtDefault};
     string suffixes[4] = {"_Mass1525", "_Mass1710", "_Yield1525", "_Yield1710"};
 
     // Loop over 4 category types
     for (int typeIdx = 0; typeIdx < 4; typeIdx++)
     {
         TH1F *defaultHist = defaultHists[typeIdx];
+        TH1F *defaultHist_SigExt = defaultHists_SigExt[typeIdx];
         string histPath = histPaths[typeIdx];
         string suffix = suffixes[typeIdx];
         string canvasType = CanvasTypes[typeIdx];
@@ -145,13 +164,13 @@ void systematics_pt()
         cTopSelect_Barlow->Divide(4, 3);
 
         // Process variations for Signal Extraction
-        processVariations(fVarSignalExtraction, SignalExtractionVars, defaultHist, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
+        processVariations(fVarSignalExtraction, SignalExtractionVars, defaultHist_SigExt, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
         cout << "Size of relative uncertainty vector for signal extraction: " << hMassVar_relUncert_sigExt.size() << endl;
 
         if (saveRelUncertHisto)
         {
-            cSigExtract->SaveAs(Form("%s/fits/SystematicPlots/SignalExtrct_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cSigExtract_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/SignalExtrct_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cSigExtract->SaveAs(Form("%s/SystematicPlots/SignalExtrct_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+            cSigExtract_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/SignalExtrct_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
 
         // Process variations for Track Selection
@@ -159,8 +178,8 @@ void systematics_pt()
 
         if (saveRelUncertHisto)
         {
-            cTrackSelect->SaveAs(Form("%s/fits/SystematicPlots/TrackSelect_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cTrackSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/TrackSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cTrackSelect->SaveAs(Form("%s/SystematicPlots/TrackSelect_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+            cTrackSelect_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/TrackSelect_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
 
         // Process variations for Topological Selection
@@ -168,8 +187,8 @@ void systematics_pt()
 
         if (saveRelUncertHisto)
         {
-            cTopSelect->SaveAs(Form("%s/fits/SystematicPlots/TopologicalSelect_Sys_%s.png", path.c_str(), canvasType.c_str()));
-            cTopSelect_Barlow->SaveAs(Form("%s/fits/SystematicPlots/Barlow/TopologicalSelect_Barlow_%s.png", path.c_str(), canvasType.c_str()));
+            cTopSelect->SaveAs(Form("%s/SystematicPlots/TopologicalSelect_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+            cTopSelect_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/TopologicalSelect_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
 
         // Now lets calculate the average quadrature sum for each systematic source in signal extraction
@@ -201,7 +220,7 @@ void systematics_pt()
         if (typeIdx < 2)
             hSigExt_source1->SetMaximum(0.03);
         else
-            hSigExt_source1->SetMaximum(0.8);
+            hSigExt_source1->SetMaximum(0.5);
         hSigExt_source1->SetMinimum(0);
         hSigExt_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hSigExt_source1->Draw("HIST");
@@ -221,12 +240,12 @@ void systematics_pt()
         leg->AddEntry(hSigExt_source4, SourcesSignalExtraction[3].c_str(), "l");
         leg->AddEntry(hSigExt_total, "Total Systematic", "l");
         leg->Draw();
-        cSigExt_sys->SaveAs(Form("%s/fits/SystematicPlots/SignalExtrct_TotalSys_%s.png", path.c_str(), canvasType.c_str()));
+        cSigExt_sys->SaveAs(Form("%s/SystematicPlots/SignalExtrct_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Now lets calculate the average quadrature sum for each systematic source in track selection
         TH1F *hTrkSel_source1;
         TH1F *hTrkSel_source2;
-        TH1F *hTrkSel_source3;
+        // TH1F *hTrkSel_source3;
         TH1F *hTrkSel_total;
         vector<TH1F *> vec_trk_source1(hMassVar_relUncert_trackSel.begin(), hMassVar_relUncert_trackSel.begin() + nVarTrk[0]);
         vector<TH1F *> vec_trk_source2(hMassVar_relUncert_trackSel.begin() + nVarTrk[0],
@@ -236,8 +255,9 @@ void systematics_pt()
 
         averageQuadratureSum(vec_trk_source1, nVarTrk[0], hTrkSel_source1, Form("hTrkSel_AvgQuadSum_Source1_%s", suffix.c_str()));
         averageQuadratureSum(vec_trk_source2, nVarTrk[1], hTrkSel_source2, Form("hTrkSel_AvgQuadSum_Source2_%s", suffix.c_str()));
-        averageQuadratureSum(vec_trk_source3, nVarTrk[2], hTrkSel_source3, Form("hTrkSel_AvgQuadSum_Source3_%s", suffix.c_str()));
-        vector<TH1F *> vec_trk_total = {hTrkSel_source1, hTrkSel_source2, hTrkSel_source3};
+        // averageQuadratureSum(vec_trk_source3, nVarTrk[2], hTrkSel_source3, Form("hTrkSel_AvgQuadSum_Source3_%s", suffix.c_str()));
+        // vector<TH1F *> vec_trk_total = {hTrkSel_source1, hTrkSel_source2, hTrkSel_source3};
+        vector<TH1F *> vec_trk_total = {hTrkSel_source1, hTrkSel_source2};
         QuadratureSum(vec_trk_total, hTrkSel_total);
 
         TCanvas *cTrkSel_sys = new TCanvas("", "", 720, 720);
@@ -248,24 +268,24 @@ void systematics_pt()
         if (typeIdx < 2)
             hTrkSel_source1->SetMaximum(0.01);
         else
-            hTrkSel_source1->SetMaximum(0.8);
+            hTrkSel_source1->SetMaximum(0.5);
         hTrkSel_source1->SetMinimum(0);
         hTrkSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hTrkSel_source1->Draw("HIST");
         hTrkSel_source2->SetLineColor(lineColors[1]);
         hTrkSel_source2->Draw("HIST SAME");
-        hTrkSel_source3->SetLineColor(lineColors[2]);
-        hTrkSel_source3->Draw("HIST SAME");
+        // hTrkSel_source3->SetLineColor(lineColors[2]);
+        // hTrkSel_source3->Draw("HIST SAME");
         hTrkSel_total->SetLineColor(kBlack);
         hTrkSel_total->SetLineWidth(3);
         hTrkSel_total->Draw("HIST SAME");
         TLegend *legTrk = new TLegend(0.55, 0.65, 0.85, 0.85);
         legTrk->AddEntry(hTrkSel_source1, SourcesTrackSelection[0].c_str(), "l");
         legTrk->AddEntry(hTrkSel_source2, SourcesTrackSelection[1].c_str(), "l");
-        legTrk->AddEntry(hTrkSel_source3, SourcesTrackSelection[2].c_str(), "l");
+        // legTrk->AddEntry(hTrkSel_source3, SourcesTrackSelection[2].c_str(), "l");
         legTrk->AddEntry(hTrkSel_total, "Total Systematic", "l");
         legTrk->Draw();
-        cTrkSel_sys->SaveAs(Form("%s/fits/SystematicPlots/TrackSelect_TotalSys_%s.png", path.c_str(), canvasType.c_str()));
+        cTrkSel_sys->SaveAs(Form("%s/SystematicPlots/TrackSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Now lets calculate the average quadrature sum for each systematic source in topological selection
         TH1F *hTopSel_source1;
@@ -304,7 +324,7 @@ void systematics_pt()
         if (typeIdx < 2)
             hTopSel_source1->SetMaximum(0.02);
         else
-            hTopSel_source1->SetMaximum(0.8);
+            hTopSel_source1->SetMaximum(0.5);
         hTopSel_source1->SetMinimum(0);
         hTopSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
         hTopSel_source1->Draw("HIST");
@@ -330,7 +350,7 @@ void systematics_pt()
         legTop->AddEntry(hTopSel_source6, SourcesTopologicalSelection[5].c_str(), "l");
         legTop->AddEntry(hTopSel_total, "Total Systematic", "l");
         legTop->Draw();
-        cTopSel_sys->SaveAs(Form("%s/fits/SystematicPlots/TopologicalSelect_TotalSys_%s.png", path.c_str(), canvasType.c_str()));
+        cTopSel_sys->SaveAs(Form("%s/SystematicPlots/TopologicalSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Combining all three systematic categories to get total systematic uncertainty
         TH1F *hTotalSys;
@@ -342,9 +362,9 @@ void systematics_pt()
         hSigExt_total->SetTitle(Form("%s", canvasType.c_str()));
         hSigExt_total->SetLineColor(lineColors[0]);
         if (typeIdx < 2)
-            hSigExt_total->SetMaximum(0.15);
+            hSigExt_total->SetMaximum(0.05);
         else
-            hSigExt_total->SetMaximum(0.8);
+            hSigExt_total->SetMaximum(0.5);
         hSigExt_total->SetMinimum(0);
         hSigExt_total->GetYaxis()->SetTitle("Fractional Uncertainty");
         hSigExt_total->Draw("HIST");
@@ -361,7 +381,50 @@ void systematics_pt()
         legTotal->AddEntry(hTopSel_total, "Topological Selection", "l");
         legTotal->AddEntry(hTotalSys, "Total Systematic", "l");
         legTotal->Draw();
-        cTotalSys->SaveAs(Form("%s/fits/SystematicPlots/Total_Systematics_%s.png", path.c_str(), canvasType.c_str()));
+        cTotalSys->SaveAs(Form("%s/SystematicPlots/Total_Systematics_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+
+        // Smoothening of the total systematic uncertainty histogram for better visualization
+        TH1F *hSignalExtSmooth = (TH1F *)hSigExt_total->Clone(Form("hSignalExtSmooth_%s", suffix.c_str()));
+        Smoothening(hSignalExtSmooth, 2);
+        TH1F *hTrkSelSmooth = (TH1F *)hTrkSel_total->Clone(Form("hTrkSelSmooth_%s", suffix.c_str()));
+        Smoothening(hTrkSelSmooth, 2);
+        TH1F *hTopSelSmooth = (TH1F *)hTopSel_total->Clone(Form("hTopSelSmooth_%s", suffix.c_str()));
+        Smoothening(hTopSelSmooth, 2);
+        TH1F *hTotalSysSmooth;
+        vector<TH1F *> vec_smooth = {hSignalExtSmooth, hTrkSelSmooth, hTopSelSmooth};
+        QuadratureSum(vec_smooth, hTotalSysSmooth);
+
+        TCanvas *cTotalSysSmooth = new TCanvas("", "", 720, 720);
+        SetCanvasStyle(cTotalSysSmooth, 0.15, 0.03, 0.06, 0.15);
+        SetHistoQA(hSignalExtSmooth);
+        hSignalExtSmooth->SetTitle(Form("%s", canvasType.c_str()));
+        hSignalExtSmooth->SetLineColor(lineColors[0]);
+        if (typeIdx < 2)
+            hSignalExtSmooth->SetMaximum(0.05);
+        else
+            hSignalExtSmooth->SetMaximum(0.5);
+        hSignalExtSmooth->SetMinimum(0);
+        hSignalExtSmooth->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hSignalExtSmooth->Draw("HIST");
+        hTrkSelSmooth->SetLineColor(lineColors[1]);
+        hTrkSelSmooth->Draw("HIST SAME");
+        hTopSelSmooth->SetLineColor(lineColors[2]);
+        hTopSelSmooth->Draw("HIST SAME");
+        hTotalSysSmooth->SetLineColor(kBlack);
+        hTotalSysSmooth->SetLineWidth(3);
+        hTotalSysSmooth->Draw("HIST SAME");
+        legTotal->Draw();
+        cTotalSysSmooth->SaveAs(Form("%s/SystematicPlots/Total_Systematics_Smooth_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+
+        fout->cd();
+        // hSigExt_total->Write(Form("SigExt_TotalSys%s", suffix.c_str()));
+        // hTrkSel_total->Write(Form("TrkSel_TotalSys%s", suffix.c_str()));
+        // hTopSel_total->Write(Form("TopSel_TotalSys%s", suffix.c_str()));
+        // hTotalSys->Write(Form("TotalSys%s", suffix.c_str()));
+        // hSignalExtSmooth->Write(Form("SigExt_TotalSys_Smooth%s", suffix.c_str()));
+        // hTrkSelSmooth->Write(Form("TrkSel_TotalSys_Smooth%s", suffix.c_str()));
+        // hTopSelSmooth->Write(Form("TopSel_TotalSys_Smooth%s", suffix.c_str()));
+        hTotalSysSmooth->Write(Form("TotalSys_Smooth%s", suffix.c_str()));
     }
 }
 //==========================================================================
@@ -384,7 +447,7 @@ void checkVectorSizeMatch(const vector<string> &varNames, const vector<int> &nVa
     }
 }
 
-void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUncertainty)
+void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUncertainty, string suffix)
 {
     int nBins = hDefault->GetNbinsX();
     for (int bin = 1; bin <= nBins; bin++)
@@ -394,6 +457,10 @@ void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUn
         if (defaultValue != 0)
         {
             float relUncertainty = fabs(variationValue - defaultValue) / defaultValue;
+            if (suffix == "_Yield1525" || suffix == "_Yield1710")
+            {
+                relUncertainty = relUncertainty / 1.1;
+            }
             hRelUncertainty->SetBinContent(bin, relUncertainty);
         }
     }
@@ -438,7 +505,7 @@ void checkBarlowSignificance(TH1F *hDefault, TH1F *hVariation, TH1F *hBarlow, st
                        : 0;
 
     bool cond1 = (std::abs(mean) < 0.1);
-    bool cond2 = (rms < 1.1);
+    bool cond2 = (rms < 1.0);
     bool cond3 = (frac1 > 0.60);
     bool cond4 = (frac2 > 0.90);
 
@@ -513,14 +580,16 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
         // Create relative uncertainty histogram and calculate
         TH1F *hRelUncert = (TH1F *)defaultHist->Clone(Form("hRelUncert_%s_%s", suffix.c_str(), varNames[i].c_str()));
         hRelUncert->SetTitle(Form("Variation: %s", varNames[i].c_str()));
-        
-        calculateRelativeUncertainty(defaultHist, hist, hRelUncert);
+
+        calculateRelativeUncertainty(defaultHist, hist, hRelUncert, suffix);
+        // Smoothening(hRelUncert);
         resultVector->push_back(hRelUncert);
-        
+
         // Draw on canvas
         canvas->cd(i + 1);
         SetHistoQA(hRelUncert);
         hRelUncert->Draw("HIST");
+        lat.SetTextColor(kBlack);
         lat.DrawLatex(0.2, 0.6, Form("%s", varNames[i].c_str()));
     }
 }
@@ -581,5 +650,45 @@ void QuadratureSum(const vector<TH1F *> &hVariationHistos, TH1F *&hQuadratureSum
             sumSquares += value * value;
         }
         hQuadratureSum->SetBinContent(bin, sqrt(sumSquares));
+    }
+}
+
+void Smoothening(TH1F *h, int iterations = 2)
+{
+
+    int nBins = h->GetNbinsX();
+    vector<double> smoothedValues(nBins, 0.0);
+
+    // Apply a simple moving average smoothing with a window size of 3
+    // Perform multiple iterations of smoothing
+    for (int iter = 0; iter < iterations; iter++)
+    {
+        for (int bin = 1; bin <= nBins; bin++)
+        {
+            double sum = 0.0;
+            if (bin == 1)
+            {
+                // sum = h->GetBinContent(bin) + h->GetBinContent(bin + 1);
+                // smoothedValues[bin - 1] = sum / 2.0;
+                smoothedValues[bin - 1] = h->GetBinContent(bin);
+            }
+            else if (bin == nBins)
+            {
+                // sum = h->GetBinContent(bin - 1) + h->GetBinContent(bin);
+                // smoothedValues[bin - 1] = sum / 2.0;
+                smoothedValues[bin - 1] = h->GetBinContent(bin);
+            }
+            else
+            {
+                sum = h->GetBinContent(bin - 1) + h->GetBinContent(bin) + h->GetBinContent(bin + 1);
+                smoothedValues[bin - 1] = sum / 3.0;
+            }
+        }
+        // Update histogram with smoothed values
+        for (int bin = 1; bin <= nBins; bin++)
+        {
+            h->SetBinContent(bin, smoothedValues[bin - 1]);
+        }
+        smoothedValues.assign(nBins, 0.0); // Reset for next iteration
     }
 }

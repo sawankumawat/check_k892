@@ -32,7 +32,7 @@ int FindHighestIndex(TFile *file, const string &baseHistoName)
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
-void plotReweightedMC()
+void plotReweightedSpectra()
 {
     bool otherQAPlots = false;
     // Note that the main source of systematic i.e. signal extraction is still remaining to be done

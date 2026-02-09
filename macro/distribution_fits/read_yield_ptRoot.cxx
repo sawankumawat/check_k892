@@ -18,16 +18,16 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 void read_yield_ptRoot()
 {
     // Note that the main source of systematic i.e. signal extraction is still remaining to be done
-    vector<string> variations = {"_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
+    vector<string> variations = {"", "_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
     int totalVar = variations.size();
 
-    // vector<string> variationSigExt = {"", "_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed"}; 
+    vector<string> variationSigExt = {"_Default", "_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_ConstWidth", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed", "_f0WidthFree", "_f2WidthFree"}; // All signal extraction variations
     // vector<string> variationSigExt = {"_CoherentSum"}; // Coherent sum is placed here temporarily
-    vector<string> variationSigExt = {"_temp"}; // Coherent sum is placed here temporarily
+    // vector<string> variationSigExt = {"_temp"}; // Coherent sum is placed here temporarily
 
     int totalVarSigExt = variationSigExt.size();
 
-    for (int ivar = 0; ivar < 1; ivar++)
+    for (int ivar = 4; ivar < 5; ivar++)
     // for (int ivar = 0; ivar < totalVar; ivar++)
     // for (int ivar = 0; ivar < totalVarSigExt; ivar++)
     {
@@ -36,24 +36,15 @@ void read_yield_ptRoot()
         cout << "Current variation is " << CurrentVariation << endl;
         // gStyle->SetOptStat(0);
 
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/";
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/WidthFree/";
 
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent";
 
-        TFile *inputFile;
-        if (CurrentVariation == variationSigExt[ivar])
-        {
-            inputFile = new TFile((path + "/fits/FitParam" + CurrentVariation + ".root").c_str(), "READ"); // for signal extraction variations
-        }
-        else
-        {
-            path = path + CurrentVariation;
-            inputFile = new TFile((path + "/fits/FitParam" + CurrentVariation + ".root").c_str(), "READ"); // for other systematics variations
-        }
+        TFile *inputFile = new TFile((path + "/FitParam" + CurrentVariation + ".root").c_str(), "READ");
         if (inputFile->IsZombie())
         {
-            cerr << "Error opening data file " << (path + CurrentVariation + "/fits/FitParam" + CurrentVariation + ".root") << endl;
+            cerr << "Error opening data file " << inputFile->GetName() << endl;
             return;
         }
 
@@ -69,7 +60,7 @@ void read_yield_ptRoot()
             std::cout << "Folder " << savePath << " created successfully." << std::endl;
         }
 
-        float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};              // 2022 dataset
+        float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};  // 2022 dataset
         float ptBins2[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
         // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
         // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
@@ -92,8 +83,12 @@ void read_yield_ptRoot()
 
         // efficiency file
         // TFile *feff = new TFile("/home/sawan/check_k892/mc/LHC24l1/463655.root", "read");
-        TFile *feff_f0 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f0_sys.root", "read");
-        TFile *feff_f2 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f0_sys.root", "read"); // FIXME: change to f2 efficiency file when available
+
+        // TFile *feff_f0 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f0_sys.root", "read");
+        // TFile *feff_f2 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f2_sys.root", "read");
+
+        TFile *feff_f0 = new TFile("/home/sawan/check_k892/mc/LHC24l1/sys_all.root", "read");
+        TFile *feff_f2 = new TFile("/home/sawan/check_k892/mc/LHC24l1/sys_all.root", "read");
         if (feff_f0->IsZombie() || feff_f2->IsZombie())
         {
             cout << "Error opening MC file" << endl;
@@ -103,16 +98,16 @@ void read_yield_ptRoot()
         string histpathf2;
         if (CurrentVariation == variationSigExt[ivar])
         {
-            histpath = "higher-mass-resonances/hMChists";
-            histpathf2 = "higher-mass-resonances/hMChists";
+            histpath = "higher-mass-resonances_id46237/hMChists";
+            histpathf2 = "higher-mass-resonances_id46240/hMChists";
             // cout << "MC hist path for f0: " << histpath << endl;
         }
         else
         {
-            histpath = Form("higher-mass-resonances%s/hMChists", CurrentVariation.c_str());
-            histpathf2 = Form("higher-mass-resonances%s/hMChists", CurrentVariation.c_str());
+            histpath = Form("higher-mass-resonances%s_id46239/hMChists", CurrentVariation.c_str());
+            histpathf2 = Form("higher-mass-resonances%s_id46242/hMChists", CurrentVariation.c_str());
         }
-        TFile *fOutput = new TFile(Form("%s/spectra_%s.root", outputPath.Data(), CurrentVariation.c_str()), "RECREATE");
+        TFile *fOutput = new TFile(Form("%s/spectra%s.root", outputPath.Data(), CurrentVariation.c_str()), "RECREATE");
 
         THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
         THnSparseD *recpt1f0 = (THnSparseD *)feff_f0->Get(Form("%s/Recf1710_pt2", histpath.c_str()));
@@ -286,43 +281,43 @@ void read_yield_ptRoot()
             }
         }
 
-        TCanvas *cMass1710 = new TCanvas("cMass1710", "Mass vs #it{p}_{T} for f_{0}(1710)", 720, 720);
-        SetCanvasStyle(cMass1710, 0.18, 0.03, 0.05, 0.14);
-        // gPad->SetLogy();
-        // SetHistoQA(hMass1710);
-        hMass1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hMass1710->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-        hMass1710->GetYaxis()->SetTitleOffset(1.6);
-        // hMass1710->GetYaxis()->SetRangeUser(1.56, 1.89);
-        hMass1710->SetLineColor(kBlue);
-        hMass1710->SetMarkerColor(kBlue);
-        hMass1710->SetMarkerStyle(20);
-        hMass1710->SetMarkerSize(1.5);
-        hMass1710->Write();
-        hMass1710->Draw("pe");
-        TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
-        line1710Mass->SetLineStyle(2);
-        line1710Mass->SetLineColor(2);
-        line1710Mass->Draw("same");
-        TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
-        band1710Mass->SetFillColorAlpha(kRed, 0.2); // shaded
-        band1710Mass->SetLineColor(kRed);
-        band1710Mass->SetLineWidth(1);
-        band1710Mass->Draw("same");
-        TLegend *leg1710Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
-        leg1710Mass->SetBorderSize(0);
-        leg1710Mass->SetFillStyle(0);
-        leg1710Mass->SetTextSize(0.035);
-        leg1710Mass->AddEntry((TObject *)0, "ALICE", "");
-        leg1710Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-        leg1710Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-        leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "p");
-        // leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
+        // TCanvas *cMass1710 = new TCanvas("cMass1710", "Mass vs #it{p}_{T} for f_{0}(1710)", 720, 720);
+        // SetCanvasStyle(cMass1710, 0.18, 0.03, 0.05, 0.14);
+        // // gPad->SetLogy();
+        // // SetHistoQA(hMass1710);
+        // hMass1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hMass1710->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+        // hMass1710->GetYaxis()->SetTitleOffset(1.6);
+        // // hMass1710->GetYaxis()->SetRangeUser(1.56, 1.89);
+        // hMass1710->SetLineColor(kBlue);
+        // hMass1710->SetMarkerColor(kBlue);
+        // hMass1710->SetMarkerStyle(20);
+        // hMass1710->SetMarkerSize(1.5);
+        hMass1710->Write("hMass_1710");
+        // hMass1710->Draw("pe");
+        // TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
+        // line1710Mass->SetLineStyle(2);
+        // line1710Mass->SetLineColor(2);
+        // line1710Mass->Draw("same");
+        // TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
+        // band1710Mass->SetFillColorAlpha(kRed, 0.2); // shaded
+        // band1710Mass->SetLineColor(kRed);
+        // band1710Mass->SetLineWidth(1);
+        // band1710Mass->Draw("same");
+        // TLegend *leg1710Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
+        // leg1710Mass->SetBorderSize(0);
+        // leg1710Mass->SetFillStyle(0);
+        // leg1710Mass->SetTextSize(0.035);
+        // leg1710Mass->AddEntry((TObject *)0, "ALICE", "");
+        // leg1710Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+        // leg1710Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+        // leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "p");
+        // // leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
+        // // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
+        // band1710Mass->SetLineWidth(0);
         // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
-        band1710Mass->SetLineWidth(0);
-        leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
-        leg1710Mass->Draw();
-        cMass1710->SaveAs(savePath + "/Mass1710.png");
+        // leg1710Mass->Draw();
+        // cMass1710->SaveAs(savePath + "/Mass1710.png");
 
         // TCanvas *cWidth1710 = new TCanvas("cWidth1710", "Width vs #it{p}_{T} for f_{0}(1710)", 720, 720);
         // SetCanvasStyle(cWidth1710, 0.18, 0.03, 0.05, 0.14);
@@ -333,7 +328,7 @@ void read_yield_ptRoot()
         // hWidth1710->GetYaxis()->SetTitleOffset(1.6);
         // hWidth1710->GetYaxis()->SetRangeUser(0.05, 0.32);
         // hWidth1710->SetMarkerStyle(21);
-        // hWidth1710->Write();
+        hWidth1710->Write("hWidth_1710");
         // hWidth1710->Draw("pe");
         // TLine *line1710Width = new TLine(0, f1710Width, 12, f1710Width);
         // line1710Width->SetLineStyle(2);
@@ -346,46 +341,46 @@ void read_yield_ptRoot()
         // leg1710Mass->Draw();
         // cWidth1710->SaveAs(savePath + "/Width1710.png");
 
-        TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs #it{p}_{T} for f_{2}(1525)", 720, 720);
-        SetCanvasStyle(cMass1525, 0.18, 0.03, 0.05, 0.14);
-        // gPad->SetLogy();
-        // SetHistoQA(hMass1525);
-        hMass1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hMass1525->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-        hMass1525->GetYaxis()->SetTitleOffset(1.6);
-        // hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
-        hMass1525->SetMarkerStyle(20);
-        hMass1525->SetMarkerSize(1.5);
-        hMass1525->SetLineColor(kBlue);
-        hMass1525->SetMarkerColor(kBlue);
-        hMass1525->Write();
-        hMass1525->Draw("pe");
-        // TLine *line1525Mass = new TLine(0, f1525Mass, 12, f1525Mass);
+        // TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs #it{p}_{T} for f_{2}(1525)", 720, 720);
+        // SetCanvasStyle(cMass1525, 0.18, 0.03, 0.05, 0.14);
+        // // gPad->SetLogy();
+        // // SetHistoQA(hMass1525);
+        // hMass1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hMass1525->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+        // hMass1525->GetYaxis()->SetTitleOffset(1.6);
+        // // hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
+        // hMass1525->SetMarkerStyle(20);
+        // hMass1525->SetMarkerSize(1.5);
+        // hMass1525->SetLineColor(kBlue);
+        // hMass1525->SetMarkerColor(kBlue);
+        hMass1525->Write("hMass_1525");
+        // hMass1525->Draw("pe");
+        // // TLine *line1525Mass = new TLine(0, f1525Mass, 12, f1525Mass);
+        // // line1525Mass->SetLineStyle(2);
+        // // line1525Mass->SetLineColor(2);
+        // // line1525Mass->Draw();
+        // TBox *band1525Mass = new TBox(1, f1525Mass - f1525MassErr, 15, f1525Mass + f1525MassErr);
+        // band1525Mass->SetFillColorAlpha(kRed, 0.2); // shaded
+        // band1525Mass->SetLineColor(kRed);
+        // band1525Mass->SetLineWidth(1);
+        // band1525Mass->Draw("same");
+        // // leg1710Mass->Draw();
+        // TLine *line1525Mass = new TLine(1, f1525Mass, 15, f1525Mass);
         // line1525Mass->SetLineStyle(2);
         // line1525Mass->SetLineColor(2);
         // line1525Mass->Draw();
-        TBox *band1525Mass = new TBox(1, f1525Mass - f1525MassErr, 15, f1525Mass + f1525MassErr);
-        band1525Mass->SetFillColorAlpha(kRed, 0.2); // shaded
-        band1525Mass->SetLineColor(kRed);
-        band1525Mass->SetLineWidth(1);
-        band1525Mass->Draw("same");
-        // leg1710Mass->Draw();
-        TLine *line1525Mass = new TLine(1, f1525Mass, 15, f1525Mass);
-        line1525Mass->SetLineStyle(2);
-        line1525Mass->SetLineColor(2);
-        line1525Mass->Draw();
-        TLegend *leg1525Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
-        leg1525Mass->SetBorderSize(0);
-        leg1525Mass->SetFillStyle(0);
-        leg1525Mass->SetTextSize(0.035);
-        leg1525Mass->AddEntry((TObject *)0, "ALICE", "");
-        leg1525Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-        leg1525Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-        leg1525Mass->AddEntry(hMass1525, "f_{2}'(1525)", "p");
-        band1525Mass->SetLineWidth(0);
-        leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
-        leg1525Mass->Draw();
-        cMass1525->SaveAs(savePath + "/Mass1525.png");
+        // TLegend *leg1525Mass = new TLegend(0.45, 0.67, 0.9, 0.93);
+        // leg1525Mass->SetBorderSize(0);
+        // leg1525Mass->SetFillStyle(0);
+        // leg1525Mass->SetTextSize(0.035);
+        // leg1525Mass->AddEntry((TObject *)0, "ALICE", "");
+        // leg1525Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+        // leg1525Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+        // leg1525Mass->AddEntry(hMass1525, "f_{2}'(1525)", "p");
+        // band1525Mass->SetLineWidth(0);
+        // leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
+        // leg1525Mass->Draw();
+        // cMass1525->SaveAs(savePath + "/Mass1525.png");
 
         // TCanvas *cMass1270 = new TCanvas("cMass1270", "Mass vs #it{p}_{T} for f_{2}(1270)", 720, 720);
         // SetCanvasStyle(cMass1270, 0.18, 0.03, 0.05, 0.14);
@@ -396,7 +391,7 @@ void read_yield_ptRoot()
         // hMass1270->GetYaxis()->SetTitleOffset(1.6);
         // hMass1270->GetYaxis()->SetRangeUser(1.1, 1.4);
         // hMass1270->SetMarkerStyle(20);
-        // hMass1270->Write();
+        // hMass1270->Write("hMass_1270");
         // hMass1270->Draw("pe");
         // TLine *line1270Mass = new TLine(0, f1270Mass, 12, f1270Mass);
         // line1270Mass->SetLineStyle(2);
@@ -414,7 +409,7 @@ void read_yield_ptRoot()
         // hMass1320->GetYaxis()->SetTitleOffset(1.6);
         // hMass1320->GetYaxis()->SetRangeUser(1.15, 1.45);
         // hMass1320->SetMarkerStyle(20);
-        // hMass1320->Write();
+        // hMass1320->Write("hMass_1320");
         // hMass1320->Draw("pe");
         // TLine *line1320Mass = new TLine(0, a1320Mass, 12, a1320Mass);
         // line1320Mass->SetLineStyle(2);
@@ -423,33 +418,35 @@ void read_yield_ptRoot()
         // leg1710Mass->Draw();
         // cMass1320->SaveAs(savePath + "/Mass1320.png");
 
-        TCanvas *cSignificance = new TCanvas("cSignificance", "Significance vs #it{p}_{T}", 720, 720);
-        SetCanvasStyle(cSignificance, 0.18, 0.03, 0.05, 0.14);
-        // gPad->SetLogy();
-        SetHistoQA(hSignificance1710);
-        SetHistoQA(hSignificance1525);
-        hSignificance1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hSignificance1710->GetYaxis()->SetTitle("Significance");
-        hSignificance1710->GetYaxis()->SetTitleOffset(1.6);
-        // hSignificance1710->SetMaximum(TMath::Max(hSignificance1710->GetMaximum(), hSignificance1525->GetMaximum()) * 1.1);
-        hSignificance1710->SetMaximum(101);
-        hSignificance1710->SetLineColor(kRed);
-        hSignificance1710->SetLineWidth(3);
-        hSignificance1710->Draw();
-        hSignificance1525->SetLineColor(kBlue);
-        hSignificance1525->SetLineWidth(3);
-        hSignificance1525->Draw("same");
-        TLegend *legSignificance = new TLegend(0.5, 0.63, 0.91, 0.9);
-        legSignificance->SetBorderSize(0);
-        legSignificance->SetFillStyle(0);
-        legSignificance->SetTextSize(0.035);
-        legSignificance->AddEntry((TObject *)0, "ALICE", "");
-        legSignificance->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-        legSignificance->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-        legSignificance->AddEntry(hSignificance1710, "f_{0}(1710)", "l");
-        legSignificance->AddEntry(hSignificance1525, "f_{2}'(1525)", "l");
-        legSignificance->Draw();
-        cSignificance->SaveAs(savePath + "/Significancef0f2.png");
+        // TCanvas *cSignificance = new TCanvas("cSignificance", "Significance vs #it{p}_{T}", 720, 720);
+        // SetCanvasStyle(cSignificance, 0.18, 0.03, 0.05, 0.14);
+        // // gPad->SetLogy();
+        // SetHistoQA(hSignificance1710);
+        // SetHistoQA(hSignificance1525);
+        // hSignificance1710->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        // hSignificance1710->GetYaxis()->SetTitle("Significance");
+        // hSignificance1710->GetYaxis()->SetTitleOffset(1.6);
+        // // hSignificance1710->SetMaximum(TMath::Max(hSignificance1710->GetMaximum(), hSignificance1525->GetMaximum()) * 1.1);
+        // hSignificance1710->SetMaximum(101);
+        // hSignificance1710->SetLineColor(kRed);
+        // hSignificance1710->SetLineWidth(3);
+        hSignificance1710->Write("hSignificance_1710");
+        hSignificance1525->Write("hSignificance_1525");
+        // hSignificance1710->Draw();
+        // hSignificance1525->SetLineColor(kBlue);
+        // hSignificance1525->SetLineWidth(3);
+        // hSignificance1525->Draw("same");
+        // TLegend *legSignificance = new TLegend(0.5, 0.63, 0.91, 0.9);
+        // legSignificance->SetBorderSize(0);
+        // legSignificance->SetFillStyle(0);
+        // legSignificance->SetTextSize(0.035);
+        // legSignificance->AddEntry((TObject *)0, "ALICE", "");
+        // legSignificance->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+        // legSignificance->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+        // legSignificance->AddEntry(hSignificance1710, "f_{0}(1710)", "l");
+        // legSignificance->AddEntry(hSignificance1525, "f_{2}'(1525)", "l");
+        // legSignificance->Draw();
+        // cSignificance->SaveAs(savePath + "/Significancef0f2.png");
 
         TCanvas *cYieldCorrectedf1525 = new TCanvas("cYieldCorrectedf1525", "Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
         SetCanvasStyle(cYieldCorrectedf1525, 0.18, 0.03, 0.05, 0.14);
@@ -464,7 +461,7 @@ void read_yield_ptRoot()
         // hYield1525Corrected->SetMinimum(-2e-7);
         hYield1525Corrected->Write();
         hYield1525Corrected->Draw("pe");
-        cYieldCorrectedf1525->SaveAs(savePath + ("/CorrectedYieldf2" + CurrentVariation + ".png").c_str());
+        // cYieldCorrectedf1525->SaveAs(savePath + ("/CorrectedYieldf2" + CurrentVariation + ".png").c_str());
 
         TCanvas *cYieldCorrected1710 = new TCanvas("cYieldCorrected1710", "Yield vs #it{p}_{T} for f_{0}(1710)", 720, 720);
         SetCanvasStyle(cYieldCorrected1710, 0.18, 0.03, 0.05, 0.14);
@@ -479,7 +476,7 @@ void read_yield_ptRoot()
         // hYield1710Corrected->SetMinimum(-2e-7);
         hYield1710Corrected->Write();
         hYield1710Corrected->Draw("pe");
-        cYieldCorrected1710->SaveAs(savePath + ("/CorrectedYieldf0" + CurrentVariation + ".png").c_str());
+        // cYieldCorrected1710->SaveAs(savePath + ("/CorrectedYieldf0" + CurrentVariation + ".png").c_str());
 
         // TCanvas *cYieldRatio = new TCanvas("cYieldRatio", "Yield ratio vs #it{p}_{T} for f_{0}(1710)/f_{2}'(1525)", 720, 720);
         // SetCanvasStyle(cYieldRatio, 0.18, 0.03, 0.05, 0.14);
@@ -536,7 +533,7 @@ void read_yield_ptRoot()
         legEff->AddEntry(hefficiencyf0, "f_{0}(1710)", "p");
         legEff->AddEntry(hefficiencyf2, "f_{2}'(1525)", "p");
         legEff->Draw();
-        cEfficiencyf0f2->SaveAs(savePath + ("/Efficiencyf0f2" + CurrentVariation + ".png").c_str());
+        // cEfficiencyf0f2->SaveAs(savePath + ("/Efficiencyf0f2" + CurrentVariation + ".png").c_str());
 
         TCanvas *cRawYieldf2 = new TCanvas("cRawYieldf2", "Raw #it{p}_{T} distribution for f_{2}(1525)", 720, 720);
         SetCanvasStyle(cRawYieldf2, 0.18, 0.03, 0.05, 0.14);
@@ -563,7 +560,7 @@ void read_yield_ptRoot()
         legend2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
         legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "p");
         legend2->Draw();
-        cRawYieldf2->SaveAs(savePath + ("/RawYieldf2" + CurrentVariation + ".png").c_str());
+        // cRawYieldf2->SaveAs(savePath + ("/RawYieldf2" + CurrentVariation + ".png").c_str());
 
         TCanvas *cRawYieldf0 = new TCanvas("cRawYieldf0", "Raw #it{p}_{T} distribution for f_{0}(1710)", 720, 720);
         SetCanvasStyle(cRawYieldf0, 0.18, 0.03, 0.05, 0.14);
@@ -590,7 +587,7 @@ void read_yield_ptRoot()
         legend3->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
         legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "p");
         legend3->Draw();
-        cRawYieldf0->SaveAs(savePath + ("/RawYieldf0" + CurrentVariation + ".png").c_str());
+        // cRawYieldf0->SaveAs(savePath + ("/RawYieldf0" + CurrentVariation + ".png").c_str());
 
         TH1F *h1 = (TH1F *)hYield1525Corrected->Clone("h1");
         TH1F *h2 = (TH1F *)hYield1525Corrected->Clone("h2");
@@ -649,7 +646,7 @@ void read_yield_ptRoot()
         fitFcn->Draw("l same");
         legend2->AddEntry(fitFcn, "Levy-Tsallis fit", "l");
         legend2->Draw();
-        cCorrectedf2Fit->SaveAs(savePath + ("/LevyFitf2" + CurrentVariation + ".png").c_str());
+        // cCorrectedf2Fit->SaveAs(savePath + ("/LevyFitf2" + CurrentVariation + ".png").c_str());
 
         TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
         SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
@@ -668,7 +665,7 @@ void read_yield_ptRoot()
         fitFcn2->Draw("l same");
         legend3->AddEntry(fitFcn2, "Levy-Tsallis fit", "l");
         legend3->Draw();
-        cCorrectedf0Fit->SaveAs(savePath + ("/LevyFitf0" + CurrentVariation + ".png").c_str());
+        // cCorrectedf0Fit->SaveAs(savePath + ("/LevyFitf0" + CurrentVariation + ".png").c_str());
 
         TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
         if (flightFlavourHadrons->IsZombie())
@@ -881,7 +878,7 @@ void read_yield_ptRoot()
         legend4->AddEntry(marker_f0, "f_{0}(1710) (13.6 TeV)", "p");
         legend4->AddEntry(pol1_meson, "Pol 1", "l");
         legend4->Draw();
-        cMeanPt->SaveAs(savePath + ("/MeanPt_vs_Mass" + CurrentVariation + ".png").c_str());
+        // cMeanPt->SaveAs(savePath + ("/MeanPt_vs_Mass" + CurrentVariation + ".png").c_str());
 
         TGraphErrors *gMeanPtBothTemp = new TGraphErrors();
         gMeanPtBothTemp->SetPoint(0, 1.5173, hout->GetBinContent(5)); // PDG mass of f2(1525) is 1.5173GeV/c2
@@ -897,9 +894,9 @@ void read_yield_ptRoot()
         cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
 
         //====Lets now rebate the MC===========
-        TFile *fReweight = new TFile(Form("%s/ReweighFacf0_%s.root", outputPath.Data(), CurrentVariation.c_str()), "recreate");
+        TFile *fReweight = new TFile(Form("%s/ReweighFacf0%s.root", outputPath.Data(), CurrentVariation.c_str()), "recreate");
         int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
-        TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_%s.root", outputPath.Data(), CurrentVariation.c_str()), "recreate");
+        TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2%s.root", outputPath.Data(), CurrentVariation.c_str()), "recreate");
         int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
     }
 }

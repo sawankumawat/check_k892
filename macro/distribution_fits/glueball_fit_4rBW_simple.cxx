@@ -35,13 +35,13 @@ void glueball_fit_4rBW_simple()
         "", "_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
     int totalVar = variations.size();
 
-    for (int isysvars = 2; isysvars < 3; isysvars++)
+    for (int isysvars = 0; isysvars < 1; isysvars++)
     {
 
         //****************systematics train*******************************
-        const string kvariation1 = variations[isysvars];
+        // const string kvariation1 = variations[isysvars];
         //======== For fitting and normalization range variations ==========
-        // const string kvariation1 = "_Default";
+        const string kvariation1 = "_Default2";
         // const string kvariation1 = "_fitLow1p07";
         // const string kvariation1 = "_fitHigh2p17";
         // const string kvariation1 = "_fitHigh2p25"; // Low fit is 1.045 (without it same as default)
@@ -58,13 +58,13 @@ void glueball_fit_4rBW_simple()
         // const string kvariation1 = "_CoherentSum";
         // const string kvariation1 = "_temp";
 
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
+        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
 
         // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/mult_0-100/";
-        // string path2 = path + "/fits/4rBw_fits/pt_dependent/mult_0-100/";
-        string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
+        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
+        string path2 = path + "/fits/4rBw_fits/pt_dependent/mult_0-100/";
 
         //******************for default study with full train ************************
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
@@ -73,13 +73,13 @@ void glueball_fit_4rBW_simple()
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/504802/KsKs_Channel/higher-mass-resonances_CS_Frame"; // 2023 dataset (derived data)
 
-        // string savepath = path + "/fits/4rBw_fits/pt_dependent/";
-        string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+        string savepath = path + "/fits/4rBw_fits/pt_dependent/";
+        // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
-        TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ"); // for systematics
+        TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
+        // TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ"); // for systematics
         // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_normleft.root").c_str(), "READ");
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
@@ -119,7 +119,7 @@ void glueball_fit_4rBW_simple()
 #endif
         // (2022 data) // In first pT bin (1.07, 1.85) for coherent sum
         vector<vector<pair<float, float>>> fitRanges = {
-            {{1.07, 2.10}, {1.05, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
+            {{1.07, 2.05}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
             {{1.05, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-20%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.03, 2.20}, {1.05, 2.20}},  // 20-50%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
@@ -374,10 +374,16 @@ void glueball_fit_4rBW_simple()
                     // BEexpol->FixParameter(10, f1710Mass);
                     BEexpol->FixParameter(11, f1710Width);
                     if (ipt == 0)
-                        BEexpol->SetParLimits(10, f1710Mass - 0.05, f1710Mass + 0.05);
+                        BEexpol->SetParLimits(10, f1710Mass - 0.03, f1710Mass + 0.03);
 
                     // if (ipt == 1)
-                    //     BEexpol->SetParLimits(9, 580, 3500);
+                    //     BEexpol->SetParLimits(9, 350, 450); // 580-3500, used in
+
+                    // if (ipt == 2)
+                    //     BEexpol->SetParLimits(9, 200, 590); // for TPC PID2
+
+                    // if (ipt == 0)
+                    //     BEexpol->SetParLimits(9, 0, 145); // for TPC min clusters100, 60 (fit 1.07 - 2.15), 140, 145
 
                     // BEexpol->SetParLimits(size_fitparams + 3, 0.5, 3.0);
                     // BEexpol->FixParameter(size_fitparams + 3, 1.0);

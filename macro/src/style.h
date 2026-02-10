@@ -169,8 +169,8 @@ void SetGraphStyleCommon(T *gr)
     gr->GetXaxis()->SetLabelSize(0.045);
     gr->GetXaxis()->SetTitleSize(0.05);
     gr->GetXaxis()->SetTickLength(0.04);
-    gr->GetXaxis()->SetTitleOffset(1.3);
-    gr->GetYaxis()->SetTitleOffset(1.3);
+    gr->GetXaxis()->SetTitleOffset(1.4);
+    gr->GetYaxis()->SetTitleOffset(1.5);
     gr->GetYaxis()->CenterTitle(true);
     gr->GetYaxis()->SetLabelOffset(0.015);
     gr->GetYaxis()->SetLabelFont(42);
@@ -178,9 +178,6 @@ void SetGraphStyleCommon(T *gr)
     gr->GetYaxis()->SetTickLength(0.04);
     gr->GetYaxis()->SetTitleSize(0.05);
     gr->GetYaxis()->SetTitleFont(42);
-    gr->GetXaxis()->SetNdivisions(515);
-    gr->GetYaxis()->SetNdivisions(515);
-    // gr->GetYaxis()->SetDecimals(false);
 }
 
 void SetCanvasStyle(TCanvas *c, float leftmargin, float rightmargin, float topmargin, float bottommargin)

@@ -459,7 +459,7 @@ void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUn
             float relUncertainty = fabs(variationValue - defaultValue) / defaultValue;
             if (suffix == "_Yield1525" || suffix == "_Yield1710")
             {
-                relUncertainty = relUncertainty / 1.1;
+                relUncertainty = relUncertainty / 1.0;
             }
             hRelUncertainty->SetBinContent(bin, relUncertainty);
         }

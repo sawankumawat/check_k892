@@ -6,15 +6,15 @@
 void compare_mass_yield()
 {
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
-    TFile *fDefault = new TFile((path + "spectra_temp.root").c_str(), "READ");
+    TFile *fDefault = new TFile((path + "spectra_Default2.root").c_str(), "READ");
     TFile *fCoherent = new TFile((path + "spectra_coherent.root").c_str(), "READ");
     if (fDefault->IsZombie() || fCoherent->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
     }
-    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass1525");
-    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass1710");
+    TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
+    TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
     TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass1525");
     TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass1710");
     if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hMass_f1525_Coherent == nullptr || hMass_f1710_Coherent == nullptr)
@@ -100,10 +100,10 @@ void compare_mass_yield()
         cout << "Error: gMeanPt_f0f2 not found in one of the files!" << endl;
         return;
     }
-    double f1525MeanPt_Default = gMeanpTBothDefault->GetY()[0];
-    double f1525MeanPt_Default_err = gMeanpTBothDefault->GetErrorY(0);
-    double f1710MeanPt_Default = gMeanpTBothDefault->GetY()[1];
-    double f1710MeanPt_Default_err = gMeanpTBothDefault->GetErrorY(1);
+        double f1525MeanPt_Default = gMeanpTBothDefault->GetY()[0];
+        double f1525MeanPt_Default_err = gMeanpTBothDefault->GetErrorY(0);
+        double f1710MeanPt_Default = gMeanpTBothDefault->GetY()[1];
+        double f1710MeanPt_Default_err = gMeanpTBothDefault->GetErrorY(1);
     double f1525MeanPt_Coherent = gMeanpTBothCoherent->GetY()[0];
     double f1525MeanPt_Coherent_err = gMeanpTBothCoherent->GetErrorY(0);
     double f1710MeanPt_Coherent = gMeanpTBothCoherent->GetY()[1];
@@ -196,8 +196,8 @@ void compare_mass_yield()
     gMeanPtvsMassMesons->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
     gMeanPtvsMassMesons->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
     gMeanPtvsMassMesons->GetYaxis()->SetTitleOffset(1.3);
-    gMeanPtvsMassMesons->SetMinimum(0.0);
-    gMeanPtvsMassMesons->SetMaximum(3.15);
+    gMeanPtvsMassMesons->SetMinimum(0.1);
+    gMeanPtvsMassMesons->SetMaximum(3.55);
     gMeanPtvsMassMesons->GetXaxis()->SetLimits(0, 1.99);
     gMeanPtvsMassMesons->Draw("AP");
     gMeanPtvsMassBaryons->Draw("P SAME");
@@ -214,8 +214,8 @@ void compare_mass_yield()
 
     // Draw the last marker (f2(1525)) and its error bar
     double f2_mass = 1.5173;
-    double f2_meanpt = f1525MeanPt_Default;
-    double f2_err = f1525MeanPt_Default_err;
+    double f2_meanpt = 1.6633;
+    double f2_err = 0.043027;
     double f2_meanpt2 = f1525MeanPt_Coherent;
     double f2_err2 = f1525MeanPt_Coherent_err;
     int f2_marker = 20;        // choose a unique marker style for f2(1525)
@@ -259,8 +259,8 @@ void compare_mass_yield()
 
     // Draw the last marker (f0(1710)) and its error bar
     double f0_mass = 1.710;
-    double f0_meanpt = f1710MeanPt_Default;
-    double f0_err = f1710MeanPt_Default_err;
+    double f0_meanpt = 2.35239;
+    double f0_err = 0.100896;
     double f0_meanpt2 = f1710MeanPt_Coherent;
     double f0_err2 = f1710MeanPt_Coherent_err;
     int f0_marker = 21;   // choose a unique marker style for f0(1710)

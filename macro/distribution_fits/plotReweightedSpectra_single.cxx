@@ -260,17 +260,26 @@ void plotReweightedSpectra_single()
     hf21->Sumw2();
     hf22->Sumw2();
 
+    double relUncertLowpTExtrapolationf2 = 11.0711 / 100;
+    double relUncertLowpTExtrapolationf0 = 7.24382 / 100;
+
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
         double sys1710 = hYieldSysf0->GetBinContent(i);
         double sys1525 = hYieldSysf2->GetBinContent(i);
         double yield1710 = hf01->GetBinContent(i + 1);
         double yield1525 = hf21->GetBinContent(i + 1);
-        cout << "Bin " << i << ": Yield f0(1710) = " << yield1710 << " with sys error = " << sys1710 << " and Yield f2'(1525) = " << yield1525 << " with sys error = " << sys1525 << endl;
+        // cout << "Bin " << i << ": Yield f0(1710) = " << yield1710 << " with sys error = " << sys1710 << " and Yield f2'(1525) = " << yield1525 << " with sys error = " << sys1525 << endl;
+        // Add the systematic uncertainties in quadrature with the low pT extrapolation uncertainty (this is wrong since the uncertainty is not in the spectra but it is in the <pT> obtained from the fit functions itself)
+        // double totalRelUncertf0 = sqrt(sys1710 * sys1710 + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
+        // double totalRelUncertf2 = sqrt(sys1525 * sys1525 + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
+
         hf02->SetBinContent(i + 1, yield1710);
         hf02->SetBinError(i + 1, sys1710 * yield1710);
+        // hf02->SetBinError(i + 1, totalRelUncertf0 * yield1710);
         hf22->SetBinContent(i + 1, yield1525);
         hf22->SetBinError(i + 1, sys1525 * yield1525);
+        // hf22->SetBinError(i + 1, totalRelUncertf2 * yield1525);
     }
     Double_t min = 0.0;
     Double_t max = 15.0;
@@ -489,19 +498,26 @@ void plotReweightedSpectra_single()
     pol1_meson->SetLineColor(kYellow + 2);
     pol1_meson->SetLineStyle(2);
     gMeanPtvsMassMesons->Fit(pol1_meson, "R");
+    // Get the value of <pT> at the mass of f0(1710) from the fit function
+    double meanPt_f0_fromFit_meson = pol1_meson->Eval(1.710);
+    cout << "Mean pT of f0(1710) from fit is " << meanPt_f0_fromFit_meson << endl;
 
     TF1 *pol1_baryon = new TF1("pol1_baryon", "pol1", 0.1, 1.89);
     pol1_baryon->SetLineColor(kYellow + 2);
     pol1_baryon->SetLineStyle(2);
     gMeanPtvsMassBaryons->Fit(pol1_baryon, "R");
+    double meanPt_f0_fromFit_baryon = pol1_baryon->Eval(1.710);
+    cout << "Mean pT of f0(1710) from fit is " << meanPt_f0_fromFit_baryon << endl;
 
     // Draw the last marker (f2(1525)) and its error bar
     double f2_mass = 1.5173;
     double f2_meanpt = hout2->GetBinContent(5);
     double f2_Staterr = hout2->GetBinContent(6);
-    double f2_SysErrLow = hout2->GetBinContent(7);
-    double f2_SysErrHigh = hout2->GetBinContent(8);
-    // cout<<"Sys Low "<<f2_SysErrLow<<" Sys High "<<f2_SysErrHigh<<endl;
+    double f2_SysErrLow = sqrt(hout2->GetBinContent(7) * hout2->GetBinContent(7) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
+    double f2_SysErrHigh = sqrt(hout2->GetBinContent(8) * hout2->GetBinContent(8) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
+    cout << "Sys Low f2(1525) " << hout2->GetBinContent(7) << " Sys High " << hout2->GetBinContent(8) << endl;
+    cout << "Sys total low " << f2_SysErrLow << " Sys total high " << f2_SysErrHigh << endl;
+    cout << "Mean pT of f2(1525) is " << f2_meanpt << " with stat error " << f2_Staterr << endl;
 
     int f2_marker = 20;        // choose a unique marker style for f2(1525)
     int f2_color = kGreen + 1; // choose a unique color for f2(1525)
@@ -528,8 +544,19 @@ void plotReweightedSpectra_single()
     double f0_mass = 1.710;
     double f0_meanpt = hout->GetBinContent(5);
     double f0_Staterr = hout->GetBinContent(6);
-    double f0_SysErrLow = hout->GetBinContent(7);
-    double f0_SysErrHigh = hout->GetBinContent(8);
+    double f0_SysErrLow = sqrt(hout->GetBinContent(7) * hout->GetBinContent(7) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
+    double f0_SysErrHigh = sqrt(hout->GetBinContent(8) * hout->GetBinContent(8) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
+    cout << "Sys Low f0(1710) " << hout->GetBinContent(7) << " Sys High " << hout->GetBinContent(8) << endl;
+    cout << "Sys total low " << f0_SysErrLow << " Sys total high " << f0_SysErrHigh << endl;
+    cout << "Mean pT of f0(1710) is " << f0_meanpt << " with stat error " << f0_Staterr << endl;
+
+    double SigmaDeviationMeson = fabs(meanPt_f0_fromFit_meson - f0_meanpt) / sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr);
+    cout << "Sigma deviation of f0(1710) from mesonic fit is " << SigmaDeviationMeson << endl;
+    // cout << "Difference in mean value "<< fabs(meanPt_f0_fromFit_meson - f0_meanpt) << " and total error " << sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr) << endl;
+    double SigmaDeviationBaryon = fabs(meanPt_f0_fromFit_baryon - f0_meanpt) / sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr);
+    cout << "Sigma deviation of f0(1710) from baryonic fit is " << SigmaDeviationBaryon << endl;
+    // cout << "Difference in mean value "<< fabs(meanPt_f0_fromFit_baryon - f0_meanpt) << " and total error " << sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr) << endl;
+
     int f0_marker = 21;   // choose a unique marker style for f0(1710)
     int f0_color = kBlue; // choose a unique color for f0(1710)
     TGraphErrors *graph_f0 = new TGraphErrors(1);
@@ -588,7 +615,7 @@ void plotReweightedSpectra_single()
     legend5->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend5->Draw();
-    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
+    cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
 
     /*
     // Reading by from the root file

@@ -92,6 +92,7 @@ void plot_mass()
     band1710Mass->SetLineWidth(0);
     leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
     leg1710Mass->Draw();
+    cMass1710->SaveAs((path + "/plots/Mass_f0_sys.png").c_str());
 
     TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs pT", 720, 720);
     SetCanvasStyle(cMass1525, 0.15, 0.03, 0.05, 0.13);
@@ -99,7 +100,7 @@ void plot_mass()
     hMass1525->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hMass1525->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
     hMass1525->GetYaxis()->SetTitleOffset(1.5);
-    hMass1525->GetYaxis()->SetRangeUser(1.49, 1.56);
+    hMass1525->GetYaxis()->SetRangeUser(1.485, 1.575);
     hMass1525->SetMarkerStyle(20);
     hMass1525->SetMarkerSize(1.5);
     hMass1525->SetLineColor(kBlue);
@@ -131,4 +132,5 @@ void plot_mass()
     band1525Mass->SetLineWidth(0);
     leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
     leg1525Mass->Draw();
+    cMass1525->SaveAs((path + "/plots/Mass_f2_sys.png").c_str());
 }

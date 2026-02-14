@@ -20,17 +20,36 @@ static TF1 *fBGBlastWave_Integrand = NULL;
 static TF1 *fBGBlastWave_Integrand_num = NULL;
 static TF1 *fBGBlastWave_Integrand_den = NULL;
 
+int FindHighestIndex(TFile *file, const string &baseHistoName);
+
 void read_yield_differentFitAll()
 {
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra";
-    TFile *file = new TFile((path + "/ReweightedSpectra.root").c_str(), "read");
-    if (file->IsZombie())
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default2.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default2.root").c_str(), "read");
+
+    if (fReweightf0->IsZombie() || fReweightf2->IsZombie())
     {
-        cout << "Error opening file" << endl;
+        cout << "Error opening reweighting files" << endl;
         return;
     }
-    TH1F *hYield1525Corrected = (TH1F *)file->Get("f21525_Reweighted_Yield");
-    TH1F *hYield1710Corrected = (TH1F *)file->Get("f01710_Reweighted_Yield");
+
+    // Find the highest available index for reweighted histograms
+    int maxIndexReweightedf0 = FindHighestIndex(fReweightf0, "Genf17102_proj_1_");
+    int maxIndexReweightedf2 = FindHighestIndex(fReweightf2, "Genf17102_proj_1_");
+    if (maxIndexReweightedf0 == -1 || maxIndexReweightedf2 == -1)
+    {
+        cout << "Error: No reweighted histogram with pattern Genf17102_proj_1_i* found in file" << endl;
+        return;
+    }
+    cout << "Using index i" << maxIndexReweightedf0 << " for reweighted histograms" << endl;
+
+    string indexStr = "i" + to_string(maxIndexReweightedf0);
+    string indexStr2 = "i" + to_string(maxIndexReweightedf2);
+    TH1F *hYield1710Corrected = (TH1F *)fReweightf0->Get(Form("hYield1710Corrected_%s", indexStr.c_str()));
+    TH1F *hYield1525Corrected = (TH1F *)fReweightf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
+
     if (hYield1525Corrected == nullptr || hYield1710Corrected == nullptr)
     {
         cout << "Histograms not found" << endl;
@@ -51,19 +70,45 @@ void read_yield_differentFitAll()
     // hYield1525Corrected->GetXaxis()->SetRangeUser(0.0, 7.0); // for zoomed view
     // hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 7.0); // for zoomed view
 
-    // Clone histograms for fitting
-    TH1F *h1f2 = (TH1F *)hYield1525Corrected->Clone("h1f2");
-    TH1F *h2f2 = (TH1F *)hYield1525Corrected->Clone("h2f2");
-    TH1F *h1f0 = (TH1F *)hYield1710Corrected->Clone("h1f0");
-    TH1F *h2f0 = (TH1F *)hYield1710Corrected->Clone("h2f0");
-
-    // Add systematic errors
-    for (int i = 1; i <= h1f2->GetNbinsX(); i++)
+    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
+    if (fSys->IsZombie())
     {
-        double systemerrf2 = (0.1 * h2f2->GetBinContent(i)); // 10% systematic error
-        h2f2->SetBinError(i, systemerrf2);
-        double systemerrf0 = (0.1 * h2f0->GetBinContent(i)); // 10% systematic error
-        h2f0->SetBinError(i, systemerrf0);
+        cout << "Error opening systematic uncertainty file" << endl;
+        return;
+    }
+    TH1F *hYieldSysf0 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1710");
+    TH1F *hYieldSysf2 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1525");
+    if (hYieldSysf0 == nullptr || hYieldSysf2 == nullptr)
+    {
+        cout << "Error reading systematic uncertainty histograms from file " << Form("%s/SystematicUncertainties.root", (path + "mult_0-100/Spectra/").c_str()) << endl;
+        return;
+    }
+
+    // For f2'(1525)
+    TH1F *hf21 = (TH1F *)hYield1525Corrected->Clone("hf21");
+    TH1F *hf22 = (TH1F *)hYield1525Corrected->Clone("hf22");
+
+    // For f0(1710)
+    TH1F *hf01 = (TH1F *)hYield1710Corrected->Clone("hf01");
+    TH1F *hf02 = (TH1F *)hYield1710Corrected->Clone("hf02");
+
+    // Enable error tracking for histograms with manual error setting
+    hf01->Sumw2();
+    hf02->Sumw2();
+    hf21->Sumw2();
+    hf22->Sumw2();
+
+    for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
+    {
+        double sys1710 = hYieldSysf0->GetBinContent(i);
+        double sys1525 = hYieldSysf2->GetBinContent(i);
+        double yield1710 = hf01->GetBinContent(i + 1);
+        double yield1525 = hf21->GetBinContent(i + 1);
+        // cout << "Bin " << i << ": Yield f0(1710) = " << yield1710 << " with sys error = " << sys1710 << " and Yield f2'(1525) = " << yield1525 << " with sys error = " << sys1525 << endl;
+        hf02->SetBinContent(i + 1, yield1710);
+        hf02->SetBinError(i + 1, sys1710 * yield1710);
+        hf22->SetBinContent(i + 1, yield1525);
+        hf22->SetBinError(i + 1, sys1525 * yield1525);
     }
 
     // Fit parameters
@@ -98,8 +143,8 @@ void read_yield_differentFitAll()
     fitLevyf2->FixParameter(2, 1.525);
     fitLevyf2->SetParameter(3, 0.35);
     fitLevyf2->SetParNames("n", "dn/dy", "mass", "T");
-    // h1f2->Fit(fitLevyf2, opt, "", minfit, maxfit);
-    TH1 *houtLevyf2 = YieldMean(h1f2, h2f2, fitLevyf2, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
+    // hf21->Fit(fitLevyf2, opt, "", minfit, maxfit);
+    TH1 *houtLevyf2 = YieldMean(hf21, hf22, fitLevyf2, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
 
     TF1 *fitLevyf0 = new TF1("fitLevyf0", FuncLavy, 0.0, 15.0, 4);
     fitLevyf0->SetParameter(0, 5.0);
@@ -107,8 +152,8 @@ void read_yield_differentFitAll()
     fitLevyf0->FixParameter(2, 1.710);
     fitLevyf0->SetParameter(3, 0.35);
     fitLevyf0->SetParNames("n", "dn/dy", "mass", "T");
-    // h1f0->Fit(fitLevyf0, opt, "", minfit, maxfit);
-    TH1 *houtLevyf0 = YieldMean(h1f0, h2f0, fitLevyf0, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
+    // hf01->Fit(fitLevyf0, opt, "", minfit, maxfit);
+    TH1 *houtLevyf0 = YieldMean(hf01, hf02, fitLevyf0, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
 
     //====================================Boltzmann Fit==========================================
     TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
@@ -116,31 +161,31 @@ void read_yield_differentFitAll()
     fitBoltzmannf2->SetParameter(1, 0.5);
     fitBoltzmannf2->FixParameter(2, 1.525);
     fitBoltzmannf2->SetParNames("norm", "T", "mass");
-    // h1f2->Fit(fitBoltzmannf2, opt, "", minfit, maxfit);
-    TH1 *houtBoltf2 = YieldMean(h1f2, h2f2, fitBoltzmannf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // hf21->Fit(fitBoltzmannf2, opt, "", minfit, maxfit);
+    TH1 *houtBoltf2 = YieldMean(hf21, hf22, fitBoltzmannf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
     fitBoltzmannf0->SetParameter(0, 0.1);
     fitBoltzmannf0->SetParameter(1, 0.5);
     fitBoltzmannf0->FixParameter(2, 1.710);
     fitBoltzmannf0->SetParNames("norm", "T", "mass");
-    // h1f0->Fit(fitBoltzmannf0, opt, "", minfit, maxfit);
-    TH1 *houtBoltf0 = YieldMean(h1f0, h2f0, fitBoltzmannf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // hf01->Fit(fitBoltzmannf0, opt, "", minfit, maxfit);
+    TH1 *houtBoltf0 = YieldMean(hf01, hf02, fitBoltzmannf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     //====================================Exponential Fit==========================================
     TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
     fitExpf2->SetParameter(0, 0.1);
     fitExpf2->SetParameter(1, 0.5);
     fitExpf2->SetParNames("norm", "T");
-    // h1f2->Fit(fitExpf2, opt, "", minfit, maxfit);
-    TH1 *houtExpo2 = YieldMean(h1f2, h2f2, fitExpf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
+    // hf21->Fit(fitExpf2, opt, "", minfit, maxfit);
+    TH1 *houtExpo2 = YieldMean(hf21, hf22, fitExpf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
 
     TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
     fitExpf0->SetParameter(0, 0.1);
     fitExpf0->SetParameter(1, 0.5);
     fitExpf0->SetParNames("norm", "T");
-    // h1f0->Fit(fitExpf0, opt, "", minfitExp, maxfitExp);
-    TH1 *houtExpof0 = YieldMean(h1f0, h2f0, fitExpf0, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
+    // hf01->Fit(fitExpf0, opt, "", minfitExp, maxfitExp);
+    TH1 *houtExpof0 = YieldMean(hf01, hf02, fitExpf0, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
 
     // // //====================================mT Exponential Fit==========================================
     // // TF1 *fitMTExpf2 = new TF1("fitMTExpf2", FuncMTExpdNdptTimesPt, 0.0, 10.0, 3);
@@ -148,13 +193,13 @@ void read_yield_differentFitAll()
     // // fitMTExpf2->SetParameter(1, 0.5);
     // // fitMTExpf2->FixParameter(2, 1.525);
     // // fitMTExpf2->SetParNames("norm", "T", "mass");
-    // // h1f2->Fit(fitMTExpf2, opt, "", minfit, maxfit);
+    // // hf21->Fit(fitMTExpf2, opt, "", minfit, maxfit);
     // // TF1 *fitMTExpf0 = new TF1("fitMTExpf0", FuncMTExpdNdptTimesPt, 0.0, 10.0, 3);
     // // fitMTExpf0->SetParameter(0, 0.1);
     // // fitMTExpf0->SetParameter(1, 0.5);
     // // fitMTExpf0->FixParameter(2, 1.710);
     // // fitMTExpf0->SetParNames("norm", "T", "mass");
-    // // h1f0->Fit(fitMTExpf0, opt, "", minfit, maxfit);
+    // // hf01->Fit(fitMTExpf0, opt, "", minfit, maxfit);
 
     //====================================Bose-Einstein Fit==========================================
     TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
@@ -162,16 +207,16 @@ void read_yield_differentFitAll()
     fitBoseEinsteinf2->SetParameter(1, 0.5);
     fitBoseEinsteinf2->FixParameter(2, 1.525);
     fitBoseEinsteinf2->SetParNames("norm", "T", "mass");
-    // h1f2->Fit(fitBoseEinsteinf2, opt, "", minfit, maxfit);
-    TH1 *houtBEf2 = YieldMean(h1f2, h2f2, fitBoseEinsteinf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // hf21->Fit(fitBoseEinsteinf2, opt, "", minfit, maxfit);
+    TH1 *houtBEf2 = YieldMean(hf21, hf22, fitBoseEinsteinf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
     fitBoseEinsteinf0->SetParameter(0, 0.5);
     fitBoseEinsteinf0->SetParameter(1, 0.5);
     fitBoseEinsteinf0->FixParameter(2, 1.710);
     fitBoseEinsteinf0->SetParNames("norm", "T", "mass");
-    // h1f0->Fit(fitBoseEinsteinf0, opt, "", minfit, maxfit);
-    TH1 *houtBEf0 = YieldMean(h1f0, h2f0, fitBoseEinsteinf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // hf01->Fit(fitBoseEinsteinf0, opt, "", minfit, maxfit);
+    TH1 *houtBEf0 = YieldMean(hf01, hf02, fitBoseEinsteinf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     // //====================================Blast-Wave Fit==========================================
     // TF1 *fitBWf2 = new TF1("fitBWf2", BGBlastWave_Func, 0.0, 7.0, 5);
@@ -184,8 +229,8 @@ void read_yield_differentFitAll()
     // fitBWf2->SetParLimits(3, 0.1, 10);
     // fitBWf2->SetParameter(4, 0.1);
     // fitBWf2->SetParNames("mass", "beta_max", "T", "n", "norm");
-    // // h1f2->Fit(fitBWf2, opt, "", minfit, maxfit);
-    // TH1 *houtBWf2 = YieldMean(h1f2, h2f2, fitBWf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
+    // // hf21->Fit(fitBWf2, opt, "", minfit, maxfit);
+    // TH1 *houtBWf2 = YieldMean(hf21, hf22, fitBWf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
 
     // TF1 *fitBWf0 = new TF1("fitBWf0", BGBlastWave_Func, 0.0, 7.0, 5);
     // fitBWf0->FixParameter(0, 1.710);
@@ -197,18 +242,18 @@ void read_yield_differentFitAll()
     // fitBWf0->SetParLimits(3, 0.1, 10);
     // fitBWf0->SetParameter(4, 0.1);
     // fitBWf0->SetParNames("mass", "beta_max", "T", "n", "norm");
-    // // h1f0->Fit(fitBWf0, opt, "", minfit, maxfit);
-    // TH1 *houtBWf0 = YieldMean(h1f0, h2f0, fitBWf0, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
+    // // hf01->Fit(fitBWf0, opt, "", minfit, maxfit);
+    // TH1 *houtBWf0 = YieldMean(hf01, hf02, fitBWf0, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
 
     //====================================Plotting All Fits on Same Canvas for f2(1525)==========================================
     TCanvas *cFitf2All = new TCanvas("cFitf2All", "All Fits for f2'(1525)", 720, 720);
     SetCanvasStyle(cFitf2All, 0.17, 0.03, 0.05, 0.14);
     gPad->SetLogy();
 
-    h1f2->SetMarkerStyle(20);
-    h1f2->SetMarkerColor(kBlack);
-    h1f2->SetLineColor(kBlack);
-    h1f2->Draw("pe");
+    hf21->SetMarkerStyle(20);
+    hf21->SetMarkerColor(kBlack);
+    hf21->SetLineColor(kBlack);
+    hf21->Draw("pe");
 
     // Set different colors for eachloprecision fit function
     fitLevyf2->SetLineColor(kRed);
@@ -240,7 +285,7 @@ void read_yield_differentFitAll()
     legf2->AddEntry((TObject *)0, "ALICE", "");
     legf2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    legf2->AddEntry(h1f2, "f_{2}'(1525) spectra", "pe");
+    legf2->AddEntry(hf21, "f_{2}'(1525) spectra", "pe");
     legf2->AddEntry(fitLevyf2, "Levy-Tsallis", "l");
     legf2->AddEntry(fitBoltzmannf2, "Boltzmann", "l");
     legf2->AddEntry(fitExpf2, "Exponential", "l");
@@ -252,17 +297,17 @@ void read_yield_differentFitAll()
     legf2->SetTextSize(0.03);
     legf2->Draw();
 
-    cFitf2All->SaveAs((path + "/DifferentFitFunc/AllFits_f2.png").c_str());
+    // cFitf2All->SaveAs((path + "/DifferentFitFunc/AllFits_f2.png").c_str());
 
     //====================================Plotting All Fits on Same Canvas for f0(1710)==========================================
     TCanvas *cFitf0All = new TCanvas("cFitf0All", "All Fits for f0(1710)", 720, 720);
     SetCanvasStyle(cFitf0All, 0.17, 0.03, 0.05, 0.14);
     gPad->SetLogy();
 
-    h1f0->SetMarkerStyle(20);
-    h1f0->SetMarkerColor(kBlack);
-    h1f0->SetLineColor(kBlack);
-    h1f0->Draw("pe");
+    hf01->SetMarkerStyle(20);
+    hf01->SetMarkerColor(kBlack);
+    hf01->SetLineColor(kBlack);
+    hf01->Draw("pe");
 
     // Set different colors for each fit function
     fitLevyf0->SetLineColor(kRed);
@@ -294,7 +339,7 @@ void read_yield_differentFitAll()
     legf0->AddEntry((TObject *)0, "ALICE", "");
     legf0->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf0->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    legf0->AddEntry(h1f0, "f_{0}(1710) spectra", "pe");
+    legf0->AddEntry(hf01, "f_{0}(1710) spectra", "pe");
     legf0->AddEntry(fitLevyf0, "Levy-Tsallis", "l");
     legf0->AddEntry(fitBoltzmannf0, "Boltzmann", "l");
     legf0->AddEntry(fitExpf0, "Exponential", "l");
@@ -305,7 +350,7 @@ void read_yield_differentFitAll()
     legf0->SetFillStyle(0);
     legf0->SetTextSize(0.03);
     legf0->Draw();
-    cFitf0All->SaveAs((path + "/DifferentFitFunc/AllFits_f0.png").c_str());
+    // cFitf0All->SaveAs((path + "/DifferentFitFunc/AllFits_f0.png").c_str());
 
     // Print Chi2/NDF, dN/dy and <pT> for each fit function
     // Lambda function to avoid code repetition
@@ -330,6 +375,28 @@ void read_yield_differentFitAll()
     printFitResults(fitExpf0, houtExpof0, "Exponential", "f0(1710)");
     printFitResults(fitBoseEinsteinf0, houtBEf0, "Bose-Einstein", "f0(1710)");
     // printFitResults(fitBWf0, houtBWf0, "Blast-Wave", "f0(1710)");
+
+    // Lambda function to calculate the relative uncertainty in <pT> due to low pT extrapolation
+    vector<TH1 *> houtFunctionsf2 = {houtBoltf2, houtExpo2, houtBEf2 /*, houtBWf2*/};
+    vector<TH1 *> houtFunctionsf0 = {houtBoltf0, houtExpof0, houtBEf0 /*, houtBWf0*/};
+    int totalVariations = houtFunctionsf2.size();
+    double relativeUncertaintyf2{0}, relativeUncertaintyf0{0};
+    for (int ivar = 0; ivar < totalVariations; ivar++)
+    {
+        double defaultMeanPtf2 = houtLevyf2->GetBinContent(5);
+        double variationMeanPtf2 = houtFunctionsf2[ivar]->GetBinContent(5);
+        double difference = fabs(variationMeanPtf2 - defaultMeanPtf2);
+        relativeUncertaintyf2 += difference * difference;
+
+        double defaultMeanPtf0 = houtLevyf0->GetBinContent(5);
+        double variationMeanPtf0 = houtFunctionsf0[ivar]->GetBinContent(5);
+        difference = fabs(variationMeanPtf0 - defaultMeanPtf0);
+        relativeUncertaintyf0 += difference * difference;
+    }
+    relativeUncertaintyf2 = sqrt(relativeUncertaintyf2 / totalVariations);
+    relativeUncertaintyf0 = sqrt(relativeUncertaintyf0 / totalVariations);
+    cout << "Uncertainty in <pT> due to low pT extrapolation for f2(1525): " << relativeUncertaintyf2 * 100 << " %" << endl;
+    cout << "Uncertainty in <pT> due to low pT extrapolation for f0(1710): " << relativeUncertaintyf0 * 100 << " %" << endl;
 }
 
 //=======================Fit functions=========================
@@ -420,4 +487,22 @@ Double_t FuncBoseEinsteindNdptTimesPt(Double_t *x, Double_t *par)
     const Double_t mT = TMath::Sqrt(pT * pT + mass * mass);
 
     return norm * pT / (TMath::Exp(mT / T) - 1.0) * (TMath::Exp(mass / T) - 1.0);
+}
+
+// Function to find the highest available index in the root file
+int FindHighestIndex(TFile *file, const string &baseHistoName)
+{
+    int maxIndex = -1;
+    for (int i = 10; i >= 0; i--) // Check from i10 down to i0
+    {
+        string histoName = baseHistoName + "i" + to_string(i);
+        TObject *obj = file->Get(histoName.c_str());
+        if (obj != nullptr)
+        {
+            maxIndex = i;
+            cout << "Highest index found: " << maxIndex << endl;
+            break; // Found the highest index
+        }
+    }
+    return maxIndex;
 }

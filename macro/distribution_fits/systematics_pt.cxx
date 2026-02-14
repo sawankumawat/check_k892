@@ -131,6 +131,7 @@ void systematics_pt()
     // Arrays for each category type
     string CanvasTypes[4] = {"Mass1525", "Mass1710", "Yield1525", "Yield1710"};
     // string histPaths[4] = {"Mult_0_100/hMass_1525", "Mult_0_100/hMass_1710", "Mult_0_100/hYield_1525", "Mult_0_100/hYield_1710"};
+    string latexNames[4] = {"f_{2}^{'}(1525) Mass", "f_{0}(1710) Mass", "f_{2}^{'}(1525) Yield", "f_{0}(1710) Yield"};
     string histPaths[4] = {"hMass_1525", "hMass_1710", "hYield1525Corrected", "hYield1710Corrected"};
     TH1F *defaultHists[4] = {hMass_f1525_Default, hMass_f1710_Default, hYield_f1525_Default, hYield_f1710_Default};
     TH1F *defaultHists_SigExt[4] = {hMass_f1525_SigExtDefault, hMass_f1710_SigExtDefault, hYield_f1525_SigExtDefault, hYield_f1710_SigExtDefault};
@@ -158,8 +159,8 @@ void systematics_pt()
 
         TCanvas *cSigExtract_Barlow = new TCanvas(Form("cSigExtract_Barlow_%s", canvasType.c_str()), Form("Signal Extraction Barlow Significance %s", canvasType.c_str()), 2880, 1440);
         cSigExtract_Barlow->Divide(4, 3);
-        TCanvas *cTrackSelect_Barlow = new TCanvas(Form("cTrackSelect_Barlow_%s", canvasType.c_str()), Form("Track Selection Barlow Significance %s", canvasType.c_str()), 2880, 1440);
-        cTrackSelect_Barlow->Divide(3, 2);
+        TCanvas *cTrackSelect_Barlow = new TCanvas(Form("cTrackSelect_Barlow_%s", canvasType.c_str()), Form("Track Selection Barlow Significance %s", canvasType.c_str()), 1740, 1440);
+        cTrackSelect_Barlow->Divide(2, 2);
         TCanvas *cTopSelect_Barlow = new TCanvas(Form("cTopSelect_Barlow_%s", canvasType.c_str()), Form("Topological Selection Barlow Significance %s", canvasType.c_str()), 2880, 1440);
         cTopSelect_Barlow->Divide(4, 3);
 
@@ -223,6 +224,8 @@ void systematics_pt()
             hSigExt_source1->SetMaximum(0.5);
         hSigExt_source1->SetMinimum(0);
         hSigExt_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hSigExt_source1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        hSigExt_source1->SetTitle(0);
         hSigExt_source1->Draw("HIST");
         hSigExt_source2->SetLineColor(lineColors[1]);
         hSigExt_source2->Draw("HIST SAME");
@@ -233,7 +236,8 @@ void systematics_pt()
         hSigExt_total->SetLineColor(kBlack);
         hSigExt_total->SetLineWidth(3);
         hSigExt_total->Draw("HIST SAME");
-        TLegend *leg = new TLegend(0.55, 0.65, 0.85, 0.85);
+        TLegend *leg = new TLegend(0.5, 0.6, 0.9, 0.88);
+        leg->AddEntry((TObject *)0, latexNames[typeIdx].c_str(), "");
         leg->AddEntry(hSigExt_source1, SourcesSignalExtraction[0].c_str(), "l");
         leg->AddEntry(hSigExt_source2, SourcesSignalExtraction[1].c_str(), "l");
         leg->AddEntry(hSigExt_source3, SourcesSignalExtraction[2].c_str(), "l");
@@ -270,7 +274,9 @@ void systematics_pt()
         else
             hTrkSel_source1->SetMaximum(0.5);
         hTrkSel_source1->SetMinimum(0);
+        hTrkSel_source1->SetTitle(0);
         hTrkSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hTrkSel_source1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hTrkSel_source1->Draw("HIST");
         hTrkSel_source2->SetLineColor(lineColors[1]);
         hTrkSel_source2->Draw("HIST SAME");
@@ -280,6 +286,7 @@ void systematics_pt()
         hTrkSel_total->SetLineWidth(3);
         hTrkSel_total->Draw("HIST SAME");
         TLegend *legTrk = new TLegend(0.55, 0.65, 0.85, 0.85);
+        legTrk->AddEntry((TObject *)0, latexNames[typeIdx].c_str(), "");
         legTrk->AddEntry(hTrkSel_source1, SourcesTrackSelection[0].c_str(), "l");
         legTrk->AddEntry(hTrkSel_source2, SourcesTrackSelection[1].c_str(), "l");
         // legTrk->AddEntry(hTrkSel_source3, SourcesTrackSelection[2].c_str(), "l");
@@ -326,7 +333,9 @@ void systematics_pt()
         else
             hTopSel_source1->SetMaximum(0.5);
         hTopSel_source1->SetMinimum(0);
+        hTopSel_source1->SetTitle(0);
         hTopSel_source1->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hTopSel_source1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hTopSel_source1->Draw("HIST");
         hTopSel_source2->SetLineColor(lineColors[1]);
         hTopSel_source2->Draw("HIST SAME");
@@ -342,6 +351,7 @@ void systematics_pt()
         hTopSel_total->SetLineWidth(3);
         hTopSel_total->Draw("HIST SAME");
         TLegend *legTop = new TLegend(0.55, 0.45, 0.85, 0.85);
+        legTop->AddEntry((TObject *)0, latexNames[typeIdx].c_str(), "");
         legTop->AddEntry(hTopSel_source1, SourcesTopologicalSelection[0].c_str(), "l");
         legTop->AddEntry(hTopSel_source2, SourcesTopologicalSelection[1].c_str(), "l");
         legTop->AddEntry(hTopSel_source3, SourcesTopologicalSelection[2].c_str(), "l");
@@ -362,11 +372,13 @@ void systematics_pt()
         hSigExt_total->SetTitle(Form("%s", canvasType.c_str()));
         hSigExt_total->SetLineColor(lineColors[0]);
         if (typeIdx < 2)
-            hSigExt_total->SetMaximum(0.05);
+            hSigExt_total->SetMaximum(0.03);
         else
             hSigExt_total->SetMaximum(0.5);
         hSigExt_total->SetMinimum(0);
+        hSigExt_total->SetTitle(0);
         hSigExt_total->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hSigExt_total->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hSigExt_total->Draw("HIST");
         hTrkSel_total->SetLineColor(lineColors[1]);
         hTrkSel_total->Draw("HIST SAME");
@@ -375,7 +387,8 @@ void systematics_pt()
         hTotalSys->SetLineColor(kBlack);
         hTotalSys->SetLineWidth(3);
         hTotalSys->Draw("HIST SAME");
-        TLegend *legTotal = new TLegend(0.55, 0.55, 0.85, 0.85);
+        TLegend *legTotal = new TLegend(0.45, 0.55, 0.9, 0.88);
+        legTotal->AddEntry((TObject *)0, latexNames[typeIdx].c_str(), "");
         legTotal->AddEntry(hSigExt_total, "Signal Extraction", "l");
         legTotal->AddEntry(hTrkSel_total, "Track Selection", "l");
         legTotal->AddEntry(hTopSel_total, "Topological Selection", "l");
@@ -400,11 +413,13 @@ void systematics_pt()
         hSignalExtSmooth->SetTitle(Form("%s", canvasType.c_str()));
         hSignalExtSmooth->SetLineColor(lineColors[0]);
         if (typeIdx < 2)
-            hSignalExtSmooth->SetMaximum(0.05);
+            hSignalExtSmooth->SetMaximum(0.03);
         else
             hSignalExtSmooth->SetMaximum(0.5);
         hSignalExtSmooth->SetMinimum(0);
+        hSignalExtSmooth->SetTitle(0);
         hSignalExtSmooth->GetYaxis()->SetTitle("Fractional Uncertainty");
+        hSignalExtSmooth->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hSignalExtSmooth->Draw("HIST");
         hTrkSelSmooth->SetLineColor(lineColors[1]);
         hTrkSelSmooth->Draw("HIST SAME");
@@ -506,8 +521,8 @@ void checkBarlowSignificance(TH1F *hDefault, TH1F *hVariation, TH1F *hBarlow, st
 
     bool cond1 = (std::abs(mean) < 0.1);
     bool cond2 = (rms < 1.0);
-    bool cond3 = (frac1 > 0.60);
-    bool cond4 = (frac2 > 0.90);
+    bool cond3 = (frac1 > 0.68);
+    bool cond4 = (frac2 > 0.95);
 
     int passed = cond1 + cond2 + cond3 + cond4;
 
@@ -558,6 +573,7 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
                            : 0;
 
         canvasBarlow->cd(i + 1);
+        hBarlow->SetStats(0);
         hBarlow->Draw("HIST");
         TLatex lat;
         lat.SetNDC();
@@ -583,7 +599,10 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
 
         calculateRelativeUncertainty(defaultHist, hist, hRelUncert, suffix);
         // Smoothening(hRelUncert);
-        resultVector->push_back(hRelUncert);
+        if (!barlowPassed) // skip adding to result vector if Barlow criteria not passed
+        {
+            resultVector->push_back(hRelUncert);
+        }
 
         // Draw on canvas
         canvas->cd(i + 1);

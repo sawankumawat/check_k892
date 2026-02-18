@@ -2,7 +2,7 @@
 #include <utility>
 #include "../src/style.h"
 #include "../src/common_glue.h"
-#include "../spectra/YieldMean.C"
+#include "../spectra/YieldMean2.C"
 
 using namespace std;
 
@@ -308,12 +308,24 @@ void plotReweightedSpectra_single()
     fitFcnf2->SetParNames("n", "dn/dy", "mass", "T");
 
     TH1 *hout = YieldMean(hf01, hf02, fitFcnf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    cout << "Yield dN/dy = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
-    cout << "Mean pT = " << hout->GetBinContent(5) << " +- " << hout->GetBinContent(6) << endl;
+    // cout << "Yield dN/dy = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
+    // cout << "Mean pT = " << hout->GetBinContent(5) << " +- " << hout->GetBinContent(6) << endl;
+    cout << "Parameters for f0(171)" << endl;
+    cout << "<pT> = " << hout->GetBinContent(5) << endl;
+    cout<< "Stat. error "<< hout->GetBinContent(6) << endl;
+    cout<< "Sys. error Low "<< hout->GetBinContent(7) << endl;
+    cout<< "Sys. error High "<< hout->GetBinContent(8) << endl;
+    cout<< "Low pT extrapolation error "<< hout->GetBinContent(10) << endl;
 
     TH1 *hout2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    cout << "Yield dN/dy of f2'(1525) = " << hout2->GetBinContent(1) << " +- " << hout2->GetBinContent(2) << endl;
-    cout << "Mean pT of f2'(1525) = " << hout2->GetBinContent(5) << " +- " << hout2->GetBinContent(6) << endl;
+    // cout << "Yield dN/dy of f2'(1525) = " << hout2->GetBinContent(1) << " +- " << hout2->GetBinContent(2) << endl;
+    // cout << "Mean pT of f2'(1525) = " << hout2->GetBinContent(5) << " +- " << hout2->GetBinContent(6) << endl;
+    cout << "Parameters for f2'(1525)" << endl;
+    cout << "<pT> = " << hout2->GetBinContent(5) << endl;
+    cout<< "Stat. error "<< hout2->GetBinContent(6) << endl;
+    cout<< "Sys. error Low "<< hout2->GetBinContent(7) << endl;
+    cout<< "Sys. error High "<< hout2->GetBinContent(8) << endl;
+    cout<< "Low pT extrapolation error "<< hout2->GetBinContent(10) << endl;
 
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);

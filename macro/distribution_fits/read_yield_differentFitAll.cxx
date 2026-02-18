@@ -128,7 +128,7 @@ void read_yield_differentFitAll()
     // Option_t *opt2 = "RI0+";
     Option_t *opt2 = "REBMS0+";
     Double_t minfit2 = 1.0;
-    Double_t maxfit2 = 10.0;
+    Double_t maxfit2 = 15.0;
 
     // Fit parameters for Exponential
     Double_t minExp = 0.0;
@@ -297,7 +297,7 @@ void read_yield_differentFitAll()
     legf2->SetTextSize(0.03);
     legf2->Draw();
 
-    // cFitf2All->SaveAs((path + "/DifferentFitFunc/AllFits_f2.png").c_str());
+    cFitf2All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f2.pdf").c_str());
 
     //====================================Plotting All Fits on Same Canvas for f0(1710)==========================================
     TCanvas *cFitf0All = new TCanvas("cFitf0All", "All Fits for f0(1710)", 720, 720);
@@ -350,15 +350,18 @@ void read_yield_differentFitAll()
     legf0->SetFillStyle(0);
     legf0->SetTextSize(0.03);
     legf0->Draw();
-    // cFitf0All->SaveAs((path + "/DifferentFitFunc/AllFits_f0.png").c_str());
+    cFitf0All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f0.pdf").c_str());
 
     // Print Chi2/NDF, dN/dy and <pT> for each fit function
     // Lambda function to avoid code repetition
     auto printFitResults = [](TF1 *fitFunc, TH1 *hout, const string &fitName, const string &mesonName)
     {
         cout << fitName << " " << mesonName << " , Chi2 " << fitFunc->GetChisquare() << " NDF " << fitFunc->GetNDF() << endl;
-        cout << "dN/dy : " << hout->GetBinContent(1) << " +/- " << hout->GetBinContent(2) << endl;
-        cout << "<pT> : " << hout->GetBinContent(5) << " +/- " << hout->GetBinContent(6) << endl;
+        // cout << "dN/dy : " << hout->GetBinContent(1) << " +/- " << hout->GetBinContent(2) << endl;
+        cout << "<pT> : " << hout->GetBinContent(5) << endl;
+        cout << "Stat. error "<< hout->GetBinContent(6)<<endl;
+        cout << "Sys. error low "<< hout->GetBinContent(7)<<endl;
+        cout << "Sys. error high "<< hout->GetBinContent(8)<<endl;
         cout << "Low pT extrapolation contribution (%): " << hout->GetBinContent(10) * 100 << endl;
         cout << endl;
     };

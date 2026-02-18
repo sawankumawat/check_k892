@@ -304,7 +304,7 @@ void read_yield_ptRoot_single()
     band1710Mass->SetLineWidth(0);
     leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
     leg1710Mass->Draw();
-    cMass1710->SaveAs(savePath + "/Mass1710.png");
+    // cMass1710->SaveAs(savePath + "/Mass1710.png");
 
     // TCanvas *cWidth1710 = new TCanvas("cWidth1710", "Width vs #it{p}_{T} for f_{0}(1710)", 720, 720);
     // SetCanvasStyle(cWidth1710, 0.18, 0.03, 0.05, 0.14);
@@ -367,7 +367,7 @@ void read_yield_ptRoot_single()
     band1525Mass->SetLineWidth(0);
     leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
     leg1525Mass->Draw();
-    cMass1525->SaveAs(savePath + "/Mass1525.png");
+    // cMass1525->SaveAs(savePath + "/Mass1525.png");
 
     // TCanvas *cMass1270 = new TCanvas("cMass1270", "Mass vs #it{p}_{T} for f_{2}(1270)", 720, 720);
     // SetCanvasStyle(cMass1270, 0.18, 0.03, 0.05, 0.14);
@@ -431,7 +431,7 @@ void read_yield_ptRoot_single()
     legSignificance->AddEntry(hSignificance1710, "f_{0}(1710)", "l");
     legSignificance->AddEntry(hSignificance1525, "f_{2}'(1525)", "l");
     legSignificance->Draw();
-    cSignificance->SaveAs(savePath + "/Significancef0f2.png");
+    // cSignificance->SaveAs(savePath + "/Significancef0f2.png");
 
     TCanvas *cYieldCorrectedf1525 = new TCanvas("cYieldCorrectedf1525", "Yield vs #it{p}_{T} for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cYieldCorrectedf1525, 0.18, 0.03, 0.05, 0.14);
@@ -446,7 +446,7 @@ void read_yield_ptRoot_single()
     hYield1525Corrected->SetMinimum(-2e-7);
     hYield1525Corrected->Write();
     hYield1525Corrected->Draw("pe");
-    cYieldCorrectedf1525->SaveAs(savePath + "/CorrectedYieldf2.png");
+    // cYieldCorrectedf1525->SaveAs(savePath + "/CorrectedYieldf2.png");
 
     TCanvas *cYieldCorrected1710 = new TCanvas("cYieldCorrected1710", "Yield vs #it{p}_{T} for f_{0}(1710)", 720, 720);
     SetCanvasStyle(cYieldCorrected1710, 0.18, 0.03, 0.05, 0.14);
@@ -461,7 +461,7 @@ void read_yield_ptRoot_single()
     hYield1710Corrected->SetMinimum(-2e-7);
     hYield1710Corrected->Write();
     hYield1710Corrected->Draw("pe");
-    cYieldCorrected1710->SaveAs(savePath + "/CorrectedYieldf0.png");
+    // cYieldCorrected1710->SaveAs(savePath + "/CorrectedYieldf0.png");
 
     // TCanvas *cYieldRatio = new TCanvas("cYieldRatio", "Yield ratio vs #it{p}_{T} for f_{0}(1710)/f_{2}'(1525)", 720, 720);
     // SetCanvasStyle(cYieldRatio, 0.18, 0.03, 0.05, 0.14);
@@ -518,7 +518,7 @@ void read_yield_ptRoot_single()
     legEff->AddEntry(hefficiencyf0, "f_{0}(1710)", "p");
     legEff->AddEntry(hefficiencyf2, "f_{2}'(1525)", "p");
     legEff->Draw();
-    cEfficiencyf0f2->SaveAs(savePath + "/Efficiencyf0f2.png");
+    // cEfficiencyf0f2->SaveAs(savePath + "/Efficiencyf0f2.png");
 
     TCanvas *cRawYieldf2 = new TCanvas("cRawYieldf2", "Raw #it{p}_{T} distribution for f_{2}(1525)", 720, 720);
     SetCanvasStyle(cRawYieldf2, 0.18, 0.03, 0.05, 0.14);
@@ -532,11 +532,11 @@ void read_yield_ptRoot_single()
     hYield1525Raw->SetMaximum(2e-5);
     hYield1525Raw->SetMinimum(2e-9);
     hYield1525Raw->SetMarkerSize(1.5);
-    hYield1525Raw->SetMarkerColor(kBlue);
-    hYield1525Raw->SetLineColor(kBlue);
+    // hYield1525Raw->SetMarkerColor(kBlue);
+    // hYield1525Raw->SetLineColor(kBlue);
     hYield1525Raw->Write();
     hYield1525Raw->Draw("pe");
-    TLegend *legend2 = new TLegend(0.55, 0.67, 0.91, 0.93);
+    TLegend *legend2 = new TLegend(0.53, 0.67, 0.89, 0.93);
     legend2->SetBorderSize(0);
     legend2->SetFillStyle(0);
     legend2->SetTextSize(0.035);
@@ -545,7 +545,7 @@ void read_yield_ptRoot_single()
     legend2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "p");
     legend2->Draw();
-    cRawYieldf2->SaveAs(savePath + "/RawYieldf2.png");
+    cRawYieldf2->SaveAs(savePath + "/RawYieldf2.pdf");
 
     TCanvas *cRawYieldf0 = new TCanvas("cRawYieldf0", "Raw #it{p}_{T} distribution for f_{0}(1710)", 720, 720);
     SetCanvasStyle(cRawYieldf0, 0.18, 0.03, 0.05, 0.14);
@@ -559,11 +559,11 @@ void read_yield_ptRoot_single()
     hYield1710Raw->SetMaximum(2e-5);
     hYield1710Raw->SetMinimum(2e-9);
     hYield1710Raw->SetMarkerSize(1.5);
-    hYield1710Raw->SetMarkerColor(kBlue);
-    hYield1710Raw->SetLineColor(kBlue);
+    // hYield1710Raw->SetMarkerColor(kBlue);
+    // hYield1710Raw->SetLineColor(kBlue);
     hYield1710Raw->Write();
     hYield1710Raw->Draw("pe same");
-    TLegend *legend3 = new TLegend(0.55, 0.67, 0.91, 0.93);
+    TLegend *legend3 = new TLegend(0.53, 0.67, 0.89, 0.93);
     legend3->SetBorderSize(0);
     legend3->SetFillStyle(0);
     legend3->SetTextSize(0.035);
@@ -572,7 +572,7 @@ void read_yield_ptRoot_single()
     legend3->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "p");
     legend3->Draw();
-    cRawYieldf0->SaveAs(savePath + "/RawYieldf0.png");
+    cRawYieldf0->SaveAs(savePath + "/RawYieldf0.pdf");
 
     TH1F *h1 = (TH1F *)hYield1525Corrected->Clone("h1");
     TH1F *h2 = (TH1F *)hYield1525Corrected->Clone("h2");
@@ -631,7 +631,7 @@ void read_yield_ptRoot_single()
     fitFcn->Draw("l same");
     legend2->AddEntry(fitFcn, "Levy-Tsallis fit", "l");
     legend2->Draw();
-    cCorrectedf2Fit->SaveAs(savePath + "/LevyFitf2.png");
+    // cCorrectedf2Fit->SaveAs(savePath + "/LevyFitf2.png");
 
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
@@ -650,7 +650,7 @@ void read_yield_ptRoot_single()
     fitFcn2->Draw("l same");
     legend3->AddEntry(fitFcn2, "Levy-Tsallis fit", "l");
     legend3->Draw();
-    cCorrectedf0Fit->SaveAs(savePath + "/LevyFitf0.png");
+    // cCorrectedf0Fit->SaveAs(savePath + "/LevyFitf0.png");
 
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
     if (flightFlavourHadrons->IsZombie())
@@ -863,7 +863,7 @@ void read_yield_ptRoot_single()
     legend4->AddEntry(marker_f0, "f_{0}(1710) (13.6 TeV)", "p");
     legend4->AddEntry(pol1_meson, "Pol 1", "l");
     legend4->Draw();
-    cMeanPt->SaveAs(savePath + "/MeanPt_vs_Mass.png");
+    // cMeanPt->SaveAs(savePath + "/MeanPt_vs_Mass.png");
 
     TGraphErrors *gMeanPtBothTemp = new TGraphErrors();
     gMeanPtBothTemp->SetPoint(0, 1.5173, hout->GetBinContent(5)); // PDG mass of f2(1525) is 1.5173GeV/c2

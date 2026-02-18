@@ -17,9 +17,9 @@ float parameter0(float mass, float width);
 void glueball_KsKs_channel()
 {
     // change here ***********************************************************
-    // const string kResBkg = "MIX";
-    const string kResBkg = "ROTATED";
-    const bool makeQAplots = true;
+    const string kResBkg = "MIX";
+    // const string kResBkg = "ROTATED";
+    const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     const bool save_multiPanel_plots = false;
@@ -51,8 +51,8 @@ void glueball_KsKs_channel()
         // Folder name inside the Analysis.root file *****************************************
         if (!save_invmass_distributions)
             gStyle->SetOptFit(1111);
-        gStyle->SetOptStat(1110);
-        // gStyle->SetOptStat(0);
+        // gStyle->SetOptStat(1110);
+        gStyle->SetOptStat(0);
 
         t2->SetNDC(); // to self adjust the text so that it remains in the box
         t2->SetTextSize(0.045);
@@ -423,13 +423,13 @@ void glueball_KsKs_channel()
 
             */
 
-            float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
-            // TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
-            // SetCanvasStyle(c1divide, 0.15, 0.03, 0.05, 0.15);
-            // c1divide->Divide(2, 2);
-            // TCanvas *c2divide = new TCanvas("", "all_bins", 1440, 720);
-            // SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
-            // c2divide->Divide(2, 2);
+            // float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
+            TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
+            SetCanvasStyle(c1divide, 0.15, 0.03, 0.05, 0.15);
+            c1divide->Divide(3, 2);
+            TCanvas *c2divide = new TCanvas("", "all_bins", 1440, 720);
+            SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
+            c2divide->Divide(3, 2);
 
             // /*
 
@@ -533,9 +533,9 @@ void glueball_KsKs_channel()
                     fHistTotal[ip]->Rebin(kRebin[ip]);
 
                     //*****************************************************************************************************
-                    TCanvas *c1 = new TCanvas("", "", 720, 720);
-                    SetCanvasStyle(c1, 0.15, 0.015, 0.05, 0.155);
-                    // c1divide->cd(ip + 1);
+                    // TCanvas *c1 = new TCanvas("", "", 720, 720);
+                    // SetCanvasStyle(c1, 0.15, 0.015, 0.05, 0.155);
+                    c1divide->cd(ip + 1);
                     gPad->SetBottomMargin(0.15);
                     gPad->SetLeftMargin(0.15);
                     gPad->SetRightMargin(0.05);
@@ -572,8 +572,9 @@ void glueball_KsKs_channel()
                     // }
                     // gPad->Modified(); // Necessary to update the canvas with the new text size
                     // gPad->Update();
-                    TLegend *lp2 = DrawLegend(0.55, 0.58, 0.85, 0.89);
-                    lp2->SetTextSize(0.035);
+                    // TLegend *lp2 = DrawLegend(0.55, 0.58, 0.85, 0.89);
+                    TLegend *lp2 = DrawLegend(0.55, 0.65, 0.85, 0.92);
+                    lp2->SetTextSize(0.039);
                     // lp2->SetTextSize(0.055);
                     lp2->SetTextFont(42);
                     lp2->SetFillStyle(0);
@@ -581,17 +582,25 @@ void glueball_KsKs_channel()
                     lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
                     lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
                     lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
-                    lp2->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpt, highpt), "");
-                    lp2->Draw("same");
+                    // lp2->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpt, highpt), "");
+                    if (ip == 0)
+                        lp2->Draw("same");
 
-                    if (save_invmass_distributions)
-                    {
-                        c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
-                    }
+                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    TLine *lineat0 = new TLine(1.0, 0, 2.50, 0);
+                    lineat0->SetLineColor(kRed);
+                    lineat0->SetLineStyle(2);
+                    lineat0->SetLineWidth(2);
+                    lineat0->Draw("same");
 
-                    TCanvas *c2 = new TCanvas("", "", 720, 720);
-                    SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
-                    // c2divide->cd(ip + 1);
+                    // if (save_invmass_distributions)
+                    // {
+                    //     c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+                    // }
+
+                    // TCanvas *c2 = new TCanvas("", "", 720, 720);
+                    // SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
+                    c2divide->cd(ip + 1);
                     gPad->SetBottomMargin(0.15);
                     gPad->SetLeftMargin(0.15);
                     gPad->SetRightMargin(0.05);
@@ -647,14 +656,19 @@ void glueball_KsKs_channel()
                     // if (kResBkg == "MIX")
                     hbkg_nopeak->SetLineWidth(0);
                     leg->AddEntry(hbkg_nopeak, "Normalization region", "f");
-                    leg->Draw();
-                    lp2->Draw("same");
+                    if (ip == 0)
+                    {
+                        leg->Draw();
+                        lp2->Draw("same");
+                    }
+                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+
 
                     // // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                    if (save_invmass_distributions)
-                    {
-                        c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
-                    }
+                    // if (save_invmass_distributions)
+                    // {
+                    //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+                    // }
                     // c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
 
                     // cbkgall1->cd(ip + 1);
@@ -672,8 +686,8 @@ void glueball_KsKs_channel()
 
             // */
 
-            // c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
-            // c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());
+            c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
+            c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());
 
             // TCanvas *cbkg = new TCanvas("", "", 1080, 720);
             // cbkg->Divide(2, 2);

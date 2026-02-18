@@ -41,7 +41,7 @@ void glueball_fit_4rBW_simple()
         //****************systematics train*******************************
         // const string kvariation1 = variations[isysvars];
         //======== For fitting and normalization range variations ==========
-        const string kvariation1 = "_Default2";
+        const string kvariation1 = "_Default3";
         // const string kvariation1 = "_fitLow1p07";
         // const string kvariation1 = "_fitHigh2p17";
         // const string kvariation1 = "_fitHigh2p25"; // Low fit is 1.045 (without it same as default)
@@ -155,6 +155,8 @@ void glueball_fit_4rBW_simple()
             TH1F *hMass[4];
             TH1F *hWidth[4];
             TH1F *hYield[4];
+            TH1F *hMass_res[4];
+            TH1F *hYield_res[4];
 
             for (int ires = 0; ires < 4; ires++)
             {
@@ -163,6 +165,9 @@ void glueball_fit_4rBW_simple()
                 hMass[ires] = new TH1F(Form("hMass%d", (int)masses[ires]), Form("Mass of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
                 hWidth[ires] = new TH1F(Form("hWidth%d", (int)masses[ires]), Form("Width of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
                 hYield[ires] = new TH1F(Form("hYield%d", (int)masses[ires]), Form("Raw Yield of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
+
+                hMass_res[ires] = new TH1F(Form("hMass_res%d", (int)masses[ires]), Form("Mass of %s from Residual vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
+                hYield_res[ires] = new TH1F(Form("hYield_res%d", (int)masses[ires]), Form("Raw Yield of %s from Residual vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
             }
 
             // // Temporary for single multiplicity class checking
@@ -338,7 +343,7 @@ void glueball_fit_4rBW_simple()
                     }
 
                     // vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {2, 3 * f1270WidthErr}, {4, 1 * a1320Width}, {5, 5 * a1320WidthErr}, {7, 1 * f1525Width}, {8, 3 * f1525WidthErr}, {10, 0.45 * f1710Width}, {11, 3 * f1710WidthErr}};
-                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {2, 3 * f1270WidthErr}, {4, 1 * a1320Width}, {5, 5 * a1320WidthErr}, {7, 1 * f1525Width}, {8, 3 * f1525WidthErr}, {10, 1 * f1710Width}, {11, 3 * f1710WidthErr}};
+                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {2, 3 * f1270WidthErr}, {4, 1 * a1320Width}, {5, 5 * a1320WidthErr}, {7, 1 * f1525Width}, {8, 3 * f1525WidthErr}, {10, 1 * f1710Width}, {11, 3 * f1710WidthErr}}; // Keep width in 5 sigma for width free case for f0(1710)
 
                     int limits_size = par_limits.size();
                     for (int i = 0; i < limits_size; i++)
@@ -375,6 +380,11 @@ void glueball_fit_4rBW_simple()
                     BEexpol->FixParameter(11, f1710Width);
                     if (ipt == 0)
                         BEexpol->SetParLimits(10, f1710Mass - 0.03, f1710Mass + 0.03);
+
+                    // if (ipt == 0) // for width free case (used for comparison with pt-integrated fit)
+                    // {
+                    //     BEexpol->SetParLimits(11, f1710Width - 0.01, f1710Width + 0.01);
+                    // }
 
                     // if (ipt == 1)
                     //     BEexpol->SetParLimits(9, 350, 450); // 580-3500, used in
@@ -457,7 +467,7 @@ void glueball_fit_4rBW_simple()
                     // onlyBW_clone->FixParameter(10, f1710Mass);
                     onlyBW_clone->FixParameter(11, f1710Width);
                     if (ipt == 0)
-                        onlyBW_clone->SetParLimits(10, f1710Mass - 0.05, f1710Mass + 0.05);
+                        onlyBW_clone->SetParLimits(10, f1710Mass - 0.03, f1710Mass + 0.03);
 
                     onlyBW->SetLineColor(4);
                     onlyBW->SetLineStyle(2);
@@ -835,7 +845,7 @@ void glueball_fit_4rBW_simple()
                     hsubtracted->GetYaxis()->SetTitleOffset(1.0);
                     hsubtracted->Draw();
                     onlyBW_clone->SetNpx(1000);
-                    hsubtracted->Fit("onlyBW_clone", "REBMSQ");
+                    TFitResultPtr fitResultptr_res = hsubtracted->Fit("onlyBW_clone", "REBMSQ");
                     // onlyBW_clone->Draw("same");
                     double *obtained_parameters2 = onlyBW_clone->GetParameters();
                     TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
@@ -944,14 +954,14 @@ void glueball_fit_4rBW_simple()
                     // double fitrangelow = BEexpol->GetXmin();
                     // double fitrangehigh = BEexpol->GetXmax();
 
-                    TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
-                    TMatrixDSym cov1;
-                    TMatrixDSym cov2;
-                    cov.GetSub(0, 11, 0, 11, cov1);
-                    cov.GetSub(12, 15, 12, 15, cov2);
-                    Double_t *b = cov1.GetMatrixArray();
-                    Double_t *a = cov2.GetMatrixArray();
-                    Double_t *para = onlyBW_clone->GetParameters();
+                    // TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
+                    // TMatrixDSym cov1;
+                    // TMatrixDSym cov2;
+                    // cov.GetSub(0, 11, 0, 11, cov1);
+                    // cov.GetSub(12, 15, 12, 15, cov2);
+                    // Double_t *b = cov1.GetMatrixArray();
+                    // Double_t *a = cov2.GetMatrixArray();
+                    // Double_t *para = onlyBW_clone->GetParameters();
 
                     float nsigma_yield = 5.0;
                     double fitRegion1270_low = f1270Mass - nsigma_yield * f1270Width;
@@ -962,6 +972,7 @@ void glueball_fit_4rBW_simple()
                     double fitRegion1525_high = f1525Mass + nsigma_yield * f1525Width;
                     double fitRegion1710_low = f1710Mass - nsigma_yield * f1710Width;
                     double fitRegion1710_high = f1710Mass + nsigma_yield * f1710Width;
+
                     if (fitRegion1270_low < fitrangelow)
                         fitRegion1270_low = fitrangelow;
                     if (fitRegion1320_low < fitrangelow)
@@ -977,13 +988,29 @@ void glueball_fit_4rBW_simple()
                     double yield1525Integral = singlefits[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
                     double yield1710Integral = singlefits[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
 
+                    // Yield calculation after residual background subtraction
+                    double yield1270Integral_res = singlefits1[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1320Integral_res = singlefits1[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1525Integral_res = singlefits1[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1710Integral_res = singlefits1[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
+
                     // Create individual covariance matrices for each resonance (3x3 each)
+                    TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
                     TMatrixDSym cov1270(3), cov1320(3), cov1525(3), cov1710(3);
                     cov.GetSub(0, 2, 0, 2, cov1270);   // f1270: parameters 0-2
                     cov.GetSub(3, 5, 3, 5, cov1320);   // a1320: parameters 3-5
                     cov.GetSub(6, 8, 6, 8, cov1525);   // f1525: parameters 6-8
                     cov.GetSub(9, 11, 9, 11, cov1710); // f1710: parameters 9-11
 
+                    // Individual covariance matrices after residual background subtraction
+                    TMatrixDSym cov_res = fitResultptr_res->GetCovarianceMatrix();
+                    TMatrixDSym cov1270_res(3), cov1320_res(3), cov1525_res(3), cov1710_res(3);
+                    cov_res.GetSub(0, 2, 0, 2, cov1270_res);   // f1270: parameters 0-2
+                    cov_res.GetSub(3, 5, 3, 5, cov1320_res);   // a1320: parameters 3-5
+                    cov_res.GetSub(6, 8, 6, 8, cov1525_res);   // f1525: parameters 6-8
+                    cov_res.GetSub(9, 11, 9, 11, cov1710_res); // f1710: parameters 9-11
+
+                    // Covariance matrices for combined fits
                     Double_t *cov1270_array = cov1270.GetMatrixArray();
                     Double_t *cov1320_array = cov1320.GetMatrixArray();
                     Double_t *cov1525_array = cov1525.GetMatrixArray();
@@ -994,6 +1021,18 @@ void glueball_fit_4rBW_simple()
                     Double_t *para1525 = singlefits[2]->GetParameters();
                     Double_t *para1710 = singlefits[3]->GetParameters();
 
+                    // Covariance matrices for residual background subtracted fits
+                    Double_t *cov1270_res_array = cov1270_res.GetMatrixArray();
+                    Double_t *cov1320_res_array = cov1320_res.GetMatrixArray();
+                    Double_t *cov1525_res_array = cov1525_res.GetMatrixArray();
+                    Double_t *cov1710_res_array = cov1710_res.GetMatrixArray();
+
+                    Double_t *para1270_res = singlefits1[0]->GetParameters();
+                    Double_t *para1320_res = singlefits1[1]->GetParameters();
+                    Double_t *para1525_res = singlefits1[2]->GetParameters();
+                    Double_t *para1710_res = singlefits1[3]->GetParameters();
+
+                    // Errors propagation for yields using the covariance matrix
                     double yield1270_err = singlefits[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270, cov1270_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1320_err = singlefits[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320, cov1320_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1525_err = singlefits[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525, cov1525_array) / (ptBinWidth * binwidthfile * total_events);
@@ -1003,6 +1042,12 @@ void glueball_fit_4rBW_simple()
                     cout << "Yield 1320: " << yield1320Integral << " +- " << yield1320_err << endl;
                     cout << "Yield 1525: " << yield1525Integral << " +- " << yield1525_err << endl;
                     cout << "Yield 1710: " << yield1710Integral << " +- " << yield1710_err << endl;
+
+                    // Errors for residual background subtracted yields
+                    double yield1270_res_err = singlefits1[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270_res, cov1270_res_array) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1320_res_err = singlefits1[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320_res, cov1320_res_array) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1525_res_err = singlefits1[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525_res, cov1525_res_array) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1710_res_err = singlefits1[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710_res, cov1710_res_array) / (ptBinWidth * binwidthfile * total_events);
 
                     hChi2NDF->SetBinContent(ipt + 1, BEexpol->GetChisquare() / BEexpol->GetNDF());
                     hChi2NDF->SetBinError(ipt + 1, 0);
@@ -1015,6 +1060,9 @@ void glueball_fit_4rBW_simple()
                         double yield_temp = 0.0;
                         double yieldErr_temp = 0.0;
 
+                        double yield_res_temp = 0.0;
+                        double yieldErr_res_temp = 0.0;
+
                         if (ires == 0)
                         {
                             mass_temp = fitmass1270;
@@ -1023,6 +1071,9 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1270_err;
                             yield_temp = yield1270Integral;
                             yieldErr_temp = yield1270_err;
+
+                            yield_res_temp = yield1270Integral_res;
+                            yieldErr_res_temp = yield1270_res_err;
                         }
                         else if (ires == 1)
                         {
@@ -1032,6 +1083,9 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1320_err;
                             yield_temp = yield1320Integral;
                             yieldErr_temp = yield1320_err;
+
+                            yield_res_temp = yield1320Integral_res;
+                            yieldErr_res_temp = yield1320_res_err;
                         }
                         else if (ires == 2)
                         {
@@ -1041,6 +1095,9 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1525_err;
                             yield_temp = yield1525Integral;
                             yieldErr_temp = yield1525_err;
+
+                            yield_res_temp = yield1525Integral_res;
+                            yieldErr_res_temp = yield1525_res_err;
                         }
                         else
                         {
@@ -1050,6 +1107,9 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1710_err;
                             yield_temp = yield1710Integral;
                             yieldErr_temp = yield1710_err;
+
+                            yield_res_temp = yield1710Integral_res;
+                            yieldErr_res_temp = yield1710_res_err;
                         }
 
                         hMass[ires]->SetBinContent(ipt + 1, mass_temp);
@@ -1058,6 +1118,12 @@ void glueball_fit_4rBW_simple()
                         hWidth[ires]->SetBinError(ipt + 1, widthErr_temp);
                         hYield[ires]->SetBinContent(ipt + 1, yield_temp);
                         hYield[ires]->SetBinError(ipt + 1, yieldErr_temp);
+
+                        // For residual background subtracted results
+                        hMass_res[ires]->SetBinContent(ipt + 1, onlyBW_clone->GetParameter(3 * ires + 1));
+                        hMass_res[ires]->SetBinError(ipt + 1, onlyBW_clone->GetParError(3 * ires + 1));
+                        hYield_res[ires]->SetBinContent(ipt + 1, yield_res_temp);
+                        hYield_res[ires]->SetBinError(ipt + 1, yieldErr_res_temp);
                     }
 
 #ifdef doublepanelplot
@@ -1294,6 +1360,9 @@ void glueball_fit_4rBW_simple()
                 hYield[ires]->Write(Form("hYield_%s", resonance_mass[ires].c_str()));
                 hSignificance[ires]->Write(Form("hSignificance_%s", resonance_mass[ires].c_str()));
                 hStatSignificance[ires]->Write(Form("hStatSignificance_%s", resonance_mass[ires].c_str()));
+
+                hMass_res[ires]->Write(Form("hMass_res_%s", resonance_mass[ires].c_str()));
+                hYield_res[ires]->Write(Form("hYield_res_%s", resonance_mass[ires].c_str()));
             }
 #ifdef multiPanelPlots
             cMultiPanelResidual->SaveAs((path2 + Form("/rBWfit_residuals_multpanel%s.png", kvariation1.c_str())).c_str());

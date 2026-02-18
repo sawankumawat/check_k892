@@ -3,7 +3,7 @@
 #include "../src/style.h"
 #include "../src/common_glue.h"
 
-void compare_mass_yield()
+void compare_mass_yield_coherent()
 {
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
     TFile *fDefault = new TFile((path + "spectra_Default2.root").c_str(), "READ");

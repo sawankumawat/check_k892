@@ -5,14 +5,15 @@ using namespace std;
 void checkVectorSizeMatch(const vector<string> &varNames, const vector<int> &nVariations, const string &categoryName);
 void calculateRelativeUncertainty(TH1F *hDefault, TH1F *hVariation, TH1F *hRelUncertainty, string suffix);
 void checkBarlowSignificance(TH1F *hDefault, TH1F *hVariation, TH1F *hBarlow, string variationName, string type, bool &barlowPassed);
-void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F *defaultHist, TCanvas *canvas, TCanvas *canvasBarlow, vector<TH1F *> *resultVector, const string &histPath, const string &suffix, const string &path, const string &categoryName, const string &categoryType);
-void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, const int nVariations, TH1F *&hAvgQuadratureSum, const char *name);
+void processVariations(TFile **fVariations, const vector<string> &varNames, const vector<int> &nVariations, TH1F *defaultHist, TCanvas *canvas, TCanvas *canvasBarlow, vector<vector<TH1F *>> *resultVectors, const string &histPath, const string &suffix, const string &path, const string &categoryName, const string &categoryType);
+void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, TH1F *&hAvgQuadratureSum, const char *name);
 void QuadratureSum(const vector<TH1F *> &hVariationHistos, TH1F *&hQuadratureSum);
 void Smoothening(TH1F *h, int iterations = 2);
 
 void systematics_pt()
 {
     bool saveRelUncertHisto = true;
+    gStyle->SetOptStat(0);
     // //========= Systematic information =================
     // 1. Signal extraction
     // 1a. Fit range: 3 variations (1 in left and 2 in right)
@@ -147,7 +148,9 @@ void systematics_pt()
         string canvasType = CanvasTypes[typeIdx];
 
         // Relative uncertainty histograms storage for this type
-        vector<TH1F *> hMassVar_relUncert_sigExt, hMassVar_relUncert_trackSel, hMassVar_relUncert_topSel;
+        vector<vector<TH1F *>> hMassVar_relUncert_sigExt(nVarSigExt.size());
+        vector<vector<TH1F *>> hMassVar_relUncert_trackSel(nVarTrk.size());
+        vector<vector<TH1F *>> hMassVar_relUncert_topSel(nVarTop.size());
 
         // Create canvases for this type
         TCanvas *cSigExtract = new TCanvas(Form("cSigExtract_%s", canvasType.c_str()), Form("Signal Extraction Systematics %s", canvasType.c_str()), 2880, 1440);
@@ -165,8 +168,13 @@ void systematics_pt()
         cTopSelect_Barlow->Divide(4, 3);
 
         // Process variations for Signal Extraction
-        processVariations(fVarSignalExtraction, SignalExtractionVars, defaultHist_SigExt, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
-        cout << "Size of relative uncertainty vector for signal extraction: " << hMassVar_relUncert_sigExt.size() << endl;
+        processVariations(fVarSignalExtraction, SignalExtractionVars, nVarSigExt, defaultHist_SigExt, cSigExtract, cSigExtract_Barlow, &hMassVar_relUncert_sigExt, histPath, suffix, path, "SignalExtrct", "Signal Extraction");
+        size_t totalSigExtKept = 0;
+        for (const auto &vec : hMassVar_relUncert_sigExt)
+        {
+            totalSigExtKept += vec.size();
+        }
+        cout << "Size of relative uncertainty vector for signal extraction: " << totalSigExtKept << endl;
 
         if (saveRelUncertHisto)
         {
@@ -175,7 +183,7 @@ void systematics_pt()
         }
 
         // Process variations for Track Selection
-        processVariations(fVarTrackSelection, TrackSelectionVars, defaultHist, cTrackSelect, cTrackSelect_Barlow, &hMassVar_relUncert_trackSel, histPath, suffix, path, "TrackSelect", "Track Selection");
+        processVariations(fVarTrackSelection, TrackSelectionVars, nVarTrk, defaultHist, cTrackSelect, cTrackSelect_Barlow, &hMassVar_relUncert_trackSel, histPath, suffix, path, "TrackSelect", "Track Selection");
 
         if (saveRelUncertHisto)
         {
@@ -184,7 +192,7 @@ void systematics_pt()
         }
 
         // Process variations for Topological Selection
-        processVariations(fVarTopologicalSelection, TopologicalSelectionVars, defaultHist, cTopSelect, cTopSelect_Barlow, &hMassVar_relUncert_topSel, histPath, suffix, path, "TopologicalSelect", "Topological Selection");
+        processVariations(fVarTopologicalSelection, TopologicalSelectionVars, nVarTop, defaultHist, cTopSelect, cTopSelect_Barlow, &hMassVar_relUncert_topSel, histPath, suffix, path, "TopologicalSelect", "Topological Selection");
 
         if (saveRelUncertHisto)
         {
@@ -198,18 +206,15 @@ void systematics_pt()
         TH1F *hSigExt_source3;
         TH1F *hSigExt_source4;
         TH1F *hSigExt_total;
-        vector<TH1F *> vec_source1(hMassVar_relUncert_sigExt.begin(), hMassVar_relUncert_sigExt.begin() + nVarSigExt[0]);
-        vector<TH1F *> vec_source2(hMassVar_relUncert_sigExt.begin() + nVarSigExt[0],
-                                   hMassVar_relUncert_sigExt.begin() + nVarSigExt[0] + nVarSigExt[1]);
-        vector<TH1F *> vec_source3(hMassVar_relUncert_sigExt.begin() + nVarSigExt[0] + nVarSigExt[1],
-                                   hMassVar_relUncert_sigExt.begin() + nVarSigExt[0] + nVarSigExt[1] + nVarSigExt[2]);
-        vector<TH1F *> vec_source4(hMassVar_relUncert_sigExt.begin() + nVarSigExt[0] + nVarSigExt[1] + nVarSigExt[2],
-                                   hMassVar_relUncert_sigExt.end());
+        const vector<TH1F *> &vec_source1 = hMassVar_relUncert_sigExt[0];
+        const vector<TH1F *> &vec_source2 = hMassVar_relUncert_sigExt[1];
+        const vector<TH1F *> &vec_source3 = hMassVar_relUncert_sigExt[2];
+        const vector<TH1F *> &vec_source4 = hMassVar_relUncert_sigExt[3];
 
-        averageQuadratureSum(vec_source1, nVarSigExt[0], hSigExt_source1, Form("hSigExt_AvgQuadSum_Source1_%s", suffix.c_str()));
-        averageQuadratureSum(vec_source2, nVarSigExt[1], hSigExt_source2, Form("hSigExt_AvgQuadSum_Source2_%s", suffix.c_str()));
-        averageQuadratureSum(vec_source3, nVarSigExt[2], hSigExt_source3, Form("hSigExt_AvgQuadSum_Source3_%s", suffix.c_str()));
-        averageQuadratureSum(vec_source4, nVarSigExt[3], hSigExt_source4, Form("hSigExt_AvgQuadSum_Source4_%s", suffix.c_str()));
+        averageQuadratureSum(vec_source1, hSigExt_source1, Form("hSigExt_AvgQuadSum_Source1_%s", suffix.c_str()));
+        averageQuadratureSum(vec_source2, hSigExt_source2, Form("hSigExt_AvgQuadSum_Source2_%s", suffix.c_str()));
+        averageQuadratureSum(vec_source3, hSigExt_source3, Form("hSigExt_AvgQuadSum_Source3_%s", suffix.c_str()));
+        averageQuadratureSum(vec_source4, hSigExt_source4, Form("hSigExt_AvgQuadSum_Source4_%s", suffix.c_str()));
         vector<TH1F *> vec_total = {hSigExt_source1, hSigExt_source2, hSigExt_source3, hSigExt_source4};
         QuadratureSum(vec_total, hSigExt_total);
 
@@ -251,14 +256,11 @@ void systematics_pt()
         TH1F *hTrkSel_source2;
         // TH1F *hTrkSel_source3;
         TH1F *hTrkSel_total;
-        vector<TH1F *> vec_trk_source1(hMassVar_relUncert_trackSel.begin(), hMassVar_relUncert_trackSel.begin() + nVarTrk[0]);
-        vector<TH1F *> vec_trk_source2(hMassVar_relUncert_trackSel.begin() + nVarTrk[0],
-                                       hMassVar_relUncert_trackSel.begin() + nVarTrk[0] + nVarTrk[1]);
-        vector<TH1F *> vec_trk_source3(hMassVar_relUncert_trackSel.begin() + nVarTrk[0] + nVarTrk[1],
-                                       hMassVar_relUncert_trackSel.end());
+        const vector<TH1F *> &vec_trk_source1 = hMassVar_relUncert_trackSel[0];
+        const vector<TH1F *> &vec_trk_source2 = hMassVar_relUncert_trackSel[1];
 
-        averageQuadratureSum(vec_trk_source1, nVarTrk[0], hTrkSel_source1, Form("hTrkSel_AvgQuadSum_Source1_%s", suffix.c_str()));
-        averageQuadratureSum(vec_trk_source2, nVarTrk[1], hTrkSel_source2, Form("hTrkSel_AvgQuadSum_Source2_%s", suffix.c_str()));
+        averageQuadratureSum(vec_trk_source1, hTrkSel_source1, Form("hTrkSel_AvgQuadSum_Source1_%s", suffix.c_str()));
+        averageQuadratureSum(vec_trk_source2, hTrkSel_source2, Form("hTrkSel_AvgQuadSum_Source2_%s", suffix.c_str()));
         // averageQuadratureSum(vec_trk_source3, nVarTrk[2], hTrkSel_source3, Form("hTrkSel_AvgQuadSum_Source3_%s", suffix.c_str()));
         // vector<TH1F *> vec_trk_total = {hTrkSel_source1, hTrkSel_source2, hTrkSel_source3};
         vector<TH1F *> vec_trk_total = {hTrkSel_source1, hTrkSel_source2};
@@ -302,24 +304,19 @@ void systematics_pt()
         TH1F *hTopSel_source5;
         TH1F *hTopSel_source6;
         TH1F *hTopSel_total;
-        vector<TH1F *> vec_top_source1(hMassVar_relUncert_topSel.begin(), hMassVar_relUncert_topSel.begin() + nVarTop[0]);
-        vector<TH1F *> vec_top_source2(hMassVar_relUncert_topSel.begin() + nVarTop[0],
-                                       hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1]);
-        vector<TH1F *> vec_top_source3(hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1],
-                                       hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2]);
-        vector<TH1F *> vec_top_source4(hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2],
-                                       hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2] + nVarTop[3]);
-        vector<TH1F *> vec_top_source5(hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2] + nVarTop[3],
-                                       hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2] + nVarTop[3] + nVarTop[4]);
-        vector<TH1F *> vec_top_source6(hMassVar_relUncert_topSel.begin() + nVarTop[0] + nVarTop[1] + nVarTop[2] + nVarTop[3] + nVarTop[4],
-                                       hMassVar_relUncert_topSel.end());
+        const vector<TH1F *> &vec_top_source1 = hMassVar_relUncert_topSel[0];
+        const vector<TH1F *> &vec_top_source2 = hMassVar_relUncert_topSel[1];
+        const vector<TH1F *> &vec_top_source3 = hMassVar_relUncert_topSel[2];
+        const vector<TH1F *> &vec_top_source4 = hMassVar_relUncert_topSel[3];
+        const vector<TH1F *> &vec_top_source5 = hMassVar_relUncert_topSel[4];
+        const vector<TH1F *> &vec_top_source6 = hMassVar_relUncert_topSel[5];
 
-        averageQuadratureSum(vec_top_source1, nVarTop[0], hTopSel_source1, Form("hTopSel_AvgQuadSum_Source1_%s", suffix.c_str()));
-        averageQuadratureSum(vec_top_source2, nVarTop[1], hTopSel_source2, Form("hTopSel_AvgQuadSum_Source2_%s", suffix.c_str()));
-        averageQuadratureSum(vec_top_source3, nVarTop[2], hTopSel_source3, Form("hTopSel_AvgQuadSum_Source3_%s", suffix.c_str()));
-        averageQuadratureSum(vec_top_source4, nVarTop[3], hTopSel_source4, Form("hTopSel_AvgQuadSum_Source4_%s", suffix.c_str()));
-        averageQuadratureSum(vec_top_source5, nVarTop[4], hTopSel_source5, Form("hTopSel_AvgQuadSum_Source5_%s", suffix.c_str()));
-        averageQuadratureSum(vec_top_source6, nVarTop[5], hTopSel_source6, Form("hTopSel_AvgQuadSum_Source6_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source1, hTopSel_source1, Form("hTopSel_AvgQuadSum_Source1_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source2, hTopSel_source2, Form("hTopSel_AvgQuadSum_Source2_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source3, hTopSel_source3, Form("hTopSel_AvgQuadSum_Source3_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source4, hTopSel_source4, Form("hTopSel_AvgQuadSum_Source4_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source5, hTopSel_source5, Form("hTopSel_AvgQuadSum_Source5_%s", suffix.c_str()));
+        averageQuadratureSum(vec_top_source6, hTopSel_source6, Form("hTopSel_AvgQuadSum_Source6_%s", suffix.c_str()));
         vector<TH1F *> vec_top_total = {hTopSel_source1, hTopSel_source2, hTopSel_source3, hTopSel_source4, hTopSel_source5, hTopSel_source6};
         QuadratureSum(vec_top_total, hTopSel_total);
 
@@ -544,11 +541,17 @@ void checkBarlowSignificance(TH1F *hDefault, TH1F *hVariation, TH1F *hBarlow, st
     // std::cout << "|n| < 2 fraction = " << frac2 * 100 << "%" << std::endl;
 }
 
-void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F *defaultHist, TCanvas *canvas, TCanvas *canvasBarlow, vector<TH1F *> *resultVector, const string &histPath, const string &suffix, const string &path, const string &categoryName, const string &categoryType)
+void processVariations(TFile **fVariations, const vector<string> &varNames, const vector<int> &nVariations, TH1F *defaultHist, TCanvas *canvas, TCanvas *canvasBarlow, vector<vector<TH1F *>> *resultVectors, const string &histPath, const string &suffix, const string &path, const string &categoryName, const string &categoryType)
 {
-
+    int sourceIdx = 0;
+    int sourceEnd = nVariations.empty() ? 0 : nVariations[0];
     for (int i = 0; i < varNames.size(); i++)
     {
+        while (i >= sourceEnd && sourceIdx + 1 < static_cast<int>(nVariations.size()))
+        {
+            sourceIdx++;
+            sourceEnd += nVariations[sourceIdx];
+        }
         // Load variation histogram for this category
         TH1F *hist = (TH1F *)fVariations[i]->Get(histPath.c_str());
         if (hist == nullptr)
@@ -601,7 +604,7 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
         // Smoothening(hRelUncert);
         if (!barlowPassed) // skip adding to result vector if Barlow criteria not passed
         {
-            resultVector->push_back(hRelUncert);
+            (*resultVectors)[sourceIdx].push_back(hRelUncert);
         }
 
         // Draw on canvas
@@ -613,7 +616,7 @@ void processVariations(TFile **fVariations, const vector<string> &varNames, TH1F
     }
 }
 
-void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, const int nVariations, TH1F *&hAvgQuadratureSum, const char *name)
+void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, TH1F *&hAvgQuadratureSum, const char *name)
 {
     if (hVariationHistos.empty())
     {
@@ -621,7 +624,7 @@ void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, const int nVar
         return;
     }
     cout << "Category: " << name << endl;
-    cout << "Total variations for average quadrature sum: " << nVariations << endl;
+    cout << "Total variations for average quadrature sum: " << hVariationHistos.size() << endl;
     cout << "Size of vector provided: " << hVariationHistos.size() << endl;
 
     int nBins = hVariationHistos[0]->GetNbinsX();
@@ -639,7 +642,7 @@ void averageQuadratureSum(const vector<TH1F *> &hVariationHistos, const int nVar
             double value = hVar->GetBinContent(bin);
             sumSquares += value * value;
         }
-        double avgSquare = sumSquares / nVariations;
+        double avgSquare = sumSquares / static_cast<double>(hVariationHistos.size());
         hAvgQuadratureSum->SetBinContent(bin, sqrt(avgSquare));
     }
 }

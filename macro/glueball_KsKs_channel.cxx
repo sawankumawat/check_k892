@@ -220,11 +220,11 @@ void glueball_KsKs_channel()
 
                 if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 {
-                    auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normRangeLow), fHistTotal[ip]->GetXaxis()->FindBin(normRangeHigh)));
+                    auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
 
-                    auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(normRangeLow), fHistBkg[ip]->GetXaxis()->FindBin(normRangeHigh)));
+                    auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
 
-                    auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(normRangeLow), fHistRotated[ip]->GetXaxis()->FindBin(normRangeHigh)));
+                    auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
 
                     auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
                     auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
@@ -306,7 +306,7 @@ void glueball_KsKs_channel()
 
                 if (save_invmass_distributions)
                 {
-                    c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("cosTheta_%.1f_%.1f_norm_%.1f_%.1f.", lowTheta, highTheta, normRangeLow, normRangeHigh) + koutputtype).c_str());
+                    c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("cosTheta_%.1f_%.1f_norm_%.1f_%.1f.", lowTheta, highTheta, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
                 }
                 if (save_multiPanel_plots)
                 {
@@ -343,7 +343,7 @@ void glueball_KsKs_channel()
                 // hbkg_nopeak->SetFillStyle(3001);
                 for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
                 {
-                    if (hbkg_nopeak->GetBinCenter(i + 1) < normRangeLow || hbkg_nopeak->GetBinCenter(i + 1) > normRangeHigh)
+                    if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
                     {
                         hbkg_nopeak->SetBinContent(i + 1, -999);
                     }
@@ -389,7 +389,7 @@ void glueball_KsKs_channel()
                 // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
                 if (save_invmass_distributions)
                 {
-                    c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("cosTheta_%.1f_%.1f_norm_%.1f_%.1f.", lowTheta, highTheta, normRangeLow, normRangeHigh) + koutputtype).c_str());
+                    c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("cosTheta_%.1f_%.1f_norm_%.1f_%.1f.", lowTheta, highTheta, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
                 }
                 c2->Write(Form("ksks_invmass_withbkg_cosTheta_%.1f_%.1f", lowTheta, highTheta));
 
@@ -424,12 +424,12 @@ void glueball_KsKs_channel()
             */
 
             // float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
-            TCanvas *c1divide = new TCanvas("", "all_bins", 1080, 720);
+            TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
             SetCanvasStyle(c1divide, 0.15, 0.03, 0.05, 0.15);
-            c1divide->Divide(2, 2);
-            TCanvas *c2divide = new TCanvas("", "all_bins", 1080, 720);
+            c1divide->Divide(3, 2);
+            TCanvas *c2divide = new TCanvas("", "all_bins", 1440, 720);
             SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
-            c2divide->Divide(2, 2);
+            c2divide->Divide(3, 2);
 
             // /*
 
@@ -451,253 +451,242 @@ void glueball_KsKs_channel()
                 TDirectory *dir = fileInvDistPair->mkdir(Form("multiplicity_%.0f_%.0f", (float)multlow, (float)multhigh));
                 dir->cd();
 
-                for (Int_t ip = pt_start; ip < 1; ip++) // start pt bin loop
+                for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
+                // for (Int_t ip = 0; ip < 4; ip++) // start pt bin loop
                 {
-                    float normRangesLow[] = {1.0, 1.7, 2.15, 2.5};
-                    float normRangesHigh[] = {1.05, 1.8, 2.25, 2.6};
-                    for (int inorm = 0; inorm < 4; inorm++)
+                    float lowpt = pT_bins[ip];
+                    float highpt = pT_bins[ip + 1];
+                    // float lowpt = pt_binsTemp[ip];
+                    // float highpt = 30.0;
+
+                    cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
+                    int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-3);
+                    int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-3);
+
+                    fHistNum->GetAxis(1)->SetRange(lbin, hbin);
+                    fHistME->GetAxis(1)->SetRange(lbin, hbin);
+                    fHistRot->GetAxis(1)->SetRange(lbin, hbin);
+
+                    int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-3);
+                    int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-3);
+
+                    fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                    fHistME->GetAxis(0)->SetRange(lbinmult, hbinmult);
+                    fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
+
+                    fHistTotal[ip] = fHistNum->Projection(2, "E");
+                    fHistBkg[ip] = fHistME->Projection(2, "E");
+                    fHistRotated[ip] = fHistRot->Projection(2, "E");
+                    fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
+                    fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
+                    fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
+
+                    auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
+                    auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
+                    cout << "energy low value is " << energylow << endl;
+                    cout << "energy high value is " << energyhigh << endl;
+
+                    auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
+                    cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
+
+                    //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
+                    TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
+                    TH1D *hfbkg;
+
+                    //*****************************************************************************************************************************
+
+                    if (kResBkg == "MIX" || kResBkg == "ROTATED")
                     {
-                        float lowpt = pT_bins[ip];
-                        float highpt = pT_bins[ip + 1];
-                        // float lowpt = pt_binsTemp[ip];
-                        // float highpt = 30.0;
-                        float normRangeLow = normRangesLow[inorm];
-                        float normRangeHigh = normRangesHigh[inorm];
-
-                        cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
-                        int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-3);
-                        int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-3);
-
-                        fHistNum->GetAxis(1)->SetRange(lbin, hbin);
-                        fHistME->GetAxis(1)->SetRange(lbin, hbin);
-                        fHistRot->GetAxis(1)->SetRange(lbin, hbin);
-
-                        int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-3);
-                        int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-3);
-
-                        fHistNum->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                        fHistME->GetAxis(0)->SetRange(lbinmult, hbinmult);
-                        fHistRot->GetAxis(0)->SetRange(lbinmult, hbinmult);
-
-                        fHistTotal[ip] = fHistNum->Projection(2, "E");
-                        fHistBkg[ip] = fHistME->Projection(2, "E");
-                        fHistRotated[ip] = fHistRot->Projection(2, "E");
-                        fHistTotal[ip]->SetName(Form("fHistTotal_%d", ip));
-                        fHistBkg[ip]->SetName(Form("fHistBkg_%d", ip));
-                        fHistRotated[ip]->SetName(Form("fHistRotated_%d", ip));
-
-                        auto energylow = fHistTotal[ip]->GetXaxis()->GetXmin();
-                        auto energyhigh = fHistTotal[ip]->GetXaxis()->GetXmax();
-                        cout << "energy low value is " << energylow << endl;
-                        cout << "energy high value is " << energyhigh << endl;
-
-                        auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
-                        cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
-
-                        //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
-                        TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
-                        TH1D *hfbkg;
-
-                        //*****************************************************************************************************************************
-
-                        if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                        auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                        auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                        auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                        auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
+                        auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
+                        cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
+                        if (kResBkg == "MIX")
                         {
-                            auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normRangeLow), fHistTotal[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                            auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(normRangeLow), fHistBkg[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                            auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(normRangeLow), fHistRotated[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                            auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
-                            auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
-                            cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
-                            if (kResBkg == "MIX")
-                            {
-                                hfbkg = (TH1D *)fHistBkg[ip]->Clone();
-                                hfbkg->Write("bkg_without_normalization");
-                                hfbkg->Scale(normfactor);
-                            }
-                            else
-                            {
-                                hfbkg = (TH1D *)fHistRotated[ip]->Clone();
-                                hfbkg->Write("bkg_without_normalization");
-                                hfbkg->Scale(normfactor_rotated);
-                            }
-
-                            hfbkg->Rebin(kRebin[ip]);
-                            hfsig->Rebin(kRebin[ip]);
-
-                            hfsig->Add(hfbkg, -1);
+                            hfbkg = (TH1D *)fHistBkg[ip]->Clone();
+                            hfbkg->Write("bkg_without_normalization");
+                            hfbkg->Scale(normfactor);
                         }
-                        // else if (kResBkg == "ROTATED")
-                        // {
-                        //     hfbkg = (TH1D *)fHistRotated[ip]->Clone();
-                        //     hfbkg->Scale(0.5);
-                        //     hfbkg->Rebin(kRebin[ip]);
-                        //     hfsig->Rebin(kRebin[ip]);
-                        //     hfsig->Add(hfbkg, -1);
-                        // }
-
-                        fHistTotal[ip]->Rebin(kRebin[ip]);
-
-                        //*****************************************************************************************************
-                        // TCanvas *c1 = new TCanvas("", "", 720, 720);
-                        // SetCanvasStyle(c1, 0.15, 0.015, 0.05, 0.155);
-                        c1divide->cd(inorm + 1);
-                        gPad->SetBottomMargin(0.15);
-                        gPad->SetLeftMargin(0.15);
-                        gPad->SetRightMargin(0.05);
-                        gPad->SetTopMargin(0.05);
-                        SetHistoQA(hfsig);
-                        hfsig->SetTitle(0);
-                        hfsig->SetMarkerStyle(20);
-                        hfsig->SetMarkerSize(0.8);
-                        hfsig->GetYaxis()->SetMaxDigits(3);
-                        hfsig->GetYaxis()->SetTitleOffset(1.5);
-                        hfsig->SetMarkerColor(kBlack);
-                        hfsig->SetLineColor(kBlack);
-                        hfsig->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
-                        hfsig->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
-                        hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
-                        hfsig->Draw("e");
-                        TLine *linesig = new TLine(1.0, 0, 2.50, 0);
-                        linesig->SetLineColor(kRed);
-                        linesig->SetLineStyle(2);
-                        linesig->SetLineWidth(2);
-                        // linesig->Draw("same");
-                        // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
-                        // gPad->Update();
-                        // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
-                        // if (ps)
-                        // {
-                        //     ps->SetTextSize(0.04);
-                        //     ps->SetTextFont(42);
-                        //     ps->SetX1NDC(0.6);
-                        //     ps->SetX2NDC(0.95);
-                        //     ps->SetY1NDC(0.35);
-                        //     ps->SetY2NDC(0.95);
-                        // }
-                        // gPad->Modified(); // Necessary to update the canvas with the new text size
-                        // gPad->Update();
-                        // TLegend *lp2 = DrawLegend(0.55, 0.58, 0.85, 0.89);
-                        TLegend *lp2 = DrawLegend(0.55, 0.65, 0.85, 0.92);
-                        lp2->SetTextSize(0.04);
-                        // lp2->SetTextSize(0.055);
-                        lp2->SetTextFont(42);
-                        lp2->SetFillStyle(0);
-                        lp2->AddEntry((TObject *)0, "ALICE", "");
-                        lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-                        lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
-                        lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
-                        // lp2->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpt, highpt), "");
-                        // if (inorm == 0)
-                        //     lp2->Draw("same");
-
-                        t2->DrawLatex(0.6, 0.88, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        t2->DrawLatex(0.5, 0.8, Form("#bf{Norm range: %.2f - %.2f GeV/#it{c}^{2}}", normRangeLow, normRangeHigh));
-                        TLine *lineat0 = new TLine(1.0, 0, 2.50, 0);
-                        lineat0->SetLineColor(kRed);
-                        lineat0->SetLineStyle(2);
-                        lineat0->SetLineWidth(2);
-                        lineat0->Draw("same");
-
-                        // if (save_invmass_distributions)
-                        // {
-                        //     c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, normRangeLow, normRangeHigh) + koutputtype).c_str());
-                        // }
-
-                        // TCanvas *c2 = new TCanvas("", "", 720, 720);
-                        // SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
-                        c2divide->cd(inorm + 1);
-                        gPad->SetBottomMargin(0.15);
-                        gPad->SetLeftMargin(0.15);
-                        gPad->SetRightMargin(0.05);
-                        gPad->SetTopMargin(0.05);
-                        SetHistoQA(fHistTotal[ip]);
-                        SetHistoQA(hfbkg);
-
-                        TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
-                        hbkg_nopeak->SetLineColor(kBlue - 7);
-                        hbkg_nopeak->SetMarkerColor(kBlue - 7);
-                        hbkg_nopeak->SetFillColor(kBlue - 7);
-                        // hbkg_nopeak->SetFillStyle(3001);
-                        for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
+                        else
                         {
-                            if (hbkg_nopeak->GetBinCenter(i + 1) < normRangeLow || hbkg_nopeak->GetBinCenter(i + 1) > normRangeHigh)
-                            {
-                                hbkg_nopeak->SetBinContent(i + 1, -999);
-                            }
+                            hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+                            hfbkg->Write("bkg_without_normalization");
+                            hfbkg->Scale(normfactor_rotated);
                         }
 
-                        fHistTotal[ip]->SetMarkerStyle(20);
-                        fHistTotal[ip]->SetMarkerColor(kBlack);
-                        fHistTotal[ip]->SetMarkerSize(0.8);
-                        hfbkg->SetMarkerStyle(20);
-                        hfbkg->SetMarkerSize(0.8);
-                        hfbkg->SetMarkerColor(kRed);
-                        hfbkg->SetLineColor(kRed);
-                        fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
-                        fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
-                        fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
-                        // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
-                        fHistTotal[ip]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
-                        if (inorm == 0)
-                            fHistTotal[ip]->SetMaximum(1.4 * fHistTotal[ip]->GetMaximum());
-                        fHistTotal[ip]->Draw("E");
-                        fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
-                        hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
-                        // if (save_invmass_distributions)
-                        // {
-                        //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", lowpt, highpt) + koutputtype).c_str());
-                        // }
-                        hfbkg->Draw("E same");
-                        if (kResBkg == "MIX" || kResBkg == "ROTATED")
-                            hbkg_nopeak->Draw("BAR same");
+                        hfbkg->Rebin(kRebin[ip]);
+                        hfsig->Rebin(kRebin[ip]);
 
-                        TLegend *leg = new TLegend(0.25, 0.2454598, 0.5445682, 0.3908046);
-                        leg->SetFillStyle(0);
-                        leg->SetBorderSize(0);
-                        leg->SetTextFont(42);
-                        leg->SetTextSize(0.035);
-                        // leg->SetTextSize(0.055);
-                        leg->AddEntry(fHistTotal[ip], "Same-event pairs", "p");
-                        string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same-event rotated paris";
-                        leg->AddEntry(hfbkg, bkgname.c_str(), "p");
-                        // if (kResBkg == "MIX")
-                        hbkg_nopeak->SetLineWidth(0);
-                        leg->AddEntry(hbkg_nopeak, "Normalization region", "f");
-                        if (inorm == 0)
-                        {
-                            leg->Draw();
-                            // lp2->Draw("same");
-                        }
-                        // t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        // t2->DrawLatex(0.5, 0.6, Form("#bf{Norm range: %.2f - %.2f GeV/#it{c}^{2}}", normRangeLow, normRangeHigh));
-                        t2->DrawLatex(0.6, 0.88, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        t2->DrawLatex(0.5, 0.8, Form("#bf{Norm range: %.2f - %.2f GeV/#it{c}^{2}}", normRangeLow, normRangeHigh));
-
-                        // // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        // if (save_invmass_distributions)
-                        // {
-                        //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, normRangeLow, normRangeHigh) + koutputtype).c_str());
-                        // }
-                        // c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
-
-                        // cbkgall1->cd(ip + 1);
-                        // fHistTotal[ip]->Draw("E");
-                        // hfbkg->Draw("E same");
-                        // if (kResBkg == "MIX" || kResBkg == "ROTATED")
-                        //     hbkg_nopeak->Draw("BAR same");
-                        // leg->Draw();
-                        // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                        hbkg_temp[ip] = (TH1D *)hfbkg->Clone();
-                        hbkg_nopeak_temp[ip] = (TH1D *)hbkg_nopeak->Clone();
-                        hsig_temp[ip] = (TH1D *)hfsig->Clone();
+                        hfsig->Add(hfbkg, -1);
                     }
-                    c1divide->SaveAs((outputfolder_str + "/hglueball_signal_norm" + kResBkg + "." + koutputtype).c_str());
-                    c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_norm" + kResBkg + "." + koutputtype).c_str());
+                    // else if (kResBkg == "ROTATED")
+                    // {
+                    //     hfbkg = (TH1D *)fHistRotated[ip]->Clone();
+                    //     hfbkg->Scale(0.5);
+                    //     hfbkg->Rebin(kRebin[ip]);
+                    //     hfsig->Rebin(kRebin[ip]);
+                    //     hfsig->Add(hfbkg, -1);
+                    // }
+
+                    fHistTotal[ip]->Rebin(kRebin[ip]);
+
+                    //*****************************************************************************************************
+                    // TCanvas *c1 = new TCanvas("", "", 720, 720);
+                    // SetCanvasStyle(c1, 0.15, 0.015, 0.05, 0.155);
+                    c1divide->cd(ip + 1);
+                    gPad->SetBottomMargin(0.15);
+                    gPad->SetLeftMargin(0.15);
+                    gPad->SetRightMargin(0.05);
+                    gPad->SetTopMargin(0.05);
+                    SetHistoQA(hfsig);
+                    hfsig->SetTitle(0);
+                    hfsig->SetMarkerStyle(20);
+                    hfsig->SetMarkerSize(0.8);
+                    hfsig->GetYaxis()->SetMaxDigits(3);
+                    hfsig->GetYaxis()->SetTitleOffset(1.5);
+                    hfsig->SetMarkerColor(kBlack);
+                    hfsig->SetLineColor(kBlack);
+                    hfsig->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
+                    hfsig->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
+                    hfsig->GetXaxis()->SetRangeUser(1.00, 2.50);
+                    hfsig->Draw("e");
+                    TLine *linesig = new TLine(1.0, 0, 2.50, 0);
+                    linesig->SetLineColor(kRed);
+                    linesig->SetLineStyle(2);
+                    linesig->SetLineWidth(2);
+                    // linesig->Draw("same");
+                    // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
+                    // gPad->Update();
+                    // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
+                    // if (ps)
+                    // {
+                    //     ps->SetTextSize(0.04);
+                    //     ps->SetTextFont(42);
+                    //     ps->SetX1NDC(0.6);
+                    //     ps->SetX2NDC(0.95);
+                    //     ps->SetY1NDC(0.35);
+                    //     ps->SetY2NDC(0.95);
+                    // }
+                    // gPad->Modified(); // Necessary to update the canvas with the new text size
+                    // gPad->Update();
+                    // TLegend *lp2 = DrawLegend(0.55, 0.58, 0.85, 0.89);
+                    TLegend *lp2 = DrawLegend(0.55, 0.65, 0.85, 0.92);
+                    lp2->SetTextSize(0.039);
+                    // lp2->SetTextSize(0.055);
+                    lp2->SetTextFont(42);
+                    lp2->SetFillStyle(0);
+                    lp2->AddEntry((TObject *)0, "ALICE", "");
+                    lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+                    lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
+                    lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+                    // lp2->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpt, highpt), "");
+                    if (ip == 0)
+                        lp2->Draw("same");
+
+                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    TLine *lineat0 = new TLine(1.0, 0, 2.50, 0);
+                    lineat0->SetLineColor(kRed);
+                    lineat0->SetLineStyle(2);
+                    lineat0->SetLineWidth(2);
+                    lineat0->Draw("same");
+
+                    // if (save_invmass_distributions)
+                    // {
+                    //     c1->SaveAs((outputfolder_str + "/hglueball_signal_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+                    // }
+
+                    // TCanvas *c2 = new TCanvas("", "", 720, 720);
+                    // SetCanvasStyle(c2, 0.15, 0.01, 0.05, 0.135);
+                    c2divide->cd(ip + 1);
+                    gPad->SetBottomMargin(0.15);
+                    gPad->SetLeftMargin(0.15);
+                    gPad->SetRightMargin(0.05);
+                    gPad->SetTopMargin(0.05);
+                    SetHistoQA(fHistTotal[ip]);
+                    SetHistoQA(hfbkg);
+
+                    TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
+                    hbkg_nopeak->SetLineColor(kBlue - 7);
+                    hbkg_nopeak->SetMarkerColor(kBlue - 7);
+                    hbkg_nopeak->SetFillColor(kBlue - 7);
+                    // hbkg_nopeak->SetFillStyle(3001);
+                    for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
+                    {
+                        if (hbkg_nopeak->GetBinCenter(i + 1) < kNormRangepT[ip][0] || hbkg_nopeak->GetBinCenter(i + 1) > kNormRangepT[ip][1])
+                        {
+                            hbkg_nopeak->SetBinContent(i + 1, -999);
+                        }
+                    }
+
+                    fHistTotal[ip]->SetMarkerStyle(20);
+                    fHistTotal[ip]->SetMarkerColor(kBlack);
+                    fHistTotal[ip]->SetMarkerSize(0.8);
+                    hfbkg->SetMarkerStyle(20);
+                    hfbkg->SetMarkerSize(0.8);
+                    hfbkg->SetMarkerColor(kRed);
+                    hfbkg->SetLineColor(kRed);
+                    fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
+                    fHistTotal[ip]->GetYaxis()->SetTitleOffset(1.5);
+                    fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
+                    // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
+                    fHistTotal[ip]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
+                    fHistTotal[ip]->Draw("E");
+                    fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
+                    hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
+                    // if (save_invmass_distributions)
+                    // {
+                    //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", lowpt, highpt) + koutputtype).c_str());
+                    // }
+                    hfbkg->Draw("E same");
+                    if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                        hbkg_nopeak->Draw("BAR same");
+
+                    TLegend *leg = new TLegend(0.25, 0.2454598, 0.5445682, 0.3908046);
+                    leg->SetFillStyle(0);
+                    leg->SetBorderSize(0);
+                    leg->SetTextFont(42);
+                    leg->SetTextSize(0.035);
+                    // leg->SetTextSize(0.055);
+                    leg->AddEntry(fHistTotal[ip], "Same-event pairs", "p");
+                    string bkgname = (kResBkg == "MIX") ? "Mixed event" : "Same-event rotated paris";
+                    leg->AddEntry(hfbkg, bkgname.c_str(), "p");
+                    // if (kResBkg == "MIX")
+                    hbkg_nopeak->SetLineWidth(0);
+                    leg->AddEntry(hbkg_nopeak, "Normalization region", "f");
+                    if (ip == 0)
+                    {
+                        leg->Draw();
+                        lp2->Draw("same");
+                    }
+                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+
+                    // // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    // if (save_invmass_distributions)
+                    // {
+                    //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_" + kResBkg + Form("pT_%.1f_%.1f_norm_%.2f_%.2f.", lowpt, highpt, kNormRangepT[ip][0], kNormRangepT[ip][1]) + koutputtype).c_str());
+                    // }
+                    // c2->Write(Form("ksks_invmass_withbkg_pt_%.1f_%.1f", lowpt, highpt));
+
+                    // cbkgall1->cd(ip + 1);
+                    // fHistTotal[ip]->Draw("E");
+                    // hfbkg->Draw("E same");
+                    // if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                    //     hbkg_nopeak->Draw("BAR same");
+                    // leg->Draw();
+                    // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    hbkg_temp[ip] = (TH1D *)hfbkg->Clone();
+                    hbkg_nopeak_temp[ip] = (TH1D *)hbkg_nopeak->Clone();
+                    hsig_temp[ip] = (TH1D *)hfsig->Clone();
                 } // pt bin loop end here
             } // end of multiplicity loop
 
             // */
+
+            c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
+            c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());
 
             // TCanvas *cbkg = new TCanvas("", "", 1080, 720);
             // cbkg->Divide(2, 2);

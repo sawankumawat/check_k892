@@ -68,6 +68,7 @@ void read_yield_ptRoot_single()
 
     // efficiency file
     TFile *feff = new TFile("/home/sawan/check_k892/mc/LHC24l1/463655.root", "read");
+    // TFile *feff = new TFile("../efficiencyPtSmear.root", "read");
     // TFile *feff_f0 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f0_sys.root", "read");
     // TFile *feff_f2 = new TFile("/home/sawan/check_k892/mc/LHC24l1/f0_sys.root", "read"); // FIXME: change to f2 efficiency file when available
     if (feff->IsZombie()) // || feff_f0->IsZombie() || feff_f2->IsZombie())
@@ -78,6 +79,7 @@ void read_yield_ptRoot_single()
     string histpath = "higher-mass-resonances/hMChists";
     string histpathf2 = "higher-mass-resonances_f21525/hMChists";
     TFile *fOutput = new TFile(Form("%s/spectra_Default2.root", outputPath.Data()), "RECREATE");
+    // TFile *fOutput = new TFile(Form("%s/spectra_ToyMC.root", outputPath.Data()), "RECREATE");
 
     // THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
     // THnSparseD *recpt1f0 = (THnSparseD *)feff_f0->Get(Form("%s/Recf1710_pt2", histpath.c_str()));
@@ -96,6 +98,15 @@ void read_yield_ptRoot_single()
 
     TH1F *hefficiencyf0 = new TH1F("hefficiencyf0", "Efficiency vs pT", nBins, ptBins);
     TH1F *hefficiencyf2 = new TH1F("hefficiencyf2", "Efficiency vs pT for f21525", nBins, ptBins);
+
+    // // For toy MC only
+    // TH1F *hefficiencyf0 = (TH1F *)feff->Get("hEff_f0");
+    // TH1F *hefficiencyf2 = (TH1F *)feff->Get("hEff_f2");
+    // if (hefficiencyf0 == nullptr || hefficiencyf2 == nullptr)
+    // {
+    //     cout << "Error reading efficiency histograms " << endl;
+    //     return;
+    // }
 
     TH1D *hgenptf0 = GenpTf0->Projection(1);  // project on pt axis
     TH1D *hrecptf0 = recpt1f0->Projection(1); // project on pt axis
@@ -545,7 +556,7 @@ void read_yield_ptRoot_single()
     legend2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend2->AddEntry(hYield1525Raw, "f_{2}'(1525)", "p");
     legend2->Draw();
-    cRawYieldf2->SaveAs(savePath + "/RawYieldf2.pdf");
+    // cRawYieldf2->SaveAs(savePath + "/RawYieldf2.pdf");
 
     TCanvas *cRawYieldf0 = new TCanvas("cRawYieldf0", "Raw #it{p}_{T} distribution for f_{0}(1710)", 720, 720);
     SetCanvasStyle(cRawYieldf0, 0.18, 0.03, 0.05, 0.14);
@@ -572,7 +583,7 @@ void read_yield_ptRoot_single()
     legend3->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend3->AddEntry(hYield1710Raw, "f_{0}(1710)", "p");
     legend3->Draw();
-    cRawYieldf0->SaveAs(savePath + "/RawYieldf0.pdf");
+    // cRawYieldf0->SaveAs(savePath + "/RawYieldf0.pdf");
 
     TH1F *h1 = (TH1F *)hYield1525Corrected->Clone("h1");
     TH1F *h2 = (TH1F *)hYield1525Corrected->Clone("h2");
@@ -585,7 +596,7 @@ void read_yield_ptRoot_single()
     /*************meanpT*****************byresonance*******************package*************************/
     Double_t min = 0.0;
     Double_t max = 15.0;
-    Double_t loprecision = 0.01;
+    Double_t loprecision = 0.001;
     Double_t hiprecision = 0.1;
     Option_t *opt = "REBMS0+";
     TString logfilename = "log.root";
@@ -878,9 +889,9 @@ void read_yield_ptRoot_single()
     cout << "Ratio dN/dy f0(1710)/f2(1525) = " << hout2->GetBinContent(1) / hout->GetBinContent(1) << " +- " << TMath::Sqrt(TMath::Power(hout2->GetBinContent(2) / hout->GetBinContent(1), 2) + TMath::Power(hout->GetBinContent(2) * hout2->GetBinContent(1) / (hout->GetBinContent(1) * hout->GetBinContent(1)), 2)) << endl;
     cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
 
-    //====Lets now rebate the MC===========
-    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_Default2.root", outputPath.Data()), "recreate");
-    int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
-    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_Default2.root", outputPath.Data()), "recreate");
-    int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
+    // //====Lets now rebate the MC===========
+    // TFile *fReweight = new TFile(Form("%s/ReweighFacf0_Default2.root", outputPath.Data()), "recreate");
+    // int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
+    // TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_Default2.root", outputPath.Data()), "recreate");
+    // int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
 }

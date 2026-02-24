@@ -44,13 +44,15 @@ void compare_meanpt()
     string savePath = path + "/mult_0-100/Spectra";
     TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default2.root").c_str(), "read");
     TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default2.root").c_str(), "read");
+    TFile *fSpectraMC = new TFile((path + "mult_0-100/Spectra/spectra_Default2.root").c_str(), "read"); // Without reweighting the MC
 
-    if (fReweightf0->IsZombie() || fReweightf2->IsZombie())
+    TFile *fSpectraToy = new TFile((path + "mult_0-100/Spectra/spectra_ToyMC.root").c_str(), "read");
+
+    if (fReweightf0->IsZombie() || fReweightf2->IsZombie() || fSpectraToy->IsZombie())
     {
-        cout << "Error opening reweighting files" << endl;
+        cout << "Error opening reweighting or toy spectra files" << endl;
         return;
     }
-    TFile *fOutput = new TFile(Form("%s/ReweightedSpectra.root", savePath.c_str()), "RECREATE");
 
     // Find the highest available index for reweighted histograms
     int maxIndexReweightedf0 = FindHighestIndex(fReweightf0, "Genf17102_proj_1_");
@@ -71,18 +73,20 @@ void compare_meanpt()
     TH1F *hRecReweighted2 = (TH1F *)fReweightf2->Get(Form("Recf1710_pt2_proj_1_%s", indexStr2.c_str()));
     TH1F *hYieldReweighted2 = (TH1F *)fReweightf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
 
-    TH1F *hGenUnweighted = (TH1F *)fReweightf0->Get("Genf17102_proj_1_i0");
-    TH1F *hRecUnweighted = (TH1F *)fReweightf0->Get("Recf1710_pt2_proj_1_i0");
-    TH1F *hGenUnweighted2 = (TH1F *)fReweightf2->Get("Genf17102_proj_1_i0");
-    TH1F *hRecUnweighted2 = (TH1F *)fReweightf2->Get("Recf1710_pt2_proj_1_i0");
-
     if (hGenReweighted == nullptr || hRecReweighted == nullptr || hYieldReweighted == nullptr)
     {
         cout << "Error reading reweighted histograms from file " << Form("%s/ReweightedSpectra.root", savePath.c_str()) << endl;
         return;
     }
 
-    ////****************************Levy-Tsallis fit**********************************////
+    TH1F *hYieldToyf0 = (TH1F *)fSpectraToy->Get("hYield1710Corrected");
+    TH1F *hYieldToyf2 = (TH1F *)fSpectraToy->Get("hYield1525Corrected");
+    if (hYieldToyf0 == nullptr || hYieldToyf2 == nullptr)
+    {
+        cout << "Error reading toy spectra histograms from file " << Form("%s/spectra_ToyMC.root", savePath.c_str()) << endl;
+        return;
+    }
+
     TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
     if (fSys->IsZombie())
     {
@@ -98,18 +102,138 @@ void compare_meanpt()
     }
 
     cout << "Total bins in the yield histogram is " << hYieldReweighted->GetNbinsX() << endl;
+    cout << "Total bins in the toy yield histogram is " << hYieldToyf0->GetNbinsX() << endl;
 
+    ////****************************Spectra compare************************************
+    TCanvas *cSpectraf2 = new TCanvas("cSpectraf2", "Spectra comparison f2", 720, 720);
+    SetCanvasStyle(cSpectraf2, 0.15, 0.05, 0.05, 0.15);
+    double pad1Size, pad2Size;
+    canvas_style(cSpectraf2, pad1Size, pad2Size);
+    cSpectraf2->cd(1);
+    gPad->SetLogy();
+    TH1F *hYield1525 = (TH1F *)fSpectraMC->Get("hYield1525Corrected");
+    SetHistoQA(hYield1525);
+    SetHistoQA(hYieldToyf2);
+    hYield1525->SetMarkerSize(1.3);
+    hYieldToyf2->SetMarkerSize(1.3);
+    hYield1525->SetLineColor(kBlue);
+    hYield1525->SetMarkerColor(kBlue);
+    hYield1525->SetMarkerStyle(20);
+    hYield1525->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    hYield1525->GetYaxis()->SetLabelSize(0.035 / pad1Size);
+    hYield1525->GetXaxis()->SetLabelSize(0.035 / pad1Size);
+    hYield1525->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    hYield1525->GetYaxis()->SetTitleOffset(1.55 * pad1Size);
+    hYield1525->SetMaximum(hYield1525->GetMaximum() * 2);
+    hYield1525->SetMinimum(2e-7);
+    hYield1525->Draw();
+    hYieldToyf2->SetLineColor(kRed);
+    hYieldToyf2->SetMarkerColor(kRed);
+    hYieldToyf2->SetMarkerStyle(21);
+    hYieldToyf2->SetMinimum(2e-7);
+    hYieldToyf2->Draw("SAME");
+    TLegend *legf2 = new TLegend(0.55, 0.7, 0.9, 0.9);
+    legf2->SetBorderSize(0);
+    legf2->SetFillStyle(0);
+    legf2->SetTextSize(0.055);
+    legf2->SetTextFont(42);
+    legf2->AddEntry(hYield1525, "f_{2}(1525) (MC)", "p");
+    legf2->AddEntry(hYieldToyf2, "f_{2}(1525) (Toy model)", "p");
+    legf2->Draw();
+    cSpectraf2->cd(2);
+    TH1F *hRatiof2 = (TH1F *)hYield1525->Clone("hRatiof2");
+    hRatiof2->Divide(hYieldToyf2);
+    SetHistoQA(hRatiof2);
+    hRatiof2->GetYaxis()->SetTitle("MC/Toy model");
+    hRatiof2->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+    hRatiof2->GetYaxis()->SetLabelSize(0.035 / pad2Size);
+    hRatiof2->GetXaxis()->SetLabelSize(0.035 / pad2Size);
+    hRatiof2->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    hRatiof2->GetYaxis()->SetTitleOffset(1.4 * pad2Size);
+    hRatiof2->SetLineColor(kBlue);
+    hRatiof2->SetMarkerColor(kBlue);
+    hRatiof2->GetYaxis()->SetNdivisions(505);
+    hRatiof2->SetMaximum(4.1);
+    hRatiof2->SetMinimum(0.25);
+    hRatiof2->Draw();
+    TLine *lineRatiof2 = new TLine(0, 1, 15, 1);
+    lineRatiof2->SetLineStyle(2);
+    lineRatiof2->SetLineColor(kBlack);
+    lineRatiof2->Draw();
+
+    TCanvas *cSpectraf0 = new TCanvas("cSpectraf0", "Spectra comparison f0", 720, 720);
+    SetCanvasStyle(cSpectraf0, 0.15, 0.05, 0.05, 0.15);
+    canvas_style(cSpectraf0, pad1Size, pad2Size);
+    cSpectraf0->cd(1);
+    gPad->SetLogy();
+    TH1F *hYieldf01710 = (TH1F *)fSpectraMC->Get("hYield1710Corrected");
+    SetHistoQA(hYieldf01710);
+    SetHistoQA(hYieldToyf0);
+    hYieldf01710->SetMarkerSize(1.3);
+    hYieldToyf0->SetMarkerSize(1.3);
+    hYieldf01710->SetLineColor(kBlue);
+    hYieldf01710->SetMarkerColor(kBlue);
+    hYieldf01710->SetMarkerStyle(20);
+    hYieldf01710->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    hYieldf01710->GetYaxis()->SetLabelSize(0.035 / pad1Size);
+    hYieldf01710->GetXaxis()->SetLabelSize(0.035 / pad1Size);
+    hYieldf01710->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    hYieldf01710->GetYaxis()->SetTitleOffset(1.55 * pad1Size);
+    hYieldf01710->SetMaximum(hYieldf01710->GetMaximum() * 2);
+    hYieldf01710->SetMinimum(8e-8);
+    hYieldf01710->Draw();
+    hYieldToyf0->SetLineColor(kRed);
+    hYieldToyf0->SetMarkerColor(kRed);
+    hYieldToyf0->SetMarkerStyle(21);
+    hYieldToyf0->SetMinimum(2e-7);
+    hYieldToyf0->Draw("SAME");
+    TLegend *legf0 = new TLegend(0.55, 0.7, 0.9, 0.9);
+    legf0->SetBorderSize(0);
+    legf0->SetFillStyle(0);
+    legf0->SetTextSize(0.055);
+    legf0->SetTextFont(42);
+    legf0->AddEntry(hYieldf01710, "f_{0}(1710) (MC)", "p");
+    legf0->AddEntry(hYieldToyf0, "f_{0}(1710) (Toy model)", "p");
+    legf0->Draw();
+    cSpectraf0->cd(2);
+    TH1F *hRatiof0 = (TH1F *)hYieldf01710->Clone("hRatiof0");
+    hRatiof0->Divide(hYieldToyf0);
+    SetHistoQA(hRatiof0);
+    hRatiof0->GetYaxis()->SetTitle("MC/Toy model");
+    hRatiof0->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+    hRatiof0->GetYaxis()->SetLabelSize(0.035 / pad2Size);
+    hRatiof0->GetXaxis()->SetLabelSize(0.035 / pad2Size);
+    hRatiof0->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    hRatiof0->GetYaxis()->SetTitleOffset(1.4 * pad2Size);
+    hRatiof0->SetLineColor(kBlue);
+    hRatiof0->SetMarkerColor(kBlue);
+    hRatiof0->GetYaxis()->SetNdivisions(505);
+    hRatiof0->SetMaximum(4.1);
+    hRatiof0->SetMinimum(0.25);
+    hRatiof0->Draw();
+    TLine *lineRatiof0 = new TLine(0, 1, 15, 1);
+    lineRatiof0->SetLineStyle(2);
+    lineRatiof0->SetLineColor(kBlack);
+    lineRatiof0->Draw();
+    cSpectraf0->SaveAs((savePath + "/plots/SpectraCompareToy_f0.png").c_str());
+    cSpectraf2->SaveAs((savePath + "/plots/SpectraCompareToy_f2.png").c_str());
+
+    ////****************************<pT> calcuation**********************************////
     // For f2'(1525)
     TH1F *hf21 = (TH1F *)hYieldReweighted2->Clone("hf21");
     TH1F *hf22 = (TH1F *)hYieldReweighted2->Clone("hf22");
-    TH1F *hf23 = (TH1F *)hYieldReweighted2->Clone("hf23");
-    TH1F *hf24 = (TH1F *)hYieldReweighted2->Clone("hf24");
+    // TH1F *hf23 = (TH1F *)hYieldReweighted2->Clone("hf23");
+    // TH1F *hf24 = (TH1F *)hYieldReweighted2->Clone("hf24");
+    TH1F *hf23 = (TH1F *)hYieldToyf2->Clone("hf23");
+    TH1F *hf24 = (TH1F *)hYieldToyf2->Clone("hf24");
 
     // For f0(1710)
     TH1F *hf01 = (TH1F *)hYieldReweighted->Clone("hf01");
     TH1F *hf02 = (TH1F *)hYieldReweighted->Clone("hf02");
-    TH1F *hf03 = (TH1F *)hYieldReweighted->Clone("hf03");
-    TH1F *hf04 = (TH1F *)hYieldReweighted->Clone("hf04");
+    // TH1F *hf03 = (TH1F *)hYieldReweighted->Clone("hf03");
+    // TH1F *hf04 = (TH1F *)hYieldReweighted->Clone("hf04");
+    TH1F *hf03 = (TH1F *)hYieldToyf0->Clone("hf03");
+    TH1F *hf04 = (TH1F *)hYieldToyf0->Clone("hf04");
 
     // Enable error tracking for histograms with manual error setting
     hf01->Sumw2();
@@ -128,20 +252,30 @@ void compare_meanpt()
     {
         double sys1710 = hYieldSysf0->GetBinContent(i);
         double sys1525 = hYieldSysf2->GetBinContent(i);
+        double totalRelUncertf0 = sqrt(sys1710 * sys1710 + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
+        double totalRelUncertf2 = sqrt(sys1525 * sys1525 + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
         double yield1710 = hf01->GetBinContent(i + 1);
         double yield1525 = hf21->GetBinContent(i + 1);
 
-        hf02->SetBinContent(i + 1, yield1710);
-        hf02->SetBinError(i + 1, sys1710 * yield1710);
-        // hf02->SetBinError(i + 1, totalRelUncertf0 * yield1710);
-        hf22->SetBinContent(i + 1, yield1525);
-        hf22->SetBinError(i + 1, sys1525 * yield1525);
-        // hf22->SetBinError(i + 1, totalRelUncertf2 * yield1525);
+        double yieldToy1710 = hf03->GetBinContent(i + 1);
+        double yieldToy1525 = hf23->GetBinContent(i + 1);
 
-        hf04->SetBinContent(i + 1, yield1710);
-        hf04->SetBinError(i + 1, sys1710 * yield1710);
-        hf24->SetBinContent(i + 1, yield1525);
-        hf24->SetBinError(i + 1, sys1525 * yield1525);
+        hf02->SetBinContent(i + 1, yield1710);
+        // hf02->SetBinError(i + 1, sys1710 * yield1710);
+        hf02->SetBinError(i + 1, totalRelUncertf0 * yield1710);
+        hf22->SetBinContent(i + 1, yield1525);
+        // hf22->SetBinError(i + 1, sys1525 * yield1525);
+        hf22->SetBinError(i + 1, totalRelUncertf2 * yield1525);
+
+        // hf04->SetBinContent(i + 1, yield1710);
+        // hf04->SetBinError(i + 1, sys1710 * yield1710);
+        // hf24->SetBinContent(i + 1, yield1525);
+        // hf24->SetBinError(i + 1, sys1525 * yield1525);
+
+        hf04->SetBinContent(i + 1, yieldToy1710);
+        hf04->SetBinError(i + 1, totalRelUncertf0 * yieldToy1710);
+        hf24->SetBinContent(i + 1, yieldToy1525);
+        hf24->SetBinError(i + 1, totalRelUncertf2 * yieldToy1525);
     }
     Double_t min = 0.0;
     Double_t min2 = 1.0;
@@ -187,9 +321,10 @@ void compare_meanpt()
     TH1 *houtf0 = YieldMean(hf01, hf02, fitFcnf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
     TH1 *houtf2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
-    TH1 *houtf0_noextrapol = YieldMean(hf01, hf02, fitFcnf0_2, min2, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    TH1 *houtf2_noextrapol = YieldMean(hf21, hf22, fitFcnf2_2, min2, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-
+    // TH1 *houtf0_noextrapol = YieldMean(hf01, hf02, fitFcnf0_2, min2, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // TH1 *houtf2_noextrapol = YieldMean(hf21, hf22, fitFcnf2_2, min2, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    TH1 *houtf0_noextrapol = YieldMean(hf03, hf04, fitFcnf0_2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    TH1 *houtf2_noextrapol = YieldMean(hf23, hf24, fitFcnf2_2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
     if (flightFlavourHadrons->IsZombie())
@@ -273,7 +408,8 @@ void compare_meanpt()
     gMeanPtvsMassMesons->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
     gMeanPtvsMassMesons->GetYaxis()->SetTitleOffset(1.3);
     gMeanPtvsMassMesons->SetMinimum(0.12);
-    gMeanPtvsMassMesons->SetMaximum(4.59);
+    // gMeanPtvsMassMesons->SetMaximum(4.59);
+    gMeanPtvsMassMesons->SetMaximum(4.09);
     gMeanPtvsMassMesons->GetXaxis()->SetLimits(0, 1.99);
     gMeanPtvsMassMesons->Draw("A 2"); // draw boxes for systematic errors
     TGraphAsymmErrors *gMeanPtvsMassMesonsSys = (TGraphAsymmErrors *)gMeanPtvsMassMesons->Clone("gMeanPtvsMassMesonsSys");
@@ -335,6 +471,7 @@ void compare_meanpt()
     double f2_staterr_noextrapol = houtf2_noextrapol->GetBinContent(6);
     double f2_syserrLow_noextrapol = houtf2_noextrapol->GetBinContent(7);
     double f2_syserrHigh_noextrapol = houtf2_noextrapol->GetBinContent(8);
+    cout << "f2 mean pT in toy model is " << f2_meanpt_noextrapol << endl;
     TGraphErrors *graph_f2_noextrapol = new TGraphErrors(1);
     graph_f2_noextrapol->SetPoint(0, f2_mass, f2_meanpt_noextrapol);
     graph_f2_noextrapol->SetPointError(0, 0, f2_staterr_noextrapol);
@@ -351,7 +488,7 @@ void compare_meanpt()
     graph_f2_sys_noextrapol->SetLineColor(kYellow + 3);
     graph_f2_sys_noextrapol->SetLineWidth(2);
     graph_f2_sys_noextrapol->SetFillStyle(0);
-    graph_f2_sys_noextrapol->Draw("2 SAME");
+    // graph_f2_sys_noextrapol->Draw("2 SAME");
 
     // Draw the last marker (f0(1710)) and its error bar
     double f0_mass = 1.710;
@@ -364,10 +501,10 @@ void compare_meanpt()
     cout << "Mean pT of f0(1710) is " << f0_meanpt << " with stat error " << f0_Staterr << endl;
 
     double SigmaDeviationMeson = fabs(meanPt_f0_fromFit_meson - f0_meanpt) / sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr);
-    cout << "Sigma deviation of f0(1710) from mesonic fit is " << SigmaDeviationMeson << endl;
+    // cout << "Sigma deviation of f0(1710) from mesonic fit is " << SigmaDeviationMeson << endl;
     // cout << "Difference in mean value "<< fabs(meanPt_f0_fromFit_meson - f0_meanpt) << " and total error " << sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr) << endl;
     double SigmaDeviationBaryon = fabs(meanPt_f0_fromFit_baryon - f0_meanpt) / sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr);
-    cout << "Sigma deviation of f0(1710) from baryonic fit is " << SigmaDeviationBaryon << endl;
+    // cout << "Sigma deviation of f0(1710) from baryonic fit is " << SigmaDeviationBaryon << endl;
     // cout << "Difference in mean value "<< fabs(meanPt_f0_fromFit_baryon - f0_meanpt) << " and total error " << sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr) << endl;
 
     int f0_marker = 21;   // choose a unique marker style for f0(1710)
@@ -395,6 +532,7 @@ void compare_meanpt()
     double f0_staterr_noextrapol = houtf0_noextrapol->GetBinContent(6);
     double f0_syserrLow_noextrapol = houtf0_noextrapol->GetBinContent(7);
     double f0_syserrHigh_noextrapol = houtf0_noextrapol->GetBinContent(8);
+    cout << "f0 mean pT in toy model is " << f0_meanpt_noextrapol << endl;
     TGraphErrors *graph_f0_noextrapol = new TGraphErrors(1);
     graph_f0_noextrapol->SetPoint(0, f0_mass, f0_meanpt_noextrapol);
     graph_f0_noextrapol->SetPointError(0, 0, f0_staterr_noextrapol);
@@ -410,7 +548,7 @@ void compare_meanpt()
     graph_f0_sys_noextrapol->SetLineColor(kViolet);
     graph_f0_sys_noextrapol->SetLineWidth(2);
     graph_f0_sys_noextrapol->SetFillStyle(0);
-    graph_f0_sys_noextrapol->Draw("2 SAME");
+    // graph_f0_sys_noextrapol->Draw("2 SAME");
 
     // Add particle names below each point
     TLatex latex;
@@ -428,8 +566,8 @@ void compare_meanpt()
         else
             latex.DrawLatex(x, y - 0.16, particlesLatex[i].c_str());
     }
-    latex.DrawLatex(1.5, houtf2->GetBinContent(5) + 0.8, "f'_{2}(1525)");
-    latex.DrawLatex(1.710, houtf0->GetBinContent(5) + 0.8, "f_{0}(1710)");
+    latex.DrawLatex(1.5, houtf2->GetBinContent(5) + 0.4, "f'_{2}(1525)");
+    latex.DrawLatex(1.710, houtf0->GetBinContent(5) + 0.4, "f_{0}(1710)");
 
     TLegend *legend4 = new TLegend(0.17, 0.6, 0.63, 0.92);
     legend4->SetBorderSize(0);
@@ -437,10 +575,14 @@ void compare_meanpt()
     legend4->SetTextSize(0.033);
     legend4->AddEntry(gMeanPtvsMassMesons, "Mesons (13 TeV)", "p");
     legend4->AddEntry(gMeanPtvsMassBaryons, "Baryons (13 TeV)", "p");
-    legend4->AddEntry(graph_f2, "f'_{2}(1525) (With extrapolation)", "p");
-    legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (Without extrapolation)", "p");
-    legend4->AddEntry(graph_f0, "f_{0}(1710) (With extrapolation)", "p");
-    legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Without extrapolation)", "p");
+    legend4->AddEntry(graph_f2, "f'_{2}(1525) (MC)", "p");
+    legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (Toy Model)", "p");
+    legend4->AddEntry(graph_f0, "f_{0}(1710) (MC)", "p");
+    legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Toy Model)", "p");
+    // legend4->AddEntry(graph_f2, "f'_{2}(1525) (With extrapolation)", "p");
+    // legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (Without extrapolation)", "p");
+    // legend4->AddEntry(graph_f0, "f_{0}(1710) (With extrapolation)", "p");
+    // legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Without extrapolation)", "p");
     legend4->AddEntry(pol1_meson, "Pol 1", "l");
     legend4->Draw();
 
@@ -452,7 +594,58 @@ void compare_meanpt()
     legend5->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     // legend5->Draw();
-    cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_extrapol.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_extrapol.png").c_str());
+    cMeanPt->SaveAs((savePath + "/plots/MeanPtVsMass_ToyCompare.png").c_str());
+
+    TCanvas *cCorrectedFitf0Toy = new TCanvas("cCorrectedFitf0Toy", "Corrected Fit f0(1710) Toy", 720, 720);
+    SetCanvasStyle(cCorrectedFitf0Toy, 0.14, 0.03, 0.05, 0.14);
+    gPad->SetLogy();
+    hf01->SetMarkerStyle(24);
+    hf01->SetMarkerColor(kBlue);
+    hf01->SetLineColor(kBlue);
+    hf01->SetMarkerSize(1.6);
+    hf01->SetMaximum(9e-3);
+    hf01->SetMinimum(3e-8);
+    hf01->Draw("E1");
+    fitFcnf0->SetLineColor(kRed);
+    fitFcnf0->SetLineWidth(2);
+    fitFcnf0->Draw("SAME");
+    TLegend *legend6 = new TLegend(0.5, 0.6, 0.9, 0.92);
+    legend6->SetBorderSize(0);
+    legend6->SetFillStyle(0);
+    legend6->SetTextSize(0.035);
+    legend6->AddEntry((TObject *)0, "ALICE", "");
+    legend6->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legend6->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legend6->AddEntry(hf01, "f_{0}(1710) (Toy Model)", "p");
+    legend6->AddEntry(fitFcnf0, "Levy-Tsallis fit", "l");
+    legend6->Draw();
+    cCorrectedFitf0Toy->SaveAs((savePath + "/plots/CorrectedFit_f0Toy.png").c_str());
+
+    TCanvas *cCorrectedFitf2Toy = new TCanvas("cCorrectedFitf2Toy", "Corrected Fit f2(1525) Toy", 720, 720);
+    SetCanvasStyle(cCorrectedFitf2Toy, 0.14, 0.03, 0.05, 0.14);
+    gPad->SetLogy();
+    hf21->SetMarkerStyle(24);
+    hf21->SetMarkerColor(kBlue);
+    hf21->SetLineColor(kBlue);
+    hf21->SetMarkerSize(1.6);
+    hf21->SetMaximum(9e-2);
+    hf21->SetMinimum(7e-8);
+    hf21->Draw("E1");
+    fitFcnf2->SetLineColor(kRed);
+    fitFcnf2->SetLineWidth(2);
+    fitFcnf2->Draw("SAME");
+    TLegend *legend7 = new TLegend(0.5, 0.6, 0.9, 0.92);
+    legend7->SetBorderSize(0);
+    legend7->SetFillStyle(0);
+    legend7->SetTextSize(0.035);
+    legend7->AddEntry((TObject *)0, "ALICE", "");
+    legend7->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    legend7->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legend7->AddEntry(hf21, "f'_{2}(1525) (Toy Model)", "p");
+    legend7->AddEntry(fitFcnf2, "Levy-Tsallis fit", "l");
+    legend7->Draw();
+    cCorrectedFitf2Toy->SaveAs((savePath + "/plots/CorrectedFit_f2Toy.png").c_str());
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
@@ -472,6 +665,6 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetLeftMargin(0.14);
     pad2->SetLeftMargin(0.14);
     pad1->SetTopMargin(0.06);
-    pad1->SetBottomMargin(0.002);
-    pad2->SetTopMargin(0.04);
+    pad1->SetBottomMargin(0.001);
+    pad2->SetTopMargin(0.001);
 }

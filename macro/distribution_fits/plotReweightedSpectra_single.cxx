@@ -170,7 +170,7 @@ void plotReweightedSpectra_single()
     legReweighted->AddEntry(hGenReweighted, "Reweighted Generated distribution", "p");
     legReweighted->AddEntry(hRecReweighted, "Reweighted Reconstructed distribution", "p");
     legReweighted->Draw();
-    cReweighted->SaveAs((savePath + "/plots/ReweightedEfficiencyf0.png").c_str());
+    // cReweighted->SaveAs((savePath + "/plots/ReweightedEfficiencyf0.png").c_str());
 
     TCanvas *cReweightedf2 = new TCanvas("cReweightedf2", "Reweighted Efficiency for f2'(1525)", 720, 720);
     SetCanvasStyle(cReweightedf2, 0.18, 0.03, 0.05, 0.14);
@@ -225,7 +225,7 @@ void plotReweightedSpectra_single()
     legReweighted2->AddEntry(hGenReweighted2, "Reweighted Generated distribution", "p");
     legReweighted2->AddEntry(hRecReweighted2, "Reweighted Reconstructed distribution", "p");
     legReweighted2->Draw();
-    cReweightedf2->SaveAs((savePath + "/plots/ReweightedEfficiencyf2.png").c_str());
+    // cReweightedf2->SaveAs((savePath + "/plots/ReweightedEfficiencyf2.png").c_str());
     hYieldReweighted->Write("f01710_Reweighted_Yield");
     hYieldReweighted2->Write("f21525_Reweighted_Yield");
 
@@ -312,20 +312,20 @@ void plotReweightedSpectra_single()
     // cout << "Mean pT = " << hout->GetBinContent(5) << " +- " << hout->GetBinContent(6) << endl;
     cout << "Parameters for f0(171)" << endl;
     cout << "<pT> = " << hout->GetBinContent(5) << endl;
-    cout<< "Stat. error "<< hout->GetBinContent(6) << endl;
-    cout<< "Sys. error Low "<< hout->GetBinContent(7) << endl;
-    cout<< "Sys. error High "<< hout->GetBinContent(8) << endl;
-    cout<< "Low pT extrapolation error "<< hout->GetBinContent(10) << endl;
+    cout << "Stat. error " << hout->GetBinContent(6) << endl;
+    cout << "Sys. error Low " << hout->GetBinContent(7) << endl;
+    cout << "Sys. error High " << hout->GetBinContent(8) << endl;
+    cout << "Low pT extrapolation error " << hout->GetBinContent(10) << endl;
 
     TH1 *hout2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
     // cout << "Yield dN/dy of f2'(1525) = " << hout2->GetBinContent(1) << " +- " << hout2->GetBinContent(2) << endl;
     // cout << "Mean pT of f2'(1525) = " << hout2->GetBinContent(5) << " +- " << hout2->GetBinContent(6) << endl;
     cout << "Parameters for f2'(1525)" << endl;
     cout << "<pT> = " << hout2->GetBinContent(5) << endl;
-    cout<< "Stat. error "<< hout2->GetBinContent(6) << endl;
-    cout<< "Sys. error Low "<< hout2->GetBinContent(7) << endl;
-    cout<< "Sys. error High "<< hout2->GetBinContent(8) << endl;
-    cout<< "Low pT extrapolation error "<< hout2->GetBinContent(10) << endl;
+    cout << "Stat. error " << hout2->GetBinContent(6) << endl;
+    cout << "Sys. error Low " << hout2->GetBinContent(7) << endl;
+    cout << "Sys. error High " << hout2->GetBinContent(8) << endl;
+    cout << "Low pT extrapolation error " << hout2->GetBinContent(10) << endl;
 
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
@@ -362,7 +362,7 @@ void plotReweightedSpectra_single()
     leg->SetFillStyle(0);
     leg->SetTextSize(0.035);
     leg->Draw();
-    cCorrectedf0Fit->SaveAs((savePath + "/plots/LevyFitf0_reweighted.png").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/plots/LevyFitf0_reweighted.png").c_str());
 
     TCanvas *cCorrectedf2Fit = new TCanvas("cCorrectedf2Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf2Fit, 0.18, 0.03, 0.05, 0.14);
@@ -398,7 +398,7 @@ void plotReweightedSpectra_single()
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.035);
     leg2->Draw();
-    cCorrectedf2Fit->SaveAs((savePath + "/plots/LevyFitf2_reweighted.png").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/plots/LevyFitf2_reweighted.png").c_str());
 
     // /*
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
@@ -627,9 +627,9 @@ void plotReweightedSpectra_single()
     legend5->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend5->Draw();
-    cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
 
-    /*
+    // /*
     // Reading by from the root file
     float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
     int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
@@ -746,19 +746,19 @@ void plotReweightedSpectra_single()
     hEfficiencyRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hEfficiencyRatio->GetYaxis()->SetTitle("Reweighted / Unweighted");
     hEfficiencyRatio->GetYaxis()->SetTitleOffset(0.9);
-    hEfficiencyRatio->SetMaximum(1.3);
-    hEfficiencyRatio->SetMinimum(0.7);
+    hEfficiencyRatio->SetMaximum(1.18);
+    hEfficiencyRatio->SetMinimum(0.83);
     hEfficiencyRatio->SetMarkerStyle(20);
     hEfficiencyRatio->SetMarkerColor(kBlack);
     hEfficiencyRatio->SetLineColor(kBlack);
     hEfficiencyRatio->SetMarkerSize(1.5);
     hEfficiencyRatio->GetYaxis()->SetNdivisions(505);
-    hEfficiencyRatio->Draw("lp");
+    hEfficiencyRatio->SetLineWidth(3);
+    hEfficiencyRatio->Draw("HIST");
     TLine *lineUnity = new TLine(hEfficiencyRatio->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio->GetXaxis()->GetXmax(), 1.0);
     lineUnity->SetLineColor(kRed);
     lineUnity->SetLineStyle(2);
     lineUnity->Draw("same");
-
     cNewEfficiency->SaveAs((savePath + "/plots/EfficiencyComparisonf0.png").c_str());
 
     TCanvas *cNewEfficiency2 = new TCanvas("cNewEfficiency2", "New Efficiency Comparison for f2(1525)", 720, 720);
@@ -808,77 +808,79 @@ void plotReweightedSpectra_single()
     hEfficiencyRatio2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hEfficiencyRatio2->GetYaxis()->SetTitle("Reweighted / Unweighted");
     hEfficiencyRatio2->GetYaxis()->SetTitleOffset(0.9);
-    hEfficiencyRatio2->SetMaximum(1.3);
-    hEfficiencyRatio2->SetMinimum(0.7);
+    hEfficiencyRatio2->SetMaximum(1.18);
+    hEfficiencyRatio2->SetMinimum(0.83);
     hEfficiencyRatio2->SetMarkerStyle(20);
     hEfficiencyRatio2->SetMarkerColor(kBlack);
     hEfficiencyRatio2->SetLineColor(kBlack);
     hEfficiencyRatio2->SetMarkerSize(1.5);
     hEfficiencyRatio2->GetYaxis()->SetNdivisions(505);
-    hEfficiencyRatio2->Draw("p");
+    hEfficiencyRatio2->SetLineWidth(3);
+    hEfficiencyRatio2->Draw("HIST");
     TLine *lineUnity2 = new TLine(hEfficiencyRatio2->GetXaxis()->GetXmin(), 1.0, hEfficiencyRatio2->GetXaxis()->GetXmax(), 1.0);
     lineUnity2->SetLineColor(kRed);
     lineUnity2->SetLineStyle(2);
     lineUnity2->Draw("same");
     cNewEfficiency2->SaveAs((savePath + "/plots/EfficiencyComparisonf2.png").c_str());
+
     if (!otherQAPlots)
     {
         cNewEfficiency->Close();
         cNewEfficiency2->Close();
     }
 
-    TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
-    SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
-    TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
-    SetHistoQA(hReweightFactor);
-    hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
-    hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
-    hReweightFactor->SetMaximum(1.5);
-    hReweightFactor->SetMinimum(0.3);
-    hReweightFactor->Draw("HIST");
-    if (!otherQAPlots)
-        cReweightFactor->Close();
+    // TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
+    // SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
+    // TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
+    // SetHistoQA(hReweightFactor);
+    // hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
+    // hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
+    // hReweightFactor->SetMaximum(1.5);
+    // hReweightFactor->SetMinimum(0.3);
+    // hReweightFactor->Draw("HIST");
+    // if (!otherQAPlots)
+    //     cReweightFactor->Close();
 
-    TFile *file2 = new TFile((savePath + "/spectra_.root").c_str(), "read");
-    TH1F *hYield1710Corrected = (TH1F *)file2->Get("hYield1710Corrected");
-    if (hYield1710Corrected == nullptr)
-    {
-        cout << "Error reading corrected yield histogram from file" << endl;
-        return;
-    }
-    TCanvas *cYieldCompare = new TCanvas("cYieldCompare", "Corrected Yield Comparison for f0(1710)", 720, 720);
-    SetCanvasStyle(cYieldCompare, 0.18, 0.03, 0.05, 0.14);
-    SetHistoQA(hYield1710Corrected);
-    gPad->SetLogy();
-    hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
-    hYield1710Corrected->GetYaxis()->SetTitleOffset(1.5);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
-    hYield1710Corrected->SetMarkerStyle(20);
-    hYield1710Corrected->SetMarkerColor(kRed);
-    hYield1710Corrected->SetLineColor(kRed);
-    hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 15.5);
-    hYield1710Corrected->SetMinimum(1e-6);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
-    hYield1710Corrected->SetMarkerSize(1.5);
-    hYield1710Corrected->Draw("pe");
-    hYieldReweighted->Draw("pe same");
+    // TFile *file2 = new TFile((savePath + "/spectra_.root").c_str(), "read");
+    // TH1F *hYield1710Corrected = (TH1F *)file2->Get("hYield1710Corrected");
+    // if (hYield1710Corrected == nullptr)
+    // {
+    //     cout << "Error reading corrected yield histogram from file" << endl;
+    //     return;
+    // }
+    // TCanvas *cYieldCompare = new TCanvas("cYieldCompare", "Corrected Yield Comparison for f0(1710)", 720, 720);
+    // SetCanvasStyle(cYieldCompare, 0.18, 0.03, 0.05, 0.14);
+    // SetHistoQA(hYield1710Corrected);
+    // gPad->SetLogy();
+    // hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    // hYield1710Corrected->GetYaxis()->SetTitleOffset(1.5);
+    // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
+    // hYield1710Corrected->SetMarkerStyle(20);
+    // hYield1710Corrected->SetMarkerColor(kRed);
+    // hYield1710Corrected->SetLineColor(kRed);
+    // hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 15.5);
+    // hYield1710Corrected->SetMinimum(1e-6);
+    // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
+    // hYield1710Corrected->SetMarkerSize(1.5);
+    // hYield1710Corrected->Draw("pe");
+    // hYieldReweighted->Draw("pe same");
 
-    TLegend *legYieldCompare = new TLegend(0.4, 0.73, 0.9, 0.93);
-    legYieldCompare->SetBorderSize(0);
-    legYieldCompare->SetFillStyle(0);
-    legYieldCompare->SetTextSize(0.035);
-    legYieldCompare->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legYieldCompare->AddEntry(hYield1710Corrected, "Corrected spectra", "pe");
-    legYieldCompare->AddEntry(hYieldReweighted, "Reweighted corrected spectra", "pe");
-    legYieldCompare->Draw();
-    cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
-    if (!otherQAPlots)
-        cYieldCompare->Close();
-    */
+    // TLegend *legYieldCompare = new TLegend(0.4, 0.73, 0.9, 0.93);
+    // legYieldCompare->SetBorderSize(0);
+    // legYieldCompare->SetFillStyle(0);
+    // legYieldCompare->SetTextSize(0.035);
+    // legYieldCompare->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    // legYieldCompare->AddEntry(hYield1710Corrected, "Corrected spectra", "pe");
+    // legYieldCompare->AddEntry(hYieldReweighted, "Reweighted corrected spectra", "pe");
+    // legYieldCompare->Draw();
+    // // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
+    // if (!otherQAPlots)
+    //     cYieldCompare->Close();
+    // // */
 
-    cout << "Finished processing plotting the reweighted MC spectra" << endl;
+    // cout << "Finished processing plotting the reweighted MC spectra" << endl;
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

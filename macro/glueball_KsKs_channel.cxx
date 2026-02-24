@@ -51,8 +51,8 @@ void glueball_KsKs_channel()
         // Folder name inside the Analysis.root file *****************************************
         if (!save_invmass_distributions)
             gStyle->SetOptFit(1111);
-        // gStyle->SetOptStat(1110);
-        gStyle->SetOptStat(0);
+        gStyle->SetOptStat(1110);
+        // gStyle->SetOptStat(0);
 
         t2->SetNDC(); // to self adjust the text so that it remains in the box
         t2->SetTextSize(0.045);

@@ -260,8 +260,13 @@ void plotReweightedSpectra_single()
     hf21->Sumw2();
     hf22->Sumw2();
 
-    double relUncertLowpTExtrapolationf2 = 11.0711 / 100;
-    double relUncertLowpTExtrapolationf0 = 7.24382 / 100;
+    // Using RMS uncertainty
+    // double relUncertLowpTExtrapolationf2 = 0.110711;
+    // double relUncertLowpTExtrapolationf0 = 0.0724382;
+
+    // Using maximum deviation
+    double relUncertLowpTExtrapolationf2 = 0.187571;
+    double relUncertLowpTExtrapolationf0 = 0.125194;
 
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -285,13 +290,13 @@ void plotReweightedSpectra_single()
     Double_t max = 15.0;
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.1;
-    Option_t *opt = "REBMS0+";
+    Option_t *opt = "REBMSQ0+";
     // Option_t *opt = "RI0+";
     TString logfilename = "log.root";
     Double_t minfit = 1.0;
     Double_t maxfit = 10.0;
 
-    TF1 *fitFcnf0 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
+    TF1 *fitFcnf0 = new TF1("fitfunc2", FuncLavy, 0.0, 10.0, 4);
     fitFcnf0->SetParameter(0, 5.0);
     // fitFcnf0->SetParameter(1, 0.05);
     fitFcnf0->SetParameter(1, 0.5);
@@ -299,7 +304,7 @@ void plotReweightedSpectra_single()
     fitFcnf0->SetParameter(3, 0.35);
     fitFcnf0->SetParNames("n", "dn/dy", "mass", "T");
 
-    TF1 *fitFcnf2 = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+    TF1 *fitFcnf2 = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
     fitFcnf2->SetParameter(0, 5.0);
     // fitFcnf2->SetParameter(1, 0.05);
     fitFcnf2->SetParameter(1, 0.5);
@@ -345,6 +350,7 @@ void plotReweightedSpectra_single()
     hf02->SetMarkerColor(kBlue);
     hf02->SetLineColor(kBlue);
     hf02->SetFillStyle(0);
+    hf02->SetMinimum(9e-8);
     hf02->Draw("e2 same");
     fitFcnf0->SetLineWidth(2);
     fitFcnf0->SetLineStyle(2);
@@ -381,6 +387,7 @@ void plotReweightedSpectra_single()
     hf22->SetMarkerColor(kBlue);
     hf22->SetLineColor(kBlue);
     hf22->SetFillStyle(0);
+    hf22->SetMinimum(2e-7);
     hf22->Draw("e2 same");
     fitFcnf2->SetLineWidth(2);
     fitFcnf2->SetLineStyle(2);
@@ -416,17 +423,6 @@ void plotReweightedSpectra_single()
     double particleMass[9] = {0.13957, 0.49367, 0.49761, 0.89166, 1.01946, 0.93827, 1.11568, 1.3217, 1.67245}; // in GeV/c2
     int colors[9] = {kBlack, kBlue, kGreen + 2, kOrange + 7, kViolet + 7, kCyan + 2, kMagenta + 2, kGray + 2, kPink + 2};
     int markers[9] = {21, 22, 23, 33, 34, 43, 45, 29, 39};
-    // vector<vector<float>> dNdyvalues_13TeV = {
-    //     {4.775, 0.001, 0.243, 1.0},  // 4.775 ± 0.001 ± 0.243
-    //     {6.205, 0.004, 0.303, 1e-1}, // (6.205 ± 0.004 ± 0.303) × 10⁻¹
-    //     {3.192, 0.004, 0.111, 1e-1}, // (3.192 ± 0.004 ± 0.111) × 10⁻¹
-    //     {2.098, 0.016, 0.200, 1e-1}, // (2.098 ± 0.016 ± 0.200) × 10⁻¹
-    //     {2.750, 0.002, 0.188, 1e-1}, // (2.750 ± 0.002 ± 0.188) × 10⁻¹
-    //     {3.734, 0.040, 0.213, 1e-2}, // (3.734 ± 0.040 ± 0.213) × 10⁻²
-    //     {1.807, 0.005, 0.102, 1e-1}, // (1.807 ± 0.005 ± 0.102) × 10⁻¹
-    //     {1.980, 0.012, 0.082, 1e-2}, // (1.980 ± 0.012 ± 0.082) × 10⁻²
-    //     {1.846, 0.046, 0.122, 1e-3}  // (1.846 ± 0.046 ± 0.122) × 10⁻³
-    // };
 
     double meanPtAt13TeV[9];
     double meanPtAt13TeV_err[9];
@@ -436,7 +432,7 @@ void plotReweightedSpectra_single()
     for (int i = 0; i < totalParticles; i++)
     {
         gMeanPt[i] = (TGraphErrors *)flightFlavourHadrons->Get(Form("Table %d/Graph1D_y1", 26 + i));
-        cout << "Table " << 26 + i << " for particle " << particles[i] << endl;
+        // cout << "Table " << 26 + i << " for particle " << particles[i] << endl;
         cout << "<pT> " << gMeanPt[i]->GetY()[0] << " +- " << gMeanPt[i]->GetErrorY(0) << endl;
         if (gMeanPt[i] == nullptr)
         {
@@ -605,8 +601,8 @@ void plotReweightedSpectra_single()
         else
             latex.DrawLatex(x, y - 0.16, particlesLatex[i].c_str());
     }
-    latex.DrawLatex(1.5173, hout2->GetBinContent(5) + 0.22, "f'_{2}(1525)");
-    latex.DrawLatex(1.710, hout->GetBinContent(5) + 0.2, "f_{0}(1710)");
+    latex.DrawLatex(1.5173, hout2->GetBinContent(5) + 0.29, "f'_{2}(1525)");
+    latex.DrawLatex(1.710, hout->GetBinContent(5) + 0.22, "f_{0}(1710)");
 
     TLegend *legend4 = new TLegend(0.17, 0.65, 0.63, 0.92);
     legend4->SetBorderSize(0);
@@ -629,7 +625,128 @@ void plotReweightedSpectra_single()
     legend5->Draw();
     // cMeanPt->SaveAs((savePath + "/plots/MeanPt_vs_Mass_reweighted.png").c_str());
 
-    // /*
+    // Similarly plot the dN/dy/(2J+1) as a function of particle mass
+    vector<vector<float>> dNdyvalues_13TeV = {
+        {4.775, 0.001, 0.243, 1.0},  // 4.775 ± 0.001 ± 0.243 (pion)
+        {6.205, 0.004, 0.303, 1e-1}, // (6.205 ± 0.004 ± 0.303) × 10⁻¹ (kaon)
+        {3.192, 0.004, 0.111, 1e-1}, // (3.192 ± 0.004 ± 0.111) × 10⁻¹ (K0s)
+        {2.098, 0.016, 0.200, 1e-1}, // (2.098 ± 0.016 ± 0.200) × 10⁻¹ (Kstar)
+        {3.734, 0.040, 0.213, 1e-2}, // (3.734 ± 0.040 ± 0.213) × 10⁻² (Phi)
+        {2.750, 0.002, 0.188, 1e-1}, // (2.750 ± 0.002 ± 0.188) × 10⁻¹ (proton)
+        {1.807, 0.005, 0.102, 1e-1}, // (1.807 ± 0.005 ± 0.102) × 10⁻¹ (Lambda)
+        {1.980, 0.012, 0.082, 1e-2}, // (1.980 ± 0.012 ± 0.082) × 10⁻² (Xi)
+        {1.846, 0.046, 0.122, 1e-3}  // (1.846 ± 0.046 ± 0.122) × 10⁻³ (Omega)
+    };
+    int Jvalues[9] = {0, 0, 0, 1, 1, 1 / 2, 1 / 2, 1 / 2, 3 / 2};
+    TGraphAsymmErrors *gdNdyvsMassMesons = new TGraphAsymmErrors();
+    TGraphAsymmErrors *gdNdyvsMassBaryons = new TGraphAsymmErrors();
+    for (int i = 0; i < totalParticles; i++)
+    {
+        double dNdy = dNdyvalues_13TeV[i][0] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1); // apply the scaling factor
+        // double dNdy_err_stat = dNdyvalues_13TeV[i][1] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1);
+        double dNdy_err_sys = dNdyvalues_13TeV[i][2] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1);
+        cout<<"Particle "<<particlesLatex[i]<<" dN/dy/(2J+1) = "<<dNdy<<" with sys error "<<dNdy_err_sys<<endl;
+
+        if (i < 5)
+        {
+            gdNdyvsMassMesons->SetPoint(i, particleMass[i], dNdy);
+            gdNdyvsMassMesons->SetPointError(i, 0.02, 0.02, dNdy_err_sys, dNdy_err_sys);
+        }
+        else
+        {
+            gdNdyvsMassBaryons->SetPoint(i - 5, particleMass[i], dNdy);
+            gdNdyvsMassBaryons->SetPointError(i - 5, 0.02, 0.02, dNdy_err_sys, dNdy_err_sys);
+        }
+    }
+    SetGraphStyleCommon(gdNdyvsMassMesons);
+    gdNdyvsMassMesons->SetMarkerStyle(22);
+    gdNdyvsMassMesons->SetMarkerColor(kMagenta);
+    gdNdyvsMassMesons->SetLineColor(kMagenta);
+    gdNdyvsMassMesons->SetLineWidth(2);
+    gdNdyvsMassMesons->SetMarkerSize(1.7);
+    gdNdyvsMassMesons->SetFillStyle(0);
+    SetGraphStyleCommon(gdNdyvsMassBaryons);
+    gdNdyvsMassBaryons->SetMarkerStyle(34);
+    gdNdyvsMassBaryons->SetMarkerColor(kRed);
+    gdNdyvsMassBaryons->SetLineColor(kRed);
+    gdNdyvsMassBaryons->SetLineWidth(2);
+    gdNdyvsMassBaryons->SetMarkerSize(1.7);
+    gdNdyvsMassBaryons->SetFillStyle(0);
+
+    TCanvas *cdNdy = new TCanvas("cdNdy", "dN/dy vs mass", 720, 720);
+    SetCanvasStyle(cdNdy, 0.14, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    gdNdyvsMassMesons->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    gdNdyvsMassMesons->GetYaxis()->SetTitle("dN/dy #times 1/(2J+1)");
+    gdNdyvsMassMesons->GetYaxis()->SetTitleOffset(1.3);
+    // gdNdyvsMassMesons->SetMinimum(-1.0);
+    // gdNdyvsMassMesons->SetMaximum(15);
+    gdNdyvsMassMesons->GetXaxis()->SetLimits(0, 1.99);
+    gdNdyvsMassMesons->Draw("A 2");
+    TGraphAsymmErrors *gdNdyvsMassMesonsSys = (TGraphAsymmErrors *)gdNdyvsMassMesons->Clone("gdNdyvsMassMesonsSys");
+    gdNdyvsMassMesonsSys->SetLineWidth(0);
+    gdNdyvsMassMesonsSys->Draw("P SAME");
+    gdNdyvsMassBaryons->Draw("2 SAME");
+    TGraphAsymmErrors *gdNdyvsMassBaryonsSys = (TGraphAsymmErrors *)gdNdyvsMassBaryons->Clone("gdNdyvsMassBaryonsSys");
+    gdNdyvsMassBaryonsSys->SetLineWidth(0);
+    gdNdyvsMassBaryonsSys->Draw("P SAME");
+    // Draw the f2(1525) marker and error bars
+    double f2_dNdy = hout2->GetBinContent(1) / (2 * 2 + 1); // J = 2 for f2(1525)
+    double f2_dNdy_statErr = hout2->GetBinContent(2) / (2 * 2 + 1);
+    double f2_dNdy_sysErrLow = hout2->GetBinContent(3) / (2 * 2 + 1);
+    double f2_dNdy_sysErrHigh = hout2->GetBinContent(4) / (2 * 2 + 1);
+    cout << "dN/dy f2(1525) " << f2_dNdy << " with stat error " << f2_dNdy_statErr << " sys err low " << f2_dNdy_sysErrLow << " sys err high " << f2_dNdy_sysErrHigh << endl;
+    TGraphErrors *graph_f2_dNdy = new TGraphErrors(1);
+    graph_f2_dNdy->SetPoint(0, f2_mass, f2_dNdy);
+    graph_f2_dNdy->SetPointError(0, 0, f2_dNdy_statErr);
+    graph_f2_dNdy->SetMarkerStyle(f2_marker);
+    graph_f2_dNdy->SetMarkerColor(f2_color);
+    graph_f2_dNdy->SetMarkerSize(1.7);
+    graph_f2_dNdy->SetLineColor(f2_color);
+    graph_f2_dNdy->SetLineWidth(2);
+    graph_f2_dNdy->Draw("P SAME");
+    TGraphAsymmErrors *graph_f2_dNdy_sys = new TGraphAsymmErrors(1);
+    graph_f2_dNdy_sys->SetPoint(0, f2_mass, f2_dNdy);
+    graph_f2_dNdy_sys->SetPointError(0, 0.02, 0.02, f2_dNdy_sysErrLow, f2_dNdy_sysErrHigh);
+    graph_f2_dNdy_sys->SetLineColor(f2_color);
+    graph_f2_dNdy_sys->SetLineWidth(2);
+    graph_f2_dNdy_sys->SetFillStyle(0);
+    graph_f2_dNdy_sys->Draw("2 SAME");
+    // Draw the f0(1710) marker and error bars
+    double f0_dNdy = hout->GetBinContent(1) / (2 * 0 + 1); // J = 0 for f0(1710)
+    double f0_dNdy_statErr = hout->GetBinContent(2) / (2 * 0 + 1);
+    double f0_dNdy_sysErrLow = hout->GetBinContent(3) / (2 * 0 + 1);
+    double f0_dNdy_sysErrHigh = hout->GetBinContent(4) / (2 * 0 + 1);
+    cout<<"dN/dy f0(1710) "<<f0_dNdy<<" with stat error "<<f0_dNdy_statErr<<" sys err low "<<f0_dNdy_sysErrLow<<" sys err high "<<f0_dNdy_sysErrHigh<<endl;
+    TGraphErrors *graph_f0_dNdy = new TGraphErrors(1);
+    graph_f0_dNdy->SetPoint(0, f0_mass, f0_dNdy);
+    graph_f0_dNdy->SetPointError(0, 0, f0_dNdy_statErr);
+    graph_f0_dNdy->SetMarkerStyle(f0_marker);
+    graph_f0_dNdy->SetMarkerColor(f0_color);
+    graph_f0_dNdy->SetMarkerSize(1.7);
+    graph_f0_dNdy->SetLineColor(f0_color);
+    graph_f0_dNdy->SetLineWidth(2);
+    graph_f0_dNdy->Draw("P SAME");
+    TGraphAsymmErrors *graph_f0_dNdy_sys = new TGraphAsymmErrors(1);
+    graph_f0_dNdy_sys->SetPoint(0, f0_mass, f0_dNdy);
+    graph_f0_dNdy_sys->SetPointError(0, 0.02, 0.02, f0_dNdy_sysErrLow, f0_dNdy_sysErrHigh);
+    graph_f0_dNdy_sys->SetLineColor(f0_color);
+    graph_f0_dNdy_sys->SetLineWidth(2);
+    graph_f0_dNdy_sys->SetFillStyle(0);
+    graph_f0_dNdy_sys->Draw("2 SAME");
+    TLegend *legend6 = new TLegend(0.3, 0.8, 0.95, 0.92);
+    // legend6->SetBorderSize(0);
+    legend6->SetFillStyle(0);
+    legend6->SetNColumns(2);
+    legend6->SetTextSize(0.03);
+    legend6->AddEntry(gdNdyvsMassMesons, "Mesons (13 TeV)", "p");
+    legend6->AddEntry(gdNdyvsMassBaryons, "Baryons (13 TeV)", "p");
+    legend6->AddEntry(graph_f2_dNdy, "f'_{2}(1525) (13.6 TeV)", "p");
+    legend6->AddEntry(graph_f0_dNdy, "f_{0}(1710) (13.6 TeV)", "p");
+    legend6->Draw();
+    // cdNdy->SaveAs((savePath + "/plots/dNdy_vs_Mass_reweighted.png").c_str());
+
+    /*
     // Reading by from the root file
     float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 dataset
     int nBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
@@ -829,56 +946,56 @@ void plotReweightedSpectra_single()
         cNewEfficiency2->Close();
     }
 
-    // TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
-    // SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
-    // TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
-    // SetHistoQA(hReweightFactor);
-    // hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    // hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
-    // hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
-    // hReweightFactor->SetMaximum(1.5);
-    // hReweightFactor->SetMinimum(0.3);
-    // hReweightFactor->Draw("HIST");
-    // if (!otherQAPlots)
-    //     cReweightFactor->Close();
+    TCanvas *cReweightFactor = new TCanvas("cReweightFactor", "Reweighting Factor for f0(1710)", 720, 720);
+    SetCanvasStyle(cReweightFactor, 0.18, 0.03, 0.05, 0.14);
+    TH1F *hReweightFactor = (TH1F *)hGenReweighted->Clone("hYield1710Corrected_correction_i3");
+    SetHistoQA(hReweightFactor);
+    hReweightFactor->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hReweightFactor->GetYaxis()->SetTitle("Reweight Factor");
+    hReweightFactor->GetYaxis()->SetTitleOffset(1.5);
+    hReweightFactor->SetMaximum(1.5);
+    hReweightFactor->SetMinimum(0.3);
+    hReweightFactor->Draw("HIST");
+    if (!otherQAPlots)
+        cReweightFactor->Close();
 
-    // TFile *file2 = new TFile((savePath + "/spectra_.root").c_str(), "read");
-    // TH1F *hYield1710Corrected = (TH1F *)file2->Get("hYield1710Corrected");
-    // if (hYield1710Corrected == nullptr)
-    // {
-    //     cout << "Error reading corrected yield histogram from file" << endl;
-    //     return;
-    // }
-    // TCanvas *cYieldCompare = new TCanvas("cYieldCompare", "Corrected Yield Comparison for f0(1710)", 720, 720);
-    // SetCanvasStyle(cYieldCompare, 0.18, 0.03, 0.05, 0.14);
-    // SetHistoQA(hYield1710Corrected);
-    // gPad->SetLogy();
-    // hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    // hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
-    // hYield1710Corrected->GetYaxis()->SetTitleOffset(1.5);
-    // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
-    // hYield1710Corrected->SetMarkerStyle(20);
-    // hYield1710Corrected->SetMarkerColor(kRed);
-    // hYield1710Corrected->SetLineColor(kRed);
-    // hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 15.5);
-    // hYield1710Corrected->SetMinimum(1e-6);
-    // hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
-    // hYield1710Corrected->SetMarkerSize(1.5);
-    // hYield1710Corrected->Draw("pe");
-    // hYieldReweighted->Draw("pe same");
+    TFile *file2 = new TFile((savePath + "/spectra_.root").c_str(), "read");
+    TH1F *hYield1710Corrected = (TH1F *)file2->Get("hYield1710Corrected");
+    if (hYield1710Corrected == nullptr)
+    {
+        cout << "Error reading corrected yield histogram from file" << endl;
+        return;
+    }
+    TCanvas *cYieldCompare = new TCanvas("cYieldCompare", "Corrected Yield Comparison for f0(1710)", 720, 720);
+    SetCanvasStyle(cYieldCompare, 0.18, 0.03, 0.05, 0.14);
+    SetHistoQA(hYield1710Corrected);
+    gPad->SetLogy();
+    hYield1710Corrected->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hYield1710Corrected->GetYaxis()->SetTitle("1/N_{ev} * d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hYield1710Corrected->GetYaxis()->SetTitleOffset(1.5);
+    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
+    hYield1710Corrected->SetMarkerStyle(20);
+    hYield1710Corrected->SetMarkerColor(kRed);
+    hYield1710Corrected->SetLineColor(kRed);
+    hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 15.5);
+    hYield1710Corrected->SetMinimum(1e-6);
+    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 12);
+    hYield1710Corrected->SetMarkerSize(1.5);
+    hYield1710Corrected->Draw("pe");
+    hYieldReweighted->Draw("pe same");
 
-    // TLegend *legYieldCompare = new TLegend(0.4, 0.73, 0.9, 0.93);
-    // legYieldCompare->SetBorderSize(0);
-    // legYieldCompare->SetFillStyle(0);
-    // legYieldCompare->SetTextSize(0.035);
-    // legYieldCompare->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    // legYieldCompare->AddEntry(hYield1710Corrected, "Corrected spectra", "pe");
-    // legYieldCompare->AddEntry(hYieldReweighted, "Reweighted corrected spectra", "pe");
-    // legYieldCompare->Draw();
-    // // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
-    // if (!otherQAPlots)
-    //     cYieldCompare->Close();
-    // // */
+    TLegend *legYieldCompare = new TLegend(0.4, 0.73, 0.9, 0.93);
+    legYieldCompare->SetBorderSize(0);
+    legYieldCompare->SetFillStyle(0);
+    legYieldCompare->SetTextSize(0.035);
+    legYieldCompare->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    legYieldCompare->AddEntry(hYield1710Corrected, "Corrected spectra", "pe");
+    legYieldCompare->AddEntry(hYieldReweighted, "Reweighted corrected spectra", "pe");
+    legYieldCompare->Draw();
+    // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
+    if (!otherQAPlots)
+        cYieldCompare->Close();
+    */
 
     // cout << "Finished processing plotting the reweighted MC spectra" << endl;
 }

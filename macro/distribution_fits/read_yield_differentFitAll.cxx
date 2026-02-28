@@ -117,7 +117,7 @@ void read_yield_differentFitAll()
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.1;
     // Option_t *opt = "RI0+";
-    Option_t *opt = "REBMS0+";
+    Option_t *opt = "REBMSQ0+";
     TString logfilename = "log.root";
     Double_t minfit = 1.0;
     Double_t maxfit = 5.0;
@@ -126,9 +126,9 @@ void read_yield_differentFitAll()
     Double_t min2 = 0.0;
     Double_t max2 = 15.0;
     // Option_t *opt2 = "RI0+";
-    Option_t *opt2 = "REBMS0+";
+    Option_t *opt2 = "REBMSQ0+";
     Double_t minfit2 = 1.0;
-    Double_t maxfit2 = 15.0;
+    Double_t maxfit2 = 10.0;
 
     // Fit parameters for Exponential
     Double_t minExp = 0.0;
@@ -137,7 +137,7 @@ void read_yield_differentFitAll()
     Double_t maxfitExp = 7.0;
 
     //====================================Levy-Tsallis Fit==========================================
-    TF1 *fitLevyf2 = new TF1("fitLevyf2", FuncLavy, 0.0, 15.0, 4);
+    TF1 *fitLevyf2 = new TF1("fitLevyf2", FuncLavy, 0.0, 10.0, 4);
     fitLevyf2->SetParameter(0, 5.0);
     fitLevyf2->SetParameter(1, 0.5);
     fitLevyf2->FixParameter(2, 1.525);
@@ -146,7 +146,16 @@ void read_yield_differentFitAll()
     // hf21->Fit(fitLevyf2, opt, "", minfit, maxfit);
     TH1 *houtLevyf2 = YieldMean(hf21, hf22, fitLevyf2, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
 
-    TF1 *fitLevyf0 = new TF1("fitLevyf0", FuncLavy, 0.0, 15.0, 4);
+    // To fit in full fit range for f0(1710)
+    TF1 *fitLevyf2_full = new TF1("fitLevyf2_full", FuncLavy, 0.0, 15.0, 4);
+    fitLevyf2_full->SetParameter(0, 5.0);
+    fitLevyf2_full->SetParameter(1, 0.5);
+    fitLevyf2_full->FixParameter(2, 1.525);
+    fitLevyf2_full->SetParameter(3, 0.35);
+    fitLevyf2_full->SetParNames("n", "dn/dy", "mass", "T");
+    TH1 *houtLevyf2Full = YieldMean(hf21, hf22, fitLevyf2_full, 0, 15.0, loprecision, hiprecision, opt2, logfilename, 1.0, 15.0);
+
+    TF1 *fitLevyf0 = new TF1("fitLevyf0", FuncLavy, 0.0, 10.0, 4);
     fitLevyf0->SetParameter(0, 5.0);
     fitLevyf0->SetParameter(1, 0.5);
     fitLevyf0->FixParameter(2, 1.710);
@@ -154,6 +163,14 @@ void read_yield_differentFitAll()
     fitLevyf0->SetParNames("n", "dn/dy", "mass", "T");
     // hf01->Fit(fitLevyf0, opt, "", minfit, maxfit);
     TH1 *houtLevyf0 = YieldMean(hf01, hf02, fitLevyf0, min2, max2, loprecision, hiprecision, opt2, logfilename, minfit2, maxfit2);
+
+    TF1 *fitLevyf0_full = new TF1("fitLevyf0_full", FuncLavy, 0.0, 15.0, 4);
+    fitLevyf0_full->SetParameter(0, 5.0);
+    fitLevyf0_full->SetParameter(1, 0.5);
+    fitLevyf0_full->FixParameter(2, 1.710);
+    fitLevyf0_full->SetParameter(3, 0.35);
+    fitLevyf0_full->SetParNames("n", "dn/dy", "mass", "T");
+    TH1 *houtLevyf0Full = YieldMean(hf01, hf02, fitLevyf0_full, 0, 15.0, loprecision, hiprecision, opt2, logfilename, 1.0, 15.0);
 
     //====================================Boltzmann Fit==========================================
     TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
@@ -254,50 +271,63 @@ void read_yield_differentFitAll()
     hf21->SetMarkerColor(kBlack);
     hf21->SetLineColor(kBlack);
     hf21->Draw("pe");
+    hf22->SetMarkerColor(kBlack);
+    hf22->SetLineColor(kBlack);
+    hf22->SetFillStyle(0);
+    hf22->Draw("e2same");
 
     // Set different colors for eachloprecision fit function
     fitLevyf2->SetLineColor(kRed);
-    fitLevyf2->SetLineWidth(2);
+    fitLevyf2->SetLineWidth(3);
     fitLevyf2->Draw("same");
 
-    fitBoltzmannf2->SetLineColor(kBlue);
-    fitBoltzmannf2->SetLineWidth(2);
-    fitBoltzmannf2->Draw("same");
+    // Show fit of full range Levy fit
+    fitLevyf2_full->SetLineColor(kBlue);
+    fitLevyf2_full->SetLineStyle(2);
+    fitLevyf2_full->SetLineWidth(3);
+    fitLevyf2_full->Draw("same");
 
-    fitExpf2->SetLineColor(kGreen + 2);
-    fitExpf2->SetLineWidth(2);
-    fitExpf2->Draw("same");
+    // fitBoltzmannf2->SetLineColor(kBlue);
+    // fitBoltzmannf2->SetLineWidth(2);
+    // fitBoltzmannf2->Draw("same");
+
+    // fitExpf2->SetLineColor(kGreen + 2);
+    // fitExpf2->SetLineWidth(2);
+    // fitExpf2->Draw("same");
 
     // fitMTExpf2->SetLineColor(kMagenta);
     // fitMTExpf2->SetLineWidth(2);
     // fitMTExpf2->Draw("same");
 
-    fitBoseEinsteinf2->SetLineColor(kCyan);
-    fitBoseEinsteinf2->SetLineWidth(2);
-    fitBoseEinsteinf2->Draw("same");
+    // fitBoseEinsteinf2->SetLineColor(kCyan);
+    // fitBoseEinsteinf2->SetLineWidth(2);
+    // fitBoseEinsteinf2->Draw("same");
 
     // fitBWf2->SetLineColor(kMagenta);
     // fitBWf2->SetLineWidth(2);
     // fitBWf2->Draw("same");
 
     // Create legend
-    TLegend *legf2 = new TLegend(0.55, 0.55, 0.95, 0.92);
+    TLegend *legf2 = new TLegend(0.51, 0.55, 0.95, 0.92);
     legf2->AddEntry((TObject *)0, "ALICE", "");
     legf2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legf2->AddEntry(hf21, "f_{2}'(1525) spectra", "pe");
-    legf2->AddEntry(fitLevyf2, "Levy-Tsallis", "l");
-    legf2->AddEntry(fitBoltzmannf2, "Boltzmann", "l");
-    legf2->AddEntry(fitExpf2, "Exponential", "l");
-    // legf2->AddEntry(fitMTExpf2, "mT Exponential", "l");
-    legf2->AddEntry(fitBoseEinsteinf2, "Bose-Einstein", "l");
-    // legf2->AddEntry(fitBWf2, "Blast-Wave", "l");
+    legf2->AddEntry(fitLevyf2, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
+    legf2->AddEntry(fitLevyf2_full, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
+    // legf2->AddEntry(fitLevyf2, "Levy-Tsallis", "l");
+    // legf2->AddEntry(fitBoltzmannf2, "Boltzmann", "l");
+    // legf2->AddEntry(fitExpf2, "Exponential", "l");
+    // // legf2->AddEntry(fitMTExpf2, "mT Exponential", "l");
+    // legf2->AddEntry(fitBoseEinsteinf2, "Bose-Einstein", "l");
+    // // legf2->AddEntry(fitBWf2, "Blast-Wave", "l");
     legf2->SetBorderSize(0);
     legf2->SetFillStyle(0);
     legf2->SetTextSize(0.03);
     legf2->Draw();
 
-    cFitf2All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f2.pdf").c_str());
+    // cFitf2All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f2.pdf").c_str());
+    cFitf2All->SaveAs((path + "/mult_0-100/Spectra/FitRangeCompare_f2.png").c_str());
 
     //====================================Plotting All Fits on Same Canvas for f0(1710)==========================================
     TCanvas *cFitf0All = new TCanvas("cFitf0All", "All Fits for f0(1710)", 720, 720);
@@ -308,49 +338,62 @@ void read_yield_differentFitAll()
     hf01->SetMarkerColor(kBlack);
     hf01->SetLineColor(kBlack);
     hf01->Draw("pe");
+    hf02->SetMarkerColor(kBlack);
+    hf02->SetLineColor(kBlack);
+    hf02->SetFillStyle(0);
+    hf02->Draw("e2same");
 
     // Set different colors for each fit function
     fitLevyf0->SetLineColor(kRed);
-    fitLevyf0->SetLineWidth(2);
+    fitLevyf0->SetLineWidth(3);
     fitLevyf0->Draw("same");
 
-    fitBoltzmannf0->SetLineColor(kBlue);
-    fitBoltzmannf0->SetLineWidth(2);
-    fitBoltzmannf0->Draw("same");
+    // Show fit of full range Levy fit
+    fitLevyf0_full->SetLineColor(kBlue);
+    fitLevyf0_full->SetLineStyle(2);
+    fitLevyf0_full->SetLineWidth(3);
+    fitLevyf0_full->Draw("same");
 
-    fitExpf0->SetLineColor(kGreen + 2);
-    fitExpf0->SetLineWidth(2);
-    fitExpf0->Draw("same");
+    // fitBoltzmannf0->SetLineColor(kBlue);
+    // fitBoltzmannf0->SetLineWidth(2);
+    // fitBoltzmannf0->Draw("same");
+
+    // fitExpf0->SetLineColor(kGreen + 2);
+    // fitExpf0->SetLineWidth(2);
+    // fitExpf0->Draw("same");
 
     // fitMTExpf0->SetLineColor(kMagenta);
     // fitMTExpf0->SetLineWidth(2);
     // fitMTExpf0->Draw("same");
 
-    fitBoseEinsteinf0->SetLineColor(kCyan);
-    fitBoseEinsteinf0->SetLineWidth(2);
-    fitBoseEinsteinf0->Draw("same");
+    // fitBoseEinsteinf0->SetLineColor(kCyan);
+    // fitBoseEinsteinf0->SetLineWidth(2);
+    // fitBoseEinsteinf0->Draw("same");
 
     // fitBWf0->SetLineColor(kMagenta);
     // fitBWf0->SetLineWidth(2);
     // fitBWf0->Draw("same");
 
     // Create legend
-    TLegend *legf0 = new TLegend(0.55, 0.6, 0.95, 0.92);
+    TLegend *legf0 = new TLegend(0.51, 0.6, 0.95, 0.92);
     legf0->AddEntry((TObject *)0, "ALICE", "");
     legf0->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf0->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legf0->AddEntry(hf01, "f_{0}(1710) spectra", "pe");
-    legf0->AddEntry(fitLevyf0, "Levy-Tsallis", "l");
-    legf0->AddEntry(fitBoltzmannf0, "Boltzmann", "l");
-    legf0->AddEntry(fitExpf0, "Exponential", "l");
-    // legf0->AddEntry(fitMTExpf0, "mT Exponential", "l");
-    legf0->AddEntry(fitBoseEinsteinf0, "Bose-Einstein", "l");
-    // legf0->AddEntry(fitBWf0, "Blast-Wave", "l");
+    legf0->AddEntry(fitLevyf0, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
+    legf0->AddEntry(fitLevyf0_full, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
+    // legf0->AddEntry(fitLevyf0, "Levy-Tsallis", "l");
+    // legf0->AddEntry(fitBoltzmannf0, "Boltzmann", "l");
+    // legf0->AddEntry(fitExpf0, "Exponential", "l");
+    // // legf0->AddEntry(fitMTExpf0, "mT Exponential", "l");
+    // legf0->AddEntry(fitBoseEinsteinf0, "Bose-Einstein", "l");
+    // // legf0->AddEntry(fitBWf0, "Blast-Wave", "l");
     legf0->SetBorderSize(0);
     legf0->SetFillStyle(0);
     legf0->SetTextSize(0.03);
     legf0->Draw();
-    cFitf0All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f0.pdf").c_str());
+    // cFitf0All->SaveAs((path + "/mult_0-100/Spectra/AllFits_f0.pdf").c_str());
+    cFitf0All->SaveAs((path + "/mult_0-100/Spectra/FitRangeCompare_f0.png").c_str());
 
     // Print Chi2/NDF, dN/dy and <pT> for each fit function
     // Lambda function to avoid code repetition
@@ -359,47 +402,77 @@ void read_yield_differentFitAll()
         cout << fitName << " " << mesonName << " , Chi2 " << fitFunc->GetChisquare() << " NDF " << fitFunc->GetNDF() << endl;
         // cout << "dN/dy : " << hout->GetBinContent(1) << " +/- " << hout->GetBinContent(2) << endl;
         cout << "<pT> : " << hout->GetBinContent(5) << endl;
-        cout << "Stat. error "<< hout->GetBinContent(6)<<endl;
-        cout << "Sys. error low "<< hout->GetBinContent(7)<<endl;
-        cout << "Sys. error high "<< hout->GetBinContent(8)<<endl;
+        cout << "Stat. error " << hout->GetBinContent(6) << endl;
+        cout << "Sys. error low " << hout->GetBinContent(7) << endl;
+        cout << "Sys. error high " << hout->GetBinContent(8) << endl;
         cout << "Low pT extrapolation contribution (%): " << hout->GetBinContent(10) * 100 << endl;
         cout << endl;
     };
+
     cout << "Fit results for f2(1525):" << endl;
-    printFitResults(fitLevyf2, houtLevyf2, "Levy-Tsallis", "f2(1525)");
-    printFitResults(fitBoltzmannf2, houtBoltf2, "Boltzmann", "f2(1525)");
-    printFitResults(fitExpf2, houtExpo2, "Exponential", "f2(1525)");
-    printFitResults(fitBoseEinsteinf2, houtBEf2, "Bose-Einstein", "f2(1525)");
-    // printFitResults(fitBWf2, houtBWf2, "Blast-Wave", "f2(1525)");
-
+    printFitResults(fitLevyf2, houtLevyf2, "Levy-Tsallis (0 - 10 GeV/c^{2})", "f2(1525)");
+    printFitResults(fitLevyf2_full, houtLevyf2Full, "Levy-Tsallis (0 - 15 GeV/c^{2})", "f2(1525)");
     cout << "Fit results for f0(1710):" << endl;
-    printFitResults(fitLevyf0, houtLevyf0, "Levy-Tsallis", "f0(1710)");
-    printFitResults(fitBoltzmannf0, houtBoltf0, "Boltzmann", "f0(1710)");
-    printFitResults(fitExpf0, houtExpof0, "Exponential", "f0(1710)");
-    printFitResults(fitBoseEinsteinf0, houtBEf0, "Bose-Einstein", "f0(1710)");
-    // printFitResults(fitBWf0, houtBWf0, "Blast-Wave", "f0(1710)");
+    printFitResults(fitLevyf0, houtLevyf0, "Levy-Tsallis (0 - 10 GeV/c^{2})", "f0(1710)");
+    printFitResults(fitLevyf0_full, houtLevyf0Full, "Levy-Tsallis (0 - 15 GeV/c^{2})", "f0(1710)");
 
-    // Lambda function to calculate the relative uncertainty in <pT> due to low pT extrapolation
-    vector<TH1 *> houtFunctionsf2 = {houtBoltf2, houtExpo2, houtBEf2 /*, houtBWf2*/};
-    vector<TH1 *> houtFunctionsf0 = {houtBoltf0, houtExpof0, houtBEf0 /*, houtBWf0*/};
-    int totalVariations = houtFunctionsf2.size();
-    double relativeUncertaintyf2{0}, relativeUncertaintyf0{0};
-    for (int ivar = 0; ivar < totalVariations; ivar++)
-    {
-        double defaultMeanPtf2 = houtLevyf2->GetBinContent(5);
-        double variationMeanPtf2 = houtFunctionsf2[ivar]->GetBinContent(5);
-        double difference = fabs(variationMeanPtf2 - defaultMeanPtf2);
-        relativeUncertaintyf2 += difference * difference;
 
-        double defaultMeanPtf0 = houtLevyf0->GetBinContent(5);
-        double variationMeanPtf0 = houtFunctionsf0[ivar]->GetBinContent(5);
-        difference = fabs(variationMeanPtf0 - defaultMeanPtf0);
-        relativeUncertaintyf0 += difference * difference;
-    }
-    relativeUncertaintyf2 = sqrt(relativeUncertaintyf2 / totalVariations);
-    relativeUncertaintyf0 = sqrt(relativeUncertaintyf0 / totalVariations);
-    cout << "Uncertainty in <pT> due to low pT extrapolation for f2(1525): " << relativeUncertaintyf2 * 100 << " %" << endl;
-    cout << "Uncertainty in <pT> due to low pT extrapolation for f0(1710): " << relativeUncertaintyf0 * 100 << " %" << endl;
+    // cout << "Fit results for f2(1525):" << endl;
+    // printFitResults(fitLevyf2, houtLevyf2, "Levy-Tsallis", "f2(1525)");
+    // printFitResults(fitBoltzmannf2, houtBoltf2, "Boltzmann", "f2(1525)");
+    // printFitResults(fitExpf2, houtExpo2, "Exponential", "f2(1525)");
+    // printFitResults(fitBoseEinsteinf2, houtBEf2, "Bose-Einstein", "f2(1525)");
+    // // printFitResults(fitBWf2, houtBWf2, "Blast-Wave", "f2(1525)");
+
+    // cout << "Fit results for f0(1710):" << endl;
+    // printFitResults(fitLevyf0, houtLevyf0, "Levy-Tsallis", "f0(1710)");
+    // printFitResults(fitBoltzmannf0, houtBoltf0, "Boltzmann", "f0(1710)");
+    // printFitResults(fitExpf0, houtExpof0, "Exponential", "f0(1710)");
+    // printFitResults(fitBoseEinsteinf0, houtBEf0, "Bose-Einstein", "f0(1710)");
+    // // printFitResults(fitBWf0, houtBWf0, "Blast-Wave", "f0(1710)");
+
+    // // Lambda function to calculate the relative uncertainty in <pT> due to low pT extrapolation
+    // vector<TH1 *> houtFunctionsf2 = {houtBoltf2, houtExpo2, houtBEf2 /*, houtBWf2*/};
+    // vector<TH1 *> houtFunctionsf0 = {houtBoltf0, houtExpof0, houtBEf0 /*, houtBWf0*/};
+    // int totalVariations = houtFunctionsf2.size();
+    // double absoluteUncertaintyf2{0}, absoluteUncertaintyf0{0};
+    // double maxUncertaintyf2 = 0.0, maxUncertaintyf0 = 0.0;
+    // double relativeUncertaintyf2{0}, relativeUncertaintyf0{0};
+    // double maxRelativeUncertaintyf2 = 0.0, maxRelativeUncertaintyf0 = 0.0;
+    // for (int ivar = 0; ivar < totalVariations; ivar++)
+    // {
+    //     double defaultMeanPtf2 = houtLevyf2->GetBinContent(5);
+    //     double variationMeanPtf2 = houtFunctionsf2[ivar]->GetBinContent(5);
+    //     double difference = fabs(variationMeanPtf2 - defaultMeanPtf2);
+    //     absoluteUncertaintyf2 += difference * difference;
+    //     relativeUncertaintyf2 += pow(difference / defaultMeanPtf2, 2);
+
+    //     double defaultMeanPtf0 = houtLevyf0->GetBinContent(5);
+    //     double variationMeanPtf0 = houtFunctionsf0[ivar]->GetBinContent(5);
+    //     difference = fabs(variationMeanPtf0 - defaultMeanPtf0);
+    //     absoluteUncertaintyf0 += difference * difference;
+    //     relativeUncertaintyf0 += pow(difference / defaultMeanPtf0, 2);
+    // }
+    // maxUncertaintyf2 = sqrt(absoluteUncertaintyf2);
+    // maxUncertaintyf0 = sqrt(absoluteUncertaintyf0);
+    // maxRelativeUncertaintyf2 = sqrt(relativeUncertaintyf2);
+    // maxRelativeUncertaintyf0 = sqrt(relativeUncertaintyf0);
+
+    // absoluteUncertaintyf2 = sqrt(absoluteUncertaintyf2 / totalVariations);
+    // absoluteUncertaintyf0 = sqrt(absoluteUncertaintyf0 / totalVariations);
+
+    // relativeUncertaintyf2 = sqrt(relativeUncertaintyf2 / totalVariations);
+    // relativeUncertaintyf0 = sqrt(relativeUncertaintyf0 / totalVariations);
+
+    // cout << "Uncertainty in <pT> due to low pT extrapolation for f2(1525): " << absoluteUncertaintyf2 << endl;
+    // cout << "Uncertainty in <pT> due to low pT extrapolation for f0(1710): " << absoluteUncertaintyf0 << endl;
+    // cout << "Maximum uncertainty in <pT> due to low pT extrapolation for f2(1525): " << maxUncertaintyf2 << endl;
+    // cout << "Maximum uncertainty in <pT> due to low pT extrapolation for f0(1710): " << maxUncertaintyf0 << endl;
+
+    // cout << "Relative uncertainty in <pT> due to low pT extrapolation for f2(1525): " << relativeUncertaintyf2 * 100 << " %" << endl;
+    // cout << "Relative uncertainty in <pT> due to low pT extrapolation for f0(1710): " << relativeUncertaintyf0 * 100 << " %" << endl;
+    // cout << "Maximum relative uncertainty in <pT> due to low pT extrapolation for f2(1525): " << maxRelativeUncertaintyf2 * 100 << " %" << endl;
+    // cout << "Maximum relative uncertainty in <pT> due to low pT extrapolation for f0(1710): " << maxRelativeUncertaintyf0 * 100 << " %" << endl;
 }
 
 //=======================Fit functions=========================

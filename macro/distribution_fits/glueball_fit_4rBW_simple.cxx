@@ -252,7 +252,7 @@ void glueball_fit_4rBW_simple()
                     TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
                     // gStyle->SetOptStat(1110);
                     gStyle->SetOptStat(0);
-                    gStyle->SetOptFit(1111);
+                    // gStyle->SetOptFit(1111);
                     vector<tuple<float, int, float, float>> fit_parameters;
 
                     // // // //************************************************************************ */
@@ -845,13 +845,13 @@ void glueball_fit_4rBW_simple()
                     hsubtracted->GetYaxis()->SetTitleOffset(1.0);
                     hsubtracted->Draw();
                     onlyBW_clone->SetNpx(1000);
-                    TFitResultPtr fitResultptr_res = hsubtracted->Fit("onlyBW_clone", "REBMSQ");
+                    TFitResultPtr fitResultptr_res = hsubtracted->Fit("onlyBW_clone", "REBMSQ0");
                     // onlyBW_clone->Draw("same");
                     double *obtained_parameters2 = onlyBW_clone->GetParameters();
                     TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
                     line->SetLineColor(1);
                     line->SetLineStyle(4);
-                    line->Draw("same");
+                    // line->Draw("same");
 
                     // // Now plot the indivial resonances
                     TF1 *singlefits1[4];
@@ -867,7 +867,7 @@ void glueball_fit_4rBW_simple()
                         singlefits1[i]->SetParameter(2, obtained_parameters2[3 * i + 2]);
                         singlefits1[i]->SetLineColor(colors[i]);
                         singlefits1[i]->SetLineStyle(2);
-                        singlefits1[i]->Draw("same");
+                        // singlefits1[i]->Draw("same");
                     }
 
                     TLegend *ltemp2 = new TLegend(0.20, 0.55, 0.42, 0.80);
@@ -884,10 +884,15 @@ void glueball_fit_4rBW_simple()
                     ltemp2->AddEntry(singlefits1[3], "f_{0}(1710)", "l");
                     TLatex lat2;
                     lat2.SetNDC();
+                    TLine *lVertical = new TLine(f1710Mass, hsubtracted->GetMinimum(), f1710Mass, hsubtracted->GetMaximum() / 2);
+                    lVertical->SetLineColor(kRed);
+                    lVertical->SetLineStyle(2);
+                    lVertical->SetLineWidth(2);
+                    lVertical->Draw("same");
 #ifdef multiPanelPlots
                     lat2.SetTextSize(0.05);
-                    if (ipt == 0)
-                        ltemp2->Draw("same");
+                    // if (ipt == 0)
+                    //     ltemp2->Draw("same");
 #else
                     lat2.SetTextSize(0.03);
                     ltemp2->Draw("same");

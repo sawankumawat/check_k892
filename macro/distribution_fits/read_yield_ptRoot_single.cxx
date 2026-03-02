@@ -50,12 +50,14 @@ void read_yield_ptRoot_single()
     // float ptBins[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0};             // 2023 dataset
     // float ptBins2[] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0}; // 2023 dataset
 
-    TFile *fSigEventLoss = new TFile("Loss_phi_mult0-100.root", "READ");
+    // TFile *fSigEventLoss = new TFile("Loss_phi_mult0-100.root", "READ");
+    TFile *fSigEventLoss = new TFile("../SignalLossPhiINEL.root", "READ");
     if (fSigEventLoss->IsZombie())
     {
         cerr << "Error opening event/signal loss file" << endl;
     }
-    TH1F *hEvbySigLoss = (TH1F *)fSigEventLoss->Get("hRatio");
+    TH1F *hEvbySigLoss = (TH1F *)fSigEventLoss->Get("hSignalLoss");
+    // TH1F *hEvbySigLoss = (TH1F *)fSigEventLoss->Get("hRatio");
     int binsLoss = hEvbySigLoss->GetNbinsX();
     if (binsLoss != (sizeof(ptBins) / sizeof(ptBins[0]) - 1))
     {
@@ -78,7 +80,8 @@ void read_yield_ptRoot_single()
     }
     string histpath = "higher-mass-resonances/hMChists";
     string histpathf2 = "higher-mass-resonances_f21525/hMChists";
-    TFile *fOutput = new TFile(Form("%s/spectra_Default2.root", outputPath.Data()), "RECREATE");
+    // TFile *fOutput = new TFile(Form("%s/spectra_Default3.root", outputPath.Data()), "RECREATE");
+    TFile *fOutput = new TFile(Form("%s/spectra_FirstBinRemove.root", outputPath.Data()), "RECREATE");
     // TFile *fOutput = new TFile(Form("%s/spectra_ToyMC.root", outputPath.Data()), "RECREATE");
 
     // THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
@@ -203,7 +206,8 @@ void read_yield_ptRoot_single()
             double oneUponTriggerEfficiency = INELCrossSection / visibleCrossSection;
             // double BR_f0 = 0.1667 / 2; (from thermal fist model)
             double BR_f0 = 1.0;
-            double BR_f2 = 0.438 / 2;
+            // double BR_f2 = 0.438 / 2;
+            double BR_f2 = 22.2;
             double signalLossFactor = hEvbySigLoss->GetBinContent(ibins + 1);
             cout << "Signal loss factor for pT bin " << ibins << " is " << signalLossFactor << endl;
             // double signalLossFactor = 1.0;
@@ -249,8 +253,11 @@ void read_yield_ptRoot_single()
 
                 double corrected_yield1525 = yield * signalLossFactor / (eff1525 * oneUponTriggerEfficiency * BR_f2);
                 double corrected_yield1525_err = signalLossFactor * sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
-                hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
-                hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
+                if (ibins != 0)
+                {
+                    hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
+                    hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
+                }
             }
             if (ires == 1)
             {
@@ -273,8 +280,11 @@ void read_yield_ptRoot_single()
                 // {
                 //     corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.1;
                 // }
-                hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
-                hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
+                if (ibins != 0)
+                {
+                    hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
+                    hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
+                }
             }
         }
     }
@@ -452,9 +462,9 @@ void read_yield_ptRoot_single()
     hYield1525Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1525Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1525Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-    hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 1.5);
+    hYield1525Corrected->SetMaximum(hYield1525Corrected->GetMaximum() * 0.1);
     hYield1525Corrected->SetMarkerStyle(20);
-    hYield1525Corrected->SetMinimum(-2e-7);
+    hYield1525Corrected->SetMinimum(2e-9);
     hYield1525Corrected->Write();
     hYield1525Corrected->Draw("pe");
     // cYieldCorrectedf1525->SaveAs(savePath + "/CorrectedYieldf2.png");
@@ -467,9 +477,9 @@ void read_yield_ptRoot_single()
     hYield1710Corrected->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hYield1710Corrected->GetYaxis()->SetTitleOffset(1.6);
     // hYield1710Corrected->GetYaxis()->SetRangeUser(0.0, 460);
-    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 1.5);
+    hYield1710Corrected->SetMaximum(hYield1710Corrected->GetMaximum() * 0.1);
     hYield1710Corrected->SetMarkerStyle(21);
-    hYield1710Corrected->SetMinimum(-2e-7);
+    hYield1710Corrected->SetMinimum(2e-9);
     hYield1710Corrected->Write();
     hYield1710Corrected->Draw("pe");
     // cYieldCorrected1710->SaveAs(savePath + "/CorrectedYieldf0.png");
@@ -600,10 +610,10 @@ void read_yield_ptRoot_single()
     Double_t hiprecision = 0.1;
     Option_t *opt = "REBMS0+";
     TString logfilename = "log.root";
-    Double_t minfit = 1.0;
+    Double_t minfit = 2.0;
     Double_t maxfit = 10.0;
 
-    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
     fitFcn->SetParameter(0, 5.0);
     fitFcn->SetParameter(1, 0.5);
     fitFcn->FixParameter(2, 1.525);
@@ -631,8 +641,8 @@ void read_yield_ptRoot_single()
     SetHistoQA(h1);
     h1->SetMarkerSize(1.5);
     // h1->SetMaximum(h1->GetMaximum() * 12);
-    h1->SetMaximum(9e-2);
-    h1->SetMinimum(1e-7);
+    h1->SetMaximum(9e-4);
+    h1->SetMinimum(1e-9);
     h1->SetMarkerColor(kBlue);
     h1->SetLineColor(kBlue);
     h1->Draw("pe");
@@ -889,9 +899,9 @@ void read_yield_ptRoot_single()
     cout << "Ratio dN/dy f0(1710)/f2(1525) = " << hout2->GetBinContent(1) / hout->GetBinContent(1) << " +- " << TMath::Sqrt(TMath::Power(hout2->GetBinContent(2) / hout->GetBinContent(1), 2) + TMath::Power(hout->GetBinContent(2) * hout2->GetBinContent(1) / (hout->GetBinContent(1) * hout->GetBinContent(1)), 2)) << endl;
     cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
 
-    // //====Lets now rebate the MC===========
-    // TFile *fReweight = new TFile(Form("%s/ReweighFacf0_Default2.root", outputPath.Data()), "recreate");
-    // int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
-    // TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_Default2.root", outputPath.Data()), "recreate");
-    // int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
+    //====Lets now rebate the MC===========
+    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_FirstBinRemove.root", outputPath.Data()), "recreate");
+    int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
+    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_FirstBinRemove.root", outputPath.Data()), "recreate");
+    int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
 }

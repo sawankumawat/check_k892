@@ -42,8 +42,8 @@ void plotReweightedSpectra_single()
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
     string savePath = path + "/mult_0-100/Spectra";
-    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default2.root").c_str(), "read");
-    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default2.root").c_str(), "read");
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_FirstBinRemove.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_FirstBinRemove.root").c_str(), "read");
 
     // TFile *fReweightf0 = new TFile(Form("%s/ReweighFacf0_%s.root", savePath.c_str(), CurrentVariation.c_str()), "read");
     // TFile *fReweightf2 = new TFile(Form("%s/ReweighFacf2_%s.root", savePath.c_str(), CurrentVariation.c_str()), "read");
@@ -265,8 +265,8 @@ void plotReweightedSpectra_single()
     // double relUncertLowpTExtrapolationf0 = 0.0724382;
 
     // Using maximum deviation
-    double relUncertLowpTExtrapolationf2 = 0.187571;
-    double relUncertLowpTExtrapolationf0 = 0.125194;
+    double relUncertLowpTExtrapolationf2 = 0.184;
+    double relUncertLowpTExtrapolationf0 = 0.123;
 
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -358,7 +358,8 @@ void plotReweightedSpectra_single()
     fitFcnf0->Draw("l same");
 
     // Create legend with physics information
-    TLegend *leg = new TLegend(0.53, 0.7, 0.9, 0.93);
+    // TLegend *leg = new TLegend(0.53, 0.7, 0.9, 0.93);
+    TLegend *leg = new TLegend(0.23, 0.2, 0.5, 0.45);
     leg->AddEntry((TObject *)0, "ALICE", "");
     leg->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     leg->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
@@ -368,7 +369,19 @@ void plotReweightedSpectra_single()
     leg->SetFillStyle(0);
     leg->SetTextSize(0.035);
     leg->Draw();
-    // cCorrectedf0Fit->SaveAs((savePath + "/plots/LevyFitf0_reweighted.png").c_str());
+
+    TPaveText *box = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
+    box->SetFillColor(0); // white background
+    box->SetBorderSize(1);
+    box->SetTextAlign(12); // left align
+    box->SetTextSize(0.03);
+    box->SetTextFont(42);
+    box->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf0->GetChisquare(), fitFcnf0->GetNDF()));
+    box->AddText(Form("n                        %.3f #pm %.3f", fitFcnf0->GetParameter(0), fitFcnf0->GetParError(0)));
+    box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0->GetParameter(1), fitFcnf0->GetParError(1)));
+    box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0->GetParameter(3), fitFcnf0->GetParError(3)));
+    box->Draw();
+    // cCorrectedf0Fit->SaveAs((savePath + "/plots/LevyFitf0_reweightedFitValues.png").c_str());
 
     TCanvas *cCorrectedf2Fit = new TCanvas("cCorrectedf2Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf2Fit, 0.18, 0.03, 0.05, 0.14);
@@ -379,8 +392,10 @@ void plotReweightedSpectra_single()
     hf21->GetYaxis()->SetTitleOffset(1.7);
     hf21->SetMarkerSize(1.5);
     // hf21->SetMaximum(hf21->GetMaximum() * 7);
-    hf21->SetMaximum(4e-2);
-    hf21->SetMinimum(2e-7);
+    // hf21->SetMaximum(4e-2);
+    hf21->SetMaximum(4e-4);
+    // hf21->SetMinimum(2e-7);
+    hf21->SetMinimum(2e-9);
     hf21->SetMarkerColor(kBlue);
     hf21->SetLineColor(kBlue);
     hf21->Draw("pe");
@@ -395,7 +410,8 @@ void plotReweightedSpectra_single()
     fitFcnf2->Draw("l same");
 
     // Create legend with physics information
-    TLegend *leg2 = new TLegend(0.53, 0.7, 0.9, 0.93);
+    // TLegend *leg2 = new TLegend(0.53, 0.7, 0.9, 0.93);
+    TLegend *leg2 = new TLegend(0.23, 0.2, 0.5, 0.45);
     leg2->AddEntry((TObject *)0, "ALICE", "");
     leg2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     leg2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
@@ -405,7 +421,20 @@ void plotReweightedSpectra_single()
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.035);
     leg2->Draw();
+
+    TPaveText *box2 = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
+    box2->SetFillColor(0); // white background
+    box2->SetBorderSize(1);
+    box2->SetTextAlign(12); // left align
+    box2->SetTextSize(0.03);
+    box2->SetTextFont(42);
+    box2->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf2->GetChisquare(), fitFcnf2->GetNDF()));
+    box2->AddText(Form("n                        %.3f #pm %.3f", fitFcnf2->GetParameter(0), fitFcnf2->GetParError(0)));
+    box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2->GetParameter(1), fitFcnf2->GetParError(1)));
+    box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2->GetParameter(3), fitFcnf2->GetParError(3)));
+    box2->Draw();
     // cCorrectedf2Fit->SaveAs((savePath + "/plots/LevyFitf2_reweighted.png").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/plots/LevyFitf2_reweightedFitValues.png").c_str());
 
     // /*
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
@@ -645,7 +674,7 @@ void plotReweightedSpectra_single()
         double dNdy = dNdyvalues_13TeV[i][0] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1); // apply the scaling factor
         // double dNdy_err_stat = dNdyvalues_13TeV[i][1] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1);
         double dNdy_err_sys = dNdyvalues_13TeV[i][2] * dNdyvalues_13TeV[i][3] / (2 * Jvalues[i] + 1);
-        cout<<"Particle "<<particlesLatex[i]<<" dN/dy/(2J+1) = "<<dNdy<<" with sys error "<<dNdy_err_sys<<endl;
+        cout << "Particle " << particlesLatex[i] << " dN/dy/(2J+1) = " << dNdy << " with sys error " << dNdy_err_sys << endl;
 
         if (i < 5)
         {
@@ -717,7 +746,7 @@ void plotReweightedSpectra_single()
     double f0_dNdy_statErr = hout->GetBinContent(2) / (2 * 0 + 1);
     double f0_dNdy_sysErrLow = hout->GetBinContent(3) / (2 * 0 + 1);
     double f0_dNdy_sysErrHigh = hout->GetBinContent(4) / (2 * 0 + 1);
-    cout<<"dN/dy f0(1710) "<<f0_dNdy<<" with stat error "<<f0_dNdy_statErr<<" sys err low "<<f0_dNdy_sysErrLow<<" sys err high "<<f0_dNdy_sysErrHigh<<endl;
+    cout << "dN/dy f0(1710) " << f0_dNdy << " with stat error " << f0_dNdy_statErr << " sys err low " << f0_dNdy_sysErrLow << " sys err high " << f0_dNdy_sysErrHigh << endl;
     TGraphErrors *graph_f0_dNdy = new TGraphErrors(1);
     graph_f0_dNdy->SetPoint(0, f0_mass, f0_dNdy);
     graph_f0_dNdy->SetPointError(0, 0, f0_dNdy_statErr);

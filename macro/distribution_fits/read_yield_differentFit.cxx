@@ -19,18 +19,36 @@ Double_t FuncBoseEinsteindNdptTimesPt(Double_t *x, Double_t *par);
 static TF1 *fBGBlastWave_Integrand = NULL;
 static TF1 *fBGBlastWave_Integrand_num = NULL;
 static TF1 *fBGBlastWave_Integrand_den = NULL;
+int FindHighestIndex(TFile *file, const string &baseHistoName);
+
 
 void read_yield_differentFit()
 {
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra";
-    TFile *file = new TFile((path + "/ReweightedSpectra.root").c_str(), "read");
-    if (file->IsZombie())
+    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default4.root").c_str(), "read");
+
+    if (fReweightf0->IsZombie() || fReweightf2->IsZombie())
     {
-        cout << "Error opening file" << endl;
+        cout << "Error opening reweighting files" << endl;
         return;
     }
-    TH1F *hYield1525Corrected = (TH1F *)file->Get("f21525_Reweighted_Yield");
-    TH1F *hYield1710Corrected = (TH1F *)file->Get("f01710_Reweighted_Yield");
+
+    // Find the highest available index for reweighted histograms
+    int maxIndexReweightedf0 = FindHighestIndex(fReweightf0, "Genf17102_proj_1_");
+    int maxIndexReweightedf2 = FindHighestIndex(fReweightf2, "Genf17102_proj_1_");
+    if (maxIndexReweightedf0 == -1 || maxIndexReweightedf2 == -1)
+    {
+        cout << "Error: No reweighted histogram with pattern Genf17102_proj_1_i* found in file" << endl;
+        return;
+    }
+    cout << "Using index i" << maxIndexReweightedf0 << " for reweighted histograms" << endl;
+
+    string indexStr = "i" + to_string(maxIndexReweightedf0);
+    string indexStr2 = "i" + to_string(maxIndexReweightedf2);
+    TH1F *hYield1710Corrected = (TH1F *)fReweightf0->Get(Form("hYield1710Corrected_%s", indexStr.c_str()));
+    TH1F *hYield1525Corrected = (TH1F *)fReweightf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
     if (hYield1525Corrected == nullptr || hYield1710Corrected == nullptr)
     {
         cout << "Histograms not found" << endl;
@@ -67,8 +85,8 @@ void read_yield_differentFit()
     Double_t max = 15.0; // 15.0 for levy, 6.0 for others
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.1;
-    Option_t *opt = "REBMS0+";
-    // Option_t *opt = "RI0+";
+    // Option_t *opt = "REBMS0+";
+    Option_t *opt = "RI0+";
     TString logfilename = "log.root";
     Double_t minfit = 1.0;
     Double_t maxfit = 7.0; // 10.0 for levy, 5.0 for others
@@ -163,16 +181,14 @@ void read_yield_differentFit()
 
     //================================Exponential Fit==========================================
     TF1 *fitFcn = new TF1("fitExponential", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    fitFcn->SetParameter(0, 0.1);  // norm
-    fitFcn->SetParameter(1, 0.5);  // T
-    fitFcn->FixParameter(2, 1.525); // mass
+    fitFcn->SetParameter(0, 0.1);   // norm
+    fitFcn->SetParameter(1, 0.5);   // T
     fitFcn->SetParNames("norm", "T", "mass");
     TH1 *hout = YieldMean(h1f2, h2f2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TF1 *fitFcn2 = new TF1("fitExponential2", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    fitFcn2->SetParameter(0, 0.1);  // norm
-    fitFcn2->SetParameter(1, 0.5);  // T
-    fitFcn2->FixParameter(2, 1.710); // mass
+    fitFcn2->SetParameter(0, 0.1);   // norm
+    fitFcn2->SetParameter(1, 0.5);   // T
     fitFcn2->SetParNames("norm", "T", "mass");
     TH1 *hout2 = YieldMean(h1f0, h2f0, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
@@ -259,7 +275,7 @@ void read_yield_differentFit()
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.035);
     leg2->Draw();
-    cFitf2->SaveAs((path + "/DifferentFitFunc/" + fitName + "_fit_f2.png").c_str());
+    // cFitf2->SaveAs((path + "/DifferentFitFunc/" + fitName + "_fit_f2.png").c_str());
 
     TCanvas *cFitf0 = new TCanvas("cFitf0", "Fit for f0(1710)", 720, 720);
     SetCanvasStyle(cFitf0, 0.17, 0.03, 0.05, 0.14);
@@ -282,7 +298,7 @@ void read_yield_differentFit()
     leg->SetFillStyle(0);
     leg->SetTextSize(0.035);
     leg->Draw();
-    cFitf0->SaveAs((path + "/DifferentFitFunc/" + fitName + "_fit_f0.png").c_str());
+    // cFitf0->SaveAs((path + "/DifferentFitFunc/" + fitName + "_fit_f0.png").c_str());
 }
 
 //=======================Fit functions=========================
@@ -407,4 +423,22 @@ Double_t FuncBoseEinsteindNdptTimesPt(Double_t *x, Double_t *par)
 
     // return norm * pT / (TMath::Exp(mT / T) - 1.0); // not normalized
     return norm * pT / (TMath::Exp(mT / T) - 1.0) * (TMath::Exp(mass / T) - 1.0); // normalized (may not be correct)
+}
+
+// Function to find the highest available index in the root file
+int FindHighestIndex(TFile *file, const string &baseHistoName)
+{
+    int maxIndex = -1;
+    for (int i = 10; i >= 0; i--) // Check from i10 down to i0
+    {
+        string histoName = baseHistoName + "i" + to_string(i);
+        TObject *obj = file->Get(histoName.c_str());
+        if (obj != nullptr)
+        {
+            maxIndex = i;
+            cout << "Highest index found: " << maxIndex << endl;
+            break; // Found the highest index
+        }
+    }
+    return maxIndex;
 }

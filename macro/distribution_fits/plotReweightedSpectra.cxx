@@ -43,7 +43,7 @@ void plotReweightedSpectra()
     int totalVarSigExt = variationSigExt.size();
 
     // for (int ivar = 0; ivar < totalVarSigExt; ivar++)
-    for (int ivar = 0; ivar < totalVar; ivar++)
+    for (int ivar = 0; ivar < 1; ivar++)
     {
         string CurrentVariation = variations[ivar];
         // string CurrentVariation = variationSigExt[ivar];

@@ -24,12 +24,15 @@ void read_yield_ptRoot_single()
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
 
+    string inputFileName = "Default2";
+    string outputFileName = "Temp";
+
     // TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
     // TFile *inputFile = new TFile((path + "FitParam_temp.root").c_str(), "READ");
-    TFile *inputFile = new TFile((path + "FitParam_Default2.root").c_str(), "READ");
+    TFile *inputFile = new TFile((path + "FitParam_" + inputFileName + ".root").c_str(), "READ");
     if (inputFile->IsZombie())
     {
-        cerr << "Error opening data file " << (path + "/fits/FitParam_Default2.root") << endl;
+        cerr << "Error opening data file " << (path + "/fits/FitParam_" + inputFileName + ".root") << endl;
         return;
     }
 
@@ -80,9 +83,8 @@ void read_yield_ptRoot_single()
     }
     string histpath = "higher-mass-resonances/hMChists";
     string histpathf2 = "higher-mass-resonances_f21525/hMChists";
-    // TFile *fOutput = new TFile(Form("%s/spectra_Default3.root", outputPath.Data()), "RECREATE");
-    TFile *fOutput = new TFile(Form("%s/spectra_FirstBinRemove.root", outputPath.Data()), "RECREATE");
-    // TFile *fOutput = new TFile(Form("%s/spectra_ToyMC.root", outputPath.Data()), "RECREATE");
+
+    TFile *fOutput = new TFile(Form("%s/spectra_%s.root", outputPath.Data(), outputFileName.c_str()), "RECREATE");
 
     // THnSparseD *GenpTf0 = (THnSparseD *)feff_f0->Get(Form("%s/Genf17102", histpath.c_str())); // axis: multiplicity, pt, helicity angle
     // THnSparseD *recpt1f0 = (THnSparseD *)feff_f0->Get(Form("%s/Recf1710_pt2", histpath.c_str()));
@@ -207,10 +209,10 @@ void read_yield_ptRoot_single()
             // double BR_f0 = 0.1667 / 2; (from thermal fist model)
             double BR_f0 = 1.0;
             // double BR_f2 = 0.438 / 2;
-            double BR_f2 = 22.2;
+            double BR_f2 = 0.222;
             double signalLossFactor = hEvbySigLoss->GetBinContent(ibins + 1);
-            cout << "Signal loss factor for pT bin " << ibins << " is " << signalLossFactor << endl;
             // double signalLossFactor = 1.0;
+            // cout << "Signal loss factor for pT bin " << ibins << " is " << signalLossFactor << endl;
 
             float yield = hYieldAll[ires]->GetBinContent(ibins + 1);
             float yield_err = hYieldAll[ires]->GetBinError(ibins + 1);
@@ -253,7 +255,14 @@ void read_yield_ptRoot_single()
 
                 double corrected_yield1525 = yield * signalLossFactor / (eff1525 * oneUponTriggerEfficiency * BR_f2);
                 double corrected_yield1525_err = signalLossFactor * sqrt(pow(yield_err / eff1525, 2) + pow(yield * eff1525_err / pow(eff1525, 2), 2)) / (oneUponTriggerEfficiency * BR_f2);
-                if (ibins != 0)
+
+                if (ibins == totalBins - 1)
+                {
+                    corrected_yield1525 = corrected_yield1525 - corrected_yield1525 * 0.35;
+                    corrected_yield1525_err = 1.3 * corrected_yield1525_err;
+                }
+
+                // if (ibins != 0) // to check the effect of removing first pT bin on spectra fit
                 {
                     hYield1525Corrected->SetBinContent(ibins + 2, corrected_yield1525);
                     hYield1525Corrected->SetBinError(ibins + 2, corrected_yield1525_err);
@@ -273,14 +282,19 @@ void read_yield_ptRoot_single()
                 double corrected_yield1710_err = signalLossFactor * sqrt(pow(yield_err / eff1710, 2) + pow(yield * eff1710_err / pow(eff1710, 2), 2)) / (oneUponTriggerEfficiency * BR_f0);
                 // if (ibins == 0)
                 // {
-                //     corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.3;
-                //     corrected_yield1710_err = 1.5 * corrected_yield1710_err;
+                //     corrected_yield1710 = corrected_yield1710 + corrected_yield1710 * 0.22;
+                //     corrected_yield1710_err = 1.3 * corrected_yield1710_err;
                 // }
                 // if (ibins == 1)
                 // {
                 //     corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.1;
                 // }
-                if (ibins != 0)
+                if (ibins == totalBins - 1)
+                {
+                    corrected_yield1710 = corrected_yield1710 - corrected_yield1710 * 0.15;
+                    corrected_yield1710_err = 1.1 * corrected_yield1710_err;
+                }
+                // if (ibins != 0)
                 {
                     hYield1710Corrected->SetBinContent(ibins + 2, corrected_yield1710);
                     hYield1710Corrected->SetBinError(ibins + 2, corrected_yield1710_err);
@@ -610,10 +624,10 @@ void read_yield_ptRoot_single()
     Double_t hiprecision = 0.1;
     Option_t *opt = "REBMS0+";
     TString logfilename = "log.root";
-    Double_t minfit = 2.0;
-    Double_t maxfit = 10.0;
+    Double_t minfit = 1.0;
+    Double_t maxfit = 15.0;
 
-    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
+    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
     fitFcn->SetParameter(0, 5.0);
     fitFcn->SetParameter(1, 0.5);
     fitFcn->FixParameter(2, 1.525);
@@ -896,12 +910,12 @@ void read_yield_ptRoot_single()
 
     cout << "dN/dy of f0(1710) = " << hout2->GetBinContent(1) << " +- " << hout2->GetBinContent(2) << endl;
     cout << "dN/dy of f2(1525) = " << hout->GetBinContent(1) << " +- " << hout->GetBinContent(2) << endl;
-    cout << "Ratio dN/dy f0(1710)/f2(1525) = " << hout2->GetBinContent(1) / hout->GetBinContent(1) << " +- " << TMath::Sqrt(TMath::Power(hout2->GetBinContent(2) / hout->GetBinContent(1), 2) + TMath::Power(hout->GetBinContent(2) * hout2->GetBinContent(1) / (hout->GetBinContent(1) * hout->GetBinContent(1)), 2)) << endl;
-    cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
+    // cout << "Ratio dN/dy f0(1710)/f2(1525) = " << hout2->GetBinContent(1) / hout->GetBinContent(1) << " +- " << TMath::Sqrt(TMath::Power(hout2->GetBinContent(2) / hout->GetBinContent(1), 2) + TMath::Power(hout->GetBinContent(2) * hout2->GetBinContent(1) / (hout->GetBinContent(1) * hout->GetBinContent(1)), 2)) << endl;
+    // cout << "Ratio from thermal model " << 0.201577 / 0.781416 << endl;
 
     //====Lets now rebate the MC===========
-    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_FirstBinRemove.root", outputPath.Data()), "recreate");
+    TFile *fReweight = new TFile(Form("%s/ReweighFacf0_%s.root", outputPath.Data(), outputFileName.c_str()), "recreate");
     int someFactor = ReweightEfficiency(hYield1710Corrected, fitFcn2, hgenptf0, hrecptf0, fReweight);
-    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_FirstBinRemove.root", outputPath.Data()), "recreate");
+    TFile *fReweight2 = new TFile(Form("%s/ReweighFacf2_%s.root", outputPath.Data(), outputFileName.c_str()), "recreate");
     int someFactor2 = ReweightEfficiency(hYield1525Corrected, fitFcn, hgenptf2, hrecptf2, fReweight2);
 }

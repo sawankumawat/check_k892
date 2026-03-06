@@ -8,6 +8,8 @@ void plot_mass()
     gStyle->SetOptStat(0);
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra";
     TFile *f = new TFile((path + "/spectra_Default2.root").c_str(), "READ");
+    TFile *fexpol1 = new TFile((path + "/spectra_FitChKstar.root").c_str(), "READ");
+    TFile *fhera = new TFile((path + "/spectra_FitExpoHERA.root").c_str(), "READ");
     if (f->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -80,22 +82,56 @@ void plot_mass()
     hMass1710->SetLineColor(kBlue);
     hMass1710->SetMarkerColor(kBlue);
     hMass1710->SetMarkerStyle(20);
-    hMass1710->SetMarkerSize(1.5);
+    hMass1710->SetMarkerSize(1.7);
     hMass1710->Draw("pe");
     hMass1710Sys->SetLineColor(kBlue);
     hMass1710Sys->SetMarkerColor(kBlue);
     hMass1710Sys->SetFillStyle(0);
-    hMass1710Sys->Draw("e2 same");
-    TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
-    line1710Mass->SetLineStyle(2);
-    line1710Mass->SetLineColor(2);
-    line1710Mass->Draw("same");
+    // hMass1710Sys->Draw("e2 same");
+    TH1F *hMass1710Expol1 = (TH1F *)fexpol1->Get("hMass_1710");
+    TH1F *hMass1710HERA = (TH1F *)fhera->Get("hMass_1710");
+    SetHistoQA(hMass1710Expol1);
+    SetHistoQA(hMass1710HERA);
+    hMass1710Expol1->SetLineColor(kGreen + 2);
+    hMass1710Expol1->SetMarkerColor(kGreen + 2);
+    hMass1710Expol1->SetMarkerStyle(21);
+    hMass1710Expol1->SetMarkerSize(1.7);
+    hMass1710Expol1->Draw("p same");
+    hMass1710HERA->SetLineColor(kRed);
+    hMass1710HERA->SetMarkerColor(kRed);
+    hMass1710HERA->SetMarkerStyle(22);
+    hMass1710HERA->SetMarkerSize(1.7);
+    hMass1710HERA->Draw("p same");
+    TLine *line1710PDGMass = new TLine(1, f1710Mass, 15, f1710Mass);
+    line1710PDGMass->SetLineStyle(2);
+    line1710PDGMass->SetLineColor(2);
+    line1710PDGMass->Draw("same");
     TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
     band1710Mass->SetFillStyle(3001);
     band1710Mass->SetFillColorAlpha(kRed, 0.2); // shaded
     band1710Mass->SetLineColor(kRed);
     band1710Mass->SetLineWidth(1);
     band1710Mass->Draw("same");
+    TLine *line1710HERA = new TLine(1, 1.708, 15, 1.708);
+    line1710HERA->SetLineStyle(2);
+    line1710HERA->SetLineColor(kCyan);
+    line1710HERA->Draw("same");
+    TBox *band1710HERA = new TBox(1, 1.708 - 0.014, 15, 1.708 + 0.014); 
+    band1710HERA->SetFillStyle(3001);
+    band1710HERA->SetFillColorAlpha(kCyan, 0.2); // shaded
+    band1710HERA->SetLineColor(kCyan);
+    band1710HERA->SetLineWidth(1);
+    band1710HERA->Draw("same");
+    // TLine *line1710HERA = new TLine(1, 1.692, 15, 1.692);
+    // line1710HERA->SetLineStyle(2);
+    // line1710HERA->SetLineColor(kCyan);
+    // line1710HERA->Draw("same");
+    // TBox *band1710HERA = new TBox(1, 1.692 - 0.006, 15, 1.692 + 0.006); 
+    // band1710HERA->SetFillStyle(3001);
+    // band1710HERA->SetFillColorAlpha(kCyan, 0.2); // shaded
+    // band1710HERA->SetLineColor(kCyan);
+    // band1710HERA->SetLineWidth(1);
+    // band1710HERA->Draw("same");
     cout << "mass of f01710 in pdg is " << f1710Mass << " GeV/c2" << endl;
     // SetHistoQA(hIntegratedMass);
     // hIntegratedMass->SetMarkerStyle(21);
@@ -112,19 +148,25 @@ void plot_mass()
     leg1710Mass->SetBorderSize(0);
     leg1710Mass->SetFillStyle(0);
     leg1710Mass->SetTextSize(0.035);
-    leg1710Mass->AddEntry((TObject *)0, "ALICE", "");
-    leg1710Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    leg1710Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    leg1710Mass->AddEntry(hMass1710, "f_{0}(1710)", "p");
+    // leg1710Mass->AddEntry((TObject *)0, "ALICE", "");
+    // leg1710Mass->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    // leg1710Mass->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    leg1710Mass->SetHeader("f_{0}(1710) Mass");
+    leg1710Mass->AddEntry(hMass1710, "Modified Boltzmann", "pe");
+    leg1710Mass->AddEntry(hMass1710Expol1, "Expol1", "p");
+    leg1710Mass->AddEntry(hMass1710HERA, "Exponential HERA", "p");
     // leg1710Mass->AddEntry(hIntegratedMass, "f_{0}(1710) (integrated)", "p");
     // leg1710Mass->AddEntry(hMass1710, "This analysis", "pe");
-    // leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
+    // leg1710Mass->AddEntry(line1710PDGMass, "PDG value", "l");
     band1710Mass->SetLineWidth(0);
-    leg1710Mass->AddEntry(line1710Mass, "PDG value", "l");
+    leg1710Mass->AddEntry(line1710PDGMass, "PDG value", "l");
+    // leg1710Mass->AddEntry(line1710HERA, "PRL 101, 112003 (2008)", "l");
+    leg1710Mass->AddEntry(line1710HERA, "pt-integrated", "l");
     leg1710Mass->Draw();
     lat.DrawLatex(0.5, 0.2, "Uncertainties: stat.(bars), sys.(boxes)");
-    cMass1710->SaveAs((path + "/plots/Mass_f0_sys.png").c_str());
+    // cMass1710->SaveAs((path + "/plots/Mass_f0_sys.png").c_str());
     // cMass1710->SaveAs((path + "/plots/Mass_f0_sys_compareIntegrated.png").c_str());
+    cMass1710->SaveAs((path + "/plots/Massf0_DifferentFunctions.png").c_str());
 
     TCanvas *cMass1525 = new TCanvas("cMass1525", "Mass vs pT", 720, 720);
     SetCanvasStyle(cMass1525, 0.15, 0.03, 0.05, 0.13);
@@ -165,7 +207,7 @@ void plot_mass()
     leg1525Mass->AddEntry(line1525Mass, "PDG value", "l");
     lat.DrawLatex(0.5, 0.2, "Uncertainties: stat.(bars), sys.(boxes)");
     leg1525Mass->Draw();
-    cMass1525->SaveAs((path + "/plots/Mass_f2_sys.png").c_str());
+    // cMass1525->SaveAs((path + "/plots/Mass_f2_sys.png").c_str());
 
     // // Plot width and compare with pt-integrated values
     // TFile *fWidthFree = new TFile((path + "/../../FitParam_f0WidthFree2.root").c_str(), "READ");

@@ -36,10 +36,11 @@ void compare_mass_yield_coherent()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
-    TFile *fDefault = new TFile((path + "spectra_Default3.root").c_str(), "READ");
-    TFile *fCoherent = new TFile((path + "spectra_coherent.root").c_str(), "READ");
-    TFile *fReweightedf0 = new TFile((path + "ReweighFacf0_Default3.root").c_str(), "READ");
-    TFile *fReweightedf2 = new TFile((path + "ReweighFacf2_Default3.root").c_str(), "READ");
+    TFile *fDefault = new TFile((path + "spectra_Default4.root").c_str(), "READ");
+    TFile *fReweightedf0 = new TFile((path + "ReweighFacf0_Default4.root").c_str(), "READ");
+    TFile *fReweightedf2 = new TFile((path + "ReweighFacf2_Default4.root").c_str(), "READ");
+    // TFile *fCoherent = new TFile((path + "spectra_coherent.root").c_str(), "READ");
+    TFile *fCoherent = new TFile((path + "spectra_CoherentSumPhi0.root").c_str(), "READ");
 
     // Find the highest available index for reweighted histograms
     int maxIndexReweightedf0 = FindHighestIndex(fReweightedf0, "Genf17102_proj_1_");
@@ -56,6 +57,11 @@ void compare_mass_yield_coherent()
     TH1F *hYieldReweightedf0 = (TH1F *)fReweightedf0->Get(Form("hYield1710Corrected_%s", indexStr.c_str()));
     TH1F *hYieldReweightedf2 = (TH1F *)fReweightedf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
 
+    int totalBins = hYieldReweightedf0->GetNbinsX();
+    // cout << "Total bins in reweighted histogram: " << totalBins << endl;
+    // hYieldReweightedf0->SetBinContent(totalBins -1, hYieldReweightedf0->GetBinContent(totalBins -1) * 1.15);
+    // hYieldReweightedf2->SetBinContent(totalBins -1, hYieldReweightedf2->GetBinContent(totalBins -1) * 1.40);
+
     if (fDefault->IsZombie() || fCoherent->IsZombie())
     {
         cout << "Error opening file" << endl;
@@ -63,8 +69,10 @@ void compare_mass_yield_coherent()
     }
     TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
     TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
-    TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass1525");
-    TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass1710");
+    TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass_1525");
+    TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass_1710");
+    // TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass1525");
+    // TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass1710");
     if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hMass_f1525_Coherent == nullptr || hMass_f1710_Coherent == nullptr)
     {
         cout << "Error: One of the histograms not found!" << endl;
@@ -104,7 +112,7 @@ void compare_mass_yield_coherent()
     legend->AddEntry(hMass_f1710_Coherent, "Coherent Sum", "p");
     legend->AddEntry(line1710Mass, "PDG mass", "l");
     legend->Draw();
-    // cMassf0->SaveAs((path + "MassComparison_f1710.png").c_str());
+    // cMassf0->SaveAs((path + "MassCompare_f1710_CoherentPhi0.png").c_str());
 
     TCanvas *cMassf2 = new TCanvas("cMassf2", "Mass Comparison", 720, 720);
     SetCanvasStyle(cMassf2, 0.15, 0.03, 0.05, 0.14);
@@ -139,6 +147,97 @@ void compare_mass_yield_coherent()
     legend2->AddEntry(line1525Mass, "PDG mass", "l");
     legend2->Draw();
     // cMassf2->SaveAs((path + "MassComparison_f1525.png").c_str());
+    // cMassf2->SaveAs((path + "MassCompare_f1525_CoherentPhi0.png").c_str());
+
+    // Compare the spectra for default and variation case for f2(1525) and f0(1710)
+    TH1F *SpectraCoherent_f1525 = (TH1F *)fCoherent->Get("hYield1525Corrected");
+    TH1F *SpectraCoherent_f1710 = (TH1F *)fCoherent->Get("hYield1710Corrected");
+
+    // TFile *fSigEventLossOld = new TFile("Loss_phi_mult0-100.root", "READ");
+    // TFile *fSigEventLossNew = new TFile("../SignalLossPhiINEL.root", "READ");
+
+    // TH1F *hEvbySigLossOld = (TH1F *)fSigEventLossOld->Get("hSignalLoss");
+    // TH1F *hEvbySigLossNew = (TH1F *)fSigEventLossNew->Get("hSignalLoss");
+
+    // TH1F *hNewbyOld = (TH1F *)hEvbySigLossNew->Clone("hNewbyOld");
+    // hNewbyOld->Divide(hEvbySigLossOld);
+
+    // for (int i = 1; i <= hNewbyOld->GetNbinsX(); i++)
+    // {
+    //     double binContentf2 = SpectraCoherent_f1525->GetBinContent(i + 1);
+    //     double binContentf0 = SpectraCoherent_f1710->GetBinContent(i + 1);
+    //     double ratio = hNewbyOld->GetBinContent(i);
+    //     double newBinContentf2 = binContentf2 * ratio;
+    //     double newBinContentf0 = binContentf0 * ratio;
+    //     SpectraCoherent_f1525->SetBinContent(i + 1, newBinContentf2);
+    //     SpectraCoherent_f1710->SetBinContent(i + 1, newBinContentf0);
+    // }
+
+    TFile *fSys = new TFile((path + "SystematicPlots/SystematicUncertainties.root").c_str(), "read");
+    if (fSys->IsZombie())
+    {
+        cout << "Error opening systematic uncertainty file" << endl;
+        return;
+    }
+
+    TH1F *hYieldSysf0 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1710");
+    TH1F *hYieldSysf2 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1525");
+    if (hYieldSysf0 == nullptr || hYieldSysf2 == nullptr)
+    {
+        cout << "Error reading systematic uncertainty histograms from file " << Form("%s/SystematicUncertainties.root", (path + "mult_0-100/Spectra/").c_str()) << endl;
+        return;
+    }
+
+    TH1F *hf21 = (TH1F *)SpectraCoherent_f1525->Clone("hf21");
+    TH1F *hf22 = (TH1F *)SpectraCoherent_f1525->Clone("hf22");
+    TH1F *hf01 = (TH1F *)SpectraCoherent_f1710->Clone("hf01");
+    TH1F *hf02 = (TH1F *)SpectraCoherent_f1710->Clone("hf02");
+    hf21->Sumw2();
+    hf22->Sumw2();
+    hf01->Sumw2();
+    hf02->Sumw2();
+
+    for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
+    {
+        double sys1710 = hYieldSysf0->GetBinContent(i);
+        double sys1525 = hYieldSysf2->GetBinContent(i);
+        double yield1710 = hf01->GetBinContent(i + 1);
+        double yield1525 = hf21->GetBinContent(i + 1);
+
+        hf02->SetBinContent(i + 1, yield1710);
+        hf02->SetBinError(i + 1, sys1710 * yield1710);
+        hf22->SetBinContent(i + 1, yield1525);
+        hf22->SetBinError(i + 1, sys1525 * yield1525);
+    }
+
+    Double_t min = 0.0;
+    Double_t max = 15.0;
+    Double_t loprecision = 0.01;
+    Double_t hiprecision = 0.1;
+    // Option_t *opt = "REBMS0+";
+    Option_t *opt = "RI0+";
+    TString logfilename = "log.root";
+    Double_t minfit = 1.0;
+    Double_t maxfit = 15.0;
+
+    TF1 *fitFcnf0 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
+    fitFcnf0->SetParameter(0, 5.0);
+    // fitFcnf0->SetParameter(1, 0.05);
+    fitFcnf0->SetParameter(1, 0.5);
+    fitFcnf0->FixParameter(2, 1.710);
+    fitFcnf0->SetParameter(3, 0.35);
+    fitFcnf0->SetParNames("n", "dn/dy", "mass", "T");
+
+    TF1 *fitFcnf2 = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
+    fitFcnf2->SetParameter(0, 5.0);
+    // fitFcnf2->SetParameter(1, 0.05);
+    fitFcnf2->SetParameter(1, 0.5);
+    fitFcnf2->FixParameter(2, 1.525);
+    fitFcnf2->SetParameter(3, 0.35);
+    fitFcnf2->SetParNames("n", "dn/dy", "mass", "T");
+
+    TH1 *houtf0 = YieldMean(hf01, hf02, fitFcnf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    TH1 *houtf2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     // Now compare the <pT> values for f0(1710) and f2(1525) between the two fits
     TGraphErrors *gMeanpTBothDefault = (TGraphErrors *)fDefault->Get("gMeanPt_f0f2");
@@ -154,15 +253,20 @@ void compare_mass_yield_coherent()
     // double f1710MeanPt_Default_err = gMeanpTBothDefault->GetErrorY(1);
 
     // Taking values after the reweighting for f0 and f2
-    double f1525MeanPt_Default = 1.67757;
-    double f1525MeanPt_Default_err = 0.0431799;
-    double f1710MeanPt_Default = 2.35583;
-    double f1710MeanPt_Default_err = 0.101038;
+    double f1525MeanPt_Default = 1.6474;
+    double f1525MeanPt_Default_err = 0.0446258;
+    double f1710MeanPt_Default = 2.35281;
+    double f1710MeanPt_Default_err = 0.0938778;
 
-    double f1525MeanPt_Coherent = gMeanpTBothCoherent->GetY()[0];
-    double f1525MeanPt_Coherent_err = gMeanpTBothCoherent->GetErrorY(0);
-    double f1710MeanPt_Coherent = gMeanpTBothCoherent->GetY()[1];
-    double f1710MeanPt_Coherent_err = gMeanpTBothCoherent->GetErrorY(1);
+    // double f1525MeanPt_Coherent = gMeanpTBothCoherent->GetY()[0];
+    // double f1525MeanPt_Coherent_err = gMeanpTBothCoherent->GetErrorY(0);
+    // double f1710MeanPt_Coherent = gMeanpTBothCoherent->GetY()[1];
+    // double f1710MeanPt_Coherent_err = gMeanpTBothCoherent->GetErrorY(1);
+
+    double f1525MeanPt_Coherent = houtf2->GetBinContent(5);
+    double f1525MeanPt_Coherent_err = houtf2->GetBinContent(6);
+    double f1710MeanPt_Coherent = houtf0->GetBinContent(5);
+    double f1710MeanPt_Coherent_err = houtf0->GetBinContent(6);
 
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
     if (flightFlavourHadrons->IsZombie())
@@ -385,98 +489,8 @@ void compare_mass_yield_coherent()
     legend4->AddEntry(graph_f0_2, "f_{0}(1710) (Coherent)", "p");
     legend4->AddEntry(pol1_meson, "Pol 1", "l");
     legend4->Draw();
-    cMeanPt->SaveAs((path + "MeanPt_vs_Mass_CoherentCompare.png").c_str());
-
-    // Compare the spectra for default and variation case for f2(1525) and f0(1710)
-    TH1F *SpectraCoherent_f1525 = (TH1F *)fCoherent->Get("hYield1525Corrected");
-    TH1F *SpectraCoherent_f1710 = (TH1F *)fCoherent->Get("hYield1710Corrected");
-
-    TFile *fSigEventLossOld = new TFile("Loss_phi_mult0-100.root", "READ");
-    TFile *fSigEventLossNew = new TFile("../SignalLossPhiINEL.root", "READ");
-
-    TH1F *hEvbySigLossOld = (TH1F *)fSigEventLossOld->Get("hSignalLoss");
-    TH1F *hEvbySigLossNew = (TH1F *)fSigEventLossNew->Get("hSignalLoss");
-
-    TH1F *hNewbyOld = (TH1F *)hEvbySigLossNew->Clone("hNewbyOld");
-    hNewbyOld->Divide(hEvbySigLossOld);
-
-    for (int i = 1; i <= hNewbyOld->GetNbinsX(); i++)
-    {
-        double binContentf2 = SpectraCoherent_f1525->GetBinContent(i + 1);
-        double binContentf0 = SpectraCoherent_f1710->GetBinContent(i + 1);
-        double ratio = hNewbyOld->GetBinContent(i);
-        double newBinContentf2 = binContentf2 * ratio;
-        double newBinContentf0 = binContentf0 * ratio;
-        SpectraCoherent_f1525->SetBinContent(i + 1, newBinContentf2);
-        SpectraCoherent_f1710->SetBinContent(i + 1, newBinContentf0);
-    }
-
-    TFile *fSys = new TFile((path + "SystematicPlots/SystematicUncertainties.root").c_str(), "read");
-    if (fSys->IsZombie())
-    {
-        cout << "Error opening systematic uncertainty file" << endl;
-        return;
-    }
-
-    TH1F *hYieldSysf0 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1710");
-    TH1F *hYieldSysf2 = (TH1F *)fSys->Get("TotalSys_Smooth_Yield1525");
-    if (hYieldSysf0 == nullptr || hYieldSysf2 == nullptr)
-    {
-        cout << "Error reading systematic uncertainty histograms from file " << Form("%s/SystematicUncertainties.root", (path + "mult_0-100/Spectra/").c_str()) << endl;
-        return;
-    }
-
-    TH1F *hf21 = (TH1F *)SpectraCoherent_f1525->Clone("hf21");
-    TH1F *hf22 = (TH1F *)SpectraCoherent_f1525->Clone("hf22");
-    TH1F *hf01 = (TH1F *)SpectraCoherent_f1710->Clone("hf01");
-    TH1F *hf02 = (TH1F *)SpectraCoherent_f1710->Clone("hf02");
-    hf21->Sumw2();
-    hf22->Sumw2();
-    hf01->Sumw2();
-    hf02->Sumw2();
-
-    for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
-    {
-        double sys1710 = hYieldSysf0->GetBinContent(i);
-        double sys1525 = hYieldSysf2->GetBinContent(i);
-        double yield1710 = hf01->GetBinContent(i + 1);
-        double yield1525 = hf21->GetBinContent(i + 1);
-
-        hf02->SetBinContent(i + 1, yield1710);
-        hf02->SetBinError(i + 1, sys1710 * yield1710);
-        hf22->SetBinContent(i + 1, yield1525);
-        hf22->SetBinError(i + 1, sys1525 * yield1525);
-    }
-
-    Double_t min = 0.0;
-    Double_t min2 = 1.0;
-    Double_t max = 15.0;
-    Double_t loprecision = 0.01;
-    Double_t hiprecision = 0.1;
-    Option_t *opt = "REBMS0+";
-    // Option_t *opt = "RI0+";
-    TString logfilename = "log.root";
-    Double_t minfit = 1.0;
-    Double_t maxfit = 10.0;
-
-    TF1 *fitFcnf0 = new TF1("fitfunc2", FuncLavy, 0.0, 10.0, 4);
-    fitFcnf0->SetParameter(0, 5.0);
-    // fitFcnf0->SetParameter(1, 0.05);
-    fitFcnf0->SetParameter(1, 0.5);
-    fitFcnf0->FixParameter(2, 1.710);
-    fitFcnf0->SetParameter(3, 0.35);
-    fitFcnf0->SetParNames("n", "dn/dy", "mass", "T");
-
-    TF1 *fitFcnf2 = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
-    fitFcnf2->SetParameter(0, 5.0);
-    // fitFcnf2->SetParameter(1, 0.05);
-    fitFcnf2->SetParameter(1, 0.5);
-    fitFcnf2->FixParameter(2, 1.525);
-    fitFcnf2->SetParameter(3, 0.35);
-    fitFcnf2->SetParNames("n", "dn/dy", "mass", "T");
-
-    TH1 *houtf0 = YieldMean(hf01, hf02, fitFcnf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    TH1 *houtf2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    // cMeanPt->SaveAs((path + "plots/MeanPt_vs_Mass_CoherentCompare.png").c_str());
+    cMeanPt->SaveAs((path + "plots/MeanPt_vs_Mass_CoherentComparePhi0.png").c_str());
 
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
@@ -489,7 +503,7 @@ void compare_mass_yield_coherent()
     hf01->SetMarkerSize(1.5);
     // hf01->SetMaximum(hf01->GetMaximum() * 2);
     hf01->SetMaximum(2e-3);
-    hf01->SetMinimum(9e-8);
+    hf01->SetMinimum(2e-8);
     hf01->SetMarkerColor(kBlue);
     hf01->SetLineColor(kBlue);
     hf01->SetStats(1);
@@ -497,7 +511,7 @@ void compare_mass_yield_coherent()
     hf02->SetMarkerColor(kBlue);
     hf02->SetLineColor(kBlue);
     hf02->SetFillStyle(0);
-    hf02->SetMinimum(9e-8);
+    hf02->SetMinimum(2e-8);
     hf02->Draw("e2 same");
     fitFcnf0->SetLineWidth(2);
     fitFcnf0->SetLineStyle(2);
@@ -527,7 +541,8 @@ void compare_mass_yield_coherent()
     box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0->GetParameter(1), fitFcnf0->GetParError(1)));
     box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0->GetParameter(3), fitFcnf0->GetParError(3)));
     box->Draw();
-    cCorrectedf0Fit->SaveAs((path + "Yieldf0_CoherentFit.png").c_str());
+    // cCorrectedf0Fit->SaveAs((path + "plots/Yieldf0_CoherentFit.png").c_str());
+    cCorrectedf0Fit->SaveAs((path + "plots/Yieldf0_CoherentFitPhi0.png").c_str());
 
     TCanvas *cCorrectedf2Fit = new TCanvas("cCorrectedf2Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf2Fit, 0.18, 0.03, 0.05, 0.14);
@@ -539,7 +554,7 @@ void compare_mass_yield_coherent()
     hf21->SetMarkerSize(1.5);
     // hf21->SetMaximum(hf21->GetMaximum() * 7);
     hf21->SetMaximum(4e-2);
-    hf21->SetMinimum(2e-7);
+    hf21->SetMinimum(2e-8);
     hf21->SetMarkerColor(kBlue);
     hf21->SetLineColor(kBlue);
     hf21->SetStats(1);
@@ -547,7 +562,7 @@ void compare_mass_yield_coherent()
     hf22->SetMarkerColor(kBlue);
     hf22->SetLineColor(kBlue);
     hf22->SetFillStyle(0);
-    hf22->SetMinimum(2e-7);
+    hf22->SetMinimum(2e-8);
     hf22->Draw("e2 same");
     fitFcnf2->SetLineWidth(2);
     fitFcnf2->SetLineStyle(2);
@@ -577,7 +592,8 @@ void compare_mass_yield_coherent()
     box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2->GetParameter(1), fitFcnf2->GetParError(1)));
     box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2->GetParameter(3), fitFcnf2->GetParError(3)));
     box2->Draw();
-    cCorrectedf2Fit->SaveAs((path + "Yieldf2_CoherentFit.png").c_str());
+    // cCorrectedf2Fit->SaveAs((path + "plots/Yieldf2_CoherentFit.png").c_str());
+    cCorrectedf2Fit->SaveAs((path + "plots/Yieldf2_CoherentFitPhi0.png").c_str());
 
     /// Compare the spectra from default
     ////****************************Spectra compare************************************
@@ -599,7 +615,8 @@ void compare_mass_yield_coherent()
     hYieldReweightedf2->GetXaxis()->SetLabelSize(0.035 / pad1Size);
     hYieldReweightedf2->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hYieldReweightedf2->GetYaxis()->SetTitleOffset(1.55 * pad1Size);
-    hYieldReweightedf2->SetMaximum(hYieldReweightedf2->GetMaximum() * 2);
+    hYieldReweightedf2->SetMaximum(5e-2);
+    // hYieldReweightedf2->SetMaximum(hYieldReweightedf2->GetMaximum() * 2);
     hYieldReweightedf2->SetMinimum(2e-7);
     hYieldReweightedf2->Draw();
     hf21->SetLineColor(kRed);
@@ -629,14 +646,17 @@ void compare_mass_yield_coherent()
     hRatiof2->SetLineColor(kBlue);
     hRatiof2->SetMarkerColor(kBlue);
     hRatiof2->GetYaxis()->SetNdivisions(505);
-    hRatiof2->SetMaximum(1.58);
-    hRatiof2->SetMinimum(0.65);
+    hRatiof2->SetMaximum(2.58);
+    hRatiof2->SetMinimum(0.19);
+    // hRatiof2->SetMaximum(1.58);
+    // hRatiof2->SetMinimum(0.65);
     hRatiof2->Draw();
     TLine *lineRatiof2 = new TLine(0, 1, 15, 1);
     lineRatiof2->SetLineStyle(2);
     lineRatiof2->SetLineColor(kBlack);
     lineRatiof2->Draw();
-    cSpectraf2->SaveAs((path + "SpectraComparison_f2_Coherent.png").c_str());
+    // cSpectraf2->SaveAs((path + "plots/SpectraComparison_f2_Coherent.png").c_str());
+    cSpectraf2->SaveAs((path + "plots/SpectraComparison_f2_CoherentPhi0.png").c_str());
 
     TCanvas *cSpectraf0 = new TCanvas("cSpectraf0", "Spectra comparison f0", 720, 720);
     SetCanvasStyle(cSpectraf0, 0.15, 0.05, 0.05, 0.15);
@@ -686,13 +706,16 @@ void compare_mass_yield_coherent()
     hRatiof0->SetMarkerColor(kBlue);
     hRatiof0->GetYaxis()->SetNdivisions(505);
     hRatiof0->SetMaximum(1.58);
-    hRatiof0->SetMinimum(0.65);
+    hRatiof0->SetMinimum(0.19);
+    // hRatiof0->SetMaximum(1.58);
+    // hRatiof0->SetMinimum(0.65);
     hRatiof0->Draw();
     TLine *lineRatiof0 = new TLine(0, 1, 15, 1);
     lineRatiof0->SetLineStyle(2);
     lineRatiof0->SetLineColor(kBlack);
     lineRatiof0->Draw();
-    cSpectraf0->SaveAs((path + "SpectraComparison_f0_Coherent.png").c_str());
+    // cSpectraf0->SaveAs((path + "plots/SpectraComparison_f0_Coherent.png").c_str());
+    cSpectraf0->SaveAs((path + "plots/SpectraComparison_f0_CoherentPhi0.png").c_str());
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

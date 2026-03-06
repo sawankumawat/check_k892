@@ -17,8 +17,8 @@ float parameter0(float mass, float width);
 void glueball_KsKs_channel()
 {
     // change here ***********************************************************
-    const string kResBkg = "MIX";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "MIX";
+    const string kResBkg = "ROTATED";
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
@@ -81,7 +81,7 @@ void glueball_KsKs_channel()
         //     // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "cosTheta" + ".root").c_str(), "RECREATE");
         // }
         // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_pT_%.1f_%.1f.root", pT_bins[0], pT_bins[1])).c_str(), "RECREATE");
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPt.root").c_str(), "RECREATE");
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPt_finerBin2.root").c_str(), "RECREATE");
         // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPt_normright.root").c_str(), "RECREATE");
 
         TH1F *hmult = (TH1F *)fInputFile->Get((foldername_final + "/eventSelection/hmultiplicity").c_str());

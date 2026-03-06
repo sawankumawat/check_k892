@@ -4,12 +4,12 @@
 using namespace std;
 
 // Forward declarations
-void glueball_fit_4rBW_simple();
+void glueball_fit_4rBW_test();
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 int main()
 {
-    glueball_fit_4rBW_simple();
+    glueball_fit_4rBW_test();
     return 0;
 }
 
@@ -28,7 +28,7 @@ Double_t BWsum_constWidth(double *x, double *par);
 Double_t coherent_sum(double *x, double *par);
 Double_t CoherentSum_modifiedBoltzmann(double *x, double *par);
 
-void glueball_fit_4rBW_simple()
+void glueball_fit_4rBW_test()
 {
     // Note that the main source of systematic i.e. signal extraction is still remaining to be done
     std::vector<std::string> variations = {
@@ -58,7 +58,7 @@ void glueball_fit_4rBW_simple()
         // const string kvariation1 = "_CoherentSum";
         const string kvariation1 = "_temp";
         // const string kvariation1 = "_CoherentSumPhiPi";
-        // string VariationTempPlot = "Exponential_HERA";
+        string VariationTempPlot = "Small fit range";
 
         string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
@@ -80,7 +80,8 @@ void glueball_fit_4rBW_simple()
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
+        // TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
+        TFile *f = new TFile((path + "/hglue_ROTATED_allPt_finerBin2.root").c_str(), "READ");
         // TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ"); // for systematics
         // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_normleft.root").c_str(), "READ");
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
@@ -123,7 +124,7 @@ void glueball_fit_4rBW_simple()
 #endif
         // (2022 data) // In first pT bin (1.07, 1.85) for coherent sum
         vector<vector<pair<float, float>>> fitRanges = {
-            {{1.07, 2.05}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
+            {{1.09, 2.05}, {1.05, 2.10}, {1.05, 2.10}, {1.05, 2.10}, {1.05, 2.10}, {1.05, 2.06}},  // 0-100%
             {{1.05, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-20%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.03, 2.20}, {1.05, 2.20}},  // 20-50%
             {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
@@ -231,8 +232,10 @@ void glueball_fit_4rBW_simple()
                     gPad->SetLeftMargin(0.13);
                     gPad->SetRightMargin(0.05);
 #endif
-                    // if (ipt == 0)
-                    //     hinvMass->Rebin(2);
+                    if (ipt == Npt - 1)
+                        hinvMass->Rebin(4);
+                    else
+                        hinvMass->Rebin(2);
 
                     double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
                     cout << "Binwidth file is " << binwidthfile << endl;
@@ -251,6 +254,7 @@ void glueball_fit_4rBW_simple()
                     hinvMass->SetMarkerSize(1.3);
 #endif
                     hinvMass->Draw("pe");
+                    hinvMass->Write(Form("hInvMass_pt_%.1f_%.1f", lowpT, highpT));
                     double resMaximumFactor = 2.2;
                     TH1F *hsubtracted = (TH1F *)hinvMass->Clone("hsubtracted");
                     TH1F *hsubtracted_res = (TH1F *)hinvMass->Clone("hsubtracted_res");
@@ -318,7 +322,8 @@ void glueball_fit_4rBW_simple()
                     BEexpol_initial->SetParameter(size_fitparams + 2, initial_param_bkg[2]); // 2.569     // Free
                     BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
                     // BEexpol_initial->FixParameter(size_fitparams + 3, 1.1); // Fix for Constant width case
-                    BEexpol_initial->SetParLimits(size_fitparams + 3, 0.5, 3.0); // Use only for default fit
+                    BEexpol_initial->SetParLimits(size_fitparams + 3, 0.5, 10.0); // Use only for default fit
+                    // BEexpol_initial->FixParameter(size_fitparams + 3, 2.0); // Use only for default fit
                     // if (ipt == 0){
                     //     BEexpol_initial->SetParLimits(size_fitparams + 0, 1e2, 1e7);
                     //     BEexpol_initial->SetParLimits(size_fitparams + 1, 0.0, 0.5);
@@ -383,6 +388,7 @@ void glueball_fit_4rBW_simple()
 
                     // BEexpol->FixParameter(10, f1710Mass);
                     BEexpol->FixParameter(11, f1710Width);
+                    // BEexpol->FixParameter(11, 0.1477);
                     if (ipt == 0)
                         BEexpol->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
@@ -405,9 +411,9 @@ void glueball_fit_4rBW_simple()
 
                     TFitResultPtr fitResultptr;
                     if (ipt == 0)
-                        fitResultptr = hinvMass->Fit("BEexpol", "REBS");
+                        fitResultptr = hinvMass->Fit("BEexpol", "REBMS0");
                     else
-                        fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
+                        fitResultptr = hinvMass->Fit("BEexpol", "REBMS0");
 
                     double *obtained_parameters = BEexpol->GetParameters();
 
@@ -463,7 +469,7 @@ void glueball_fit_4rBW_simple()
 
                     onlyBW_clone->FixParameter(2, f1270Width);
                     onlyBW_clone->FixParameter(5, a1320Width);
-                    onlyBW_clone->FixParameter(8, f1525Width);
+                    // onlyBW_clone->FixParameter(8, f1525Width);
 
                     // onlyBW_clone->FixParameter(1, f1270Mass);
                     // onlyBW_clone->FixParameter(4, a1320Mass);
@@ -471,6 +477,7 @@ void glueball_fit_4rBW_simple()
 
                     // onlyBW_clone->FixParameter(10, f1710Mass);
                     onlyBW_clone->FixParameter(11, f1710Width);
+                    // onlyBW_clone->FixParameter(11, 0.1477);
                     if (ipt == 0)
                         onlyBW_clone->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
@@ -491,8 +498,13 @@ void glueball_fit_4rBW_simple()
                         singlefits[i]->SetLineStyle(2);
                         if (i == 3)
                             singlefits[i]->SetLineWidth(3);
-                        singlefits[i]->Draw("same");
+                        // singlefits[i]->Draw("same");
                     }
+
+                    TLine *lineIntegratedTemp = new TLine(1.7087, 0, 1.7087, hinvMass->GetMaximum());
+                    lineIntegratedTemp->SetLineColor(kRed);
+                    lineIntegratedTemp->SetLineStyle(2);
+                    lineIntegratedTemp->Draw("same");
 
                     TLegend *ltemp = new TLegend(0.25, 0.52, 0.55, 0.87);
                     ltemp->SetFillStyle(0);
@@ -509,8 +521,8 @@ void glueball_fit_4rBW_simple()
                     ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
                     ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
 #ifdef multiPanelPlots
-                    if (ipt == 0)
-                        ltemp->Draw("same");
+                    // if (ipt == 0)
+                    //     ltemp->Draw("same");
 #else
                     ltemp->Draw("same");
 #endif
@@ -854,9 +866,10 @@ void glueball_fit_4rBW_simple()
                     hsubtracted->SetMinimum(-hsubtracted->GetMaximum() * 0.05);
                     hsubtracted->GetYaxis()->SetTitleOffset(1.0);
                     hsubtracted->Draw();
+                    hsubtracted->Write(Form("hsubtracted_%.1f_%.1f", lowpT, highpT));
                     onlyBW_clone->SetNpx(1000);
                     TFitResultPtr fitResultptr_res = hsubtracted->Fit("onlyBW_clone", "REBMSQ0");
-                    // onlyBW_clone->Draw("same");
+                    onlyBW_clone->Draw("same");
                     double *obtained_parameters2 = onlyBW_clone->GetParameters();
                     TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
                     line->SetLineColor(1);
@@ -1388,40 +1401,42 @@ void glueball_fit_4rBW_simple()
 #ifdef before_combinatorialPlots
             cMultiPanelWithBkg->SaveAs((path2 + Form("/rBWfit_withbkg_multpanel_%s.png", kvariation1.c_str())).c_str());
 #endif
-            // TFile *fDefaultTemp = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/spectra_Default4.root", "READ");
-            // TH1F *hMass_f1710_Default = (TH1F *)fDefaultTemp->Get("hMass_1710");
-            // TCanvas *cMass1710 = new TCanvas("", "", 720, 720);
-            // SetCanvasStyle(cMass1710, 0.14, 0.03, 0.05, 0.14);
-            // SetHistoQA(hMass[3]);
-            // SetHistoQA(hMass_f1710_Default);
-            // hMass_f1710_Default->GetYaxis()->SetRangeUser(1.56, 1.89);
-            // hMass_f1710_Default->SetMarkerSize(1.5);
-            // hMass_f1710_Default->Draw("pe");
-            // hMass[3]->SetMarkerStyle(21);
-            // hMass[3]->SetMarkerSize(1.5);
-            // hMass[3]->SetLineColor(2);
-            // hMass[3]->SetMarkerColor(2);
-            // hMass[3]->Draw("pe same");
-            // TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
-            // line1710Mass->SetLineStyle(2);
-            // line1710Mass->SetLineColor(2);
-            // line1710Mass->Draw("same");
-            // TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
-            // band1710Mass->SetFillColor(kRed); // shaded
-            // band1710Mass->SetFillStyle(3001); // hatched
-            // band1710Mass->SetLineColor(kRed);
-            // band1710Mass->SetLineWidth(1);
-            // band1710Mass->Draw("same");
-            // TLegend *legMass1710 = new TLegend(0.5, 0.6, 0.9, 0.9);
-            // legMass1710->SetFillStyle(0);
-            // legMass1710->SetTextFont(42);
-            // legMass1710->SetBorderSize(0);
-            // legMass1710->SetTextSize(0.04);
-            // legMass1710->SetHeader("f_{0}(1710) mass");
-            // legMass1710->AddEntry(hMass_f1710_Default, "Default", "p");
-            // legMass1710->AddEntry(hMass[3], Form("%s", VariationTempPlot.c_str()), "p");
-            // legMass1710->AddEntry(line1710Mass, "PDG mass", "l");
-            // legMass1710->Draw("same");
+            TFile *fDefaultTemp = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/spectra_Default4.root", "READ");
+            TH1F *hMass_f1710_Default = (TH1F *)fDefaultTemp->Get("hMass_1710");
+            TCanvas *cMass1710 = new TCanvas("", "", 720, 720);
+            SetCanvasStyle(cMass1710, 0.14, 0.03, 0.05, 0.14);
+            SetHistoQA(hMass[3]);
+            SetHistoQA(hMass_f1710_Default);
+            hMass_f1710_Default->GetYaxis()->SetRangeUser(1.56, 1.89);
+            hMass_f1710_Default->SetMarkerSize(1.5);
+            hMass_f1710_Default->Draw("pe");
+            hMass[3]->SetMarkerStyle(21);
+            hMass[3]->GetYaxis()->SetRangeUser(1.56, 1.89);
+            hMass[3]->SetMarkerSize(1.5);
+            hMass[3]->SetLineColor(2);
+            hMass[3]->SetMarkerColor(2);
+            hMass[3]->Draw("pe same");
+            TLine *line1710Mass = new TLine(1, 1.708, 15, 1.708);
+            line1710Mass->SetLineStyle(2);
+            line1710Mass->SetLineColor(2);
+            line1710Mass->Draw("same");
+            TBox *band1710Mass = new TBox(1, 1.708 - 0.0138, 15, 1.708 + 0.0138);
+            band1710Mass->SetFillColor(kRed); // shaded
+            band1710Mass->SetFillStyle(3001); // hatched
+            band1710Mass->SetLineColor(kRed);
+            band1710Mass->SetLineWidth(1);
+            band1710Mass->Draw("same");
+            TLegend *legMass1710 = new TLegend(0.5, 0.6, 0.9, 0.9);
+            legMass1710->SetFillStyle(0);
+            legMass1710->SetTextFont(42);
+            legMass1710->SetBorderSize(0);
+            legMass1710->SetTextSize(0.04);
+            legMass1710->SetHeader("f_{0}(1710) mass");
+            legMass1710->AddEntry(hMass_f1710_Default, "Default", "p");
+            legMass1710->AddEntry(hMass[3], Form("%s", VariationTempPlot.c_str()), "p");
+            // legMass1710->AddEntry(hMass[3], "f_{0}(1710)", "p");
+            legMass1710->AddEntry(line1710Mass, "Integrated-pT", "l");
+            legMass1710->Draw("same");
             // cMass1710->SaveAs(Form("%s/Spectra/plots/Temp/hMass_f1710_comparison_%s.png", path2.c_str(), VariationTempPlot.c_str()));
             // cMultiPanelFit->SaveAs(Form("%s/Spectra/plots/Temp/cFit_%s.png", path2.c_str(), VariationTempPlot.c_str()));
             // cMultiPanelResidual->SaveAs(Form("%s/Spectra/plots/Temp/cResidual_%s.png", path2.c_str(), VariationTempPlot.c_str()));

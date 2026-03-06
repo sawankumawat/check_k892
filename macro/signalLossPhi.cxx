@@ -7,7 +7,7 @@ void signalLossPhi()
 {
     gStyle->SetOptStat(0);
     // TFile *fSigLoss = new TFile("/home/sawan/check_k892/mc/PhiSigLossINEL.root", "READ");
-    TFile *fSigLoss = new TFile("/home/sawan/Downloads/AnalysisResults2.root", "READ");
+    TFile *fSigLoss = new TFile("/home/sawan/Downloads/SigLossLHC24l1.root", "READ");
     if (fSigLoss->IsZombie())
     {
         cout << "Error opening files" << endl;
@@ -51,10 +51,10 @@ void signalLossPhi()
     hSignalLoss->SetMaximum(1.38);
     hSignalLoss->SetMinimum(0.65);
     hSignalLoss->Draw("pe");
-    cSignalLoss->SaveAs("SignalLoss_phi.png");
+    // cSignalLoss->SaveAs("SignalLoss_phi.png");
 
-    TFile *fOutput = new TFile("SignalLossPhiINEL.root", "RECREATE");
-    fOutput->cd();
-    hSignalLoss->Write("hSignalLoss");
-    fOutput->Close();
+    // TFile *fOutput = new TFile("SignalLossPhiINEL.root", "RECREATE");
+    // fOutput->cd();
+    // hSignalLoss->Write("hSignalLoss");
+    // fOutput->Close();
 }

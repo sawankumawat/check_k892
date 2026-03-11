@@ -12,7 +12,8 @@ void Smoothening(TH1F *h, int iterations = 2);
 
 void systematics_pt()
 {
-    bool saveRelUncertHisto = true;
+    bool saveRelUncertHisto = false;
+    bool saveTotalUncertHisto = false;
     gStyle->SetOptStat(0);
     // //========= Systematic information =================
     // 1. Signal extraction
@@ -38,7 +39,7 @@ void systematics_pt()
     string path_SigExt = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
     Color_t lineColors[6] = {kRed, kBlue, kGreen + 2, kMagenta, kCyan + 2, kOrange + 7};
 
-    TFile *fout = new TFile((path_SigExt + "SystematicPlots/SystematicUncertainties.root").c_str(), "RECREATE");
+    TFile *fout = new TFile((path_SigExt + "SystematicPlots/SystematicUncertainties_temp.root").c_str(), "RECREATE");
 
     vector<string> SignalExtractionVars = {"_fitLow1p07", "_fitHigh2p17", "_fitHigh2p25", "_normLeft", "_normRight", "_FitChKstar", "_FitExpoHERA", "_Fit3rBW", "_AllParametersFree", "_AllParametersFixed", "_f0WidthFree", "_f2WidthFree"};
     vector<string> TrackSelectionVars = {"_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60"};
@@ -181,6 +182,8 @@ void systematics_pt()
             cSigExtract->SaveAs(Form("%s/SystematicPlots/SignalExtrct_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
             cSigExtract_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/SignalExtrct_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
+        cSigExtract->Close();
+        cSigExtract_Barlow->Close();
 
         // Process variations for Track Selection
         processVariations(fVarTrackSelection, TrackSelectionVars, nVarTrk, defaultHist, cTrackSelect, cTrackSelect_Barlow, &hMassVar_relUncert_trackSel, histPath, suffix, path, "TrackSelect", "Track Selection");
@@ -190,6 +193,8 @@ void systematics_pt()
             cTrackSelect->SaveAs(Form("%s/SystematicPlots/TrackSelect_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
             cTrackSelect_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/TrackSelect_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
+        cTrackSelect->Close();
+        cTrackSelect_Barlow->Close();
 
         // Process variations for Topological Selection
         processVariations(fVarTopologicalSelection, TopologicalSelectionVars, nVarTop, defaultHist, cTopSelect, cTopSelect_Barlow, &hMassVar_relUncert_topSel, histPath, suffix, path, "TopologicalSelect", "Topological Selection");
@@ -199,6 +204,8 @@ void systematics_pt()
             cTopSelect->SaveAs(Form("%s/SystematicPlots/TopologicalSelect_Sys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
             cTopSelect_Barlow->SaveAs(Form("%s/SystematicPlots/Barlow/TopologicalSelect_Barlow_%s.png", path_SigExt.c_str(), canvasType.c_str()));
         }
+        cTopSelect->Close();
+        cTopSelect_Barlow->Close();
 
         // Now lets calculate the average quadrature sum for each systematic source in signal extraction
         TH1F *hSigExt_source1;
@@ -249,7 +256,8 @@ void systematics_pt()
         leg->AddEntry(hSigExt_source4, SourcesSignalExtraction[3].c_str(), "l");
         leg->AddEntry(hSigExt_total, "Total Systematic", "l");
         leg->Draw();
-        cSigExt_sys->SaveAs(Form("%s/SystematicPlots/SignalExtrct_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+        if (saveTotalUncertHisto)
+            cSigExt_sys->SaveAs(Form("%s/SystematicPlots/SignalExtrct_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Now lets calculate the average quadrature sum for each systematic source in track selection
         TH1F *hTrkSel_source1;
@@ -294,7 +302,8 @@ void systematics_pt()
         // legTrk->AddEntry(hTrkSel_source3, SourcesTrackSelection[2].c_str(), "l");
         legTrk->AddEntry(hTrkSel_total, "Total Systematic", "l");
         legTrk->Draw();
-        cTrkSel_sys->SaveAs(Form("%s/SystematicPlots/TrackSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+        if (saveTotalUncertHisto)
+            cTrkSel_sys->SaveAs(Form("%s/SystematicPlots/TrackSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Now lets calculate the average quadrature sum for each systematic source in topological selection
         TH1F *hTopSel_source1;
@@ -357,7 +366,8 @@ void systematics_pt()
         legTop->AddEntry(hTopSel_source6, SourcesTopologicalSelection[5].c_str(), "l");
         legTop->AddEntry(hTopSel_total, "Total Systematic", "l");
         legTop->Draw();
-        cTopSel_sys->SaveAs(Form("%s/SystematicPlots/TopologicalSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+        if (saveTotalUncertHisto)
+            cTopSel_sys->SaveAs(Form("%s/SystematicPlots/TopologicalSelect_TotalSys_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Combining all three systematic categories to get total systematic uncertainty
         TH1F *hTotalSys;
@@ -391,7 +401,8 @@ void systematics_pt()
         legTotal->AddEntry(hTopSel_total, "Topological Selection", "l");
         legTotal->AddEntry(hTotalSys, "Total Systematic", "l");
         legTotal->Draw();
-        cTotalSys->SaveAs(Form("%s/SystematicPlots/Total_Systematics_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+        if (saveTotalUncertHisto)
+            cTotalSys->SaveAs(Form("%s/SystematicPlots/Total_Systematics_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         // Smoothening of the total systematic uncertainty histogram for better visualization
         TH1F *hSignalExtSmooth = (TH1F *)hSigExt_total->Clone(Form("hSignalExtSmooth_%s", suffix.c_str()));
@@ -426,7 +437,8 @@ void systematics_pt()
         hTotalSysSmooth->SetLineWidth(3);
         hTotalSysSmooth->Draw("HIST SAME");
         legTotal->Draw();
-        cTotalSysSmooth->SaveAs(Form("%s/SystematicPlots/Total_Systematics_Smooth_%s.png", path_SigExt.c_str(), canvasType.c_str()));
+        if (saveTotalUncertHisto)
+            cTotalSysSmooth->SaveAs(Form("%s/SystematicPlots/Total_Systematics_Smooth_%s.png", path_SigExt.c_str(), canvasType.c_str()));
 
         fout->cd();
         // hSigExt_total->Write(Form("SigExt_TotalSys%s", suffix.c_str()));

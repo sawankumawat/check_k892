@@ -101,133 +101,133 @@ void plotReweightedSpectra_single()
         return;
     }
 
-    TCanvas *cReweighted = new TCanvas("cReweighted", "Reweighted Efficiency for f0(1710)", 720, 720);
-    SetCanvasStyle(cReweighted, 0.18, 0.03, 0.05, 0.14);
-    SetHistoQA(hGenReweighted);
+    // TCanvas *cReweighted = new TCanvas("cReweighted", "Reweighted Efficiency for f0(1710)", 720, 720);
+    // SetCanvasStyle(cReweighted, 0.18, 0.03, 0.05, 0.14);
+    // SetHistoQA(hGenReweighted);
 
-    // Clone unweighted histograms before scaling for plotting; use clones for efficiency counts
-    TH1F *hGenUnweightedCounts = (TH1F *)hGenUnweighted->Clone("hGenUnweightedCounts");
-    TH1F *hRecUnweightedCounts = (TH1F *)hRecUnweighted->Clone("hRecUnweightedCounts");
-    TH1F *hGenUnweightedCounts2 = (TH1F *)hGenUnweighted2->Clone("hGenUnweightedCounts2");
-    TH1F *hRecUnweightedCounts2 = (TH1F *)hRecUnweighted2->Clone("hRecUnweightedCounts2");
-    if (hGenUnweightedCounts)
-        hGenUnweightedCounts->Sumw2();
-    if (hRecUnweightedCounts)
-        hRecUnweightedCounts->Sumw2();
-    if (hGenUnweightedCounts2)
-        hGenUnweightedCounts2->Sumw2();
-    if (hRecUnweightedCounts2)
-        hRecUnweightedCounts2->Sumw2();
-    gPad->SetLogy();
-    hGenReweighted->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hGenReweighted->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
-    hGenReweighted->GetYaxis()->SetTitleOffset(1.7);
-    hGenReweighted->SetMaximum(hGenReweighted->GetMaximum() * 1.5);
-    hGenReweighted->SetMarkerStyle(53);
-    hGenReweighted->SetMarkerColor(kGreen);
-    hGenReweighted->SetLineColor(kGreen);
-    hGenReweighted->GetXaxis()->SetRangeUser(0.0, 15.5);
-    hGenReweighted->SetMinimum(3e-10);
-    hGenReweighted->SetMaximum(hGenReweighted->GetMaximum() * 9200);
-    hGenReweighted->SetMarkerSize(1.5);
-    hGenReweighted->Draw("pe");
-    SetHistoQA(hRecReweighted);
-    hRecReweighted->SetMarkerStyle(53);
-    hRecReweighted->SetMarkerColor(kRed);
-    hRecReweighted->SetLineColor(kRed);
-    hRecReweighted->SetMarkerSize(1.5);
-    hRecReweighted->Draw("pe same");
-    SetHistoQA(hYieldReweighted);
-    hYieldReweighted->SetMarkerStyle(20);
-    hYieldReweighted->SetMarkerColor(kBlack);
-    hYieldReweighted->SetLineColor(kBlack);
-    hYieldReweighted->SetMarkerSize(1.5);
-    hYieldReweighted->Draw("pe same");
-    double integralFactor = 20861874; // this is multiplicity in MC
-    // double integralFactor = 1.0; // this is multiplicity in MC
-    SetHistoQA(hGenUnweighted);
-    hGenUnweighted->Scale(1.0 / integralFactor);
-    hGenUnweighted->SetMarkerStyle(53);
-    hGenUnweighted->SetMarkerColor(kBlue);
-    hGenUnweighted->SetLineColor(kBlue);
-    hGenUnweighted->SetMarkerSize(1.5);
-    hGenUnweighted->Draw("pe same");
-    SetHistoQA(hRecUnweighted);
-    hRecUnweighted->Scale(1.0 / integralFactor);
-    hRecUnweighted->SetMarkerStyle(53);
-    hRecUnweighted->SetMarkerColor(kMagenta);
-    hRecUnweighted->SetLineColor(kMagenta);
-    hRecUnweighted->SetMarkerSize(1.5);
-    hRecUnweighted->Draw("pe same");
-    TLegend *legReweighted = new TLegend(0.35, 0.73, 0.9, 0.93);
-    legReweighted->SetBorderSize(0);
-    legReweighted->SetFillStyle(0);
-    legReweighted->SetTextSize(0.03);
-    legReweighted->SetHeader("pp, #sqrt{#it{s}} = 13.6 TeV");
-    legReweighted->AddEntry(hGenUnweighted, "Generated distribution", "p");
-    legReweighted->AddEntry(hRecUnweighted, "Reconstructed distribution", "p");
-    legReweighted->AddEntry(hYieldReweighted, "Data (f_{0}(1710))", "p");
-    legReweighted->AddEntry(hGenReweighted, "Reweighted Generated distribution", "p");
-    legReweighted->AddEntry(hRecReweighted, "Reweighted Reconstructed distribution", "p");
-    legReweighted->Draw();
-    cReweighted->SaveAs((savePath + "/ReweightedEfficiencyf0.png").c_str());
+    // // Clone unweighted histograms before scaling for plotting; use clones for efficiency counts
+    // TH1F *hGenUnweightedCounts = (TH1F *)hGenUnweighted->Clone("hGenUnweightedCounts");
+    // TH1F *hRecUnweightedCounts = (TH1F *)hRecUnweighted->Clone("hRecUnweightedCounts");
+    // TH1F *hGenUnweightedCounts2 = (TH1F *)hGenUnweighted2->Clone("hGenUnweightedCounts2");
+    // TH1F *hRecUnweightedCounts2 = (TH1F *)hRecUnweighted2->Clone("hRecUnweightedCounts2");
+    // if (hGenUnweightedCounts)
+    //     hGenUnweightedCounts->Sumw2();
+    // if (hRecUnweightedCounts)
+    //     hRecUnweightedCounts->Sumw2();
+    // if (hGenUnweightedCounts2)
+    //     hGenUnweightedCounts2->Sumw2();
+    // if (hRecUnweightedCounts2)
+    //     hRecUnweightedCounts2->Sumw2();
+    // gPad->SetLogy();
+    // hGenReweighted->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hGenReweighted->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    // hGenReweighted->GetYaxis()->SetTitleOffset(1.7);
+    // hGenReweighted->SetMaximum(hGenReweighted->GetMaximum() * 1.5);
+    // hGenReweighted->SetMarkerStyle(53);
+    // hGenReweighted->SetMarkerColor(kGreen);
+    // hGenReweighted->SetLineColor(kGreen);
+    // hGenReweighted->GetXaxis()->SetRangeUser(0.0, 15.5);
+    // hGenReweighted->SetMinimum(3e-10);
+    // hGenReweighted->SetMaximum(hGenReweighted->GetMaximum() * 9200);
+    // hGenReweighted->SetMarkerSize(1.5);
+    // hGenReweighted->Draw("pe");
+    // SetHistoQA(hRecReweighted);
+    // hRecReweighted->SetMarkerStyle(53);
+    // hRecReweighted->SetMarkerColor(kRed);
+    // hRecReweighted->SetLineColor(kRed);
+    // hRecReweighted->SetMarkerSize(1.5);
+    // hRecReweighted->Draw("pe same");
+    // SetHistoQA(hYieldReweighted);
+    // hYieldReweighted->SetMarkerStyle(20);
+    // hYieldReweighted->SetMarkerColor(kBlack);
+    // hYieldReweighted->SetLineColor(kBlack);
+    // hYieldReweighted->SetMarkerSize(1.5);
+    // hYieldReweighted->Draw("pe same");
+    // double integralFactor = 20861874; // this is multiplicity in MC
+    // // double integralFactor = 1.0; // this is multiplicity in MC
+    // SetHistoQA(hGenUnweighted);
+    // hGenUnweighted->Scale(1.0 / integralFactor);
+    // hGenUnweighted->SetMarkerStyle(53);
+    // hGenUnweighted->SetMarkerColor(kBlue);
+    // hGenUnweighted->SetLineColor(kBlue);
+    // hGenUnweighted->SetMarkerSize(1.5);
+    // hGenUnweighted->Draw("pe same");
+    // SetHistoQA(hRecUnweighted);
+    // hRecUnweighted->Scale(1.0 / integralFactor);
+    // hRecUnweighted->SetMarkerStyle(53);
+    // hRecUnweighted->SetMarkerColor(kMagenta);
+    // hRecUnweighted->SetLineColor(kMagenta);
+    // hRecUnweighted->SetMarkerSize(1.5);
+    // hRecUnweighted->Draw("pe same");
+    // TLegend *legReweighted = new TLegend(0.35, 0.73, 0.9, 0.93);
+    // legReweighted->SetBorderSize(0);
+    // legReweighted->SetFillStyle(0);
+    // legReweighted->SetTextSize(0.03);
+    // legReweighted->SetHeader("pp, #sqrt{#it{s}} = 13.6 TeV");
+    // legReweighted->AddEntry(hGenUnweighted, "Generated distribution", "p");
+    // legReweighted->AddEntry(hRecUnweighted, "Reconstructed distribution", "p");
+    // legReweighted->AddEntry(hYieldReweighted, "Data (f_{0}(1710))", "p");
+    // legReweighted->AddEntry(hGenReweighted, "Reweighted Generated distribution", "p");
+    // legReweighted->AddEntry(hRecReweighted, "Reweighted Reconstructed distribution", "p");
+    // legReweighted->Draw();
+    // // cReweighted->SaveAs((savePath + "/ReweightedEfficiencyf0.png").c_str());
 
-    TCanvas *cReweightedf2 = new TCanvas("cReweightedf2", "Reweighted Efficiency for f2'(1525)", 720, 720);
-    SetCanvasStyle(cReweightedf2, 0.18, 0.03, 0.05, 0.14);
-    SetHistoQA(hGenReweighted2);
-    gPad->SetLogy();
-    hGenReweighted2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hGenReweighted2->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
-    hGenReweighted2->GetYaxis()->SetTitleOffset(1.7);
-    // hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 1.5);
-    hGenReweighted2->SetMarkerStyle(53);
-    hGenReweighted2->SetMarkerColor(kGreen);
-    hGenReweighted2->SetLineColor(kGreen);
-    hGenReweighted2->GetXaxis()->SetRangeUser(0.0, 15.5);
-    hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 700);
-    hGenReweighted2->SetMinimum(2e-10);
-    hGenReweighted2->SetMarkerSize(1.5);
-    hGenReweighted2->Draw("pe");
-    SetHistoQA(hRecReweighted2);
-    hRecReweighted2->SetMarkerStyle(53);
-    hRecReweighted2->SetMarkerColor(kRed);
-    hRecReweighted2->SetLineColor(kRed);
-    hRecReweighted2->SetMarkerSize(1.5);
-    hRecReweighted2->Draw("pe same");
-    SetHistoQA(hYieldReweighted2);
-    hYieldReweighted2->SetMarkerStyle(20);
-    hYieldReweighted2->SetMarkerColor(kBlack);
-    hYieldReweighted2->SetLineColor(kBlack);
-    hYieldReweighted2->SetMarkerSize(1.5);
-    hYieldReweighted2->Draw("pe same");
-    SetHistoQA(hGenUnweighted2);
-    hGenUnweighted2->Scale(1.0 / integralFactor);
-    hGenUnweighted2->SetMarkerStyle(53);
-    hGenUnweighted2->SetMarkerColor(kBlue);
-    hGenUnweighted2->SetLineColor(kBlue);
-    hGenUnweighted2->SetMarkerSize(1.5);
-    hGenUnweighted2->Draw("pe same");
-    SetHistoQA(hRecUnweighted2);
-    hRecUnweighted2->Scale(1.0 / integralFactor);
-    hRecUnweighted2->SetMarkerStyle(53);
-    hRecUnweighted2->SetMarkerColor(kMagenta);
-    hRecUnweighted2->SetLineColor(kMagenta);
-    hRecUnweighted2->SetMarkerSize(1.5);
-    hRecUnweighted2->Draw("pe same");
-    TLegend *legReweighted2 = new TLegend(0.35, 0.73, 0.9, 0.93);
-    legReweighted2->SetBorderSize(0);
-    legReweighted2->SetFillStyle(0);
-    legReweighted2->SetTextSize(0.03);
-    legReweighted2->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
-    legReweighted2->AddEntry(hGenUnweighted2, "Generated distribution", "p");
-    legReweighted2->AddEntry(hRecUnweighted2, "Reconstructed distribution", "p");
-    legReweighted2->AddEntry(hYieldReweighted2, "Data (f_{2}'(1525))", "p");
-    legReweighted2->AddEntry(hGenReweighted2, "Reweighted Generated distribution", "p");
-    legReweighted2->AddEntry(hRecReweighted2, "Reweighted Reconstructed distribution", "p");
-    legReweighted2->Draw();
-    // hYieldReweighted->Write("f01710_Reweighted_Yield");
-    // hYieldReweighted2->Write("f21525_Reweighted_Yield");
-    cReweightedf2->SaveAs((savePath + "/ReweightedEfficiencyf2.png").c_str());
+    // TCanvas *cReweightedf2 = new TCanvas("cReweightedf2", "Reweighted Efficiency for f2'(1525)", 720, 720);
+    // SetCanvasStyle(cReweightedf2, 0.18, 0.03, 0.05, 0.14);
+    // SetHistoQA(hGenReweighted2);
+    // gPad->SetLogy();
+    // hGenReweighted2->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    // hGenReweighted2->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    // hGenReweighted2->GetYaxis()->SetTitleOffset(1.7);
+    // // hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 1.5);
+    // hGenReweighted2->SetMarkerStyle(53);
+    // hGenReweighted2->SetMarkerColor(kGreen);
+    // hGenReweighted2->SetLineColor(kGreen);
+    // hGenReweighted2->GetXaxis()->SetRangeUser(0.0, 15.5);
+    // hGenReweighted2->SetMaximum(hGenReweighted2->GetMaximum() * 700);
+    // hGenReweighted2->SetMinimum(2e-10);
+    // hGenReweighted2->SetMarkerSize(1.5);
+    // hGenReweighted2->Draw("pe");
+    // SetHistoQA(hRecReweighted2);
+    // hRecReweighted2->SetMarkerStyle(53);
+    // hRecReweighted2->SetMarkerColor(kRed);
+    // hRecReweighted2->SetLineColor(kRed);
+    // hRecReweighted2->SetMarkerSize(1.5);
+    // hRecReweighted2->Draw("pe same");
+    // SetHistoQA(hYieldReweighted2);
+    // hYieldReweighted2->SetMarkerStyle(20);
+    // hYieldReweighted2->SetMarkerColor(kBlack);
+    // hYieldReweighted2->SetLineColor(kBlack);
+    // hYieldReweighted2->SetMarkerSize(1.5);
+    // hYieldReweighted2->Draw("pe same");
+    // SetHistoQA(hGenUnweighted2);
+    // hGenUnweighted2->Scale(1.0 / integralFactor);
+    // hGenUnweighted2->SetMarkerStyle(53);
+    // hGenUnweighted2->SetMarkerColor(kBlue);
+    // hGenUnweighted2->SetLineColor(kBlue);
+    // hGenUnweighted2->SetMarkerSize(1.5);
+    // hGenUnweighted2->Draw("pe same");
+    // SetHistoQA(hRecUnweighted2);
+    // hRecUnweighted2->Scale(1.0 / integralFactor);
+    // hRecUnweighted2->SetMarkerStyle(53);
+    // hRecUnweighted2->SetMarkerColor(kMagenta);
+    // hRecUnweighted2->SetLineColor(kMagenta);
+    // hRecUnweighted2->SetMarkerSize(1.5);
+    // hRecUnweighted2->Draw("pe same");
+    // TLegend *legReweighted2 = new TLegend(0.35, 0.73, 0.9, 0.93);
+    // legReweighted2->SetBorderSize(0);
+    // legReweighted2->SetFillStyle(0);
+    // legReweighted2->SetTextSize(0.03);
+    // legReweighted2->SetHeader("pp #sqrt{#it{s}} = 13.6 TeV");
+    // legReweighted2->AddEntry(hGenUnweighted2, "Generated distribution", "p");
+    // legReweighted2->AddEntry(hRecUnweighted2, "Reconstructed distribution", "p");
+    // legReweighted2->AddEntry(hYieldReweighted2, "Data (f_{2}'(1525))", "p");
+    // legReweighted2->AddEntry(hGenReweighted2, "Reweighted Generated distribution", "p");
+    // legReweighted2->AddEntry(hRecReweighted2, "Reweighted Reconstructed distribution", "p");
+    // legReweighted2->Draw();
+    // // hYieldReweighted->Write("f01710_Reweighted_Yield");
+    // // hYieldReweighted2->Write("f21525_Reweighted_Yield");
+    // // cReweightedf2->SaveAs((savePath + "/ReweightedEfficiencyf2.png").c_str());
 
     ////****************************Levy-Tsallis fit**********************************////
     TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
@@ -359,8 +359,8 @@ void plotReweightedSpectra_single()
     fitFcnf0->Draw("l same");
 
     // Create legend with physics information
-    TLegend *leg = new TLegend(0.53, 0.7, 0.9, 0.93); // to show only legend
-    // TLegend *leg = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
+    // TLegend *leg = new TLegend(0.53, 0.7, 0.9, 0.93); // to show only legend
+    TLegend *leg = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
     leg->AddEntry((TObject *)0, "ALICE", "");
     leg->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     leg->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
@@ -381,7 +381,8 @@ void plotReweightedSpectra_single()
     box->AddText(Form("n                        %.3f #pm %.3f", fitFcnf0->GetParameter(0), fitFcnf0->GetParError(0)));
     box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0->GetParameter(1), fitFcnf0->GetParError(1)));
     box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0->GetParameter(3), fitFcnf0->GetParError(3)));
-    // box->Draw();
+    box->Draw();
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FirstBinRemove.png").c_str());
     // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFitStatBox.png").c_str());
     // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFit.png").c_str());
     // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_reweightedFitValues.png").c_str());
@@ -413,8 +414,8 @@ void plotReweightedSpectra_single()
     fitFcnf2->Draw("l same");
 
     // Create legend with physics information
-    TLegend *leg2 = new TLegend(0.53, 0.7, 0.9, 0.93);
-    // TLegend *leg2 = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
+    // TLegend *leg2 = new TLegend(0.53, 0.7, 0.9, 0.93);
+    TLegend *leg2 = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
     leg2->AddEntry((TObject *)0, "ALICE", "");
     leg2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     leg2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
@@ -435,7 +436,8 @@ void plotReweightedSpectra_single()
     box2->AddText(Form("n                        %.3f #pm %.3f", fitFcnf2->GetParameter(0), fitFcnf2->GetParError(0)));
     box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2->GetParameter(1), fitFcnf2->GetParError(1)));
     box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2->GetParameter(3), fitFcnf2->GetParError(3)));
-    // box2->Draw();
+    box2->Draw();
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FirstBinRemove.png").c_str());
     // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFitStatbox.png").c_str());
     // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFit.png").c_str());
     // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_reweighted.png").c_str());
@@ -655,7 +657,7 @@ void plotReweightedSpectra_single()
     legend5->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend5->Draw();
-    cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweightedFullFit.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweightedFullFit.png").c_str());
     // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweighted.png").c_str());
 
     // // Similarly plot the dN/dy/(2J+1) as a function of particle mass

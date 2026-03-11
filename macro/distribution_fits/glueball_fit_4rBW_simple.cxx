@@ -56,9 +56,11 @@ void glueball_fit_4rBW_simple()
         // const string kvariation1 = "_FitExpoHERA"; // ( Uncomment if (ipt == 1) BEexpol->SetParLimits(9, 580, 3500);)
         // const string kvariation1 = "_ConstWidth"; // Unable to fit properly, specifically 1-2 GeV/c. Also relative uncertaintly is very large in the the yields.
         // const string kvariation1 = "_CoherentSum";
-        const string kvariation1 = "_temp";
         // const string kvariation1 = "_CoherentSumPhiPi";
+        // string kvariation1 = "BeforeCombinatorialSubtraction";
         // string VariationTempPlot = "Exponential_HERA";
+        const string kvariation1 = "Mix2";
+        // const string kvariation1 = "_temp";
 
         string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
@@ -81,8 +83,9 @@ void glueball_fit_4rBW_simple()
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
         TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPt.root").c_str(), "READ"); // for systematics
+        // TFile *f = new TFile((path + "/hglue_MIX_allPt.root").c_str(), "READ");
         // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_normleft.root").c_str(), "READ");
+        // TFile *ftemp = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
         double widths[] = {f1270Width, a1320Width, f1525Width, f1710Width};
@@ -99,8 +102,8 @@ void glueball_fit_4rBW_simple()
 #define residual_subtracted
 // #define doublepanelplot
 #define multiPanelPlots
-        // #define before_combinatorialPlots
         // #define singlePanelPlots
+        // #define before_combinatorialPlots
 
         TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
         if (hmult == nullptr)
@@ -114,8 +117,10 @@ void glueball_fit_4rBW_simple()
 #ifdef multiPanelPlots
         TCanvas *cMultiPanelFit = new TCanvas("cMultiPanelFit", "Multi-Panel Fit Results", 1440, 720);
         cMultiPanelFit->Divide(3, 2);
+#ifdef residual_subtracted
         TCanvas *cMultiPanelResidual = new TCanvas("cMultiPanelResidual", "Multi-Panel Residuals", 1440, 720);
         cMultiPanelResidual->Divide(3, 2);
+#endif
 #ifdef before_combinatorialPlots
         TCanvas *cMultiPanelWithBkg = new TCanvas("cMultiPanelWithBkg", "Multi-Panel Fit with Bkg Results", 1440, 720);
         cMultiPanelWithBkg->Divide(3, 2);
@@ -206,11 +211,20 @@ void glueball_fit_4rBW_simple()
 
                     cout << "Low fit range is " << fitlow << ", High fit range is " << fithigh << endl;
 
-                    TH1F *hinvMass = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    // TH1F *hinvMass = (TH1F *)f->Get(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpT, highpT));
-                    TH1F *hraw = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    // TH1F *hraw = (TH1F *)f->Get(Form("ksks_invmass_pt_%.1f_%.1f", lowpT, highpT));
-                    TH1F *hbkg = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_bkg_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                    TH1F *hinvMass, *hraw, *hbkg;
+                    // if (ipt == 0 || ipt == 1)
+                    // {
+                    //     hinvMass = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                    //     hraw = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                    //     hbkg = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_bkg_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                    // }
+                    // else
+                    {
+                        hinvMass = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                        hraw = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                        hbkg = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_bkg_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
+                    }
+
                     if (hinvMass == nullptr || hraw == nullptr || hbkg == nullptr)
                     {
                         cout << "Error opening histogram: " << Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT) << endl;
@@ -231,7 +245,7 @@ void glueball_fit_4rBW_simple()
                     gPad->SetLeftMargin(0.13);
                     gPad->SetRightMargin(0.05);
 #endif
-                    // if (ipt == 0)
+                    // if (ipt == Npt - 2 || ipt == Npt - 1)
                     //     hinvMass->Rebin(2);
 
                     double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
@@ -245,7 +259,7 @@ void glueball_fit_4rBW_simple()
                     // hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
 #ifdef multiPanelPlots
                     hinvMass->GetYaxis()->SetTitleOffset(1.15);
-                    hinvMass->SetMarkerSize(0.8);
+                    hinvMass->SetMarkerSize(1.0);
 #else
                     hinvMass->GetYaxis()->SetTitleOffset(1.35);
                     hinvMass->SetMarkerSize(1.3);
@@ -856,7 +870,7 @@ void glueball_fit_4rBW_simple()
                     hsubtracted->Draw();
                     onlyBW_clone->SetNpx(1000);
                     TFitResultPtr fitResultptr_res = hsubtracted->Fit("onlyBW_clone", "REBMSQ0");
-                    // onlyBW_clone->Draw("same");
+                    onlyBW_clone->Draw("same");
                     double *obtained_parameters2 = onlyBW_clone->GetParameters();
                     TLine *line = new TLine(BEexpol->GetXmin() + 0.01, 0, BEexpol->GetXmax() - 0.01, 0);
                     line->SetLineColor(1);
@@ -877,8 +891,8 @@ void glueball_fit_4rBW_simple()
                         singlefits1[i]->SetParameter(2, obtained_parameters2[3 * i + 2]);
                         singlefits1[i]->SetLineColor(colors[i]);
                         singlefits1[i]->SetLineStyle(2);
-                        if (i == 3)
-                            singlefits1[i]->Draw("same");
+                        // if (i == 3)
+                        singlefits1[i]->Draw("same");
                     }
 
                     TLegend *ltemp2 = new TLegend(0.20, 0.55, 0.42, 0.80);
@@ -899,11 +913,11 @@ void glueball_fit_4rBW_simple()
                     lVertical->SetLineColor(kRed);
                     lVertical->SetLineStyle(2);
                     lVertical->SetLineWidth(2);
-                    lVertical->Draw("same");
+                    // lVertical->Draw("same");
 #ifdef multiPanelPlots
                     lat2.SetTextSize(0.05);
-                    // if (ipt == 0)
-                    //     ltemp2->Draw("same");
+                    if (ipt == 0)
+                        ltemp2->Draw("same");
 #else
                     lat2.SetTextSize(0.03);
                     ltemp2->Draw("same");
@@ -1004,12 +1018,6 @@ void glueball_fit_4rBW_simple()
                     double yield1525Integral = singlefits[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
                     double yield1710Integral = singlefits[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
 
-                    // Yield calculation after residual background subtraction
-                    double yield1270Integral_res = singlefits1[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1320Integral_res = singlefits1[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1525Integral_res = singlefits1[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1710Integral_res = singlefits1[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
-
                     // Create individual covariance matrices for each resonance (3x3 each)
                     TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
                     TMatrixDSym cov1270(3), cov1320(3), cov1525(3), cov1710(3);
@@ -1017,14 +1025,6 @@ void glueball_fit_4rBW_simple()
                     cov.GetSub(3, 5, 3, 5, cov1320);   // a1320: parameters 3-5
                     cov.GetSub(6, 8, 6, 8, cov1525);   // f1525: parameters 6-8
                     cov.GetSub(9, 11, 9, 11, cov1710); // f1710: parameters 9-11
-
-                    // Individual covariance matrices after residual background subtraction
-                    TMatrixDSym cov_res = fitResultptr_res->GetCovarianceMatrix();
-                    TMatrixDSym cov1270_res(3), cov1320_res(3), cov1525_res(3), cov1710_res(3);
-                    cov_res.GetSub(0, 2, 0, 2, cov1270_res);   // f1270: parameters 0-2
-                    cov_res.GetSub(3, 5, 3, 5, cov1320_res);   // a1320: parameters 3-5
-                    cov_res.GetSub(6, 8, 6, 8, cov1525_res);   // f1525: parameters 6-8
-                    cov_res.GetSub(9, 11, 9, 11, cov1710_res); // f1710: parameters 9-11
 
                     // Covariance matrices for combined fits
                     Double_t *cov1270_array = cov1270.GetMatrixArray();
@@ -1037,17 +1037,6 @@ void glueball_fit_4rBW_simple()
                     Double_t *para1525 = singlefits[2]->GetParameters();
                     Double_t *para1710 = singlefits[3]->GetParameters();
 
-                    // Covariance matrices for residual background subtracted fits
-                    Double_t *cov1270_res_array = cov1270_res.GetMatrixArray();
-                    Double_t *cov1320_res_array = cov1320_res.GetMatrixArray();
-                    Double_t *cov1525_res_array = cov1525_res.GetMatrixArray();
-                    Double_t *cov1710_res_array = cov1710_res.GetMatrixArray();
-
-                    Double_t *para1270_res = singlefits1[0]->GetParameters();
-                    Double_t *para1320_res = singlefits1[1]->GetParameters();
-                    Double_t *para1525_res = singlefits1[2]->GetParameters();
-                    Double_t *para1710_res = singlefits1[3]->GetParameters();
-
                     // Errors propagation for yields using the covariance matrix
                     double yield1270_err = singlefits[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270, cov1270_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1320_err = singlefits[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320, cov1320_array) / (ptBinWidth * binwidthfile * total_events);
@@ -1059,11 +1048,38 @@ void glueball_fit_4rBW_simple()
                     cout << "Yield 1525: " << yield1525Integral << " +- " << yield1525_err << endl;
                     cout << "Yield 1710: " << yield1710Integral << " +- " << yield1710_err << endl;
 
+#ifdef residual_subtracted
+                    // Yield calculation after residual background subtraction
+                    double yield1270Integral_res = singlefits1[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1320Integral_res = singlefits1[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1525Integral_res = singlefits1[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1710Integral_res = singlefits1[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
+
+                    // Individual covariance matrices after residual background subtraction
+                    TMatrixDSym cov_res = fitResultptr_res->GetCovarianceMatrix();
+                    TMatrixDSym cov1270_res(3), cov1320_res(3), cov1525_res(3), cov1710_res(3);
+                    cov_res.GetSub(0, 2, 0, 2, cov1270_res);   // f1270: parameters 0-2
+                    cov_res.GetSub(3, 5, 3, 5, cov1320_res);   // a1320: parameters 3-5
+                    cov_res.GetSub(6, 8, 6, 8, cov1525_res);   // f1525: parameters 6-8
+                    cov_res.GetSub(9, 11, 9, 11, cov1710_res); // f1710: parameters 9-11
+
+                    // Covariance matrices for residual background subtracted fits
+                    Double_t *cov1270_res_array = cov1270_res.GetMatrixArray();
+                    Double_t *cov1320_res_array = cov1320_res.GetMatrixArray();
+                    Double_t *cov1525_res_array = cov1525_res.GetMatrixArray();
+                    Double_t *cov1710_res_array = cov1710_res.GetMatrixArray();
+
+                    Double_t *para1270_res = singlefits1[0]->GetParameters();
+                    Double_t *para1320_res = singlefits1[1]->GetParameters();
+                    Double_t *para1525_res = singlefits1[2]->GetParameters();
+                    Double_t *para1710_res = singlefits1[3]->GetParameters();
+
                     // Errors for residual background subtracted yields
                     double yield1270_res_err = singlefits1[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270_res, cov1270_res_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1320_res_err = singlefits1[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320_res, cov1320_res_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1525_res_err = singlefits1[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525_res, cov1525_res_array) / (ptBinWidth * binwidthfile * total_events);
                     double yield1710_res_err = singlefits1[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710_res, cov1710_res_array) / (ptBinWidth * binwidthfile * total_events);
+#endif
 
                     hChi2NDF->SetBinContent(ipt + 1, BEexpol->GetChisquare() / BEexpol->GetNDF());
                     hChi2NDF->SetBinError(ipt + 1, 0);
@@ -1087,9 +1103,10 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1270_err;
                             yield_temp = yield1270Integral;
                             yieldErr_temp = yield1270_err;
-
+#ifdef residual_subtracted
                             yield_res_temp = yield1270Integral_res;
                             yieldErr_res_temp = yield1270_res_err;
+#endif
                         }
                         else if (ires == 1)
                         {
@@ -1099,9 +1116,10 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1320_err;
                             yield_temp = yield1320Integral;
                             yieldErr_temp = yield1320_err;
-
+#ifdef residual_subtracted
                             yield_res_temp = yield1320Integral_res;
                             yieldErr_res_temp = yield1320_res_err;
+#endif
                         }
                         else if (ires == 2)
                         {
@@ -1111,9 +1129,10 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1525_err;
                             yield_temp = yield1525Integral;
                             yieldErr_temp = yield1525_err;
-
+#ifdef residual_subtracted
                             yield_res_temp = yield1525Integral_res;
                             yieldErr_res_temp = yield1525_res_err;
+#endif
                         }
                         else
                         {
@@ -1123,9 +1142,10 @@ void glueball_fit_4rBW_simple()
                             widthErr_temp = fitwidth1710_err;
                             yield_temp = yield1710Integral;
                             yieldErr_temp = yield1710_err;
-
+#ifdef residual_subtracted
                             yield_res_temp = yield1710Integral_res;
                             yieldErr_res_temp = yield1710_res_err;
+#endif
                         }
 
                         hMass[ires]->SetBinContent(ipt + 1, mass_temp);
@@ -1135,11 +1155,13 @@ void glueball_fit_4rBW_simple()
                         hYield[ires]->SetBinContent(ipt + 1, yield_temp);
                         hYield[ires]->SetBinError(ipt + 1, yieldErr_temp);
 
-                        // For residual background subtracted results
+// For residual background subtracted results
+#ifdef residual_subtracted
                         hMass_res[ires]->SetBinContent(ipt + 1, onlyBW_clone->GetParameter(3 * ires + 1));
                         hMass_res[ires]->SetBinError(ipt + 1, onlyBW_clone->GetParError(3 * ires + 1));
                         hYield_res[ires]->SetBinContent(ipt + 1, yield_res_temp);
                         hYield_res[ires]->SetBinError(ipt + 1, yieldErr_res_temp);
+#endif
                     }
 
 #ifdef doublepanelplot
@@ -1169,7 +1191,7 @@ void glueball_fit_4rBW_simple()
                     hinvMass->SetStats(0);
                     // hinvMass->SetMinimum(-40000);
                     // hinvMass->SetMinimum(-10000);
-                    hinvMass->SetMinimum(-4000);
+                    hinvMass->SetMinimum(-8000);
                     // hinvMass->SetMaximum(0.9e6);
                     hinvMass->SetMaximum(hinvMass->GetMaximum() * 0.9);
                     hinvMass->GetYaxis()->SetMaxDigits(4);
@@ -1226,7 +1248,7 @@ void glueball_fit_4rBW_simple()
                     leg->SetBorderSize(0);
                     // leg->SetHeader("ALICE Performance");
                     leg->AddEntry(hinvMass, "Data (stat. uncert.)", "p");
-                    leg->AddEntry(BEexpol, "4 BW + Res. Bkg", "l");
+                    leg->AddEntry(BEexpol, "4 rBW + Res. Bkg", "l");
                     leg->AddEntry(expol, "Res. Bkg", "l");
                     leg->AddEntry(onlyBW, "Signal", "f");
                     leg->Draw("same");
@@ -1257,14 +1279,15 @@ void glueball_fit_4rBW_simple()
                     hsubtracted->GetYaxis()->SetNdivisions(505);
                     hsubtracted->GetXaxis()->SetRangeUser(1.05, 2.15);
                     hsubtracted->SetStats(0);
-                    hsubtracted->SetMinimum(0);
+                    hsubtracted->SetMinimum(-10);
                     // hsubtracted->SetMaximum(0.13e6);
                     hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 0.62);
                     // hsubtracted->SetMaximum(hsubtracted->GetMaximum() * 0.67);
-                    hsubtracted->SetMarkerSize(1.05);
+                    hsubtracted->SetMarkerSize(1.3);
                     // hsubtracted->GetYaxis()->SetMaxDigits(10);
                     hsubtracted->SetMarkerStyle(53);
                     hsubtracted->Draw("pe");
+                    onlyBW_clone->Draw("same");
 
                     TLatex lat6;
                     lat6.SetNDC();
@@ -1293,7 +1316,7 @@ void glueball_fit_4rBW_simple()
                     text5->Draw("same");
 
                     int linestyles[4] = {2, 2, 2, 7};
-                    int linewidths[] = {2, 2, 2, 3};
+                    int linewidths[] = {2, 2, 3, 3};
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -1383,7 +1406,9 @@ void glueball_fit_4rBW_simple()
                 hYield_res[ires]->Write(Form("hYield_res_%s", resonance_mass[ires].c_str()));
             }
 #ifdef multiPanelPlots
+#ifdef residual_subtracted
             cMultiPanelResidual->SaveAs((path2 + Form("/rBWfit_residuals_multpanel%s.png", kvariation1.c_str())).c_str());
+#endif
             cMultiPanelFit->SaveAs((path2 + Form("/rBWfit_fits_multpanel%s.png", kvariation1.c_str())).c_str());
 #ifdef before_combinatorialPlots
             cMultiPanelWithBkg->SaveAs((path2 + Form("/rBWfit_withbkg_multpanel_%s.png", kvariation1.c_str())).c_str());

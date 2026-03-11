@@ -49,8 +49,10 @@ void compare_meanpt()
     TFile *fSpectraToy = new TFile((path + "mult_0-100/Spectra/spectra_ToyMC2.root").c_str(), "read");
     TFile *fSingleBWf2 = new TFile((path + "f2_fit_1rBW.root").c_str(), "read");
 
-    TFile *fReweightf0_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_DefaultWithoutSigLoss.root").c_str(), "read");
-    TFile *fReweightf2_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_DefaultWithoutSigLoss.root").c_str(), "read");
+    // TFile *fReweightf0_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_DefaultWithoutSigLoss.root").c_str(), "read");
+    // TFile *fReweightf2_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_DefaultWithoutSigLoss.root").c_str(), "read");
+    TFile *fReweightf0_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Mix2.root").c_str(), "read");
+    TFile *fReweightf2_var = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Mix2.root").c_str(), "read");
 
     if (fReweightf0->IsZombie() || fReweightf2->IsZombie() || fSpectraToy->IsZombie())
     {
@@ -85,11 +87,11 @@ void compare_meanpt()
     int maxIndexReweightedf0_var = FindHighestIndex(fReweightf0_var, "Genf17102_proj_1_");
     int maxIndexReweightedf2_var = FindHighestIndex(fReweightf2_var, "Genf17102_proj_1_");
 
-    // // For comparison of with/without signal loss corrections
+    // // For comparison of with/without signal loss corrections or comparison with mixed-event
     // TH1F *hYieldToyf0 = (TH1F *)fReweightf0_var->Get(Form("hYield1710Corrected_%s", ("i" + to_string(maxIndexReweightedf0_var)).c_str()));
     // TH1F *hYieldToyf2 = (TH1F *)fReweightf2_var->Get(Form("hYield1525Corrected_%s", ("i" + to_string(maxIndexReweightedf2_var)).c_str()));
 
-    //// For toy model comparison
+    // // For toy model comparison
     // TH1F *hYieldToyf0 = (TH1F *)fSpectraToy->Get("hYield1710Corrected");
     // TH1F *hYieldToyf2 = (TH1F *)fSpectraToy->Get("hYield1525Corrected");
 
@@ -184,8 +186,12 @@ void compare_meanpt()
     // legf2->AddEntry(hYieldToyf2, "f_{2}(1525) (Toy model)", "p");
     // legf2->Draw();
 
-    legf2->AddEntry(hYieldDefaultClonef2, "Default", "p");
-    legf2->AddEntry(hYieldToyf2, "Single BW Fit", "p");
+    // legf2->AddEntry(hYieldDefaultClonef2, "Default", "p");
+    // legf2->AddEntry(hYieldToyf2, "Single BW Fit", "p");
+    // legf2->Draw();
+
+    legf2->AddEntry(hYieldDefaultClonef2, "Rotational", "p");
+    legf2->AddEntry(hYieldToyf2, "Mixed-event", "p");
     legf2->Draw();
 
     cSpectraf2->cd(2);
@@ -194,7 +200,8 @@ void compare_meanpt()
     SetHistoQA(hRatiof2);
     // hRatiof2->GetYaxis()->SetTitle("MC/Toy model");
     // hRatiof2->GetYaxis()->SetTitle("Default/NoSigLoss");
-    hRatiof2->GetYaxis()->SetTitle("Default/1rBW Fit");
+    // hRatiof2->GetYaxis()->SetTitle("Default/1rBW Fit");
+    hRatiof2->GetYaxis()->SetTitle("Rotational/ME");
     hRatiof2->GetYaxis()->SetTitleSize(0.033 / pad2Size);
     hRatiof2->GetYaxis()->SetLabelSize(0.035 / pad2Size);
     hRatiof2->GetXaxis()->SetLabelSize(0.035 / pad2Size);
@@ -247,10 +254,15 @@ void compare_meanpt()
     legf0->SetTextSize(0.055);
     legf0->SetTextFont(42);
     legf0->SetHeader("f_{0}(1710) spectra");
+
     // legf0->AddEntry(hYieldf0DefaultClone, "f_{0}(1710) (MC)", "p");
     // legf0->AddEntry(hYieldToyf0, "f_{0}(1710) (Toy model)", "p");
-    legf0->AddEntry(hYieldf0DefaultClone, "Without Signal Loss", "p");
-    legf0->AddEntry(hYieldToyf0, "With Signal Loss", "p");
+
+    // legf0->AddEntry(hYieldf0DefaultClone, "Without Signal Loss", "p");
+    // legf0->AddEntry(hYieldToyf0, "With Signal Loss", "p");
+
+    legf0->AddEntry(hYieldf0DefaultClone, "Rotational", "p");
+    legf0->AddEntry(hYieldToyf0, "Mixed-event", "p");
     legf0->Draw();
 
     cSpectraf0->cd(2);
@@ -258,7 +270,8 @@ void compare_meanpt()
     hRatiof0->Divide(hYieldToyf0);
     SetHistoQA(hRatiof0);
     // hRatiof0->GetYaxis()->SetTitle("MC/Toy model");
-    hRatiof0->GetYaxis()->SetTitle("Default/NoSigLoss");
+    // hRatiof0->GetYaxis()->SetTitle("Default/NoSigLoss");
+    hRatiof0->GetYaxis()->SetTitle("Rotational/ME");
     hRatiof0->GetYaxis()->SetTitleSize(0.033 / pad2Size);
     hRatiof0->GetYaxis()->SetLabelSize(0.035 / pad2Size);
     hRatiof0->GetXaxis()->SetLabelSize(0.035 / pad2Size);
@@ -277,7 +290,10 @@ void compare_meanpt()
     lineRatiof0->SetLineColor(kBlack);
     lineRatiof0->Draw();
 
-    cSpectraf2->SaveAs((savePath + "/plots/SpectraCompare1rBWFit_f2.png").c_str());
+    // cSpectraf2->SaveAs((savePath + "/plots/SpectraCompare1rBWFit_f2.png").c_str());
+
+    // cSpectraf0->SaveAs((savePath + "/plots/SpectraCompareMix_f0.png").c_str());
+    // cSpectraf2->SaveAs((savePath + "/plots/SpectraCompareMix_f2.png").c_str());
 
     // cSpectraf0->SaveAs((savePath + "/plots/SpectraCompareSigLoss_f0.png").c_str());
     // cSpectraf2->SaveAs((savePath + "/plots/SpectraCompareSigLoss_f2.png").c_str());
@@ -328,8 +344,8 @@ void compare_meanpt()
     hf23->Sumw2();
     hf24->Sumw2();
 
-    double relUncertLowpTExtrapolationf2 = 11.0711 / 100;
-    double relUncertLowpTExtrapolationf0 = 7.24382 / 100;
+    double relUncertLowpTExtrapolationf2 = 0.16;
+    double relUncertLowpTExtrapolationf0 = 0.11;
 
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -516,7 +532,7 @@ void compare_meanpt()
     double f2_Staterr = houtf2->GetBinContent(6);
     double f2_SysErr = sqrt(houtf2->GetBinContent(7) * houtf2->GetBinContent(7) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
     // double f2_SysErrLow = sqrt(houtf2->GetBinContent(8) * houtf2->GetBinContent(8) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
-    cout << "Mean pT of f2(1525) is " << f2_meanpt << " stat error " << f2_Staterr << " sys error " << f2_SysErr << endl;
+    cout << "Default <pT> of f2(1525) is " << f2_meanpt << " stat error " << f2_Staterr << " sys error " << f2_SysErr << endl;
     int f2_marker = 20;        // choose a unique marker style for f2(1525)
     int f2_color = kGreen + 1; // choose a unique color for f2(1525)
     TGraphErrors *graph_f2 = new TGraphErrors(1);
@@ -536,7 +552,7 @@ void compare_meanpt()
     graph_f2_sys->SetLineColor(f2_color);
     graph_f2_sys->SetLineWidth(2);
     graph_f2_sys->SetFillStyle(0);
-    // graph_f2_sys->Draw("2 SAME");
+    graph_f2_sys->Draw("2 SAME");
 
     // Draw for <pT> of f0(1710) for variation case
     /// For toy model
@@ -546,12 +562,12 @@ void compare_meanpt()
     // double f2_syserrHigh_noextrapol = houtf2_noextrapol->GetBinContent(8);
 
     // // Directly giving the values
-    // double f2_meanpt_noextrapol = 1.636;
-    // double f2_staterr_noextrapol = 0.043;
-    // double f2_syserr_noextrapol = 0.062;
-    // // double f2_syserrLow_noextrapol = 0.033;
+    // double f2_meanpt_noextrapol = 1.46781; // 1.636
+    // double f2_staterr_noextrapol = 0.0746837; // 0.043
+    // double f2_syserr_noextrapol = 0.0780727; // 0.062
+    // // double f2_syserrLow_noextrapol = 0.033; // 0.033
 
-    cout << "f2(1525) mean pT in variation is " << f2_meanpt_noextrapol << endl;
+    cout << "Variation <pT> of f2(1525) is " << f2_meanpt_noextrapol << endl;
     TGraphErrors *graph_f2_noextrapol = new TGraphErrors(1);
     graph_f2_noextrapol->SetPoint(0, f2_mass, f2_meanpt_noextrapol);
     graph_f2_noextrapol->SetPointError(0, 0, f2_staterr_noextrapol);
@@ -576,7 +592,7 @@ void compare_meanpt()
     double f0_Staterr = houtf0->GetBinContent(6);
     double f0_SysErr = sqrt(houtf0->GetBinContent(7) * houtf0->GetBinContent(7) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
     // double f0_SysErrLow = sqrt(houtf0->GetBinContent(8) * houtf0->GetBinContent(8) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
-    cout << "Mean pT of f0(1710) is " << f0_meanpt << " stat error " << f0_Staterr << " Sys " << f0_SysErr << endl;
+    cout << "Default <pT> of f0(1710) is " << f0_meanpt << " stat error " << f0_Staterr << " Sys " << f0_SysErr << endl;
 
     double SigmaDeviationMeson = fabs(meanPt_f0_fromFit_meson - f0_meanpt) / sqrt(f0_SysErr * f0_SysErr + f0_Staterr * f0_Staterr);
     double SigmaDeviationBaryon = fabs(meanPt_f0_fromFit_baryon - f0_meanpt) / sqrt(f0_SysErr * f0_SysErr + f0_Staterr * f0_Staterr);
@@ -599,7 +615,7 @@ void compare_meanpt()
     graph_f0_sys->SetLineColor(f0_color);
     graph_f0_sys->SetLineWidth(2);
     graph_f0_sys->SetFillStyle(0);
-    // graph_f0_sys->Draw("2 SAME");
+    graph_f0_sys->Draw("2 SAME");
 
     //// Draw for <pT> for f0(1710) for the variation case
     double f0_meanpt_noextrapol = houtf0_noextrapol->GetBinContent(5);
@@ -607,12 +623,14 @@ void compare_meanpt()
     double f0_syserr_noextrapol = houtf0_noextrapol->GetBinContent(7);
     // double f0_syserrLow_noextrapol = houtf0_noextrapol->GetBinContent(8);
 
-    // double f0_meanpt_noextrapol = 2.336;
-    // double f0_staterr_noextrapol = 0.105;
-    // double f0_syserr_noextrapol = 0.169;
-    // double f0_syserrLow_noextrapol = 0.104;
-    cout << "f0(1710) mean pT in variation is " << f0_meanpt_noextrapol << endl;
+    // // // Directly giving the values
+    // double f0_meanpt_noextrapol = 2.20885; // 2.336
+    // double f0_staterr_noextrapol = 0.13728; // 0.105
+    // double f0_syserr_noextrapol = 0.152281; // 0.169
+    // // double f0_syserrLow_noextrapol = 0.104; // 0.104
 
+    cout << "Variation <pT> of f0(1710) is " << f0_meanpt_noextrapol << endl;
+    cout << "Relative change in <pT> for f2(1525 is " << (f2_meanpt_noextrapol - f2_meanpt) / f2_meanpt * 100 << " % " << ", for f0(1710) is " << (f0_meanpt_noextrapol - f0_meanpt) / f0_meanpt * 100 << " % " << endl;
     TGraphErrors *graph_f0_noextrapol = new TGraphErrors(1);
     graph_f0_noextrapol->SetPoint(0, f0_mass, f0_meanpt_noextrapol);
     graph_f0_noextrapol->SetPointError(0, 0, f0_staterr_noextrapol);
@@ -621,7 +639,7 @@ void compare_meanpt()
     graph_f0_noextrapol->SetMarkerSize(1.7);
     graph_f0_noextrapol->SetLineColor(kCyan + 1);
     graph_f0_noextrapol->SetLineWidth(2);
-    // graph_f0_noextrapol->Draw("P SAME"); // Commented for 1rBW f2 fit comparison
+    graph_f0_noextrapol->Draw("P SAME"); // Commented for 1rBW f2 fit comparison
     TGraphAsymmErrors *graph_f0_sys_noextrapol = new TGraphAsymmErrors(1);
     graph_f0_sys_noextrapol->SetPoint(0, f0_mass, f0_meanpt_noextrapol);
     graph_f0_sys_noextrapol->SetPointError(0, 0.02, 0.02, f0_syserr_noextrapol, f0_syserr_noextrapol);
@@ -669,10 +687,26 @@ void compare_meanpt()
     // legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Toy Model)", "p");
     // legend4->Draw();
 
-    //// For comparison with 1rBW fit to f2(1525)
-    legend4->AddEntry(graph_f2, "f'_{2}(1525) (Default)", "p");
-    legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (1rBW Fit)", "p");
-    legend4->AddEntry(graph_f0, "f_{0}(1710) (Default)", "p");
+    // //// For comparison with 1rBW fit to f2(1525)
+    // legend4->AddEntry(graph_f2, "f'_{2}(1525) (Default)", "p");
+    // legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (1rBW Fit)", "p");
+    // legend4->AddEntry(graph_f0, "f_{0}(1710) (Default)", "p");
+    // legend4->Draw();
+
+    // // For comparison after removing first bin (2-3 GeV/c) from the spectra
+    // legend4->AddEntry(graph_f2, "f'_{2}(1525) (Default)", "p");
+    // // legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (Without first p_{T} bin)", "p");
+    // legend4->AddEntry(graph_f0, "f_{0}(1710) (Default)", "p");
+    // legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Without first p_{T} bin)", "p");
+    // legend4->AddEntry(pol1_meson, "Pol 1", "l");
+    // legend4->Draw();
+
+    // For comparison of rotational and mixed-event background subtraction methods
+    legend4->AddEntry(graph_f2, "f'_{2}(1525) (Rotational)", "p");
+    legend4->AddEntry(graph_f2_noextrapol, "f'_{2}(1525) (Mixed-Event)", "p");
+    legend4->AddEntry(graph_f0, "f_{0}(1710) (Rotational)", "p");
+    legend4->AddEntry(graph_f0_noextrapol, "f_{0}(1710) (Mixed-Event)", "p");
+    legend4->AddEntry(pol1_meson, "Pol 1", "l");
     legend4->Draw();
 
     //// For comparison with and without extrapolation
@@ -698,7 +732,9 @@ void compare_meanpt()
     legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legend5->Draw();
 
-    cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_1rBWFit_f2.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_Mix.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_WoFirstptBin.png").c_str());
+    // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_1rBWFit_f2.png").c_str());
     // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_SigLoss.png").c_str());
     // cMeanPt->SaveAs((savePath + "/plots/MeanPt_compare_extrapol.png").c_str());
     // cMeanPt->SaveAs((savePath + "/plots/MeanPtVsMass_ReweightingCompare.png").c_str());
@@ -928,82 +964,82 @@ void compare_meanpt()
     // graph_k1->Draw("AP");
     // pol1_k1->Draw("SAME");
 
-    TCanvas *cCorrectedFitf0Toy = new TCanvas("cCorrectedFitf0Toy", "Corrected Fit f0(1710) Toy", 720, 720);
-    SetCanvasStyle(cCorrectedFitf0Toy, 0.14, 0.03, 0.05, 0.14);
-    gPad->SetLogy();
-    hf03->SetMarkerStyle(24);
-    hf03->SetMarkerColor(kBlue);
-    hf03->SetLineColor(kBlue);
-    hf03->SetMarkerSize(1.6);
-    hf03->SetMaximum(9e-4);
-    hf03->SetMinimum(3e-8);
-    hf03->Draw("E1");
-    fitFcnf0_2->SetLineColor(kRed);
-    fitFcnf0_2->SetLineWidth(2);
-    fitFcnf0_2->Draw("SAME");
-    TLegend *legend6 = new TLegend(0.19, 0.25, 0.4, 0.5);
-    legend6->SetBorderSize(0);
-    legend6->SetFillStyle(0);
-    legend6->SetTextSize(0.032);
-    // legend6->AddEntry((TObject *)0, "ALICE", "");
-    legend6->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    legend6->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    // legend6->AddEntry(hf03, "f_{0}(1710) (Toy Model)", "p");
-    legend6->AddEntry(hf03, "f_{0}(1710) (1rBW Fit)", "p");
-    legend6->AddEntry(fitFcnf0_2, "Levy-Tsallis fit", "l");
-    legend6->Draw();
+    // TCanvas *cCorrectedFitf0Toy = new TCanvas("cCorrectedFitf0Toy", "Corrected Fit f0(1710) Toy", 720, 720);
+    // SetCanvasStyle(cCorrectedFitf0Toy, 0.14, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    // hf03->SetMarkerStyle(24);
+    // hf03->SetMarkerColor(kBlue);
+    // hf03->SetLineColor(kBlue);
+    // hf03->SetMarkerSize(1.6);
+    // hf03->SetMaximum(9e-4);
+    // hf03->SetMinimum(3e-8);
+    // hf03->Draw("E1");
+    // fitFcnf0_2->SetLineColor(kRed);
+    // fitFcnf0_2->SetLineWidth(2);
+    // fitFcnf0_2->Draw("SAME");
+    // TLegend *legend6 = new TLegend(0.19, 0.25, 0.4, 0.5);
+    // legend6->SetBorderSize(0);
+    // legend6->SetFillStyle(0);
+    // legend6->SetTextSize(0.032);
+    // // legend6->AddEntry((TObject *)0, "ALICE", "");
+    // legend6->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    // legend6->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    // // legend6->AddEntry(hf03, "f_{0}(1710) (Toy Model)", "p");
+    // legend6->AddEntry(hf03, "f_{0}(1710) (1rBW Fit)", "p");
+    // legend6->AddEntry(fitFcnf0_2, "Levy-Tsallis fit", "l");
+    // legend6->Draw();
 
-    TPaveText *box = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
-    box->SetFillColor(0); // white background
-    box->SetBorderSize(1);
-    box->SetTextAlign(12); // left align
-    box->SetTextSize(0.03);
-    box->SetTextFont(42);
-    box->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf0_2->GetChisquare(), fitFcnf0_2->GetNDF()));
-    box->AddText(Form("n                        %.3f #pm %.3f", fitFcnf0_2->GetParameter(0), fitFcnf0_2->GetParError(0)));
-    box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0_2->GetParameter(1), fitFcnf0_2->GetParError(1)));
-    box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0_2->GetParameter(3), fitFcnf0_2->GetParError(3)));
-    box->Draw();
-    // cCorrectedFitf0Toy->SaveAs((savePath + "/plots/CorrectedFit_f0Toy.png").c_str());
+    // TPaveText *box = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
+    // box->SetFillColor(0); // white background
+    // box->SetBorderSize(1);
+    // box->SetTextAlign(12); // left align
+    // box->SetTextSize(0.03);
+    // box->SetTextFont(42);
+    // box->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf0_2->GetChisquare(), fitFcnf0_2->GetNDF()));
+    // box->AddText(Form("n                        %.3f #pm %.3f", fitFcnf0_2->GetParameter(0), fitFcnf0_2->GetParError(0)));
+    // box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0_2->GetParameter(1), fitFcnf0_2->GetParError(1)));
+    // box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0_2->GetParameter(3), fitFcnf0_2->GetParError(3)));
+    // box->Draw();
+    // // cCorrectedFitf0Toy->SaveAs((savePath + "/plots/CorrectedFit_f0Toy.png").c_str());
 
-    TCanvas *cCorrectedFitf2Toy = new TCanvas("cCorrectedFitf2Toy", "Corrected Fit f2(1525) Toy", 720, 720);
-    SetCanvasStyle(cCorrectedFitf2Toy, 0.14, 0.03, 0.05, 0.14);
-    gPad->SetLogy();
-    hf23->SetMarkerStyle(24);
-    hf23->SetMarkerColor(kBlue);
-    hf23->SetLineColor(kBlue);
-    hf23->SetMarkerSize(1.6);
-    hf23->SetMaximum(9e-2);
-    hf23->SetMinimum(7e-8);
-    hf23->Draw("E1");
-    fitFcnf2_2->SetLineColor(kRed);
-    fitFcnf2_2->SetLineWidth(2);
-    fitFcnf2_2->Draw("SAME");
-    TLegend *legend7 = new TLegend(0.19, 0.25, 0.4, 0.5);
-    legend7->SetBorderSize(0);
-    legend7->SetFillStyle(0);
-    legend7->SetTextSize(0.032);
-    // legend7->AddEntry((TObject *)0, "ALICE", "");
-    legend7->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    legend7->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    legend7->AddEntry(hf23, "f'_{2}(1525) (1rBW Fit)", "p");
-    // legend7->AddEntry(hf23, "f'_{2}(1525) (Toy Model)", "p");
-    legend7->AddEntry(fitFcnf2_2, "Levy-Tsallis fit", "l");
-    legend7->Draw();
+    // TCanvas *cCorrectedFitf2Toy = new TCanvas("cCorrectedFitf2Toy", "Corrected Fit f2(1525) Toy", 720, 720);
+    // SetCanvasStyle(cCorrectedFitf2Toy, 0.14, 0.03, 0.05, 0.14);
+    // gPad->SetLogy();
+    // hf23->SetMarkerStyle(24);
+    // hf23->SetMarkerColor(kBlue);
+    // hf23->SetLineColor(kBlue);
+    // hf23->SetMarkerSize(1.6);
+    // hf23->SetMaximum(9e-2);
+    // hf23->SetMinimum(7e-8);
+    // hf23->Draw("E1");
+    // fitFcnf2_2->SetLineColor(kRed);
+    // fitFcnf2_2->SetLineWidth(2);
+    // fitFcnf2_2->Draw("SAME");
+    // TLegend *legend7 = new TLegend(0.19, 0.25, 0.4, 0.5);
+    // legend7->SetBorderSize(0);
+    // legend7->SetFillStyle(0);
+    // legend7->SetTextSize(0.032);
+    // // legend7->AddEntry((TObject *)0, "ALICE", "");
+    // legend7->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    // legend7->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    // legend7->AddEntry(hf23, "f'_{2}(1525) (1rBW Fit)", "p");
+    // // legend7->AddEntry(hf23, "f'_{2}(1525) (Toy Model)", "p");
+    // legend7->AddEntry(fitFcnf2_2, "Levy-Tsallis fit", "l");
+    // legend7->Draw();
 
-    TPaveText *box2 = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
-    box2->SetFillColor(0); // white background
-    box2->SetBorderSize(1);
-    box2->SetTextAlign(12); // left align
-    box2->SetTextSize(0.03);
-    box2->SetTextFont(42);
-    box2->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf2_2->GetChisquare(), fitFcnf2_2->GetNDF()));
-    box2->AddText(Form("n                        %.3f #pm %.3f", fitFcnf2_2->GetParameter(0), fitFcnf2_2->GetParError(0)));
-    box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2_2->GetParameter(1), fitFcnf2_2->GetParError(1)));
-    box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2_2->GetParameter(3), fitFcnf2_2->GetParError(3)));
-    box2->Draw();
-    cCorrectedFitf2Toy->SaveAs((savePath + "/plots/CorrectedFit_f21rBWFit.png").c_str());
-    // cCorrectedFitf2Toy->SaveAs((savePath + "/plots/CorrectedFit_f2Toy.png").c_str());
+    // TPaveText *box2 = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
+    // box2->SetFillColor(0); // white background
+    // box2->SetBorderSize(1);
+    // box2->SetTextAlign(12); // left align
+    // box2->SetTextSize(0.03);
+    // box2->SetTextFont(42);
+    // box2->AddText(Form("#chi^{2} / ndf                      %.3f / %d", fitFcnf2_2->GetChisquare(), fitFcnf2_2->GetNDF()));
+    // box2->AddText(Form("n                        %.3f #pm %.3f", fitFcnf2_2->GetParameter(0), fitFcnf2_2->GetParError(0)));
+    // box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2_2->GetParameter(1), fitFcnf2_2->GetParError(1)));
+    // box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2_2->GetParameter(3), fitFcnf2_2->GetParError(3)));
+    // box2->Draw();
+    // // cCorrectedFitf2Toy->SaveAs((savePath + "/plots/CorrectedFit_f21rBWFit.png").c_str());
+    // // cCorrectedFitf2Toy->SaveAs((savePath + "/plots/CorrectedFit_f2Toy.png").c_str());
 
     /*
     TCanvas *cCorrectedFitf0Default = new TCanvas("cCorrectedFitf0Default", "Corrected Fit f0(1710) Toy", 720, 720);

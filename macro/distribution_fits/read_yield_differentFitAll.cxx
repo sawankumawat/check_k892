@@ -26,8 +26,10 @@ void read_yield_differentFitAll()
 {
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
-    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
-    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default4.root").c_str(), "read");
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_FirstBinRemove2.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_FirstBinRemove2.root").c_str(), "read");
+    // TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
+    // TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default4.root").c_str(), "read");
 
     if (fReweightf0->IsZombie() || fReweightf2->IsZombie())
     {
@@ -120,25 +122,25 @@ void read_yield_differentFitAll()
     Option_t *opt = "RIQ0+";
     // Option_t *opt = "REBMSQ0+";
     TString logfilename = "log.root";
-    Double_t minfit = 1.0;
+    Double_t minfit = 2.0;
     // Double_t maxfit = 5.0;
-    Double_t maxfit = 15.0;
+    Double_t maxfit = 7.0;
 
     // Fit parameters for Levy
     Double_t min2 = 0.0;
     Double_t max2 = 15.0;
     Option_t *opt2 = "RIQ0+";
     // Option_t *opt2 = "REBMSQ0+";
-    Double_t minfit2 = 1.0;
+    Double_t minfit2 = 2.0;
     Double_t maxfit2 = 15.0;
 
     // Fit parameters for Exponential
     Double_t minExp = 0.0;
     Double_t maxExp = 15.0;
     // Double_t maxExp = 10.0;
-    Double_t minfitExp = 1.0;
+    Double_t minfitExp = 2.0;
     // Double_t maxfitExp = 7.0;
-    Double_t maxfitExp = 15.0;
+    Double_t maxfitExp = 10.0;
 
     //====================================Levy-Tsallis Fit==========================================
     TF1 *fitLevyf2 = new TF1("fitLevyf2", FuncLavy, 0.0, 15.0, 4);
@@ -178,7 +180,7 @@ void read_yield_differentFitAll()
 
     //====================================Boltzmann Fit==========================================
     // TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 15.0, 3);
+    TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
     fitBoltzmannf2->SetParameter(0, 0.01);
     fitBoltzmannf2->SetParameter(1, 0.5);
     fitBoltzmannf2->FixParameter(2, 1.525);
@@ -187,7 +189,7 @@ void read_yield_differentFitAll()
     TH1 *houtBoltf2 = YieldMean(hf21, hf22, fitBoltzmannf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     // TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 15.0, 3);
+    TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
     fitBoltzmannf0->SetParameter(0, 0.1);
     fitBoltzmannf0->SetParameter(1, 0.5);
     fitBoltzmannf0->FixParameter(2, 1.710);
@@ -197,22 +199,22 @@ void read_yield_differentFitAll()
 
     //====================================Exponential Fit==========================================
     // TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 15.0, 2);
+    TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
     fitExpf2->SetParameter(0, 0.1);
     fitExpf2->SetParameter(1, 0.5);
     fitExpf2->SetParNames("norm", "T");
     // hf21->Fit(fitExpf2, opt, "", minfit, maxfit);
     TH1 *houtExpo2 = YieldMean(hf21, hf22, fitExpf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
-    cout << "Norm and T for f2 "<< fitExpf2->GetParameter(0) << " " << fitExpf2->GetParameter(1) << endl;
+    cout << "Norm and T for f2 " << fitExpf2->GetParameter(0) << " " << fitExpf2->GetParameter(1) << endl;
 
     // TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 15.0, 2);
+    TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
     fitExpf0->SetParameter(0, 0.008);
     fitExpf0->SetParameter(1, 1.04);
     fitExpf0->SetParNames("norm", "T");
     // hf01->Fit(fitExpf0, opt, "", minfitExp, maxfitExp);
     TH1 *houtExpof0 = YieldMean(hf01, hf02, fitExpf0, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
-    cout << "Norm and T for f0 "<< fitExpf0->GetParameter(0) << " " << fitExpf0->GetParameter(1) << endl;
+    cout << "Norm and T for f0 " << fitExpf0->GetParameter(0) << " " << fitExpf0->GetParameter(1) << endl;
 
     // // //====================================mT Exponential Fit==========================================
     // // TF1 *fitMTExpf2 = new TF1("fitMTExpf2", FuncMTExpdNdptTimesPt, 0.0, 10.0, 3);
@@ -230,7 +232,7 @@ void read_yield_differentFitAll()
 
     //====================================Bose-Einstein Fit==========================================
     // TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 15.0, 3);
+    TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
     fitBoseEinsteinf2->SetParameter(0, 0.5);
     fitBoseEinsteinf2->SetParameter(1, 0.5);
     fitBoseEinsteinf2->FixParameter(2, 1.525);
@@ -239,7 +241,7 @@ void read_yield_differentFitAll()
     TH1 *houtBEf2 = YieldMean(hf21, hf22, fitBoseEinsteinf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     // TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 15.0, 3);
+    TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
     fitBoseEinsteinf0->SetParameter(0, 0.5);
     fitBoseEinsteinf0->SetParameter(1, 0.5);
     fitBoseEinsteinf0->FixParameter(2, 1.710);
@@ -293,31 +295,31 @@ void read_yield_differentFitAll()
     fitLevyf2->SetLineWidth(2);
     fitLevyf2->Draw("same");
 
-    // Show fit of reduced range Levy fit
-    fitLevyf2_fitReduced->SetLineColor(kBlue);
-    fitLevyf2_fitReduced->SetLineStyle(2);
-    fitLevyf2_fitReduced->SetLineWidth(3);
-    fitLevyf2_fitReduced->Draw("same");
+    // // Show fit of reduced range Levy fit
+    // fitLevyf2_fitReduced->SetLineColor(kBlue);
+    // fitLevyf2_fitReduced->SetLineStyle(2);
+    // fitLevyf2_fitReduced->SetLineWidth(3);
+    // fitLevyf2_fitReduced->Draw("same");
 
-    // fitBoltzmannf2->SetLineColor(kBlue);
-    // fitBoltzmannf2->SetLineWidth(2);
-    // fitBoltzmannf2->Draw("same");
+    fitBoltzmannf2->SetLineColor(kBlue);
+    fitBoltzmannf2->SetLineWidth(2);
+    fitBoltzmannf2->Draw("same");
 
-    // fitExpf2->SetLineColor(kGreen + 2);
-    // fitExpf2->SetLineWidth(2);
-    // fitExpf2->Draw("same");
+    fitExpf2->SetLineColor(kGreen + 2);
+    fitExpf2->SetLineWidth(2);
+    fitExpf2->Draw("same");
 
-    // //// fitMTExpf2->SetLineColor(kMagenta);
-    // //// fitMTExpf2->SetLineWidth(2);
-    // //// fitMTExpf2->Draw("same");
+    //// fitMTExpf2->SetLineColor(kMagenta);
+    //// fitMTExpf2->SetLineWidth(2);
+    //// fitMTExpf2->Draw("same");
 
-    // fitBoseEinsteinf2->SetLineColor(kCyan);
-    // fitBoseEinsteinf2->SetLineWidth(2);
-    // fitBoseEinsteinf2->Draw("same");
+    fitBoseEinsteinf2->SetLineColor(kCyan);
+    fitBoseEinsteinf2->SetLineWidth(2);
+    fitBoseEinsteinf2->Draw("same");
 
-    // //// fitBWf2->SetLineColor(kMagenta);
-    // //// fitBWf2->SetLineWidth(2);
-    // //// fitBWf2->Draw("same");
+    //// fitBWf2->SetLineColor(kMagenta);
+    //// fitBWf2->SetLineWidth(2);
+    //// fitBWf2->Draw("same");
 
     // Create legend
     TLegend *legf2 = new TLegend(0.51, 0.55, 0.95, 0.92);
@@ -325,14 +327,18 @@ void read_yield_differentFitAll()
     legf2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legf2->AddEntry(hf21, "f_{2}'(1525) spectra", "pe");
-    legf2->AddEntry(fitLevyf2, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
-    legf2->AddEntry(fitLevyf2_fitReduced, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
-    // legf2->AddEntry(fitLevyf2, "Levy-Tsallis", "l");
-    // legf2->AddEntry(fitBoltzmannf2, "Boltzmann", "l");
-    // legf2->AddEntry(fitExpf2, "Exponential", "l");
-    // legf2->AddEntry(fitBoseEinsteinf2, "Bose-Einstein", "l");
+
+    // legf2->AddEntry(fitLevyf2, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
+    // legf2->AddEntry(fitLevyf2_fitReduced, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
+
+    legf2->AddEntry(fitLevyf2, "Levy-Tsallis", "l");
+    legf2->AddEntry(fitBoltzmannf2, "Boltzmann", "l");
+    legf2->AddEntry(fitExpf2, "Exponential", "l");
+    legf2->AddEntry(fitBoseEinsteinf2, "Bose-Einstein", "l");
+
     // //legf2->AddEntry(fitMTExpf2, "mT Exponential", "l");
     // //legf2->AddEntry(fitBWf2, "Blast-Wave", "l");
+
     legf2->SetBorderSize(0);
     legf2->SetFillStyle(0);
     legf2->SetTextSize(0.03);
@@ -340,7 +346,7 @@ void read_yield_differentFitAll()
 
     // cFitf2All->SaveAs((path + "/mult_0-100/Spectra/plots/AllFits_f2.png").c_str());
     // cFitf2All->SaveAs((path + "/mult_0-100/Spectra/plots/AllFits_f2SameRange.png").c_str());
-    cFitf2All->SaveAs((path + "/mult_0-100/Spectra/plots/FitRangeCompare_f2.png").c_str());
+    // cFitf2All->SaveAs((path + "/mult_0-100/Spectra/plots/FitRangeCompare_f2.png").c_str());
 
     //====================================Plotting All Fits on Same Canvas for f0(1710)==========================================
     TCanvas *cFitf0All = new TCanvas("cFitf0All", "All Fits for f0(1710)", 720, 720);
@@ -361,31 +367,31 @@ void read_yield_differentFitAll()
     fitLevyf0->SetLineWidth(2);
     fitLevyf0->Draw("same");
 
-    // // Show fit of full range Levy fit
-    fitLevyf0_fitReduced->SetLineColor(kBlue);
-    fitLevyf0_fitReduced->SetLineStyle(2);
-    fitLevyf0_fitReduced->SetLineWidth(3);
-    fitLevyf0_fitReduced->Draw("same");
+    // // // Show fit of full range Levy fit
+    // fitLevyf0_fitReduced->SetLineColor(kBlue);
+    // fitLevyf0_fitReduced->SetLineStyle(2);
+    // fitLevyf0_fitReduced->SetLineWidth(3);
+    // fitLevyf0_fitReduced->Draw("same");
 
-    // fitBoltzmannf0->SetLineColor(kBlue);
-    // fitBoltzmannf0->SetLineWidth(2);
-    // fitBoltzmannf0->Draw("same");
+    fitBoltzmannf0->SetLineColor(kBlue);
+    fitBoltzmannf0->SetLineWidth(2);
+    fitBoltzmannf0->Draw("same");
 
-    // fitExpf0->SetLineColor(kGreen + 2);
-    // fitExpf0->SetLineWidth(2);
-    // fitExpf0->Draw("same");
+    fitExpf0->SetLineColor(kGreen + 2);
+    fitExpf0->SetLineWidth(2);
+    fitExpf0->Draw("same");
 
-    // // fitMTExpf0->SetLineColor(kMagenta);
-    // // fitMTExpf0->SetLineWidth(2);
-    // // fitMTExpf0->Draw("same");
+    // fitMTExpf0->SetLineColor(kMagenta);
+    // fitMTExpf0->SetLineWidth(2);
+    // fitMTExpf0->Draw("same");
 
-    // fitBoseEinsteinf0->SetLineColor(kCyan);
-    // fitBoseEinsteinf0->SetLineWidth(2);
-    // fitBoseEinsteinf0->Draw("same");
+    fitBoseEinsteinf0->SetLineColor(kCyan);
+    fitBoseEinsteinf0->SetLineWidth(2);
+    fitBoseEinsteinf0->Draw("same");
 
-    // // fitBWf0->SetLineColor(kMagenta);
-    // // fitBWf0->SetLineWidth(2);
-    // // fitBWf0->Draw("same");
+    // fitBWf0->SetLineColor(kMagenta);
+    // fitBWf0->SetLineWidth(2);
+    // fitBWf0->Draw("same");
 
     // Create legend
     TLegend *legf0 = new TLegend(0.51, 0.6, 0.95, 0.92);
@@ -393,21 +399,25 @@ void read_yield_differentFitAll()
     legf0->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
     legf0->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
     legf0->AddEntry(hf01, "f_{0}(1710) spectra", "pe");
-    legf0->AddEntry(fitLevyf0, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
-    legf0->AddEntry(fitLevyf0_fitReduced, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
-    // legf0->AddEntry(fitLevyf0, "Levy-Tsallis", "l");
-    // legf0->AddEntry(fitBoltzmannf0, "Boltzmann", "l");
-    // legf0->AddEntry(fitExpf0, "Exponential", "l");
-    // legf0->AddEntry(fitBoseEinsteinf0, "Bose-Einstein", "l");
+
+    // legf0->AddEntry(fitLevyf0, "Levy-Tsallis (0 - 10 GeV/c^{2})", "l");
+    // legf0->AddEntry(fitLevyf0_fitReduced, "Levy-Tsallis (0 - 15 GeV/c^{2})", "l");
+
+    legf0->AddEntry(fitLevyf0, "Levy-Tsallis", "l");
+    legf0->AddEntry(fitBoltzmannf0, "Boltzmann", "l");
+    legf0->AddEntry(fitExpf0, "Exponential", "l");
+    legf0->AddEntry(fitBoseEinsteinf0, "Bose-Einstein", "l");
+
     // // //legf0->AddEntry(fitMTExpf0, "mT Exponential", "l");
     // // //legf0->AddEntry(fitBWf0, "Blast-Wave", "l");
+
     legf0->SetBorderSize(0);
     legf0->SetFillStyle(0);
     legf0->SetTextSize(0.03);
     legf0->Draw();
     // cFitf0All->SaveAs((path + "/mult_0-100/Spectra/plots/AllFits_f0.png").c_str());
     // cFitf0All->SaveAs((path + "/mult_0-100/Spectra/plots/AllFits_f0SameRange.png").c_str());
-    cFitf0All->SaveAs((path + "/mult_0-100/Spectra/plots/FitRangeCompare_f0.png").c_str());
+    // cFitf0All->SaveAs((path + "/mult_0-100/Spectra/plots/FitRangeCompare_f0.png").c_str());
 
     // Print Chi2/NDF, dN/dy and <pT> for each fit function
     // Lambda function to avoid code repetition

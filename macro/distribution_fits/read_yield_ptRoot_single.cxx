@@ -24,8 +24,8 @@ void read_yield_ptRoot_single()
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
 
-    string inputFileName = "Default2";
-    string outputFileName = "Temp";
+    string inputFileName = "Mix2";
+    string outputFileName = "Mix2";
 
     // TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
     // TFile *inputFile = new TFile((path + "FitParam_temp.root").c_str(), "READ");

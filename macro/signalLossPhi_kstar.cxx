@@ -3,18 +3,21 @@
 
 using namespace std;
 
-void signalLossPhi()
+void signalLossPhi_kstar()
 {
     gStyle->SetOptStat(0);
     // TFile *fSigLoss = new TFile("/home/sawan/check_k892/mc/PhiSigLossINEL.root", "READ");
-    TFile *fSigLoss = new TFile("/home/sawan/Downloads/SigLossLHC24l1.root", "READ");
+    // TFile *fSigLoss = new TFile("/home/sawan/Downloads/SigLossLHC24l1.root", "READ");
+    TFile *fSigLoss = new TFile("/home/sawan/check_k892/mc/LHC24f3c/658376.root", "READ"); // 2024 MC INEL
+    // TFile *fSigLoss = new TFile("/home/sawan/check_k892/mc/LHC24f3c/659253.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
     if (fSigLoss->IsZombie())
     {
         cout << "Error opening files" << endl;
         return;
     }
 
-    double pT_bins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};
+    // double pT_bins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};
+    double pT_bins[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0};
 
     string path1 = "kstarqa_AllEvents";
     string path2 = "kstarqa_AllEventsVz";

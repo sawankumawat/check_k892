@@ -7,116 +7,129 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 void efficiency()
 {
-    bool makePIDplots = false; // qa plots
+    bool makePIDplots = true;  // qa plots
     string outputtype = "png"; // pdf, eps
+    bool isINEL = false;       // for multiplicity range in QA plots
 
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
     // ****************Data files ********************
+    string common_data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/";
+    string common_MC_path = "/home/sawan/check_k892/mc/LHC24f3c/";
 
     // correct placement of TPC crossed rows
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa_PIDKa2/hInvMass"; // 2023 data
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa_PIDKa2/hInvMass"; // 2024 data
+    // string data_path = "459845/kstarqa/hInvMass"; // 2022 data
+    // string data_path = "459908/kstarqa_PIDKa2/hInvMass"; // 2023 data
+    // string data_path = "460233/kstarqa_PIDKa2/hInvMass"; // 2024 data
 
     //**********************************MID Cuts******************************************
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/477779/kstarqa_MID/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/478015/kstarqa_MID/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/477833/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+    // string data_path = "477779/kstarqa_MID/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
+    // string data_path = "478015/kstarqa_MID/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
+    // string data_path = "477833/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
 
     //*************************PID Variations for Kaon (without MID)**************************
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+    // string data_path = "480317/kstarqa/hInvMass"; // LHC22_pass7_medium dataset, INEL > 0
+    // string data_path = "480447/kstarqa/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
+    // string data_path = "480657/kstarqa/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
 
     //================================QA checks==================
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/585940/kstarqa_VertexTOFMatched/hInvMass";
+    // string data_path = "585940/kstarqa_VertexTOFMatched/hInvMass";
 
     //==============================Pt-dependent PID=======================
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa/hInvMass"; // 2023
-    // string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024
+    // string data_path = "586976/kstarqa/hInvMass"; // 2023
+    // string data_path = "586385/kstarqa/hInvMass"; // 2024
 
-    //================================Temporary=======================
-    string data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass";
+    //================================After SQM=======================
+    // string data_path = "655628/kstarqa/hInvMass"; // 2024
+    // string data_path = "658306/kstarqa_INELgt0/hInvMass"; // 2024 (with DeepAngle, PV Contributor, INELgt0)
+    // string data_path = "658307/kstarqa/hInvMass"; // 2024 (pTDepPID, pTDepPID, pTDepPIDTOF)
+    // string data_path = "660453/kstarqa_id35679/hInvMass"; // 2023 (pTDepPID, pTDepPID, pTDepPIDTOF)
 
-    TString outputfolder = data_path + "/efficiency";
+    //============MC closure test========================
+    string data_path = "MC_closure/657468/kstarqa_MC_closure/hInvMass"; 
+
+    data_path = common_data_path + data_path;
+    TString outputfolder = data_path + (isINEL ? "/efficiency/INEL" : "/efficiency");
     gSystem->mkdir(outputfolder, kTRUE);
 
     //********MC files *****************
 
     // ***********************TPC tune on data with NN ***********************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/TuneOnDataWithNN/465413.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/TuneOnDataWithNN/464570.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/TuneOnDataWithNN/465419.root", "READ"); // 2023 MC
+    // string MCpath = "TuneOnDataWithNN/465413.root"; // 2022 MC
+    // string MCpath = "TuneOnDataWithNN/464570.root"; // 2023 MC
+    // string MCpath = "TuneOnDataWithNN/465419.root"; // 2023 MC
 
     //********************MC closure test*************************/
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/Occupancy_effect/466809.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/Occupancy_effect/463585.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/Occupancy_effect/464277.root", "READ"); // 2024 MC
+    // string MCpath = "Occupancy_effect/466809.root"; // 2022 MC
+    // string MCpath = "Occupancy_effect/463585.root"; // 2023 MC
+    // string MCpath = "Occupancy_effect/464277.root"; // 2024 MC
 
     //**************Checks (Default, FakeTrack, MID, PIDKa2) and new MC closure test********************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/checks/472785.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/checks/472820.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/checks/472788.root", "READ"); // 2024 MC
+    // string MCpath = "checks/472785.root"; // 2022 MC
+    // string MCpath = "checks/472820.root"; // 2023 MC
+    // string MCpath = "checks/472788.root"; // 2024 MC
 
     //********************************MID Cuts******************************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/478021.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/477593.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/478022.root", "READ"); // 2024 MC
+    // string MCpath = "478021.root"; // 2022 MC
+    // string MCpath = "477593.root"; // 2023 MC
+    // string MCpath = "478022.root"; // 2024 MC
 
     ////*************************PID Variations for Kaon (with MID)**************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/480451.root", "READ"); // 2022 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/480565.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/480453.root", "READ"); // 2024 MC
+    // string MCpath = "480451.root"; // 2022 MC
+    // string MCpath = "480565.root"; // 2023 MC
+    // string MCpath = "480453.root"; // 2024 MC
 
     //**************************After Calibrated MC from Nicolo****************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/483982.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/temp.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/484450.root", "READ"); // 2024 MC
+    // string MCpath = "483982.root"; // 2023 MC
+    // string MCpath = "temp.root"; // 2023 MC
+    // string MCpath = "484450.root"; // 2024 MC
 
     //*******************************************QA checks************************************************
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/585904.root", "READ"); // 2023 MC
+    // string MCpath = "585904.root"; // 2023 MC
 
     //================================Pt-dependent PID=======================
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586966.root", "READ"); // 2023 MC
-    // TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/586467.root", "READ"); // 2024 MC
+    // string MCpath = "586966.root"; // 2023 MC
+    // string MCpath = "586467.root"; // 2024 MC
 
-    //================================Temporary=======================
-    TFile *fileeff = new TFile("/home/sawan/check_k892/mc/LHC24f3c/589815.root", "READ"); // 2023 MC
+    //================================After SQM=======================
+    // string MCpath = "655737.root"; // 2024 MC (do not use)
+    string MCpath = "657468.root"; // 2024 MC (with TOF_OverrideFT0 wagon)
+    // string MCpath = "658377.root"; // 2024 MC (QA+PID checks)
+    // string MCpath = "660557.root"; // 2023 MC (QA+PID checks, _id52344) (with TOF_OverrideFT0 wagon, not required for 2023 dataset)
+    // string MCpath = "661782.root"; // 2023 MC (QA+PID checks, _NoOverrideFT0, with same runs as data (661782_selected.root, but with very low statistics))
+    // string MCpath = "660483.root"; // temporary (pp reference 5.36 TeV)
 
-    TFile *fileraw = new TFile((data_path + "/yield.root").c_str(), "READ");
+    TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
+    MCpath = common_MC_path + MCpath;
+    TFile *fileeff = new TFile(MCpath.c_str(), "READ"); // MC file
 
     if (fileeff->IsZombie() || fileraw->IsZombie())
     {
         cout << "Error opening files" << endl;
         return;
     }
-    const string genpath = "kstarqa_INEL/hInvMass";
-    const string recpath = "kstarqa_INEL/hInvMass";
-    // const string genpath = "kstarqa_OCC500_id34026/hInvMass/hk892GenpT";
-    // const string recpath = "kstarqa_OCC500_id34026/hInvMass/h2KstarRecpt2";
-    // const string genpath = "kstarqa_PIDKa2/hInvMass/hk892GenpT";
-    // const string recpath = "kstarqa_PIDKa2/hInvMass/h2KstarRecpt2";
+    const string genpath = "kstarqa/hInvMass";
+    const string recpath = "kstarqa/hInvMass";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
-    // THnSparseF *hSpraseGen = (THnSparseF *)fileeff->Get(Form("%s/hk892GenpT", genpath.c_str()));
-    // THnSparseF *hSparseRec = (THnSparseF *)fileeff->Get(Form("%s/h2KstarRecpt2", recpath.c_str()));
+    //===============================Efficiency histograms=======================
+    // THnSparseF *hSpraseGen = (THnSparseF *)fileeff->Get(Form("%s/hk892GenpT2", genpath.c_str()));
+    // THnSparseF *hSparseRec = (THnSparseF *)fileeff->Get(Form("%s/h2KstarRecpt1", recpath.c_str()));
     THnSparseF *hSpraseGen = (THnSparseF *)fileeff->Get(Form("%s/hk892GenpTCalib1", genpath.c_str()));
-    THnSparseF *hSparseRec = (THnSparseF *)fileeff->Get(Form("%s/h2KstarRecptCalib2", recpath.c_str()));
+    THnSparseF *hSparseRec = (THnSparseF *)fileeff->Get(Form("%s/h2KstarRecptCalib1", recpath.c_str()));
     if (hSpraseGen == nullptr || hSparseRec == nullptr)
     {
-        cout << "Error reading efficiency histograms" << endl;
+        cout << "Error reading efficiency histograms " << Form("%s/hk892GenpTCalib1", genpath.c_str()) << endl;
         return;
     }
 
-    // Event loss histograms
+    //==================================Event loss histograms===================
     // TH1F *hAllGenColl = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions", genpath.c_str()));
     // TH1F *hAllGenColl1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str()));
     TH1F *hAllGenColl = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityGen", genpath.c_str()));
     TH1F *hAllGenColl1Rec = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityRec", recpath.c_str())); // without event splitting correction
-    TH1F *hAllGenColl1Rec_evsplit = (TH1F *)fileeff->Get(Form("%s/h1RecMult2", recpath.c_str()));            // with event splitting correction
 
     if (hAllGenColl == nullptr || hAllGenColl1Rec == nullptr)
     {
@@ -124,7 +137,7 @@ void efficiency()
         return;
     }
 
-    // Signal loss histograms
+    //==================================Signal loss histograms===================
     // TH2F *hAllGenKstar = (TH2F *)fileeff->Get(Form("%s/hAllKstarGenCollisisons", genpath.c_str()));
     // TH2F *hAllGenKstar1Rec = (TH2F *)fileeff->Get(Form("%s/hAllKstarGenCollisisons1Rec", recpath.c_str()));
 
@@ -139,12 +152,20 @@ void efficiency()
     //     return;
     // }
 
+    //// Event splitting (Gen. events with atleast 1 reconstruction / All reconstructed events)
+    TH1F *hRecAll = (TH1F *)fileeff->Get(Form("%s/h1RecMult2", recpath.c_str()));  // Denominator (calibrated multiplicity)
+    TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/h1GenMult2", recpath.c_str())); // Numerator (calibrated multiplicity)
+    // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/MCcorrections/MultiplicityRec", recpath.c_str())); // Numerator
+
+    // TH1F *hRecAll = (TH1F *)fileeff->Get(Form("%s/h1RecMult", recpath.c_str())); // Denominator
+    // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
+
     vector<double> nChParticlesFromMult;
-    // int multLoopEnd = nmultbins + 1;
-    int multLoopEnd = 1;
+    int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+    // int multLoopEnd = 1;
     int multlow, multhigh;
 
-    TFile *spectra = new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
+    TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
     TH1F *hChi2byNDF[multLoopEnd];
     TH1F *hMass[multLoopEnd];
     TH1F *hWidth[multLoopEnd];
@@ -156,6 +177,7 @@ void efficiency()
     TH1D *h1gen;
     TH1D *h1rec;
     TH1F *hRatioEvBySig[multLoopEnd];
+    TH1F *hEventSplit = new TH1F("hEventSplit", "Event Splitting", nmultbins, mult_classes);
 
     for (int imult = 0; imult < multLoopEnd; imult++)
     {
@@ -163,13 +185,14 @@ void efficiency()
         if (imult == 0)
         {
             multlow = 0;
-            multhigh = 100; // for all multiplicity
+            multhigh = (isINEL) ? 120 : 100; // for all multiplicity
         }
         else
         {
             multlow = mult_classes[imult - 1];
             multhigh = mult_classes[imult];
         }
+        cout << "Mult low is " << multlow << " and mult high is " << multhigh << endl;
         hChi2byNDF[imult] = (TH1F *)fileraw->Get(Form("mult_%d-%d/chi2byNDF", multlow, multhigh));
         hMass[imult] = (TH1F *)fileraw->Get(Form("mult_%d-%d/mass", multlow, multhigh));
         hWidth[imult] = (TH1F *)fileraw->Get(Form("mult_%d-%d/width", multlow, multhigh));
@@ -191,18 +214,16 @@ void efficiency()
         TH1F *hyieldIntegral = (TH1F *)fileraw->Get(Form("mult_%d-%d/yield_integral", multlow, multhigh));
         if (hyieldBinCount == nullptr)
         {
-            cout << "Error reading yield histogram" << endl;
+            cout << "Error reading yield histogram, " << Form("mult_%d-%d/yield_bincount", multlow, multhigh) << " not found" << endl;
             return;
         }
         // heff[imult] = (TH1F *)hyieldBinCount->Clone(); // Just taking bins from the yield histogram which will be set to efficiency value.
         heff[imult] = (TH1F *)hyieldIntegral->Clone(); // Just taking bins from the yield histogram which will be set to efficiency value.
 
-        // Event loss calculations
+        //=============Event loss calculations=====================
         heventloss[imult] = new TH1F(Form("hEventLoss_%d", imult), "Event Loss", Npt, pT_bins);
 
-        double eventLossNum = hAllGenColl1Rec->Integral(hAllGenColl1Rec->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec->GetXaxis()->FindBin(multhigh - 0.001)); // without event splitting consideration
-
-        // double eventLossNum = hAllGenColl1Rec_evsplit->Integral(hAllGenColl1Rec_evsplit->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec_evsplit->GetXaxis()->FindBin(multhigh - 0.001)); // with event splitting consideration (***Need to be fixed***)
+        double eventLossNum = hAllGenColl1Rec->Integral(hAllGenColl1Rec->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl1Rec->GetXaxis()->FindBin(multhigh - 0.001));
 
         double eventLossDen = hAllGenColl->Integral(hAllGenColl->GetXaxis()->FindBin(multlow + 0.001), hAllGenColl->GetXaxis()->FindBin(multhigh - 0.001));
 
@@ -212,6 +233,17 @@ void efficiency()
         // double eventLossNum = hAllGenColl1Rec->Integral();
         // double eventLossDen = hAllGenColl->Integral();
         // cout << "Multiplicity bin " << multlow << "-" << multhigh << ", Event Loss " << eventLossNum / eventLossDen << endl;
+
+        //// Event splitting calculation
+        double eventSplitDen = hRecAll->Integral(hRecAll->GetXaxis()->FindBin(multlow + 0.001), hRecAll->GetXaxis()->FindBin(multhigh - 0.001));
+        double eventSplitNum = hGen1Rec->Integral(hGen1Rec->GetXaxis()->FindBin(multlow + 0.001), hGen1Rec->GetXaxis()->FindBin(multhigh - 0.001));
+        double eventSplitting = eventSplitNum / eventSplitDen;
+        if (imult > 0)
+        {
+            hEventSplit->SetBinContent(imult, eventSplitting);
+            hEventSplit->SetBinError(imult, 0.00000001);
+            cout << "Multiplicity bin " << multlow << "-" << multhigh << ", Event Splitting " << eventSplitting << endl;
+        }
 
         // Signal loss calculations
         TH1F *hSignalLossNumPt = (TH1F *)hAllGenKstar1Rec->ProjectionX(Form("SignalLossNumPt_%d", imult), hAllGenKstar1Rec->GetYaxis()->FindBin(multlow + 0.01), hAllGenKstar1Rec->GetYaxis()->FindBin(multhigh - 0.01));
@@ -230,6 +262,7 @@ void efficiency()
             double nrec = h1rec->Integral(h1rec->GetXaxis()->FindBin(lowpt), h1rec->GetXaxis()->FindBin(highpt));
             double ngen = h1gen->Integral(h1gen->GetXaxis()->FindBin(lowpt), h1gen->GetXaxis()->FindBin(highpt));
             double efficiency = nrec / ngen;
+            cout << "Multiplicity bin " << multlow << "-" << multhigh << ", pT bin " << lowpt << "-" << highpt << ", Efficiency " << efficiency << endl;
             double efficiencyerr = sqrt(abs(((nrec + 1) / (ngen + 2)) * ((nrec + 2) / (ngen + 3) - (nrec + 1) / (ngen + 2))));
 
             // cout << "Efficiency: " << efficiency << " +/- " << efficiencyerr << endl;
@@ -260,7 +293,7 @@ void efficiency()
                 double signalLossNum = hSignalLossNumPt->Integral(hSignalLossNumPt->GetXaxis()->FindBin(lowpt + 0.001), hSignalLossNumPt->GetXaxis()->FindBin(highpt - 0.001));
                 double signalLossDen = hSignalLossDenPt->Integral(hSignalLossDenPt->GetXaxis()->FindBin(lowpt + 0.001), hSignalLossDenPt->GetXaxis()->FindBin(highpt - 0.001));
                 double signalLoss = signalLossNum / signalLossDen;
-                cout << "signal loss value is " << signalLoss << endl;
+                // cout << "signal loss value is " << signalLoss << endl;
                 hSignalLoss[imult]->SetBinContent(i + 1, signalLoss);
                 hSignalLoss[imult]->SetBinError(i + 1, 0);
             }
@@ -298,9 +331,12 @@ void efficiency()
         c3->SaveAs(outputfolder + Form("/corrected_spectra_Integral_%d_%d.png", multlow, multhigh));
 
         TH1F *hlossCorrected_integral = (TH1F *)hyieldIntegral->Clone("hlossCorrected_integral");
-        hlossCorrected_integral->Multiply(hRatioEvBySig[imult]);
         TH1F *hlossCorrected_bincount = (TH1F *)hyieldBinCount->Clone("hlossCorrected_bincount");
+
+        hlossCorrected_integral->Multiply(hRatioEvBySig[imult]); // Event/Signal loss correction
         hlossCorrected_bincount->Multiply(hRatioEvBySig[imult]);
+        hlossCorrected_integral->Scale(1.0 / eventSplitting); // Event splitting correction
+        hlossCorrected_bincount->Scale(1.0 / eventSplitting);
 
         TDirectory *dir = spectra->mkdir(Form("mult_%d-%d", multlow, multhigh));
         dir->cd();
@@ -312,6 +348,7 @@ void efficiency()
         spectra->cd();
     }
     gStyle->SetPalette(kRainBow);
+    gStyle->SetOptStat(0);
 
     // TCanvas *cGeneratedMult = new TCanvas("", "", 720, 720);
     // SetCanvasStyle(cGeneratedMult, 0.16, 0.06, 0.01, 0.14);
@@ -402,7 +439,7 @@ void efficiency()
     line->SetLineColor(kBlack);
     line->SetLineWidth(2);
     line->Draw();
-    TLegend *legall = new TLegend(0.20, 0.75, 0.92, 0.98);
+    TLegend *legall = new TLegend(0.20, 0.75, 0.92, 0.92);
     legall->SetTextSize(0.03);
     legall->SetNColumns(5);
     legall->SetFillStyle(0);
@@ -462,16 +499,16 @@ void efficiency()
 
     TCanvas *cSignalLoss = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hSignalLoss[0]);
-    hSignalLoss[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSignalLoss[0]->GetYaxis()->SetTitle("Event and signal loss");
-    hSignalLoss[0]->GetYaxis()->SetTitleOffset(1.6);
-    hSignalLoss[0]->SetStats(0);
-    hSignalLoss[0]->SetMaximum(1.4);
-    hSignalLoss[0]->SetMinimum(0.3);
-    hSignalLoss[0]->Draw("pe");
+    SetHistoQA(hSignalLoss[1]);
+    hSignalLoss[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignalLoss[1]->GetYaxis()->SetTitle("Event and signal loss");
+    hSignalLoss[1]->GetYaxis()->SetTitleOffset(1.6);
+    hSignalLoss[1]->SetStats(0);
+    hSignalLoss[1]->SetMaximum(1.29);
+    hSignalLoss[1]->SetMinimum(0.3);
+    // hSignalLoss[0]->Draw("pe");
     legall->Clear();
-    for (int imult = 0; imult < multLoopEnd; imult++)
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         if (imult == 0)
         {
@@ -531,35 +568,53 @@ void efficiency()
     legall->Draw();
     cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss.png");
 
+    TCanvas *cEventSplit = new TCanvas("", "", 720, 720);
+    SetCanvasStyle(cEventSplit, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hEventSplit);
+    hEventSplit->GetXaxis()->SetTitle("Multiplicity (%)");
+    hEventSplit->GetYaxis()->SetTitle("#epsilon_{Event_split}");
+    hEventSplit->GetYaxis()->SetTitleOffset(1.7);
+    hEventSplit->SetStats(0);
+    hEventSplit->SetMarkerStyle(20);
+    hEventSplit->SetMarkerSize(1.2);
+    hEventSplit->SetMaximum(1.0037);
+    hEventSplit->SetMinimum(0.993);
+    hEventSplit->Draw("pe");
+    cEventSplit->SaveAs(outputfolder + "/event_splitting.png");
+
     TCanvas *cSignificance = new TCanvas("", "", 720, 720);
-    SetCanvasStyle(cSignificance, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hSignificance[0]);
-    hSignificance[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSignificance[0]->GetYaxis()->SetTitle("Significance");
-    hSignificance[0]->GetYaxis()->SetTitleOffset(1.6);
-    hSignificance[0]->SetMaximum(750);
-    hSignificance[0]->SetMinimum(-5);
-    hSignificance[0]->Draw("p");
-    for (int imult = 0; imult < multLoopEnd; imult++)
+    SetCanvasStyle(cSignificance, 0.16, 0.06, 0.06, 0.14);
+    SetHistoQA(hSignificance[1]);
+    hSignificance[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignificance[1]->GetYaxis()->SetTitle("Significance");
+    hSignificance[1]->GetYaxis()->SetTitleOffset(1.6);
+    hSignificance[1]->SetMaximum(1250);
+    hSignificance[1]->SetMinimum(-5);
+    // hSignificance[0]->Draw("p");
+    legall->Clear();
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         hSignificance[imult]->SetMarkerStyle(markers[imult]);
         hSignificance[imult]->SetMarkerSize(1.2);
         hSignificance[imult]->Draw("p same PLC PMC");
+        multlow = mult_classes[imult - 1];
+        multhigh = mult_classes[imult];
+        legall->AddEntry(hSignificance[imult], Form("%d-%d%%", multlow, multhigh), "p");
     }
     legall->Draw();
     cSignificance->SaveAs(outputfolder + "/significance_all_mult.png");
 
     TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hChi2byNDF[0]);
-    hChi2byNDF[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hChi2byNDF[0]->GetYaxis()->SetTitle("#chi^{2}/NDF");
-    hChi2byNDF[0]->GetYaxis()->SetTitleOffset(1.6);
-    hChi2byNDF[0]->SetMaximum(6.5);
-    hChi2byNDF[0]->SetMinimum(0);
-    hChi2byNDF[0]->SetStats(0);
-    hChi2byNDF[0]->Draw("p");
-    for (int imult = 0; imult < multLoopEnd; imult++)
+    SetHistoQA(hChi2byNDF[1]);
+    hChi2byNDF[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hChi2byNDF[1]->GetYaxis()->SetTitle("#chi^{2}/NDF");
+    hChi2byNDF[1]->GetYaxis()->SetTitleOffset(1.6);
+    hChi2byNDF[1]->SetMaximum(6.5);
+    hChi2byNDF[1]->SetMinimum(0);
+    hChi2byNDF[1]->SetStats(0);
+    // hChi2byNDF[0]->Draw("p");
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         hChi2byNDF[imult]->SetMarkerStyle(markers[imult]);
         hChi2byNDF[imult]->SetMarkerSize(1.2);
@@ -570,20 +625,20 @@ void efficiency()
 
     TCanvas *cMass = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hMass[0]);
-    hMass[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hMass[0]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    hMass[0]->GetYaxis()->SetTitleOffset(1.6);
-    hMass[0]->GetYaxis()->SetRangeUser(0.878, 0.919);
-    hMass[0]->SetStats(0);
-    hMass[0]->Draw("pe");
-    for (int imult = 0; imult < multLoopEnd; imult++)
+    SetHistoQA(hMass[1]);
+    hMass[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hMass[1]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
+    hMass[1]->GetYaxis()->SetTitleOffset(1.6);
+    hMass[1]->GetYaxis()->SetRangeUser(0.878, 0.919);
+    hMass[1]->SetStats(0);
+    // hMass[0]->Draw("pe");
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         hMass[imult]->SetMarkerStyle(markers[imult]);
         hMass[imult]->SetMarkerSize(1.2);
         hMass[imult]->Draw("pe same PLC PMC");
     }
-    TLine *linePDG = new TLine(0, masspdg, 20, masspdg);
+    TLine *linePDG = new TLine(0, 0.895, 20, 0.895);
     linePDG->SetLineStyle(2);
     linePDG->SetLineColor(2);
     linePDG->SetLineWidth(2);
@@ -594,13 +649,13 @@ void efficiency()
 
     TCanvas *cWidth = new TCanvas("", "", 720, 720);
     SetCanvasStyle(cWidth, 0.16, 0.06, 0.01, 0.14);
-    SetHistoQA(hWidth[0]);
-    hWidth[0]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hWidth[0]->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
-    hWidth[0]->GetYaxis()->SetTitleOffset(1.6);
-    hWidth[0]->GetYaxis()->SetRangeUser(0.047 - 0.04, 0.047 + 0.05);
-    hWidth[0]->SetStats(0);
-    hWidth[0]->Draw("pe");
+    SetHistoQA(hWidth[1]);
+    hWidth[1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hWidth[1]->GetYaxis()->SetTitle("Width (GeV/#it{c}^{2})");
+    hWidth[1]->GetYaxis()->SetTitleOffset(1.6);
+    hWidth[1]->GetYaxis()->SetRangeUser(0.047 - 0.04, 0.047 + 0.05);
+    hWidth[1]->SetStats(0);
+    hWidth[1]->Draw("pe");
     TLine *linePDGWidth = new TLine(0, widthpdg, 20, widthpdg);
     linePDGWidth->SetLineStyle(2);
     linePDGWidth->SetLineColor(2);
@@ -608,7 +663,7 @@ void efficiency()
     linePDGWidth->Draw();
     legall->AddEntry(linePDGWidth, "PDG Width", "l");
     legall->Draw();
-    for (int imult = 0; imult < multLoopEnd; imult++)
+    for (int imult = 1; imult < multLoopEnd; imult++)
     {
         hWidth[imult]->SetMarkerStyle(markers[imult]);
         hWidth[imult]->SetMarkerSize(1.2);
@@ -623,178 +678,312 @@ void efficiency()
         cout << "QaPath: " << QaPath << endl;
         TString output_QA_folder = data_path + "/QA/MC";
         gSystem->mkdir(output_QA_folder, kTRUE);
-        TH1F *hNsigmaTOFKaon_neg = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TOF_neg_kaon", QaPath.c_str()));
-        TH1F *hNsigmaTOFPion_neg = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TOF_neg_pion", QaPath.c_str()));
-        TH1F *hNsigmaTOFKaon_pos = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TOF_pos_kaon", QaPath.c_str()));
-        TH1F *hNsigmaTOFPion_pos = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TOF_pos_pion", QaPath.c_str()));
-        TH1F *hNsigmaTPCKaon_neg = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TPC_neg_kaon", QaPath.c_str()));
-        TH1F *hNsigmaTPCPion_neg = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TPC_neg_pion", QaPath.c_str()));
-        TH1F *hNsigmaTPCKaon_pos = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TPC_pos_kaon", QaPath.c_str()));
-        TH1F *hNsigmaTPCPion_pos = (TH1F *)fileeff->Get(Form("%s/hPID/Before/h1PID_TPC_pos_pion", QaPath.c_str()));
-        if (hNsigmaTOFKaon_neg == nullptr || hNsigmaTOFPion_neg == nullptr || hNsigmaTOFKaon_pos == nullptr || hNsigmaTOFPion_pos == nullptr || hNsigmaTPCKaon_neg == nullptr || hNsigmaTPCPion_neg == nullptr || hNsigmaTPCKaon_pos == nullptr || hNsigmaTPCPion_pos == nullptr)
+
+        TH3F *hDCAxy3D = (TH3F *)fileeff->Get(Form("%s/eventSelection/hDcaxy_cent_pt", QaPath.c_str()));
+        TH3F *hDCAz3D = (TH3F *)fileeff->Get(Form("%s/eventSelection/hDcaz_cent_pt", QaPath.c_str()));
+        TH1F *hMult = (TH1F *)fileeff->Get(Form("%s/eventSelection/hMultiplicity", QaPath.c_str()));
+        TH1F *hvz = (TH1F *)fileeff->Get(Form("%s/eventSelection/hVertexZRec", QaPath.c_str()));
+        TH1F *hoccupancy = (TH1F *)fileeff->Get(Form("%s/eventSelection/hOccupancy", QaPath.c_str()));
+        TH1F *hEventCut = (TH1F *)fileeff->Get(Form("%s/eventSelection/hEventCut", QaPath.c_str()));
+        TH1F *htracksData = (TH1F *)fileeff->Get(Form("%s/eventSelection/tracksCheckData", QaPath.c_str()));
+        TH1D *hDCAxy = hDCAxy3D->ProjectionX("hDCAxy", -1, -1, -1, -1);
+        TH1D *hDCAz = hDCAz3D->ProjectionX("hDCAz", -1, -1, -1, -1);
+        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksData == nullptr)
+        {
+            cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
+            return;
+        }
+
+        TH3F *hNsigmaTPCTOFKaon = (TH3F *)fileeff->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Ka_after", QaPath.c_str()));
+        TH3F *hNsigmaTPCTOFPion = (TH3F *)fileeff->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Pi_after", QaPath.c_str()));
+        TH3F *hNsigmaTPCKaon = (TH3F *)fileeff->Get(Form("%s/hPID/After/hTPCnsigKa_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTPCPion = (TH3F *)fileeff->Get(Form("%s/hPID/After/hTPCnsigPi_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTOFKaon = (TH3F *)fileeff->Get(Form("%s/hPID/After/hTOFnsigKa_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTOFPion = (TH3F *)fileeff->Get(Form("%s/hPID/After/hTOFnsigPi_mult_pt", QaPath.c_str()));
+        if (hNsigmaTPCTOFKaon == nullptr || hNsigmaTPCTOFPion == nullptr || hNsigmaTPCKaon == nullptr || hNsigmaTPCPion == nullptr || hNsigmaTOFKaon == nullptr || hNsigmaTOFPion == nullptr)
+        {
+            cerr << "PID histograms after selection not found!!!!!!!!!!!!" << endl;
+            return;
+        }
+
+        TH3F *hNsigmaTPCTOFKaon_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Ka_before", QaPath.c_str()));
+        TH3F *hNsigmaTPCTOFPion_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Pi_before", QaPath.c_str()));
+        TH3F *hNsigmaTPCKaon_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hTPCnsigKa_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTPCPion_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hTPCnsigPi_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTOFKaon_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hTOFnsigKa_mult_pt", QaPath.c_str()));
+        TH3F *hNsigmaTOFPion_before = (TH3F *)fileeff->Get(Form("%s/hPID/Before/hTOFnsigPi_mult_pt", QaPath.c_str()));
+        if (hNsigmaTPCTOFKaon_before == nullptr || hNsigmaTPCTOFPion_before == nullptr || hNsigmaTPCKaon_before == nullptr || hNsigmaTPCPion_before == nullptr || hNsigmaTOFKaon_before == nullptr || hNsigmaTOFPion_before == nullptr)
         {
             cerr << "PID histograms before selection not found!!!!!!!!!!!!" << endl;
             return;
         }
 
-        TH2F *hNsigmaTPCTOFKaon = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Ka_before", QaPath.c_str()));
-        TH2F *hNsigmaTPCTOFPion = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Pi_before", QaPath.c_str()));
-        TH2F *hNsigmaTPCKaon = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigmaTPC_Ka_before", QaPath.c_str()));
-        TH2F *hNsigmaTPCPion = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigmaTPC_Pi_before", QaPath.c_str()));
-        TH2F *hNsigmaTOFKaon = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigmaTOF_Ka_before", QaPath.c_str()));
-        TH2F *hNsigmaTOFPion = (TH2F *)fileeff->Get(Form("%s/hPID/Before/hNsigmaTOF_Pi_before", QaPath.c_str()));
-        if (hNsigmaTPCTOFKaon == nullptr || hNsigmaTPCTOFPion == nullptr || hNsigmaTPCKaon == nullptr || hNsigmaTPCPion == nullptr || hNsigmaTOFKaon == nullptr || hNsigmaTOFPion == nullptr)
+        outputtype = "png";
+        gPad->SetLogy(0);
+        TCanvas *cMult = new TCanvas("cMult", "Multiplicity", 720, 720);
+        SetCanvasStyle(cMult, 0.14, 0.03, 0.06, 0.14);
+        SetHistoQA(hMult);
+        // hMult->GetXaxis()->SetTitle("Multiplicity (%)");
+        hMult->GetXaxis()->SetTitle("Multiplicity (%)");
+        hMult->GetYaxis()->SetTitle("Counts");
+        hMult->Draw();
+        cMult->SaveAs(output_QA_folder + ("/Multiplicity." + outputtype).c_str());
+
+        TCanvas *cvz = new TCanvas("cvz", "Vertex Z", 720, 720);
+        SetCanvasStyle(cvz, 0.14, 0.03, 0.06, 0.14);
+        SetHistoQA(hvz);
+        hvz->GetXaxis()->SetTitle("Vertex Z (cm)");
+        hvz->GetYaxis()->SetTitle("Counts");
+        hvz->Draw();
+        cvz->SaveAs(output_QA_folder + ("/VertexZ." + outputtype).c_str());
+
+        TCanvas *cTracksData = new TCanvas("cTracksData", "Tracks Data", 1440, 720);
+        SetCanvasStyle(cTracksData, 0.1, 0.03, 0.06, 0.16);
+        SetHistoQA(htracksData);
+        // gPad->SetLogy(1);
+        gPad->SetGrid(1, 0);
+        htracksData->SetTitle("Tracks Data");
+        htracksData->GetYaxis()->SetTitle("Counts");
+        htracksData->GetYaxis()->SetTitleOffset(0.8);
+        htracksData->GetXaxis()->SetRangeUser(0, 8);
+        // htracksData->SetMaximum(htracksData->GetMaximum() * 10);
+        htracksData->Draw();
+        cTracksData->SaveAs(output_QA_folder + ("/TracksData." + outputtype).c_str());
+
+        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1080, 720);
+        SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
+        SetHistoQA(hEventCut);
+        gPad->SetGrid(1, 0);
+        // gPad->SetLogy(1);
+        hEventCut->SetTitle("Event selections");
+        hEventCut->GetYaxis()->SetTitle("Counts");
+        hEventCut->GetYaxis()->SetTitleOffset(0.8);
+        hEventCut->GetXaxis()->SetRangeUser(0, 11);
+        hEventCut->Draw();
+        cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
+
+        //===============PID plots==========================
+        // Plots to make. 2D plots TPCKa, TPCPi, TOFKa, TOFPi as a function of pT. Then 2D plot of TPC vs TOF of Ka and Pi at different pT ranges.
+
+        double pTrangesForTPCandTOF[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
+        vector<vector<int>> multRangesForTPCandTOF = {{0, 1}, {1, 5}, {10, 20}, {30, 40}, {50, 70}, {70, 100}};
+        TH2F *h2DTPCKaon = (TH2F *)hNsigmaTPCKaon->Project3D("xz");
+        TH2F *h2DTPCPion = (TH2F *)hNsigmaTPCPion->Project3D("xz");
+        TH2F *h2DTOFKaon = (TH2F *)hNsigmaTOFKaon->Project3D("xz");
+        TH2F *h2DTOFPion = (TH2F *)hNsigmaTOFPion->Project3D("xz");
+        TH2 *h2DNsigmaTPCTOFKaon[6];
+        TH2 *h2DNsigmaTPCTOFPion[6];
+        TH1F *h1DNsigmaTPCKaon[6];
+        TH1F *h1DNsigmaTPCPion[6];
+        TH1F *h1DNsigmaTOFKaon[6];
+        TH1F *h1DNsigmaTOFPion[6];
+
+        for (int i = 0; i < 6; i++)
         {
-            cerr << "2D PID histograms before selection not found!!!!!!!!!!!!" << endl;
-            return;
+            int lowBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i] + 0.001);
+            int highBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i + 1] - 0.001);
+
+            hNsigmaTPCTOFKaon->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
+            hNsigmaTPCTOFPion->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
+
+            h2DNsigmaTPCTOFKaon[i] = (TH2 *)hNsigmaTPCTOFKaon->Project3D("xy");
+            h2DNsigmaTPCTOFPion[i] = (TH2 *)hNsigmaTPCTOFPion->Project3D("xy");
+
+            // ✅ Rename AFTER creation (otherwise all histograms will be same)
+            h2DNsigmaTPCTOFKaon[i]->SetName(Form("xy_Ka_%d", i));
+            h2DNsigmaTPCTOFPion[i]->SetName(Form("xy_Pi_%d", i));
+
+            // Now lets make 1D projections with limit on multiplicity ranges
+            int lowBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][0] + 0.001);
+            int highBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][1] - 0.001);
+
+            h1DNsigmaTPCKaon[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTPCPion[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTOFKaon[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTOFPion[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
         }
-
-        TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC TOF Kaon", 720, 720);
-        SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCTOFKaon);
-        hNsigmaTPCTOFKaon->GetXaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTPCTOFKaon->Draw("colz");
-        // cNsigmaTPCTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTPCTOFKaon." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCTOFPion = new TCanvas("cNsigmaTPCTOFPion", "Nsigma TPC TOF Pion", 720, 720);
-        SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCTOFPion);
-        hNsigmaTPCTOFPion->GetXaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTPCTOFPion->Draw("colz");
-        // cNsigmaTPCTOFPion->SaveAs(output_QA_folder + ("/NsigmaTPCTOFPion." + outputtype).c_str());
 
         TCanvas *cNsigmaTPCKaon = new TCanvas("cNsigmaTPCKaon", "Nsigma TPC Kaon", 720, 720);
         SetCanvasStyle(cNsigmaTPCKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCKaon);
-        hNsigmaTPCKaon->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTPCKaon->Draw("colz");
-        // cNsigmaTPCKaon->SaveAs(output_QA_folder + ("/NsigmaTPCKaon." + outputtype).c_str());
+        SetHistoQA2D(h2DTPCKaon);
+        // gPad->SetLogz(1);
+        h2DTPCKaon->GetYaxis()->SetTitle("n#sigma_{TPC}");
+        h2DTPCKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTPCKaon->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTPCKaon->GetXaxis()->SetRangeUser(0, 5);
+        h2DTPCKaon->Draw("colz");
+        cNsigmaTPCKaon->SaveAs(output_QA_folder + ("/NsigmaTPCKaon2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTPCPion = new TCanvas("cNsigmaTPCPion", "Nsigma TPC Pion", 720, 720);
         SetCanvasStyle(cNsigmaTPCPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCPion);
-        hNsigmaTPCPion->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTPCPion->Draw("colz");
-        // cNsigmaTPCPion->SaveAs(output_QA_folder + ("/NsigmaTPCPion." + outputtype).c_str());
+        SetHistoQA2D(h2DTPCPion);
+        // gPad->SetLogz(1);
+        h2DTPCPion->GetYaxis()->SetTitle("n#sigma_{TPC}");
+        h2DTPCPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTPCPion->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTPCPion->GetXaxis()->SetRangeUser(0, 5);
+        h2DTPCPion->Draw("colz");
+        cNsigmaTPCPion->SaveAs(output_QA_folder + ("/NsigmaTPCPion2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTOFKaon = new TCanvas("cNsigmaTOFKaon", "Nsigma TOF Kaon", 720, 720);
         SetCanvasStyle(cNsigmaTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTOFKaon);
-        hNsigmaTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTOFKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTOFKaon->Draw("colz");
-        // cNsigmaTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTOFKaon." + outputtype).c_str());
+        SetHistoQA2D(h2DTOFKaon);
+        // gPad->SetLogz(1);
+        h2DTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
+        h2DTOFKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTOFKaon->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTOFKaon->GetXaxis()->SetRangeUser(0, 5);
+        h2DTOFKaon->Draw("colz");
+        cNsigmaTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTOFKaon2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTOFPion = new TCanvas("cNsigmaTOFPion", "Nsigma TOF Pion", 720, 720);
         SetCanvasStyle(cNsigmaTOFPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTOFPion);
-        hNsigmaTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTOFPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTOFPion->Draw("colz");
-        // cNsigmaTOFPion->SaveAs(output_QA_folder + ("/NsigmaTOFPion." + outputtype).c_str());
+        SetHistoQA2D(h2DTOFPion);
+        // gPad->SetLogz(1);
+        h2DTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
+        h2DTOFPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTOFPion->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTOFPion->GetXaxis()->SetRangeUser(0, 5);
+        h2DTOFPion->Draw("colz");
+        cNsigmaTOFPion->SaveAs(output_QA_folder + ("/NsigmaTOFPion2D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTOFKaon_neg = new TCanvas("cNsigmaTOFKaon_neg", "Nsigma TOF Kaon Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFKaon_neg);
-        hNsigmaTOFKaon_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFKaon_neg->GetXaxis()->SetTitle("n#sigma_{TOF} (K^{-})");
-        hNsigmaTOFKaon_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFKaon_neg->Draw();
-        TLine *lineverticalx0 = new TLine(0, hNsigmaTOFKaon_neg->GetMinimum(), 0, hNsigmaTOFKaon_neg->GetMaximum());
-        lineverticalx0->SetLineStyle(2);
-        lineverticalx0->SetLineColor(2);
-        lineverticalx0->SetLineWidth(3);
-        lineverticalx0->Draw();
-        cNsigmaTOFKaon_neg->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_neg." + outputtype).c_str());
+        TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC vs TOF Kaon", 1080, 720);
+        TCanvas *cNsigmaTPCTOFPion = new TCanvas("cNsigmaTPCTOFPion", "Nsigma TPC vs TOF Pion", 1080, 720);
+        SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
+        SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
+        cNsigmaTPCTOFKaon->Divide(3, 2);
+        cNsigmaTPCTOFPion->Divide(3, 2);
 
-        TCanvas *cNsigmaTOFPion_neg = new TCanvas("cNsigmaTOFPion_neg", "Nsigma TOF Pion Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFPion_neg);
-        hNsigmaTOFPion_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFPion_neg->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi^{-})");
-        hNsigmaTOFPion_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFPion_neg->Draw();
-        lineverticalx0->SetY1(hNsigmaTOFPion_neg->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTOFPion_neg->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTOFPion_neg->SaveAs(output_QA_folder + ("/NsigmaTOFPion_neg." + outputtype).c_str());
+        TLatex latPID;
+        latPID.SetNDC();
+        latPID.SetTextFont(42);
+        latPID.SetTextSize(0.06);
 
-        TCanvas *cNsigmaTOFKaon_pos = new TCanvas("cNsigmaTOFKaon_pos", "Nsigma TOF Kaon Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFKaon_pos);
-        hNsigmaTOFKaon_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFKaon_pos->GetXaxis()->SetTitle("n#sigma_{TOF} (K^{+})");
-        hNsigmaTOFKaon_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFKaon_pos->Draw();
-        lineverticalx0->SetY1(hNsigmaTOFKaon_pos->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTOFKaon_pos->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTOFKaon_pos->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_pos." + outputtype).c_str());
+        for (int i = 0; i < 6; i++)
+        {
+            cNsigmaTPCTOFKaon->cd(i + 1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetRightMargin(0.15);
+            gPad->SetBottomMargin(0.13);
+            gPad->SetTopMargin(0.06);
+            SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
+            SetHistoQA2D(h2DNsigmaTPCTOFKaon[i]);
+            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
+            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
+            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFKaon[i]->Draw("colz");
+            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
+            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(1)<<", mean TOF nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(2)<<endl;
 
-        TCanvas *cNsigmaTOFPion_pos = new TCanvas("cNsigmaTOFPion_pos", "Nsigma TOF Pion Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFPion_pos);
-        hNsigmaTOFPion_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFPion_pos->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi^{+})");
-        hNsigmaTOFPion_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFPion_pos->Draw();
-        lineverticalx0->SetY1(hNsigmaTOFPion_pos->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTOFPion_pos->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTOFPion_pos->SaveAs(output_QA_folder + ("/NsigmaTOFPion_pos." + outputtype).c_str());
+            cNsigmaTPCTOFPion->cd(i + 1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetRightMargin(0.15);
+            gPad->SetBottomMargin(0.13);
+            gPad->SetTopMargin(0.06);
+            SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
+            SetHistoQA2D(h2DNsigmaTPCTOFPion[i]);
+            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
+            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
+            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFPion[i]->Draw("colz");
+            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
+        }
 
-        TCanvas *cNsigmaTPCKaon_neg = new TCanvas("cNsigmaTPCKaon_neg", "Nsigma TPC Kaon Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCKaon_neg);
-        hNsigmaTPCKaon_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCKaon_neg->GetXaxis()->SetTitle("n#sigma_{TPC} (K^{-})");
-        hNsigmaTPCKaon_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCKaon_neg->Draw();
-        lineverticalx0->SetY1(hNsigmaTPCKaon_neg->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTPCKaon_neg->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTPCKaon_neg->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_neg." + outputtype).c_str());
+        cNsigmaTPCTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTPCTOFKaon_2D." + outputtype).c_str());
+        cNsigmaTPCTOFPion->SaveAs(output_QA_folder + ("/NsigmaTPCTOFPion_2D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTPCPion_neg = new TCanvas("cNsigmaTPCPion_neg", "Nsigma TPC Pion Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCPion_neg);
-        hNsigmaTPCPion_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCPion_neg->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi^{-})");
-        hNsigmaTPCPion_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCPion_neg->Draw();
-        lineverticalx0->SetY1(hNsigmaTPCPion_neg->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTPCPion_neg->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTPCPion_neg->SaveAs(output_QA_folder + ("/NsigmaTPCPion_neg." + outputtype).c_str());
+        TCanvas *cNsigmaTPCKaon_1D = new TCanvas("cNsigmaTPCKaon_1D", "Nsigma TPC Kaon 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTPCKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        TLegend *leg1DPID = new TLegend(0.17, 0.82, 0.6, 0.92);
+        leg1DPID->SetNColumns(3);
+        leg1DPID->SetTextSize(0.028);
+        leg1DPID->SetFillStyle(0);
+        leg1DPID->SetBorderSize(0);
+        leg1DPID->SetTextFont(42);
 
-        TCanvas *cNsigmaTPCKaon_pos = new TCanvas("cNsigmaTPCKaon_pos", "Nsigma TPC Kaon Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCKaon_pos);
-        hNsigmaTPCKaon_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCKaon_pos->GetXaxis()->SetTitle("n#sigma_{TPC} (K^{+})");
-        hNsigmaTPCKaon_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCKaon_pos->Draw();
-        lineverticalx0->SetY1(hNsigmaTPCKaon_pos->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTPCKaon_pos->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTPCKaon_pos->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_pos." + outputtype).c_str());
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTPCKaon[i]);
+            h1DNsigmaTPCKaon[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
+            h1DNsigmaTPCKaon[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCKaon[i]->SetMaximum(h1DNsigmaTPCKaon[i]->GetMaximum() * 15);
+            h1DNsigmaTPCKaon[i]->Draw("p same");
+            leg1DPID->AddEntry(h1DNsigmaTPCKaon[i], Form("%d-%d%%", multRangesForTPCandTOF[i][0], multRangesForTPCandTOF[i][1]), "p");
+            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h1DNsigmaTPCKaon[i]->GetMean()<<endl;
+        }
+        leg1DPID->Draw();
+        TLine *lineTPCKaon = new TLine(0, 0, 0, h1DNsigmaTPCKaon[0]->GetMaximum());
+        lineTPCKaon->SetLineStyle(2);
+        lineTPCKaon->SetLineColor(2);
+        lineTPCKaon->Draw();
+        cNsigmaTPCKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_1D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTPCPion_pos = new TCanvas("cNsigmaTPCPion_pos", "Nsigma TPC Pion Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCPion_pos);
-        hNsigmaTPCPion_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCPion_pos->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi^{+})");
-        hNsigmaTPCPion_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCPion_pos->Draw();
-        lineverticalx0->SetY1(hNsigmaTPCPion_pos->GetMinimum());
-        lineverticalx0->SetY2(hNsigmaTPCPion_pos->GetMaximum());
-        lineverticalx0->Draw();
-        cNsigmaTPCPion_pos->SaveAs(output_QA_folder + ("/NsigmaTPCPion_pos." + outputtype).c_str());
+        TCanvas *cNsigmaTPCPion_1D = new TCanvas("cNsigmaTPCPion_1D", "Nsigma TPC Pion 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTPCPion_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTPCPion[i]);
+            h1DNsigmaTPCPion[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
+            h1DNsigmaTPCPion[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCPion[i]->SetMaximum(h1DNsigmaTPCPion[i]->GetMaximum() * 15);
+            h1DNsigmaTPCPion[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTPCPion = new TLine(0, 0, 0, h1DNsigmaTPCPion[0]->GetMaximum());
+        lineTPCPion->SetLineStyle(2);
+        lineTPCPion->SetLineColor(2);
+        lineTPCPion->Draw();
+        cNsigmaTPCPion_1D->SaveAs(output_QA_folder + ("/NsigmaTPCPion_1D." + outputtype).c_str());
+
+        TCanvas *cNsigmaTOFKaon_1D = new TCanvas("cNsigmaTOFKaon_1D", "Nsigma TOF Kaon 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTOFKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTOFKaon[i]);
+            h1DNsigmaTOFKaon[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
+            h1DNsigmaTOFKaon[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFKaon[i]->SetMaximum(h1DNsigmaTOFKaon[i]->GetMaximum() * 15);
+            h1DNsigmaTOFKaon[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTOFKaon = new TLine(0, 0, 0, h1DNsigmaTOFKaon[0]->GetMaximum());
+        lineTOFKaon->SetLineStyle(2);
+        lineTOFKaon->SetLineColor(2);
+        lineTOFKaon->Draw();
+        cNsigmaTOFKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_1D." + outputtype).c_str());
+
+        TCanvas *cNsigmaTOFPion_1D = new TCanvas("cNsigmaTOFPion_1D", "Nsigma TOF Pion 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTOFPion_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTOFPion[i]);
+            h1DNsigmaTOFPion[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
+            h1DNsigmaTOFPion[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFPion[i]->SetMaximum(h1DNsigmaTOFPion[i]->GetMaximum() * 15);
+            h1DNsigmaTOFPion[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTOFPion = new TLine(0, 0, 0, h1DNsigmaTOFPion[0]->GetMaximum());
+        lineTOFPion->SetLineStyle(2);
+        lineTOFPion->SetLineColor(2);
+        lineTOFPion->Draw();
+        cNsigmaTOFPion_1D->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D." + outputtype).c_str());
     }
+
+    cout << "\n================= End of the code =================" << endl;
+    cout << "Data file used: " << data_path << endl;
+    cout << "MC file used: " << MCpath << endl;
+    cout << "Selection used: " << (isINEL ? "INEL" : "INEL > 0") << endl;
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

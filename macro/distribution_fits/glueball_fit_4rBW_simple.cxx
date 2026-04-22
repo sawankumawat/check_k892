@@ -59,8 +59,8 @@ void glueball_fit_4rBW_simple()
         // const string kvariation1 = "_CoherentSumPhiPi";
         // string kvariation1 = "BeforeCombinatorialSubtraction";
         // string VariationTempPlot = "Exponential_HERA";
-        const string kvariation1 = "Mix2";
-        // const string kvariation1 = "_temp";
+        // const string kvariation1 = "Mix2";
+        const string kvariation1 = "_CoherentSumBothFixed2";
 
         string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
         // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
@@ -97,8 +97,8 @@ void glueball_fit_4rBW_simple()
             cout << "Error opening file" << endl;
             return;
         }
-#define b_massdepWidth_modifiedBoltzmann
-// #define coherentSum
+// #define b_massdepWidth_modifiedBoltzmann
+#define coherentSum
 #define residual_subtracted
 // #define doublepanelplot
 #define multiPanelPlots
@@ -591,7 +591,7 @@ void glueball_fit_4rBW_simple()
                         BEexpol_initial->SetParameter(i, parameters[i]);
                     }
 
-                    vector<vector<double>> par_limits = {{1, 1 * f1270Width}, {4, 1 * a1320Width}, {7, 1 * f1525Width}, {10, 0.2 * f1710Width}, {11, 10 * f1710WidthErr}};
+                    vector<vector<double>> par_limits = {{1, 0.5 * f1270Width}, {4, 0.5 * a1320Width}, {7, 1 * f1525Width}, {10, 0.2 * f1710Width}, {11, 10 * f1710WidthErr}};
 
                     int limits_size = par_limits.size();
                     for (int i = 0; i < limits_size; i++)
@@ -632,11 +632,14 @@ void glueball_fit_4rBW_simple()
                     // BEexpol->SetParameter(10, f1710Mass);
                     BEexpol->FixParameter(11, f1710Width);
                     if (ipt == 0)
-                        BEexpol->SetParLimits(10, f1710Mass - 0.04, f1710Mass + 0.04);
+                        BEexpol->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
-                    // BEexpol->FixParameter(12, TMath::Pi());         // Fix phase 1
-                    // BEexpol->FixParameter(13, 0.0); // Fix phase 2
+                    // BEexpol->FixParameter(12, TMath::Pi()); // Fix phase 1
+                    BEexpol->FixParameter(12, 0.0);
+
+                    // BEexpol->FixParameter(13, 0.0);         // Fix phase 2
                     BEexpol->FixParameter(13, TMath::Pi()); // Fix phase 2
+                    
                     // BEexpol->SetParLimits(12, 0, 2 * TMath::Pi()); // Set limits for phase 1
                     // BEexpol->SetParLimits(13, 0, 2 * TMath::Pi()); // Set limits for phase 2
 
@@ -703,9 +706,11 @@ void glueball_fit_4rBW_simple()
                     // onlyBW_clone->FixParameter(10, f1710Mass);
                     onlyBW_clone->FixParameter(11, f1710Width);
                     if (ipt == 0)
-                        onlyBW_clone->SetParLimits(10, f1710Mass - 0.045, f1710Mass + 0.045);
+                        onlyBW_clone->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
                     // onlyBW_clone->FixParameter(12, TMath::Pi());
+                    onlyBW_clone->FixParameter(12, 0.0);
+
                     // onlyBW_clone->FixParameter(13, 0.0);
                     onlyBW_clone->FixParameter(13, TMath::Pi());
 
@@ -724,9 +729,12 @@ void glueball_fit_4rBW_simple()
                         singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
                         singlefits[i]->SetLineColor(colors[i]);
                         singlefits[i]->SetLineStyle(2);
-                        // if (i == 3)
-                        //     singlefits[i]->SetLineWidth(3);
-                        // singlefits[i]->Draw("same");
+                        if (i == 3)
+                        {
+                            singlefits[i]->SetLineWidth(2);
+                            singlefits[i]->SetLineColor(kRed);
+                            singlefits[i]->Draw("same");
+                        }
                     }
 
                     TLegend *ltemp = new TLegend(0.25, 0.52, 0.55, 0.87);
@@ -883,10 +891,12 @@ void glueball_fit_4rBW_simple()
                     {
 #ifdef b_massdepWidth_modifiedBoltzmann
                         singlefits1[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, 1.00, 2.5, 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, 1.00, 2.5, 3);
+                        singlefits1[i]->SetParameter(0, obtained_parameters2[3 * i]);
 #else
                         singlefits1[i] = new TF1(Form("singlef%d", i), single_BW, onlyBW_clone->GetXmin(), onlyBW_clone->GetXmax(), 3);
+                        singlefits1[i]->SetParameter(0, pow(obtained_parameters2[3 * i], 2)); // Since in coherent sum the fit is square of BW.
+
 #endif
-                        singlefits1[i]->SetParameter(0, obtained_parameters2[3 * i]);
                         singlefits1[i]->SetParameter(1, obtained_parameters2[3 * i + 1]);
                         singlefits1[i]->SetParameter(2, obtained_parameters2[3 * i + 2]);
                         singlefits1[i]->SetLineColor(colors[i]);

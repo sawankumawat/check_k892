@@ -28,11 +28,15 @@ void mc_closure()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/476106/kstarqa/hInvMass"; // path for yield.root file (from rec MC)
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/657468/kstarqa_MC_closure/hInvMass"; // path for yield.root file (from rec MC)
     string path2 = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/MC_closure";                           // MC file path
 
-    TFile *fspectra1 = new TFile((path1 + "/yield.root").c_str(), "read");
-    TFile *fspectra2 = new TFile((path2 + "/476106.root").c_str(), "read");
+    TString savePath = path1 + "/MC_closure_plots";
+    gSystem->mkdir(savePath, kTRUE);
+
+    // TFile *fspectra1 = new TFile((path1 + "/yield.root").c_str(), "read");
+    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
+    TFile *fspectra2 = new TFile((path2 + "/657468.root").c_str(), "read");
 
     if (fspectra1->IsZombie() || fspectra2->IsZombie())
     {
@@ -47,8 +51,8 @@ void mc_closure()
     TH1F *hmult1[numofmultbins + 1];
     TH1F *hmult2[numofmultbins + 1];
 
-    THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/h2KstarRecpt2");
-    // THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT");
+    // THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/h2KstarRecpt2");
+    THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT");
     if (hSparseRec == nullptr)
     {
         cout << "Error reading efficiency histogram MC" << endl;
@@ -61,8 +65,9 @@ void mc_closure()
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
 
+        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh));
         // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
-        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
+        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
         if (hmult1[imult] == nullptr)
         {
             cout << "Histogram hmult1 not found" << endl;
@@ -83,7 +88,7 @@ void mc_closure()
             float lowpt = pT_bins[i];
             float highpt = pT_bins[i + 1];
             float ptbinwidth = highpt - lowpt;
-            float BR = 0.76;
+            float BR = 0.66;
 
             double nrec = h1rec->Integral(h1rec->GetXaxis()->FindBin(lowpt + 1e-3), h1rec->GetXaxis()->FindBin(highpt - 1e-3)) / (ptbinwidth * BR * entries);
             hmult2[imult]->SetBinContent(i + 1, nrec);
@@ -147,8 +152,8 @@ void mc_closure()
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
         hratio1->GetYaxis()->SetNdivisions(505);
-        hratio1->SetMaximum(1.5);
-        hratio1->SetMinimum(0.5);
+        hratio1->SetMaximum(1.1);
+        hratio1->SetMinimum(0.7);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
         hratio1->Draw("p");
 
@@ -158,6 +163,6 @@ void mc_closure()
         line->SetLineColor(1);
         line->Draw();
 
-        c1->SaveAs((path1 + Form("/MCclosure_%.0f-%.0f.png", multlow, multhigh)).c_str());
+        c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.png", multlow, multhigh));
     }
 }

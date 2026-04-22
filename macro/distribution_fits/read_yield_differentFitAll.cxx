@@ -26,10 +26,10 @@ void read_yield_differentFitAll()
 {
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
-    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_FirstBinRemove2.root").c_str(), "read");
-    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_FirstBinRemove2.root").c_str(), "read");
-    // TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
-    // TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default4.root").c_str(), "read");
+    // TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_FirstBinRemove2.root").c_str(), "read");
+    // TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_FirstBinRemove2.root").c_str(), "read");
+    TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
+    TFile *fReweightf2 = new TFile((path + "mult_0-100/Spectra/ReweighFacf2_Default4.root").c_str(), "read");
 
     if (fReweightf0->IsZombie() || fReweightf2->IsZombie())
     {
@@ -72,7 +72,7 @@ void read_yield_differentFitAll()
     // hYield1525Corrected->GetXaxis()->SetRangeUser(0.0, 7.0); // for zoomed view
     // hYield1710Corrected->GetXaxis()->SetRangeUser(0.0, 7.0); // for zoomed view
 
-    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
+    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties_temp.root").c_str(), "read");
     if (fSys->IsZombie())
     {
         cout << "Error opening systematic uncertainty file" << endl;
@@ -99,11 +99,14 @@ void read_yield_differentFitAll()
     hf02->Sumw2();
     hf21->Sumw2();
     hf22->Sumw2();
+    double FT0visibleCrossSectionError = 0.06; // 6% uncertainty in visible cross section
 
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
         double sys1710 = hYieldSysf0->GetBinContent(i);
+        sys1710 = sqrt(sys1710 * sys1710 + FT0visibleCrossSectionError * FT0visibleCrossSectionError);
         double sys1525 = hYieldSysf2->GetBinContent(i);
+        sys1525 = sqrt(sys1525 * sys1525 + FT0visibleCrossSectionError * FT0visibleCrossSectionError);
         double yield1710 = hf01->GetBinContent(i + 1);
         double yield1525 = hf21->GetBinContent(i + 1);
         // cout << "Bin " << i << ": Yield f0(1710) = " << yield1710 << " with sys error = " << sys1710 << " and Yield f2'(1525) = " << yield1525 << " with sys error = " << sys1525 << endl;
@@ -115,32 +118,32 @@ void read_yield_differentFitAll()
 
     // Fit parameters
     Double_t min = 0.0;
-    // Double_t max = 5.0;
-    Double_t max = 15.0;
+    Double_t max = 5.0;
+    // Double_t max = 15.0;
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.1;
     Option_t *opt = "RIQ0+";
     // Option_t *opt = "REBMSQ0+";
     TString logfilename = "log.root";
-    Double_t minfit = 2.0;
-    // Double_t maxfit = 5.0;
-    Double_t maxfit = 7.0;
+    Double_t minfit = 1.0;
+    Double_t maxfit = 5.0;
+    // Double_t maxfit = 7.0;
 
     // Fit parameters for Levy
     Double_t min2 = 0.0;
     Double_t max2 = 15.0;
     Option_t *opt2 = "RIQ0+";
     // Option_t *opt2 = "REBMSQ0+";
-    Double_t minfit2 = 2.0;
+    Double_t minfit2 = 1.0;
     Double_t maxfit2 = 15.0;
 
     // Fit parameters for Exponential
     Double_t minExp = 0.0;
-    Double_t maxExp = 15.0;
+    Double_t maxExp = 7.0;
     // Double_t maxExp = 10.0;
-    Double_t minfitExp = 2.0;
-    // Double_t maxfitExp = 7.0;
-    Double_t maxfitExp = 10.0;
+    Double_t minfitExp = 1.0;
+    Double_t maxfitExp = 7.0;
+    // Double_t maxfitExp = 10.0;
 
     //====================================Levy-Tsallis Fit==========================================
     TF1 *fitLevyf2 = new TF1("fitLevyf2", FuncLavy, 0.0, 15.0, 4);
@@ -179,8 +182,8 @@ void read_yield_differentFitAll()
     TH1 *houtLevyf0FitReduced = YieldMean(hf01, hf02, fitLevyf0_fitReduced, 0, 10.0, loprecision, hiprecision, opt2, logfilename, 1.0, 10.0);
 
     //====================================Boltzmann Fit==========================================
-    // TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
+    TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
+    // TF1 *fitBoltzmannf2 = new TF1("fitBoltzmannf2", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
     fitBoltzmannf2->SetParameter(0, 0.01);
     fitBoltzmannf2->SetParameter(1, 0.5);
     fitBoltzmannf2->FixParameter(2, 1.525);
@@ -188,8 +191,8 @@ void read_yield_differentFitAll()
     // hf21->Fit(fitBoltzmannf2, opt, "", minfit, maxfit);
     TH1 *houtBoltf2 = YieldMean(hf21, hf22, fitBoltzmannf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
-    // TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
+    TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 5.0, 3);
+    // TF1 *fitBoltzmannf0 = new TF1("fitBoltzmannf0", FuncBoltzmanndNdptTimesPt, 0.0, 7.0, 3);
     fitBoltzmannf0->SetParameter(0, 0.1);
     fitBoltzmannf0->SetParameter(1, 0.5);
     fitBoltzmannf0->FixParameter(2, 1.710);
@@ -198,8 +201,8 @@ void read_yield_differentFitAll()
     TH1 *houtBoltf0 = YieldMean(hf01, hf02, fitBoltzmannf0, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     //====================================Exponential Fit==========================================
-    // TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
+    TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
+    // TF1 *fitExpf2 = new TF1("fitExpf2", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
     fitExpf2->SetParameter(0, 0.1);
     fitExpf2->SetParameter(1, 0.5);
     fitExpf2->SetParNames("norm", "T");
@@ -207,8 +210,8 @@ void read_yield_differentFitAll()
     TH1 *houtExpo2 = YieldMean(hf21, hf22, fitExpf2, minExp, maxExp, loprecision, hiprecision, opt, logfilename, minfitExp, maxfitExp);
     cout << "Norm and T for f2 " << fitExpf2->GetParameter(0) << " " << fitExpf2->GetParameter(1) << endl;
 
-    // TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
-    TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
+    TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 7.0, 2);
+    // TF1 *fitExpf0 = new TF1("fitExpf0", FuncExpdNdptTimesPt, 0.0, 10.0, 2);
     fitExpf0->SetParameter(0, 0.008);
     fitExpf0->SetParameter(1, 1.04);
     fitExpf0->SetParNames("norm", "T");
@@ -231,8 +234,8 @@ void read_yield_differentFitAll()
     // // hf01->Fit(fitMTExpf0, opt, "", minfit, maxfit);
 
     //====================================Bose-Einstein Fit==========================================
-    // TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
+    TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
+    // TF1 *fitBoseEinsteinf2 = new TF1("fitBoseEinsteinf2", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
     fitBoseEinsteinf2->SetParameter(0, 0.5);
     fitBoseEinsteinf2->SetParameter(1, 0.5);
     fitBoseEinsteinf2->FixParameter(2, 1.525);
@@ -240,8 +243,8 @@ void read_yield_differentFitAll()
     // hf21->Fit(fitBoseEinsteinf2, opt, "", minfit, maxfit);
     TH1 *houtBEf2 = YieldMean(hf21, hf22, fitBoseEinsteinf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
-    // TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
-    TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
+    TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 5.0, 3);
+    // TF1 *fitBoseEinsteinf0 = new TF1("fitBoseEinsteinf0", FuncBoseEinsteindNdptTimesPt, 0.0, 7.0, 3);
     fitBoseEinsteinf0->SetParameter(0, 0.5);
     fitBoseEinsteinf0->SetParameter(1, 0.5);
     fitBoseEinsteinf0->FixParameter(2, 1.710);

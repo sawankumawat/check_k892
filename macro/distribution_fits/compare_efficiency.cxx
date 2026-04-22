@@ -1,12 +1,5 @@
-#include <TGenPhaseSpace.h>
-#include <TVector3.h>
-#include <TLorentzVector.h>
-#include <TRandom3.h>
-#include <TCanvas.h>
-#include <TH1F.h>
-#include "src/style.h"
-#include <Math/VectorUtil.h>
-#include "spectra/YieldMean.C"
+#include "../src/style.h"
+#include "../spectra/YieldMean.C"
 
 using namespace std;
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
@@ -21,9 +14,11 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 void compare_efficiency()
 {
     gStyle->SetOptStat(0);
-    TString path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/";
-    TFile *fEffToy = new TFile("efficiencyPtSmear.root", "read");
-    TFile *fEffMC = new TFile(path + "spectra_Default2.root", "read");
+
+    TString MCEffpath = "/home/sawan/Downloads/";
+    // TString MCEffpath = "/home/sawan/alice/practice/MCPlots/Gap2_Rapidity/";
+    TFile *fEffMC = new TFile(MCEffpath + "efficiency.root", "read");
+    TFile *fEffToy = new TFile("../efficiencyPtSmear.root", "read");
     if (fEffToy->IsZombie() || fEffMC->IsZombie())
     {
         cout << "Error opening pt smearing results file" << endl;
@@ -34,7 +29,7 @@ void compare_efficiency()
     TH1F *hEff_1525_toy = (TH1F *)fEffToy->Get("hEff_f2");
     TH1F *hEff_1710_MC = (TH1F *)fEffMC->Get("hefficiencyf0");
     TH1F *hEff_1525_MC = (TH1F *)fEffMC->Get("hefficiencyf2");
-    if (hEff_1710_toy == nullptr || hEff_1525_toy == nullptr)
+    if (hEff_1710_toy == nullptr || hEff_1525_toy == nullptr || hEff_1710_MC == nullptr || hEff_1525_MC == nullptr)
     {
         cout << "Error: Histograms not found in the file." << endl;
         return;
@@ -48,13 +43,10 @@ void compare_efficiency()
     canvas_style(cEffResults, pad1Size, pad2Size);
     cEffResults->cd(1);
     SetHistoQA(hEff_1710_toy);
-    SetHistoQA(hEff_1525_toy);
     SetHistoQA(hEff_1710_MC);
-    SetHistoQA(hEff_1525_MC);
     hEff_1710_toy->SetMarkerSize(1.3);
     hEff_1525_toy->SetMarkerSize(1.3);
     hEff_1710_MC->SetMarkerSize(1.3);
-    hEff_1525_MC->SetMarkerSize(1.3);
     hEff_1710_MC->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     hEff_1710_MC->GetYaxis()->SetLabelSize(0.035 / pad1Size);
     hEff_1710_MC->GetXaxis()->SetLabelSize(0.035 / pad1Size);
@@ -63,31 +55,24 @@ void compare_efficiency()
     hEff_1710_MC->SetLineColor(kBlue);
     hEff_1710_MC->SetMarkerColor(kBlue);
     hEff_1710_MC->GetYaxis()->SetMaxDigits(3);
-    hEff_1710_MC->SetMaximum(0.06);
+    hEff_1710_MC->SetMaximum(0.07);
     hEff_1710_MC->SetMinimum(-0.002);
     hEff_1710_MC->Draw();
-    hEff_1525_MC->SetLineColor(kRed);
-    hEff_1525_MC->SetMarkerColor(kRed);
-    hEff_1525_MC->Draw("SAME");
     hEff_1710_toy->SetLineColor(kGreen + 2);
     hEff_1710_toy->SetMarkerColor(kGreen + 2);
     hEff_1710_toy->SetMarkerStyle(21);
     hEff_1710_toy->Draw("SAME");
-    hEff_1525_toy->SetLineColor(kMagenta);
-    hEff_1525_toy->SetMarkerColor(kMagenta);
-    hEff_1525_toy->SetMarkerStyle(21);
-    hEff_1525_toy->Draw("SAME");
 
-    TLegend *leg2 = new TLegend(0.2, 0.75, 0.90, 0.9);
+    TLegend *leg2 = new TLegend(0.15, 0.77, 0.4, 0.9);
     leg2->SetBorderSize(0);
     leg2->SetFillStyle(0);
-    leg2->SetTextSize(0.04);
+    leg2->SetTextSize(0.035);
     leg2->SetTextFont(42);
-    leg2->SetNColumns(2);
-    leg2->AddEntry(hEff_1525_MC, "f_{2}(1525) (MC)", "l");
-    leg2->AddEntry(hEff_1710_MC, "f_{0}(1710) (MC)", "l");
-    leg2->AddEntry(hEff_1525_toy, "f_{2}(1525) (Toy model)", "l");
-    leg2->AddEntry(hEff_1710_toy, "f_{0}(1710) (Toy model)", "l");
+    // leg2->SetNColumns(2);
+    // leg2->AddEntry(hEff_1525_MC, "f_{2}(1525) (MC)", "lp");
+    leg2->AddEntry(hEff_1710_MC, "f_{0}(1710) (MC)", "lp");
+    // leg2->AddEntry(hEff_1525_toy, "f_{2}(1525) (Toy model)", "lp");
+    leg2->AddEntry(hEff_1710_toy, "f_{0}(1710) (Toy model)", "lp");
     leg2->Draw();
 
     cEffResults->cd(2);
@@ -123,18 +108,66 @@ void compare_efficiency()
     hEffRatio1710->SetLineColor(kBlue);
     hEffRatio1710->SetMarkerColor(kBlue);
     hEffRatio1710->GetYaxis()->SetNdivisions(505);
-    hEffRatio1710->SetMaximum(0.53);
-    hEffRatio1710->SetMinimum(0.31);
-    hEffRatio1710->Draw("HIST");
-    SetHistoQA(hEffRatio1525);
-    hEffRatio1525->SetLineColor(kRed);
-    hEffRatio1525->SetMarkerColor(kRed);
-    hEffRatio1525->Draw("HIST SAME");
-    TLine *lineRatio = new TLine(0, 1, 15, 1);
-    lineRatio->SetLineStyle(1);
+    hEffRatio1710->SetMaximum(1.75);
+    hEffRatio1710->SetMinimum(0.52);
+    // hEffRatio1710->SetMaximum(0.53);
+    // hEffRatio1710->SetMinimum(0.31);
+    hEffRatio1710->Draw("pe");
+    TLine *lineRatio = new TLine(1, 1, 15, 1);
+    lineRatio->SetLineStyle(2);
     lineRatio->SetLineColor(kBlack);
     lineRatio->Draw();
-    cEffResults->SaveAs(path + "pTSmearing/f0_f2_Average_eff_vs_pT.png");
+    cEffResults->SaveAs(MCEffpath + "eff_comp_f0.png");
+
+    TCanvas *cEffResultsf2 = new TCanvas("cEffResultsf2", "Efficiency vs p_{T} Comparison for f_{2}(1525)", 720, 720);
+    SetCanvasStyle(cEffResultsf2, 0.15, 0.05, 0.05, 0.15);
+    canvas_style(cEffResultsf2, pad1Size, pad2Size);
+    cEffResultsf2->cd(1);
+    SetHistoQA(hEff_1525_toy);
+    SetHistoQA(hEff_1525_MC);
+    hEff_1525_toy->SetMarkerSize(1.3);
+    hEff_1525_MC->SetMarkerSize(1.3);
+    hEff_1525_MC->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    hEff_1525_MC->GetYaxis()->SetLabelSize(0.035 / pad1Size);
+    hEff_1525_MC->GetXaxis()->SetLabelSize(0.035 / pad1Size);
+    hEff_1525_MC->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    hEff_1525_MC->GetYaxis()->SetTitleOffset(1.3 * pad1Size);
+    hEff_1525_MC->SetLineColor(kBlue);
+    hEff_1525_MC->SetMarkerColor(kBlue);
+    hEff_1525_MC->GetYaxis()->SetMaxDigits(3);
+    hEff_1525_MC->SetMaximum(0.07);
+    hEff_1525_MC->SetMinimum(-0.002);
+    hEff_1525_MC->Draw();
+    hEff_1525_toy->SetLineColor(kMagenta);
+    hEff_1525_toy->SetMarkerColor(kMagenta);
+    hEff_1525_toy->SetMarkerStyle(21);
+    hEff_1525_toy->Draw("SAME");
+
+    TLegend *leg3 = new TLegend(0.15, 0.77, 0.4, 0.9);
+    leg3->SetBorderSize(0);
+    leg3->SetFillStyle(0);
+    leg3->SetTextSize(0.035);
+    leg3->SetTextFont(42);
+    leg3->AddEntry(hEff_1525_MC, "f_{2}(1525) (MC)", "lp");
+    leg3->AddEntry(hEff_1525_toy, "f_{2}(1525) (Toy model)", "lp");
+    leg3->Draw();
+
+    cEffResultsf2->cd(2);
+    SetHistoQA(hEffRatio1525);
+    hEffRatio1525->GetYaxis()->SetTitle("MC/Toy model");
+    hEffRatio1525->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+    hEffRatio1525->GetYaxis()->SetLabelSize(0.035 / pad2Size);
+    hEffRatio1525->GetXaxis()->SetLabelSize(0.035 / pad2Size);
+    hEffRatio1525->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    hEffRatio1525->GetYaxis()->SetTitleOffset(1.6 * pad2Size);
+    hEffRatio1525->SetLineColor(kBlue);
+    hEffRatio1525->SetMarkerColor(kBlue);
+    hEffRatio1525->GetYaxis()->SetNdivisions(505);
+    hEffRatio1525->SetMaximum(1.75);
+    hEffRatio1525->SetMinimum(0.52);
+    hEffRatio1525->Draw("pe");
+    lineRatio->Draw();
+    cEffResultsf2->SaveAs(MCEffpath + "eff_comp_f2.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

@@ -37,16 +37,62 @@ void compare_yield_inel()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = false;
-    // double inelNormRun2 = 0.892; event loss factor used in run 2
+    bool isSameBins = true;
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass"; // 2023 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass"; // 2024 data
+    ////Normalization factors used in run 2 INEL study:
+    double f_norm_run2 = 0.7448;
+    double f_vtx_run2 = 0.931264; // (In Phi AN, f_vtx_run2 is called as f_vtx)
+
+    double f_norm_run3 = 0.677; //(52.8 / 77.904) (https://indico.cern.ch/event/1649731/contributions/6943855/attachments/3222296/5743342/Gagliardi_APW_180226.pdf)
+
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa/hInvMass"; // 2024 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
-    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
-    TFile *fspectra2 = new TFile((path2 + "/corrected_spectra.root").c_str(), "read");
+    //==============First lets calcuate signal loss for INEL=======================
+    TFile *fSigLoss = new TFile("/home/sawan/check_k892/mc/LHC24f3c/659253.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
+    string pathNum = "kstarqa_AllEvents";
+    string pathDen = "kstarqa_AllEventsVz";
+    // string pathDen = "kstarqa_VzSel8";
+    THnSparseF *hSpraseGenAll = (THnSparseF *)fSigLoss->Get(Form("%s/hInvMass/hk892GenpT", pathNum.c_str()));
+    THnSparseF *hSpraseGenVzSel = (THnSparseF *)fSigLoss->Get(Form("%s/hInvMass/hk892GenpT", pathDen.c_str()));
+    if (hSpraseGenAll == nullptr || hSpraseGenVzSel == nullptr)
+    {
+        cout << "Error reading histograms" << endl;
+        return;
+    }
+    TH1D *hGenAll = hSpraseGenAll->Projection(0, "E");
+    TH1D *hGenVzSel = hSpraseGenVzSel->Projection(0, "E");
+
+    double pT_bins[] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0}; // Run2 INEL
+
+    TH1D *hSignalLoss = new TH1D("hSignalLoss", "Signal Loss vs pT", sizeof(pT_bins) / sizeof(pT_bins[0]) - 1, pT_bins);
+    for (int i = 1; i <= hSignalLoss->GetNbinsX(); i++)
+    {
+        double genAll = hGenAll->GetBinContent(i);
+        double genVzSel = hGenVzSel->GetBinContent(i);
+        double loss = genAll / genVzSel; // Signal loss
+        hSignalLoss->SetBinContent(i, loss);
+        double efficiencyerr = sqrt(abs(((genVzSel + 1) / (genAll + 2)) * ((genVzSel + 2) / (genAll + 3) - (genVzSel + 1) / (genAll + 2))));
+        hSignalLoss->SetBinError(i, efficiencyerr);
+    }
+
+    TCanvas *cSignalLoss = new TCanvas("cSignalLoss", "Signal Loss vs pT", 720, 720);
+    SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
+    SetHistoQA(hSignalLoss);
+    hSignalLoss->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSignalLoss->GetYaxis()->SetTitle("Signal Loss");
+    hSignalLoss->GetYaxis()->SetTitleOffset(1.6);
+    hSignalLoss->SetMarkerSize(1.5);
+    hSignalLoss->SetMaximum(1.38);
+    hSignalLoss->SetMinimum(0.65);
+    hSignalLoss->Draw("pe");
+    cSignalLoss->SaveAs(outputPath + "/SignalLoss.png");
+    //=================Signal loss end=======================
+
+    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_INEL.root").c_str(), "read");
+    TFile *fspectra2 = new TFile((path2 + "/corrected_spectra_INEL.root").c_str(), "read");
     // TFile *fspectra3 = new TFile((path3 + "/corrected_spectra.root").c_str(), "read");
 
     if (fspectra1->IsZombie())
@@ -68,13 +114,25 @@ void compare_yield_inel()
 
     TH1F *hmult1, *hmult2, *hmult3;
     TH1F *hmultClone1, *hmultClone2, *hmultClone3;
-    hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
-    hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral_final");
+    // hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final"); // for INEL event/signal loss correction is not applied.
+    // hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral_final");
+
+    hmult1 = (TH1F *)fspectra1->Get("mult_0-120/corrected_spectra_Integral");
+    hmult2 = (TH1F *)fspectra2->Get("mult_0-120/corrected_spectra_Integral");
+    if (hmult1 == nullptr || hmult2 == nullptr)
+    {
+        cout << "Error: histograms not found in the corrected spectra root file" << endl;
+        return;
+    }
     hmult1->Scale(2.0); // for INEL it is K* + K*_bar and not their avearge (but confirm it once)
     hmult2->Scale(2.0); //
-    // hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral");
-    // hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral");
-    // hmult3 = (TH1F *)fspectra3->Get("mult_0-100/corrected_spectra_Integral");
+    // hmult1->Scale(f_norm_run2 * f_vtx_run2); // Adding same correction factors as run2 for comparison
+    // hmult2->Scale(f_norm_run2 * f_vtx_run2);
+    hmult1->Scale(f_norm_run3 * f_vtx_run2);
+    hmult2->Scale(f_norm_run3 * f_vtx_run2);
+    hmult1->Multiply(hSignalLoss);
+    hmult2->Multiply(hSignalLoss);
+
     hmultClone1 = (TH1F *)hmult1->Clone("hmultClone0");
     hmultClone2 = (TH1F *)hmult2->Clone("hmultClone0");
 
@@ -224,7 +282,7 @@ void compare_yield_inel()
     h1->GetXaxis()->SetTitleOffset(1.02);
     h1->SetMarkerStyle(20);
     h1->SetMarkerSize(1);
-    h1->GetXaxis()->SetRangeUser(0, 10);
+    h1->GetXaxis()->SetRangeUser(0, 15);
     h1->SetLineColor(kBlue);
     h1->SetMarkerColor(kBlue);
     h1->Draw("pe");
@@ -257,8 +315,8 @@ void compare_yield_inel()
 
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
-    leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", 0.0, 100.0));
-    leg->AddEntry(h1, "2023 data", "p");
+    leg->AddEntry((TObject *)0, "INEL", "");
+    leg->AddEntry(h1, "LHC24_pass1_minBias", "p");
     // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
     // leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
@@ -290,28 +348,27 @@ void compare_yield_inel()
     gratio1->GetYaxis()->SetTitleOffset(0.6);
     gratio1->GetXaxis()->SetTitleOffset(1.1);
     gratio1->GetYaxis()->SetNdivisions(506);
-    gratio1->GetXaxis()->SetRangeUser(0, 10);
-    // gratio1->GetHistogram()->SetMaximum(1.6);
-    // gratio1->GetHistogram()->SetMinimum(0.6);
-    gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
-    gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
-    // gratio1->SetMinimum(0.45);
+    gratio1->GetXaxis()->SetRangeUser(0, 15);
+    // gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
+    // gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
+    gratio1->SetMinimum(0.2);
+    gratio1->SetMaximum(1.95);
     gratio1->Draw("ap");
     gratio2->SetMarkerStyle(21);
     gratio2->SetMarkerSize(1.0);
     gratio2->SetMarkerColor(kRed);
     gratio2->SetLineColor(kRed);
-    gratio2->Draw("p same");
+    // gratio2->Draw("p same");
     // gratio3->SetMarkerStyle(22);
     // gratio3->SetMarkerSize(1.0);
     // gratio3->SetMarkerColor(kGreen + 2);
     // gratio3->SetLineColor(kGreen + 2);
     // gratio3->Draw("p same");
 
-    TLine *line = new TLine(0, 1, 10, 1);
+    TLine *line = new TLine(0, 1, 15, 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
-    // c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
+    c1->SaveAs(outputPath + "/YieldRatioINEL.png");
 }

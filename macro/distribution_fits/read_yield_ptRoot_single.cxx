@@ -24,8 +24,8 @@ void read_yield_ptRoot_single()
 
     // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
 
-    string inputFileName = "Mix2";
-    string outputFileName = "Mix2";
+    string inputFileName = "Default2";
+    string outputFileName = "Default3";
 
     // TFile *inputFile = new TFile((path + "FitParam.root").c_str(), "READ");
     // TFile *inputFile = new TFile((path + "FitParam_temp.root").c_str(), "READ");
@@ -204,7 +204,7 @@ void read_yield_ptRoot_single()
             double eff1525_err = hefficiencyf2->GetBinError(ibins + 1);
             // double oneUponTriggerEfficiency = 70.0 / 46.1; // (this was for 5.36 in pp dataset)
             double INELCrossSection = 77.904;  // in mb for 13.6 TeV calculated from interpolation (PHYSICAL REVIEW C 97, 054910 (2018))
-            double visibleCrossSection = 52.8; // 52.8 mb +- 10% (https://indico.cern.ch/event/1633849/contributions/6884528/attachments/3201859/5700356/PAG_Lumi_16Jan2026.pdf)
+            double visibleCrossSection = 52.8; // 52.8 mb +- 6% (https://indico.cern.ch/event/1633849/contributions/6884528/attachments/3201859/5700356/PAG_Lumi_16Jan2026.pdf)
             double oneUponTriggerEfficiency = INELCrossSection / visibleCrossSection;
             // double BR_f0 = 0.1667 / 2; (from thermal fist model)
             double BR_f0 = 1.0;

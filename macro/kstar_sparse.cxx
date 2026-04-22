@@ -20,12 +20,14 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "png";     // pdf, eps
+    string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = false;
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
+    bool isINEL = false;
+    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
     //********************************************************************************
 
@@ -53,6 +55,13 @@ void kstar_sparse()
     t2->SetNDC(); // to self adjust the text so that it remains in the box
     t2->SetTextSize(0.06);
     t2->SetTextFont(42);
+
+    int sizeOfpTbins = sizeof(pT_bins) / sizeof(pT_bins[0]) - 1;
+    if (sizeOfpTbins != Npt)
+    {
+        cerr << "Error: size of pT_bins array does not match Npt" << endl;
+        return;
+    }
 
     TCanvas *cinv[Npt]; // for output canvases on screen containing fitted signal after subtraction
 
@@ -104,8 +113,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -137,12 +146,15 @@ void kstar_sparse()
 
     if (calcInvMass)
     {
-        filecmp = new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
+        filecmp = (isINEL) ? new TFile((koutputfolder + "/yield_INEL.root").c_str(), "RECREATE") : new TFile((koutputfolder + "/yield.root").c_str(), "RECREATE");
     }
 
-    // for (int imult = 0; imult < nmultbins + 1; imult++)
-    for (int imult = 0; imult < 1; imult++)
+    for (int imult = 0; imult < nmultbins + 1; imult++)
+    // for (int imult = 0; imult < 1; imult++)
     {
+        if (isINEL && imult != 0)
+            break;
+
         // basic checks
         if (kNormRangepT.size() < Npt || kFitRange.size() < Npt || kRebin.size() < Npt)
         {
@@ -155,7 +167,7 @@ void kstar_sparse()
         if (imult == 0)
         {
             multlow = 0;
-            multhigh = 100; // for all multiplicity
+            multhigh = (isINEL) ? 120 : 100; // for all multiplicity
         }
         else
         {
@@ -201,11 +213,11 @@ void kstar_sparse()
                 double lowfitrange = kFitRange[ip][0];
                 double highfitrange = kFitRange[ip][1];
 
-                // if (imult == nmultbins)
-                // {
-                //     lowfitrange = kFitRange70to100[ip][0]; // for last mult bin, extend the range a bit
-                //     highfitrange = kFitRange70to100[ip][1];
-                // }
+                if (imult == nmultbins && ip == 2)
+                {
+                    lowfitrange = 0.76;
+                    highfitrange = 1.02;
+                }
                 // if (imult == 1 && ip == 0)
                 // { // for multiplicity 0-1% and first pt bin
                 //     lowfitrange = 0.77;
@@ -371,11 +383,11 @@ void kstar_sparse()
                 }
                 else if (imult == 1 && ip > Npt - 4)
                 {
-                    fitFcn->SetParLimits(0, 0.895, 0.898); // Mass
+                    fitFcn->SetParLimits(0, 0.893, 0.9); // Mass
                 }
                 else if (imult == nmultbins && ip > Npt - 4)
                 {
-                    fitFcn->SetParLimits(0, 0.895, 0.898); // Mass
+                    fitFcn->SetParLimits(0, 0.893, 0.9); // Mass
                 }
                 else if (imult == 1 && ip == 10)
                 {
@@ -386,7 +398,7 @@ void kstar_sparse()
                     fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
                 }
                 fitFcn->FixParameter(1, widthpdg); // width
-                // fitFcn->SetParLimits(1, 0.033, 0.065); // width
+                // fitFcn->SetParLimits(1, 0.04, 0.06); // width
                 fitFcn->SetParameter(2, 1000);     // yield
                 fitFcn->SetParLimits(2, 0.0, 1e8); // Yield
 
@@ -438,11 +450,11 @@ void kstar_sparse()
                 TF1 *fitFcn2_plusm = new TF1("fitFcn2_plusm", BW, lowfitrange, highfitrange, 3);
                 TF1 *fitFcn2_minusm = new TF1("fitFcn2_minusm", BW, lowfitrange, highfitrange, 3);
                 fitFcn2_plusm->FixParameter(0, Mass[ip] + ErrorMass[ip]);
-                fitFcn2_plusm->FixParameter(1, 0.047);
+                fitFcn2_plusm->FixParameter(1, widthpdg);
                 fitFcn2_plusm->FixParameter(2, Yield[ip]);
 
                 fitFcn2_minusm->FixParameter(0, Mass[ip] - ErrorMass[ip]);
-                fitFcn2_minusm->FixParameter(1, 0.047);
+                fitFcn2_minusm->FixParameter(1, widthpdg);
                 fitFcn2_minusm->FixParameter(2, Yield[ip]);
 
                 //*********************************************************************************************************************
@@ -491,7 +503,7 @@ void kstar_sparse()
                 Error_2 = sum_tail_correction - Tail_correction_plusm;
                 Final_pro_error = TMath::Sqrt(Error_2 * Error_2 + hBCError_1 * hBCError_1) / (Event * ptbinwidth[ip] * dy * BR);
 
-                cout<<"Yield from bin counting is "<<Total_Ybincounting<<" +/- "<<Final_pro_error<<endl;
+                cout << "Yield from bin counting is " << Total_Ybincounting << " +/- " << Final_pro_error << endl;
 
                 ////Uncorrected Yield/////////////////////////////////////////////////////////////////////////////////
 
@@ -528,7 +540,7 @@ void kstar_sparse()
 
                 hintegral_yield->SetBinContent(ip + 1, yieldcalc);
                 hintegral_yield->SetBinError(ip + 1, yielderror); // filling histogram including error
-                cout<<"Total yield from function integration is "<<yieldcalc<<" +/- "<<yielderror<<endl;
+                cout << "Total yield from function integration is " << yieldcalc << " +/- " << yielderror << endl;
 
                 //**Filling mass and width fitting parameter in histogram*******************************************************************************
 
@@ -548,15 +560,16 @@ void kstar_sparse()
                 SetHistoQA(fHistTotal[ip]);
 
                 hfsig->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
-                hfsig->GetYaxis()->SetMaxDigits(2);
+                hfsig->GetYaxis()->SetMaxDigits(3);
                 hfsig->GetYaxis()->CenterTitle(1);
+                hfsig->GetYaxis()->SetTitleOffset(1.45);
                 hfsig->GetYaxis()->SetTitle(Form("Counts/%.0f MeV/#it{c}^{2}", binwidth_file * 1000));
 
                 SetHistoQA(hfbkg);
                 hfbkg->SetLineColor(kRed);
                 hfbkg->SetMarkerColor(kRed);
                 hfbkg->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
-                // hfsig->GetYaxis()->SetMaxDigits(2);
+                // hfsig->GetYaxis()->SetMaxDigits(3);
                 hfbkg->GetYaxis()->SetTitle(Form("Counts/%.0f MeV/#it{c}^{2}", binwidth_file * 1000));
 
                 fitFcn1->SetLineColor(4);
@@ -745,7 +758,7 @@ void kstar_sparse()
                 SetLegendStyle(massleg);
                 massleg->SetTextSize(txtsize);
                 // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-                TLine *line = new TLine(hmass->GetXaxis()->GetXmin(), 0.895, hmass->GetXaxis()->GetXmax(), 0.895);
+                TLine *line = new TLine(hmass->GetXaxis()->GetXmin(), masspdg, hmass->GetXaxis()->GetXmax(), masspdg);
                 line->SetLineStyle(2);
                 line->SetLineColor(2);
                 line->SetLineWidth(3);
@@ -768,12 +781,12 @@ void kstar_sparse()
                 SetLegendStyle(widthleg);
                 widthleg->SetTextSize(txtsize);
                 // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-                TLine *line2 = new TLine(hwidth->GetXaxis()->GetXmin(), 0.047, hwidth->GetXaxis()->GetXmax(), 0.047);
+                TLine *line2 = new TLine(hwidth->GetXaxis()->GetXmin(), widthpdg, hwidth->GetXaxis()->GetXmax(), widthpdg);
                 line2->SetLineStyle(2);
                 line2->SetLineColor(2);
                 line2->SetLineWidth(3);
                 line2->Draw();
-                widthleg->AddEntry(line, "PDG Width", "l");
+                widthleg->AddEntry(line2, "PDG Width", "l");
                 widthleg->SetFillStyle(0);
                 widthleg->Draw();
                 csig->SaveAs(outputfolder_mult + ("/width_pt." + outputtype).c_str());
@@ -830,43 +843,49 @@ void kstar_sparse()
     std::cout << "Real time elapsed: " << realTime << " seconds" << std::endl;
     std::cout << "CPU time used: " << cpuTime << " seconds" << std::endl;
 
+    cout << "============= End of the code =============" << endl;
+    cout << "Data file used: " << kDataFilename.c_str() << endl;
+    cout << "Selection used: " << (isINEL ? "INEL" : "INEL > 0") << endl;
+
     if (makeQAplots)
     {
         gStyle->SetOptStat(0);
-        TH1F *hDCAxy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hDcaxy", multpath.c_str()));
-        TH1F *hDCAz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hDcaz", multpath.c_str()));
+        TH3F *hDCAxy3D = (TH3F *)fInputFile->Get(Form("%s/eventSelection/hDcaxy_cent_pt", multpath.c_str()));
+        TH3F *hDCAz3D = (TH3F *)fInputFile->Get(Form("%s/eventSelection/hDcaz_cent_pt", multpath.c_str()));
         TH1F *hMult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
         TH1F *hvz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hVertexZRec", multpath.c_str()));
         TH1F *hoccupancy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hOccupancy", multpath.c_str()));
         TH1F *hEventCut = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hEventCut", multpath.c_str()));
         TH1F *htracksData = (TH1F *)fInputFile->Get(Form("%s/eventSelection/tracksCheckData", multpath.c_str()));
+        TH1D *hDCAxy = hDCAxy3D->ProjectionX("hDCAxy", -1, -1, -1, -1);
+        TH1D *hDCAz = hDCAz3D->ProjectionX("hDCAz", -1, -1, -1, -1);
         if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksData == nullptr)
         {
             cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
             return;
         }
 
-        TH2F *hNsigmaTPCTOFKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Ka_after", multpath.c_str()));
-        TH2F *hNsigmaTPCTOFPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Pi_after", multpath.c_str()));
-        TH2F *hNsigmaTPCKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaKaonTPC_after", multpath.c_str()));
-        TH2F *hNsigmaTPCPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaPionTPC_after", multpath.c_str()));
-        TH2F *hNsigmaTOFKaon = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaKaonTOF_after", multpath.c_str()));
-        TH2F *hNsigmaTOFPion = (TH2F *)fInputFile->Get(Form("%s/hPID/After/hNsigmaPionTOF_after", multpath.c_str()));
+        // For PID QA plots, another separate code is present. In this code, we need to replace TH2F with TH3F to plot PID.
+
+        TH3F *hNsigmaTPCTOFKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Ka_after", multpath.c_str()));
+        TH3F *hNsigmaTPCTOFPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Pi_after", multpath.c_str()));
+        TH3F *hNsigmaTPCKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTPCnsigKa_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTPCPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTPCnsigPi_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTOFKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTOFnsigKa_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTOFPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTOFnsigPi_mult_pt", multpath.c_str()));
         if (hNsigmaTPCTOFKaon == nullptr || hNsigmaTPCTOFPion == nullptr || hNsigmaTPCKaon == nullptr || hNsigmaTPCPion == nullptr || hNsigmaTOFKaon == nullptr || hNsigmaTOFPion == nullptr)
         {
             cerr << "PID histograms after selection not found!!!!!!!!!!!!" << endl;
             return;
         }
 
-        TH1F *hNsigmaTOFKaon_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_neg_kaon", multpath.c_str()));
-        TH1F *hNsigmaTOFPion_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_neg_pion", multpath.c_str()));
-        TH1F *hNsigmaTOFKaon_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_pos_kaon", multpath.c_str()));
-        TH1F *hNsigmaTOFPion_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TOF_pos_pion", multpath.c_str()));
-        TH1F *hNsigmaTPCKaon_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_neg_kaon", multpath.c_str()));
-        TH1F *hNsigmaTPCPion_neg = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_neg_pion", multpath.c_str()));
-        TH1F *hNsigmaTPCKaon_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_pos_kaon", multpath.c_str()));
-        TH1F *hNsigmaTPCPion_pos = (TH1F *)fInputFile->Get(Form("%s/hPID/Before/h1PID_TPC_pos_pion", multpath.c_str()));
-        if (hNsigmaTOFKaon_neg == nullptr || hNsigmaTOFPion_neg == nullptr || hNsigmaTOFKaon_pos == nullptr || hNsigmaTOFPion_pos == nullptr || hNsigmaTPCKaon_neg == nullptr || hNsigmaTPCPion_neg == nullptr || hNsigmaTPCKaon_pos == nullptr || hNsigmaTPCPion_pos == nullptr)
+        TH3F *hNsigmaTPCTOFKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Ka_before", multpath.c_str()));
+        TH3F *hNsigmaTPCTOFPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Pi_before", multpath.c_str()));
+        TH3F *hNsigmaTPCKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTPCnsigKa_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTPCPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTPCnsigPi_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTOFKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTOFnsigKa_mult_pt", multpath.c_str()));
+        TH3F *hNsigmaTOFPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTOFnsigPi_mult_pt", multpath.c_str()));
+        if (hNsigmaTPCTOFKaon_before == nullptr || hNsigmaTPCTOFPion_before == nullptr || hNsigmaTPCKaon_before == nullptr || hNsigmaTPCPion_before == nullptr || hNsigmaTOFKaon_before == nullptr || hNsigmaTOFPion_before == nullptr)
         {
             cerr << "PID histograms before selection not found!!!!!!!!!!!!" << endl;
             return;
@@ -924,8 +943,8 @@ void kstar_sparse()
         TCanvas *cTracksData = new TCanvas("cTracksData", "Tracks Data", 1440, 720);
         SetCanvasStyle(cTracksData, 0.1, 0.03, 0.06, 0.16);
         SetHistoQA(htracksData);
-        gPad->SetLogy(1);
-        gPad->SetGrid(1,0);
+        // gPad->SetLogy(1);
+        gPad->SetGrid(1, 0);
         htracksData->SetTitle("Tracks Data");
         htracksData->GetYaxis()->SetTitle("Counts");
         htracksData->GetYaxis()->SetTitleOffset(0.8);
@@ -934,142 +953,233 @@ void kstar_sparse()
         htracksData->Draw();
         cTracksData->SaveAs(output_QA_folder + ("/TracksData." + outputtype).c_str());
 
-        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1440, 720);
+        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1080, 720);
         SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
         SetHistoQA(hEventCut);
-        gPad->SetGrid(1,0);
-        gPad->SetLogy(1);
-        hEventCut->SetTitle("Event Cut");
+        gPad->SetGrid(1, 0);
+        // gPad->SetLogy(1);
+        hEventCut->SetTitle("Event selections");
         hEventCut->GetYaxis()->SetTitle("Counts");
         hEventCut->GetYaxis()->SetTitleOffset(0.8);
-        hEventCut->GetXaxis()->SetRangeUser(0, 16);
+        hEventCut->GetXaxis()->SetRangeUser(0, 11);
         hEventCut->Draw();
         cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
 
-        gPad->SetLogy(0);
-        TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC TOF Kaon", 720, 720);
-        SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCTOFKaon);
-        hNsigmaTPCTOFKaon->GetXaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTPCTOFKaon->Draw("colz");
-        cNsigmaTPCTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTPCTOFKaon." + outputtype).c_str());
+        //===============PID plots==========================
+        // Plots to make. 2D plots TPCKa, TPCPi, TOFKa, TOFPi as a function of pT. Then 2D plot of TPC vs TOF of Ka and Pi at different pT ranges.
 
-        TCanvas *cNsigmaTPCTOFPion = new TCanvas("cNsigmaTPCTOFPion", "Nsigma TPC TOF Pion", 720, 720);
-        SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCTOFPion);
-        hNsigmaTPCTOFPion->GetXaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTPCTOFPion->Draw("colz");
-        cNsigmaTPCTOFPion->SaveAs(output_QA_folder + ("/NsigmaTPCTOFPion." + outputtype).c_str());
+        double pTrangesForTPCandTOF[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
+        vector<vector<int>> multRangesForTPCandTOF = {{0, 1}, {1, 5}, {10, 20}, {30, 40}, {50, 70}, {70, 100}};
+        TH2F *h2DTPCKaon = (TH2F *)hNsigmaTPCKaon->Project3D("xz");
+        TH2F *h2DTPCPion = (TH2F *)hNsigmaTPCPion->Project3D("xz");
+        TH2F *h2DTOFKaon = (TH2F *)hNsigmaTOFKaon->Project3D("xz");
+        TH2F *h2DTOFPion = (TH2F *)hNsigmaTOFPion->Project3D("xz");
+        TH2 *h2DNsigmaTPCTOFKaon[6];
+        TH2 *h2DNsigmaTPCTOFPion[6];
+        TH1F *h1DNsigmaTPCKaon[6];
+        TH1F *h1DNsigmaTPCPion[6];
+        TH1F *h1DNsigmaTOFKaon[6];
+        TH1F *h1DNsigmaTOFPion[6];
+
+        for (int i = 0; i < 6; i++)
+        {
+            int lowBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i] + 0.001);
+            int highBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i + 1] - 0.001);
+
+            hNsigmaTPCTOFKaon->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
+            hNsigmaTPCTOFPion->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
+
+            h2DNsigmaTPCTOFKaon[i] = (TH2 *)hNsigmaTPCTOFKaon->Project3D("xy");
+            h2DNsigmaTPCTOFPion[i] = (TH2 *)hNsigmaTPCTOFPion->Project3D("xy");
+
+            // ✅ Rename AFTER creation (otherwise all histograms will be same)
+            h2DNsigmaTPCTOFKaon[i]->SetName(Form("xy_Ka_%d", i));
+            h2DNsigmaTPCTOFPion[i]->SetName(Form("xy_Pi_%d", i));
+
+            // Now lets make 1D projections with limit on multiplicity ranges
+            int lowBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][0] + 0.001);
+            int highBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][1] - 0.001);
+
+            h1DNsigmaTPCKaon[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTPCPion[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTOFKaon[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
+            h1DNsigmaTOFPion[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
+        }
 
         TCanvas *cNsigmaTPCKaon = new TCanvas("cNsigmaTPCKaon", "Nsigma TPC Kaon", 720, 720);
         SetCanvasStyle(cNsigmaTPCKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCKaon);
-        hNsigmaTPCKaon->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTPCKaon->Draw("colz");
-        cNsigmaTPCKaon->SaveAs(output_QA_folder + ("/NsigmaTPCKaon." + outputtype).c_str());
+        SetHistoQA2D(h2DTPCKaon);
+        // gPad->SetLogz(1);
+        h2DTPCKaon->GetYaxis()->SetTitle("n#sigma_{TPC}");
+        h2DTPCKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTPCKaon->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTPCKaon->GetXaxis()->SetRangeUser(0, 5);
+        h2DTPCKaon->Draw("colz");
+        cNsigmaTPCKaon->SaveAs(output_QA_folder + ("/NsigmaTPCKaon2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTPCPion = new TCanvas("cNsigmaTPCPion", "Nsigma TPC Pion", 720, 720);
         SetCanvasStyle(cNsigmaTPCPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTPCPion);
-        hNsigmaTPCPion->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        hNsigmaTPCPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTPCPion->Draw("colz");
-        cNsigmaTPCPion->SaveAs(output_QA_folder + ("/NsigmaTPCPion." + outputtype).c_str());
+        SetHistoQA2D(h2DTPCPion);
+        // gPad->SetLogz(1);
+        h2DTPCPion->GetYaxis()->SetTitle("n#sigma_{TPC}");
+        h2DTPCPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTPCPion->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTPCPion->GetXaxis()->SetRangeUser(0, 5);
+        h2DTPCPion->Draw("colz");
+        cNsigmaTPCPion->SaveAs(output_QA_folder + ("/NsigmaTPCPion2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTOFKaon = new TCanvas("cNsigmaTOFKaon", "Nsigma TOF Kaon", 720, 720);
         SetCanvasStyle(cNsigmaTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTOFKaon);
-        hNsigmaTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTOFKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTOFKaon->Draw("colz");
-        cNsigmaTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTOFKaon." + outputtype).c_str());
+        SetHistoQA2D(h2DTOFKaon);
+        // gPad->SetLogz(1);
+        h2DTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
+        h2DTOFKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTOFKaon->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTOFKaon->GetXaxis()->SetRangeUser(0, 5);
+        h2DTOFKaon->Draw("colz");
+        cNsigmaTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTOFKaon2D." + outputtype).c_str());
 
         TCanvas *cNsigmaTOFPion = new TCanvas("cNsigmaTOFPion", "Nsigma TOF Pion", 720, 720);
         SetCanvasStyle(cNsigmaTOFPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(hNsigmaTOFPion);
-        hNsigmaTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        hNsigmaTOFPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hNsigmaTOFPion->Draw("colz");
-        cNsigmaTOFPion->SaveAs(output_QA_folder + ("/NsigmaTOFPion." + outputtype).c_str());
+        SetHistoQA2D(h2DTOFPion);
+        // gPad->SetLogz(1);
+        h2DTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
+        h2DTOFPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        h2DTOFPion->GetYaxis()->SetRangeUser(-3, 3);
+        h2DTOFPion->GetXaxis()->SetRangeUser(0, 5);
+        h2DTOFPion->Draw("colz");
+        cNsigmaTOFPion->SaveAs(output_QA_folder + ("/NsigmaTOFPion2D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTOFKaon_neg = new TCanvas("cNsigmaTOFKaon_neg", "Nsigma TOF Kaon Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFKaon_neg);
-        hNsigmaTOFKaon_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFKaon_neg->GetXaxis()->SetTitle("n#sigma_{TOF} (K^{-})");
-        hNsigmaTOFKaon_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFKaon_neg->Draw();
-        TLine *lineverticalx0 = new TLine(0, hNsigmaTOFKaon_neg->GetYaxis()->GetXmin(), 0, hNsigmaTOFKaon_neg->GetYaxis()->GetXmax());
-        lineverticalx0->SetLineStyle(2);
-        lineverticalx0->SetLineColor(2);
-        lineverticalx0->SetLineWidth(2);
-        lineverticalx0->Draw();
-        cNsigmaTOFKaon_neg->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_neg." + outputtype).c_str());
+        TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC vs TOF Kaon", 1080, 720);
+        TCanvas *cNsigmaTPCTOFPion = new TCanvas("cNsigmaTPCTOFPion", "Nsigma TPC vs TOF Pion", 1080, 720);
+        SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
+        SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
+        cNsigmaTPCTOFKaon->Divide(3, 2);
+        cNsigmaTPCTOFPion->Divide(3, 2);
 
-        TCanvas *cNsigmaTOFPion_neg = new TCanvas("cNsigmaTOFPion_neg", "Nsigma TOF Pion Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFPion_neg);
-        hNsigmaTOFPion_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFPion_neg->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi^{-})");
-        hNsigmaTOFPion_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFPion_neg->Draw();
-        cNsigmaTOFPion_neg->SaveAs(output_QA_folder + ("/NsigmaTOFPion_neg." + outputtype).c_str());
+        TLatex latPID;
+        latPID.SetNDC();
+        latPID.SetTextFont(42);
+        latPID.SetTextSize(0.06);
 
-        TCanvas *cNsigmaTOFKaon_pos = new TCanvas("cNsigmaTOFKaon_pos", "Nsigma TOF Kaon Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFKaon_pos);
-        hNsigmaTOFKaon_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFKaon_pos->GetXaxis()->SetTitle("n#sigma_{TOF} (K^{+})");
-        hNsigmaTOFKaon_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFKaon_pos->Draw();
-        cNsigmaTOFKaon_pos->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_pos." + outputtype).c_str());
+        for (int i = 0; i < 6; i++)
+        {
+            cNsigmaTPCTOFKaon->cd(i + 1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetRightMargin(0.15);
+            gPad->SetBottomMargin(0.13);
+            gPad->SetTopMargin(0.06);
+            SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
+            SetHistoQA2D(h2DNsigmaTPCTOFKaon[i]);
+            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
+            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
+            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFKaon[i]->Draw("colz");
+            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
+            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(1)<<", mean TOF nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(2)<<endl;
 
-        TCanvas *cNsigmaTOFPion_pos = new TCanvas("cNsigmaTOFPion_pos", "Nsigma TOF Pion Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTOFPion_pos);
-        hNsigmaTOFPion_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTOFPion_pos->GetXaxis()->SetTitle("n#sigma_{TOF} (#pi^{+})");
-        hNsigmaTOFPion_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTOFPion_pos->Draw();
-        cNsigmaTOFPion_pos->SaveAs(output_QA_folder + ("/NsigmaTOFPion_pos." + outputtype).c_str());
+            cNsigmaTPCTOFPion->cd(i + 1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetRightMargin(0.15);
+            gPad->SetBottomMargin(0.13);
+            gPad->SetTopMargin(0.06);
+            SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
+            SetHistoQA2D(h2DNsigmaTPCTOFPion[i]);
+            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
+            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
+            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetRangeUser(-3, 3);
+            h2DNsigmaTPCTOFPion[i]->Draw("colz");
+            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
+        }
 
-        TCanvas *cNsigmaTPCKaon_neg = new TCanvas("cNsigmaTPCKaon_neg", "Nsigma TPC Kaon Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCKaon_neg);
-        hNsigmaTPCKaon_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCKaon_neg->GetXaxis()->SetTitle("n#sigma_{TPC} (K^{-})");
-        hNsigmaTPCKaon_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCKaon_neg->Draw();
-        cNsigmaTPCKaon_neg->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_neg." + outputtype).c_str());
+        cNsigmaTPCTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTPCTOFKaon_2D." + outputtype).c_str());
+        cNsigmaTPCTOFPion->SaveAs(output_QA_folder + ("/NsigmaTPCTOFPion_2D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTPCPion_neg = new TCanvas("cNsigmaTPCPion_neg", "Nsigma TPC Pion Neg", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_neg, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCPion_neg);
-        hNsigmaTPCPion_neg->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCPion_neg->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi^{-})");
-        hNsigmaTPCPion_neg->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCPion_neg->Draw();
-        cNsigmaTPCPion_neg->SaveAs(output_QA_folder + ("/NsigmaTPCPion_neg." + outputtype).c_str());
+        TCanvas *cNsigmaTPCKaon_1D = new TCanvas("cNsigmaTPCKaon_1D", "Nsigma TPC Kaon 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTPCKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        TLegend *leg1DPID = new TLegend(0.17, 0.82, 0.6, 0.92);
+        leg1DPID->SetNColumns(3);
+        leg1DPID->SetTextSize(0.028);
+        leg1DPID->SetFillStyle(0);
+        leg1DPID->SetBorderSize(0);
+        leg1DPID->SetTextFont(42);
 
-        TCanvas *cNsigmaTPCKaon_pos = new TCanvas("cNsigmaTPCKaon_pos", "Nsigma TPC Kaon Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCKaon_pos);
-        hNsigmaTPCKaon_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCKaon_pos->GetXaxis()->SetTitle("n#sigma_{TPC} (K^{+})");
-        hNsigmaTPCKaon_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCKaon_pos->Draw();
-        cNsigmaTPCKaon_pos->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_pos." + outputtype).c_str());
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTPCKaon[i]);
+            h1DNsigmaTPCKaon[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
+            h1DNsigmaTPCKaon[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCKaon[i]->SetMaximum(h1DNsigmaTPCKaon[i]->GetMaximum() * 4.7);
+            h1DNsigmaTPCKaon[i]->Draw("p same");
+            leg1DPID->AddEntry(h1DNsigmaTPCKaon[i], Form("%d-%d%%", multRangesForTPCandTOF[i][0], multRangesForTPCandTOF[i][1]), "p");
+            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h1DNsigmaTPCKaon[i]->GetMean()<<endl;
+        }
+        leg1DPID->Draw();
+        TLine *lineTPCKaon = new TLine(0, 0, 0, h1DNsigmaTPCKaon[0]->GetMaximum());
+        lineTPCKaon->SetLineStyle(2);
+        lineTPCKaon->SetLineColor(2);
+        lineTPCKaon->Draw();
+        cNsigmaTPCKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_1D." + outputtype).c_str());
 
-        TCanvas *cNsigmaTPCPion_pos = new TCanvas("cNsigmaTPCPion_pos", "Nsigma TPC Pion Pos", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_pos, 0.14, 0.05, 0.06, 0.14);
-        SetHistoQA(hNsigmaTPCPion_pos);
-        hNsigmaTPCPion_pos->GetYaxis()->SetTitle("Counts");
-        hNsigmaTPCPion_pos->GetXaxis()->SetTitle("n#sigma_{TPC} (#pi^{+})");
-        hNsigmaTPCPion_pos->GetXaxis()->SetRangeUser(-3, 3);
-        hNsigmaTPCPion_pos->Draw();
-        cNsigmaTPCPion_pos->SaveAs(output_QA_folder + ("/NsigmaTPCPion_pos." + outputtype).c_str());
+        TCanvas *cNsigmaTPCPion_1D = new TCanvas("cNsigmaTPCPion_1D", "Nsigma TPC Pion 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTPCPion_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTPCPion[i]);
+            h1DNsigmaTPCPion[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
+            h1DNsigmaTPCPion[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCPion[i]->SetMaximum(h1DNsigmaTPCPion[i]->GetMaximum() * 4.7);
+            h1DNsigmaTPCPion[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTPCPion = new TLine(0, 0, 0, h1DNsigmaTPCPion[0]->GetMaximum());
+        lineTPCPion->SetLineStyle(2);
+        lineTPCPion->SetLineColor(2);
+        lineTPCPion->Draw();
+        cNsigmaTPCPion_1D->SaveAs(output_QA_folder + ("/NsigmaTPCPion_1D." + outputtype).c_str());
+
+        TCanvas *cNsigmaTOFKaon_1D = new TCanvas("cNsigmaTOFKaon_1D", "Nsigma TOF Kaon 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTOFKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTOFKaon[i]);
+            h1DNsigmaTOFKaon[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
+            h1DNsigmaTOFKaon[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFKaon[i]->SetMaximum(h1DNsigmaTOFKaon[i]->GetMaximum() * 4.7);
+            h1DNsigmaTOFKaon[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTOFKaon = new TLine(0, 0, 0, h1DNsigmaTOFKaon[0]->GetMaximum());
+        lineTOFKaon->SetLineStyle(2);
+        lineTOFKaon->SetLineColor(2);
+        lineTOFKaon->Draw();
+        cNsigmaTOFKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_1D." + outputtype).c_str());
+
+        TCanvas *cNsigmaTOFPion_1D = new TCanvas("cNsigmaTOFPion_1D", "Nsigma TOF Pion 1D", 720, 720);
+        SetCanvasStyle(cNsigmaTOFPion_1D, 0.14, 0.05, 0.06, 0.14);
+        for (int i = 0; i < 6; i++)
+        {
+            SetHistoQA(h1DNsigmaTOFPion[i]);
+            h1DNsigmaTOFPion[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
+            h1DNsigmaTOFPion[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFPion[i]->SetMaximum(h1DNsigmaTOFPion[i]->GetMaximum() * 4.7);
+            h1DNsigmaTOFPion[i]->Draw("p same");
+        }
+        leg1DPID->Draw();
+        TLine *lineTOFPion = new TLine(0, 0, 0, h1DNsigmaTOFPion[0]->GetMaximum());
+        lineTOFPion->SetLineStyle(2);
+        lineTOFPion->SetLineColor(2);
+        lineTOFPion->Draw();
+        cNsigmaTOFPion_1D->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D." + outputtype).c_str());
     }
 }

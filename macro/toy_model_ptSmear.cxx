@@ -1,230 +1,274 @@
-#include <TGenPhaseSpace.h>
-#include <TVector3.h>
-#include <TLorentzVector.h>
-#include <TRandom3.h>
-#include <TCanvas.h>
-#include <TH1F.h>
+#include <iostream>
+#include <fstream>
+#include <cmath>
 #include "src/style.h"
-#include <Math/VectorUtil.h>
+
 using namespace std;
 
-void toy_model_ptSmear()
+double BreitWigner(double *x, double *par) // fitting function
 {
-    TRandom3 randGen(0); // Random seed
-    TFile *feffK0s = new TFile("/home/sawan/check_k892/injected_mc/Ks_mc.root", "read");
-    if (feffK0s->IsZombie())
-    {
-        cout << "Error opening efficiency file" << endl;
-        return;
-    }
-    TH2D *hgen = (TH2D *)feffK0s->Get("lf-v0qaanalysis/Generated_MCGenRecoColl_INELgt0_K0Short");
-    TH2D *hrec = (TH2D *)feffK0s->Get("lf-v0postprocessing/hMassVsPtK0Short");
-    if (hgen == nullptr || hrec == nullptr)
-    {
-        cout << "Histograms not found" << endl;
-        return;
-    }
-    TH1D *h1gen = hgen->ProjectionX();
-    TH1D *h1rec = hrec->ProjectionX();
-    float finepTbins[] = {0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-                          1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-                          2, 2.2, 2.4, 2.6, 2.8,
-                          3, 3.2, 3.4, 3.6, 3.8,
-                          4, 4.2, 4.4, 4.6, 4.8,
-                          5, 5.5,
-                          6, 7,
-                          8, 9,
-                          10, 12,
-                          15};
-    // TH1F *hOriginalK0sEff = (TH1F *)h1rec->Clone();
-    // hOriginalK0sEff->Divide(h1gen);
-    // TFile *fK0sEffTemp = new TFile("K0sEff.root", "recreate");
-    // h1gen->Write("K0s_generated_pT");
-    // h1rec->Write("K0s_reconstructed_pT");
-    // hOriginalK0sEff->Write("K0s_efficiency");
-    // fK0sEffTemp->Close();
-
-    int nFineBins = sizeof(finepTbins) / sizeof(finepTbins[0]) - 1;
-    TH1F *hEffK0s = new TH1F("hEffK0s", "K0s Acceptance #times Efficiency vs p_{T}; #it{p}_{T} (GeV/#it{c}); Acceptance #times Efficiency", nFineBins, finepTbins);
-    for (int i = 1; i <= nFineBins; i++)
-    {
-        double genCount = h1gen->Integral(h1gen->GetXaxis()->FindBin(finepTbins[i - 1] + 0.0001), h1gen->GetXaxis()->FindBin(finepTbins[i] - 0.0001));
-        double recCount = h1rec->Integral(h1rec->GetXaxis()->FindBin(finepTbins[i - 1] + 0.0001), h1rec->GetXaxis()->FindBin(finepTbins[i] - 0.0001));
-        double efficiency = (genCount > 0) ? (recCount / genCount) : 0;
-        hEffK0s->SetBinContent(i, efficiency);
-    }
-
-    gStyle->SetOptStat(0);
-    // Define masses (GeV/c^2)
-    double m_mother = 1.710;       // Mass of f1525
-    double m_daughter1 = 0.497611; // daughter 1 (K0s mass)
-    double m_daughter2 = 0.497611; // daughter 2 (K0s mass)
-
-    float ptBins[] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0};
-    int nPtBins = sizeof(ptBins) / sizeof(ptBins[0]) - 1;
-
-    // Histogram for decay product pT
-    TH1F *h_pT = new TH1F("h_pT", "p_{T} distribution of mother; p_{T} (GeV/c); Events", nPtBins, ptBins);
-    TH1F *hrec_pT = new TH1F("hrec_pT", "Reconstructed p_{T} distribution of mother; p_{T} (GeV/c); Events", nPtBins, ptBins);
-
-    // Loop over multiple decay events
-    int nEvents = 1e6;
-    TLorentzVector lvmother;
-    ROOT::Math::PxPyPzMVector fourVecMother, fourVecDau1, fourVecDau2;
-    ROOT::Math::XYZVector threeVecDauCM, threeVecMother;
-    vector<double> EffpT1; // 1-2 GeV/c
-    vector<double> EffpT2; // 2-3 GeV/c
-    vector<double> EffpT3; // 3-5 GeV/c
-    vector<double> EffpT4; // 5-7 GeV/c
-    vector<double> EffpT5; // 7-10 GeV/c
-    vector<double> EffpT6; // 10-15 GeV/c
-
-    for (int i = 0; i < nEvents; i++)
-    {
-        // Generate in pt, y and phi
-        double pT = randGen.Uniform(0, 20);                      // Uniform pT between 0 and 20 GeV/c
-        double phi = randGen.Uniform(-TMath::Pi(), TMath::Pi()); // Uniform phi between -pi and pi
-        double eta = randGen.Uniform(-1.2, 1.2);
-
-        lvmother.SetPtEtaPhiM(pT, eta, phi, m_mother);
-
-        // Setup the decay
-        TGenPhaseSpace event;
-        double masses[2] = {m_daughter1, m_daughter2};
-
-        if (event.SetDecay(lvmother, 2, masses))
-        {
-            event.Generate(); // Generate the decay event
-
-            // Get daughter particles
-            TLorentzVector *ks1 = event.GetDecay(0);
-            TLorentzVector *ks2 = event.GetDecay(1);
-            TLorentzVector lvmother2 = *ks1 + *ks2; // Reconstruct mother from daughters
-            fourVecMother = ROOT::Math::PxPyPzMVector(lvmother2.Px(), lvmother2.Py(), lvmother2.Pz(), lvmother2.M());
-            fourVecDau1 = ROOT::Math::PxPyPzMVector(ks1->Px(), ks1->Py(), ks1->Pz(), m_daughter1);
-            fourVecDau2 = ROOT::Math::PxPyPzMVector(ks2->Px(), ks2->Py(), ks2->Pz(), m_daughter2);
-
-            h_pT->Fill(pT); // mother pT
-            double gen_rapidity = fourVecMother.Y();
-
-            if (abs(gen_rapidity) < 0.5)
-            {
-                double pt1_gen = ks1->Pt();
-                double pt2_gen = ks2->Pt();
-
-                // Apply pT smearing based on K0s efficiency histogram
-                double pt1_rec = randGen.Gaus(pt1_gen, pt1_gen * 0.1); // Taking 10 MeV/c (1%) resolution
-                double pt2_rec = randGen.Gaus(pt2_gen, pt2_gen * 0.1); // Taking 10 MeV/c (1%) resolution
-
-                // Protect against negative pT
-                if (pt1_rec < 0 || pt2_rec < 0)
-                    continue;
-
-                hrec_pT->Fill(fourVecMother.Pt());
-
-                // calculate the efficiency of both k0s based on their pT
-                // Without pT smearing
-                // double eff_ks1 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt1_gen));
-                // double eff_ks2 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt2_gen));
-
-                // using pT smearing
-                double eff_ks1 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt1_rec));
-                double eff_ks2 = hEffK0s->GetBinContent(hEffK0s->GetXaxis()->FindBin(pt2_rec));
-                double combined_eff = eff_ks1 * eff_ks2;
-
-                if (fourVecMother.Pt() >= 1 && fourVecMother.Pt() < 2)
-                {
-                    EffpT1.push_back(combined_eff);
-                }
-                else if (fourVecMother.Pt() >= 2 && fourVecMother.Pt() < 3)
-                {
-                    EffpT2.push_back(combined_eff);
-                }
-                else if (fourVecMother.Pt() >= 3 && fourVecMother.Pt() < 5)
-                {
-                    EffpT3.push_back(combined_eff);
-                }
-                else if (fourVecMother.Pt() >= 5 && fourVecMother.Pt() < 7)
-                {
-                    EffpT4.push_back(combined_eff);
-                }
-                else if (fourVecMother.Pt() >= 7 && fourVecMother.Pt() < 10)
-                {
-                    EffpT5.push_back(combined_eff);
-                }
-                else if (fourVecMother.Pt() >= 10 && fourVecMother.Pt() < 15)
-                {
-                    EffpT6.push_back(combined_eff);
-                }
-            }
-        }
-        lvmother.Clear();
-    }
-
-    // Calculate the efficiency in each pT bin
-    auto calculateAverageEfficiency = [](const vector<double> &efficiencies)
-    {
-        if (efficiencies.empty())
-            return 0.0;
-        double sum = 0.0;
-        for (double eff : efficiencies)
-        {
-            sum += eff;
-        }
-        return sum / efficiencies.size();
-    };
-
-    string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/pTSmearing/";
-    TFile *fout = new TFile((savepath + "f1710_effToy_smeared.root").c_str(), "recreate");
-
-    double avgEff1 = calculateAverageEfficiency(EffpT1);
-    double avgEff2 = calculateAverageEfficiency(EffpT2);
-    double avgEff3 = calculateAverageEfficiency(EffpT3);
-    double avgEff4 = calculateAverageEfficiency(EffpT4);
-    double avgEff5 = calculateAverageEfficiency(EffpT5);
-    double avgEff6 = calculateAverageEfficiency(EffpT6);
-
-    TH1F *hEffResults = new TH1F("hEffResults", "Acceptance #times Efficiency of f_{0}(1710); #it{p}_{T} bin (GeV/#it{c}); Acceptance #times Efficiency", nPtBins, ptBins);
-    hEffResults->SetBinContent(1, avgEff1);
-    hEffResults->SetBinContent(2, avgEff2);
-    hEffResults->SetBinContent(3, avgEff3);
-    hEffResults->SetBinContent(4, avgEff4);
-    hEffResults->SetBinContent(5, avgEff5);
-    hEffResults->SetBinContent(6, avgEff6);
-
-    // TCanvas *cGenpT = new TCanvas("cGenpT", "Generated p_{T} Distribution", 720, 720);
-    // SetCanvasStyle(cGenpT, 0.15, 0.05, 0.05, 0.15);
-    // SetHistoQA(h_pT);
-    // h_pT->GetYaxis()->SetMaxDigits(3);
-    // h_pT->Draw();
-
-    TCanvas *cRecpT = new TCanvas("cRecpT", "Reconstructed #it{p}_{T} Distribution", 720, 720);
-    SetCanvasStyle(cRecpT, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(hrec_pT);
-    hrec_pT->GetYaxis()->SetMaxDigits(3);
-    hrec_pT->Draw();
-    hrec_pT->Write("recpt");
-    cRecpT->SaveAs((savepath + "f1710_reconstructed_pT_distribution.png").c_str());
-
-    TCanvas *cEffResults = new TCanvas("cEffResults", "Average Efficiency vs #it{p}_{T} bin", 720, 720);
-    SetCanvasStyle(cEffResults, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(hEffResults);
-    hEffResults->GetYaxis()->SetMaxDigits(3);
-    hEffResults->Draw();
-    hEffResults->Write("eff");
-    // hEffK0s->SetLineColor(kRed);
-    // hEffK0s->SetMarkerColor(kRed);
-    // hEffK0s->Draw("SAME");
-    cEffResults->SaveAs((savepath + "f1710_Average_Efficiency_vs_pT_bin.png").c_str());
-
-    TCanvas *cEffK0s = new TCanvas("cEffK0s", "K0s Efficiency vs pT", 720, 720);
-    SetCanvasStyle(cEffK0s, 0.15, 0.05, 0.05, 0.15);
-    SetHistoQA(hEffK0s);
-    hEffK0s->GetYaxis()->SetMaxDigits(3);
-    hEffK0s->Draw("HIST");
-    hEffK0s->Write("K0s_eff");
-    hOriginalK0sEff->SetLineColor(kRed);
-    hOriginalK0sEff->SetMarkerColor(kRed);
-    hOriginalK0sEff->Draw("SAME");
-    cEffK0s->SaveAs((savepath + "K0s_Efficiency_vs_pT.png").c_str());
+    double fing1;
+    double fing2;
+    double fing3;
+    double bk1;
+    double bk;
+    double bk3;
+    fing1 = (0.5 * par[2] * par[1]) / ((TMath::Pi()) * ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]));
+    return (fing1);
 }
+
+double Gaussian(double *x, double *par) // fitting function
+{
+    double fing1;
+    double fing2;
+    double fing3;
+    double bk1;
+    double bk;
+    double bk3;
+    fing1 = par[2] * (1 / sqrt(2 * TMath::Pi())) * (1 / par[1]) * exp(-0.5 * pow(((x[0] - par[0]) / par[1]), 2));
+    return fing1;
+}
+
+void toy_model_ptSmear_prottay()
+{
+
+    // accepting histograms for K0s, kaon and pion eff---------------------------------------
+    gStyle->SetOptStat(0);
+
+    TFile *fInputFile = TFile::Open("K0sEff.root");
+
+    TH1D *heff = (TH1D *)fInputFile->Get("K0s_efficiency");
+    TH1D *hgenksh = (TH1D *)fInputFile->Get("K0s_generated_pT");
+    TH1D *hrecksh = (TH1D *)fInputFile->Get("K0s_reconstructed_pT");
+    //----------------------------------------------------------------------
+
+    double NPT[7] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // pt bins of f1 in data
+
+    // histograms for efficiency caluclation of f1-------------------------
+    // TProfile *GTE = new TProfile("GTE", "GTE", 6, NPT);
+    TH1D *hf1gen = new TH1D("f1gen", "f2(1525) Gen", 6, NPT);
+    TH1D *hf1rec = new TH1D("f1rec", "f2(1525) Rec", 6, NPT);
+    // TH1D *hkshkaonmass = new TH1D("kshkaonmass", "kshkaonmass", 300, 0, 3);
+    hf1gen->Sumw2();
+    hf1rec->Sumw2();
+
+    //////////////////////////////////////////////////////////
+
+    // TLorentz Vectors**********************************
+    TLorentzVector F1;
+    TLorentzVector *KSh1;
+    TLorentzVector *KSh2;
+
+    TLorentzVector ksh1;
+    TLorentzVector ksh2;
+    TLorentzVector kshksh;
+
+    TLorentzVector *piPlus1;
+    TLorentzVector *piMinus1;
+    TLorentzVector *piPlus2;
+    TLorentzVector *piMinus2;
+
+    TLorentzVector pionPlus1;
+    TLorentzVector pionMinus1;
+    TLorentzVector pionPlus2;
+    TLorentzVector pionMinus2;
+
+    ////////////////////////////////////////////////////////////
+
+    // For decay*************************************
+    TGenPhaseSpace event;
+    Double_t weight;
+    TGenPhaseSpace eventPi1;
+    TGenPhaseSpace eventPi2;
+    ////////////////////////////////////////////////////
+
+    //***Breit Wigner and gaussian distributions generated*********************
+    // for f2(1525)
+    TF1 *fE = new TF1("fE", BreitWigner, 1.285, 1.765, 3);
+    fE->FixParameter(0, 1.5173);
+    fE->FixParameter(1, 0.0844);
+    fE->FixParameter(2.0, 1); // amplitude
+
+    // // for f0(1710)
+    // TF1 *fE = new TF1("fE", BreitWigner, 1.283, 2.183, 3);
+    // fE->FixParameter(0, 1.733);
+    // fE->FixParameter(1, 0.150);
+    // fE->FixParameter(2.0, 1); // amplitude
+
+    // For K0s
+    TF1 *f = new TF1("f", Gaussian, 0.48, 0.52, 3);
+    f->FixParameter(0, 0.497);
+    f->FixParameter(1, 0.005);
+    f->FixParameter(2, 1.0); // amplitude
+
+    //***************************************
+
+    //*****variables***********************************
+    double ptf1, etaf1, phif1, momentumf1, energyf1;
+    TRandom *eventGenerator = new TRandom();
+    TRandom3 *randomGenerator = new TRandom3();
+    double massf1 = 0.0;
+    double massksh1 = 0.0;
+    double massksh2 = 0.0;
+    double probacceptkshort1 = 0.0, probacceptkshort2 = 0.0;
+    double kshpt1 = 0.0, kshpt2 = 0.0;
+    int ptBinksh1 = 0, ptBinksh2 = 0;
+    double effksh1 = 0.0, effksh2 = 0.0, finaleff = 0.0;
+    double genkshcontent1 = 0.0, genkshcontent2 = 0.0;
+    double reckshcontent1 = 0.0, reckshcontent2 = 0.0;
+
+    // std::vector<double> kshKaonMassValues;
+    // double kshKaonMass = 0.0;
+    ///////////////////////////////////////////////////////
+
+    for (int i = 0; i < 1000000; i++)
+    {
+        massf1 = fE->GetRandom(); // mass of f1 from breitwigner
+        massksh1 = f->GetRandom();
+        massksh2 = f->GetRandom();
+        ptf1 = gRandom->Uniform(0.0, 15.0);  // pt
+        etaf1 = gRandom->Uniform(-1.2, 1.2); // eta
+        phif1 = gRandom->Uniform(0, 6.28);   // phi
+
+        if (ptf1 < 0.15)
+            continue;
+
+        // momentumf1 = ptf1 / TMath::Sin(2.0 * TMath::ATan(exp(-2.0 * etaf1)));
+        momentumf1 = ptf1 / TMath::Sin(2.0 * TMath::ATan(exp(etaf1)));
+        energyf1 = sqrt((momentumf1 * momentumf1) + (massf1 * massf1));
+
+        F1.SetPtEtaPhiE(ptf1, etaf1, phif1, energyf1); // f1 generated
+
+        if (TMath::Abs(F1.Rapidity()) >= 0.5)
+            continue;       // checking rapidity cut of f1
+        hf1gen->Fill(ptf1); // counting no. of generated f1
+
+        Double_t masses4[2] = {0.497, 0.497}; // masses of decaying particle
+        event.SetDecay(F1, 2, masses4);
+        weight = event.Generate();
+        KSh1 = event.GetDecay(0);
+        KSh2 = event.GetDecay(1);
+        ksh1 = *KSh1; // kshort
+        ksh2 = *KSh2; // kshort
+
+        kshpt1 = ksh1.Pt();
+        kshpt2 = ksh2.Pt();
+
+        // kinematics cut for daughters and pairs*********************
+        if (kshpt1 < 0.15 || kshpt2 < 0.15)
+            continue;
+
+        // We have not applied eta cut on K0s, but applied only rapidity cut on it. The eta cut is applied on K0s daughters
+        // if (TMath::Abs(ksh1.Eta()) > 0.8)
+        //     continue;
+        // if (TMath::Abs(ksh2.Eta()) > 0.8)
+        //     continue;
+
+        if (TMath::Abs(ksh1.Rapidity()) > 0.5)
+            continue;
+        if (TMath::Abs(ksh2.Rapidity()) > 0.5)
+            continue;
+
+        // secondary decay: K0s -> pi+ pi-
+        Double_t pionMasses[2] = {0.13957, 0.13957};
+        if (!eventPi1.SetDecay(ksh1, 2, pionMasses))
+            continue;
+        if (!eventPi2.SetDecay(ksh2, 2, pionMasses))
+            continue;
+
+        eventPi1.Generate();
+        eventPi2.Generate();
+
+        piPlus1 = eventPi1.GetDecay(0);
+        piMinus1 = eventPi1.GetDecay(1);
+        piPlus2 = eventPi2.GetDecay(0);
+        piMinus2 = eventPi2.GetDecay(1);
+
+        pionPlus1 = *piPlus1;
+        pionMinus1 = *piMinus1;
+        pionPlus2 = *piPlus2;
+        pionMinus2 = *piMinus2;
+
+        if (TMath::Abs(pionPlus1.Eta()) > 0.8)
+            continue;
+        if (TMath::Abs(pionMinus1.Eta()) > 0.8)
+            continue;
+        if (TMath::Abs(pionPlus2.Eta()) > 0.8)
+            continue;
+        if (TMath::Abs(pionMinus2.Eta()) > 0.8)
+            continue;
+
+        //****************************************
+
+        // calculation of efficiency of ksh, kaon and pions*********************
+
+        TAxis *xAxisksh1 = hgenksh->GetXaxis();
+        int xBinNumberksh1 = xAxisksh1->FindBin(kshpt1);
+        // TAxis *yAxisksh1 = hgenksh->GetYaxis();
+        // int yBinNumberksh1 = yAxisksh1->FindBin(ksh1.Eta());
+
+        TAxis *xAxisksh2 = hgenksh->GetXaxis();
+        int xBinNumberksh2 = xAxisksh2->FindBin(kshpt2);
+        // TAxis *yAxisksh2 = hgenksh->GetYaxis();
+        // int yBinNumberksh2 = yAxisksh2->FindBin(ksh2.Eta());
+
+        // Commented since eta information is not available
+        // genkshcontent1 = hgenksh->GetBinContent(xBinNumberksh1, yBinNumberksh1);
+        // genkshcontent2 = hgenksh->GetBinContent(xBinNumberksh2, yBinNumberksh2);
+
+        // reckshcontent1 = hrecksh->GetBinContent(xBinNumberksh1, yBinNumberksh1);
+        // reckshcontent2 = hrecksh->GetBinContent(xBinNumberksh2, yBinNumberksh2);
+
+        genkshcontent1 = hgenksh->GetBinContent(xBinNumberksh1);
+        genkshcontent2 = hgenksh->GetBinContent(xBinNumberksh2);
+
+        reckshcontent1 = hrecksh->GetBinContent(xBinNumberksh1);
+        reckshcontent2 = hrecksh->GetBinContent(xBinNumberksh2);
+
+        if (genkshcontent1 == 0 || genkshcontent2 == 0)
+            continue;
+
+        effksh1 = reckshcontent1 / genkshcontent1;
+        effksh2 = reckshcontent2 / genkshcontent2;
+
+        //*******************************************************************8
+
+        //***accepting from random numbers****************************
+        probacceptkshort1 = randomGenerator->Uniform(0.0, 1.0);
+        probacceptkshort2 = randomGenerator->Uniform(0.0, 1.0);
+
+        // cout<<"prbs are:"<<probacceptpi<<" "<<probacceptpineg<<endl;
+        if (probacceptkshort1 > effksh1 || probacceptkshort2 > effksh2)
+            continue;
+
+        finaleff = effksh1 * effksh2;
+        hf1rec->Fill(ptf1); // final number of reconstructed f1
+        // GTE->Fill(ptf1, finaleff, 1);
+    }
+
+    // TCanvas *cGTE = new TCanvas("", "GTE", 720, 720);
+    // GTE->Draw();
+    TCanvas *cgen = new TCanvas("", "Generated f2", 720, 720);
+    SetCanvasStyle(cgen, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hf1gen);
+    hf1gen->Draw();
+    TCanvas *cRec = new TCanvas("", "Reconstructed f2", 720, 720);
+    SetCanvasStyle(cRec, 0.15, 0.05, 0.05, 0.15);
+    SetHistoQA(hf1rec);
+    hf1rec->Draw();
+
+    TCanvas *cEff = new TCanvas("", "Efficiency", 720, 720);
+    SetCanvasStyle(cEff, 0.15, 0.05, 0.05, 0.15);
+    TH1D *hEff = (TH1D *)hf1rec->Clone("hEff_f2");
+    hEff->Divide(hf1gen);
+    SetHistoQA(hEff);
+    hEff->GetYaxis()->SetTitle("Acceptance x Efficiency");
+    hEff->Draw();
+
+    // TFile *f2 = new TFile("efficiencyPtSmear.root", "UPDATE");
+    // hEff->Write();
+    // f2->Close();
+}
+
+
+

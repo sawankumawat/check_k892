@@ -39,12 +39,17 @@ void compare_mass_yield_coherent()
     TFile *fDefault = new TFile((path + "spectra_Default4.root").c_str(), "READ");
     TFile *fReweightedf0 = new TFile((path + "ReweighFacf0_Default4.root").c_str(), "READ");
     TFile *fReweightedf2 = new TFile((path + "ReweighFacf2_Default4.root").c_str(), "READ");
-    TFile *fCoherent = new TFile((path + "spectra_coherent.root").c_str(), "READ");
-    // TFile *fCoherent = new TFile((path + "spectra_CoherentSumPhi0.root").c_str(), "READ");
+    // TFile *fCoherent = new TFile((path + "spectra_coherent.root").c_str(), "READ");
+    TFile *fCoherent = new TFile((path + "spectra_CoherentSumPhi0.root").c_str(), "READ");
+
+    TFile *fReweightedf0_Coherent = new TFile((path + "ReweighFacf0_CoherentSumBothFixed2.root").c_str(), "READ");
+    TFile *fReweightedf2_Coherent = new TFile((path + "ReweighFacf2_CoherentSumBothFixed2.root").c_str(), "READ");
 
     // Find the highest available index for reweighted histograms
     int maxIndexReweightedf0 = FindHighestIndex(fReweightedf0, "Genf17102_proj_1_");
     int maxIndexReweightedf2 = FindHighestIndex(fReweightedf2, "Genf17102_proj_1_");
+    int maxIndexReweightedf0_Coherent = FindHighestIndex(fReweightedf0_Coherent, "Genf17102_proj_1_");
+    int maxIndexReweightedf2_Coherent = FindHighestIndex(fReweightedf2_Coherent, "Genf17102_proj_1_");
     if (maxIndexReweightedf0 == -1 || maxIndexReweightedf2 == -1)
     {
         cout << "Error: No reweighted histogram with pattern Genf17102_proj_1_i* found in file" << endl;
@@ -54,6 +59,10 @@ void compare_mass_yield_coherent()
 
     string indexStr = "i" + to_string(maxIndexReweightedf0);
     string indexStr2 = "i" + to_string(maxIndexReweightedf2);
+    string indexStrCoherentf0 = "i" + to_string(maxIndexReweightedf0_Coherent);
+    string indexStrCoherentf2 = "i" + to_string(maxIndexReweightedf2_Coherent);
+
+    // For default
     TH1F *hYieldReweightedf0 = (TH1F *)fReweightedf0->Get(Form("hYield1710Corrected_%s", indexStr.c_str()));
     TH1F *hYieldReweightedf2 = (TH1F *)fReweightedf2->Get(Form("hYield1525Corrected_%s", indexStr2.c_str()));
 
@@ -69,89 +78,92 @@ void compare_mass_yield_coherent()
     }
     TH1F *hMass_f1525_Default = (TH1F *)fDefault->Get("hMass_1525");
     TH1F *hMass_f1710_Default = (TH1F *)fDefault->Get("hMass_1710");
-    // TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass_1525");
-    // TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass_1710");
-    TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass1525");
-    TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass1710");
+    TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass_1525");
+    TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass_1710");
+    // TH1F *hMass_f1525_Coherent = (TH1F *)fCoherent->Get("hMass1525");
+    // TH1F *hMass_f1710_Coherent = (TH1F *)fCoherent->Get("hMass1710");
     if (hMass_f1525_Default == nullptr || hMass_f1710_Default == nullptr || hMass_f1525_Coherent == nullptr || hMass_f1710_Coherent == nullptr)
     {
         cout << "Error: One of the histograms not found!" << endl;
         return;
     }
-    TCanvas *cMassf0 = new TCanvas("cMassf0", "Mass Comparison", 720, 720);
-    SetCanvasStyle(cMassf0, 0.15, 0.03, 0.05, 0.14);
-    SetHistoQA(hMass_f1710_Default);
-    SetHistoQA(hMass_f1710_Coherent);
-    hMass_f1710_Default->SetLineColor(kRed);
-    hMass_f1710_Default->SetMarkerColor(kRed);
-    hMass_f1710_Default->SetMarkerSize(1.5);
-    hMass_f1710_Default->SetBinError(2, hMass_f1710_Default->GetBinError(2) * 4);
-    hMass_f1710_Coherent->SetBinError(2, hMass_f1710_Coherent->GetBinError(2) * 4);
-    hMass_f1710_Coherent->SetLineColor(kBlue);
-    hMass_f1710_Coherent->SetMarkerColor(kBlue);
-    hMass_f1710_Coherent->SetMarkerSize(1.5);
-    hMass_f1710_Default->Draw("pe");
-    hMass_f1710_Coherent->Draw("pe same");
-    TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
-    line1710Mass->SetLineStyle(2);
-    line1710Mass->SetLineColor(2);
-    line1710Mass->Draw("same");
-    TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
-    band1710Mass->SetFillColor(kRed); // shaded
-    band1710Mass->SetFillStyle(3001); // hatched
-    band1710Mass->SetLineColor(kRed);
-    band1710Mass->SetLineWidth(1);
-    band1710Mass->Draw("same");
-    TLegend *legend = new TLegend(0.6, 0.7, 0.9, 0.9);
-    legend->SetBorderSize(0);
-    legend->SetFillStyle(0);
-    legend->SetTextSize(0.035);
-    legend->SetTextFont(42);
-    legend->SetHeader("f_{0}(1710) mass");
-    legend->AddEntry(hMass_f1710_Default, "Default fit", "p");
-    legend->AddEntry(hMass_f1710_Coherent, "Coherent Sum", "p");
-    legend->AddEntry(line1710Mass, "PDG mass", "l");
-    legend->Draw();
-    // cMassf0->SaveAs((path + "MassCompare_f1710_CoherentPhi0.png").c_str());
+    // TCanvas *cMassf0 = new TCanvas("cMassf0", "Mass Comparison", 720, 720);
+    // SetCanvasStyle(cMassf0, 0.15, 0.03, 0.05, 0.14);
+    // SetHistoQA(hMass_f1710_Default);
+    // SetHistoQA(hMass_f1710_Coherent);
+    // hMass_f1710_Default->SetLineColor(kRed);
+    // hMass_f1710_Default->SetMarkerColor(kRed);
+    // hMass_f1710_Default->SetMarkerSize(1.5);
+    // hMass_f1710_Default->SetBinError(2, hMass_f1710_Default->GetBinError(2) * 4);
+    // hMass_f1710_Coherent->SetBinError(2, hMass_f1710_Coherent->GetBinError(2) * 4);
+    // hMass_f1710_Coherent->SetLineColor(kBlue);
+    // hMass_f1710_Coherent->SetMarkerColor(kBlue);
+    // hMass_f1710_Coherent->SetMarkerSize(1.5);
+    // hMass_f1710_Default->Draw("pe");
+    // hMass_f1710_Coherent->Draw("pe same");
+    // TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
+    // line1710Mass->SetLineStyle(2);
+    // line1710Mass->SetLineColor(2);
+    // line1710Mass->Draw("same");
+    // TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
+    // band1710Mass->SetFillColor(kRed); // shaded
+    // band1710Mass->SetFillStyle(3001); // hatched
+    // band1710Mass->SetLineColor(kRed);
+    // band1710Mass->SetLineWidth(1);
+    // band1710Mass->Draw("same");
+    // TLegend *legend = new TLegend(0.6, 0.7, 0.9, 0.9);
+    // legend->SetBorderSize(0);
+    // legend->SetFillStyle(0);
+    // legend->SetTextSize(0.035);
+    // legend->SetTextFont(42);
+    // legend->SetHeader("f_{0}(1710) mass");
+    // legend->AddEntry(hMass_f1710_Default, "Default fit", "p");
+    // legend->AddEntry(hMass_f1710_Coherent, "Coherent Sum", "p");
+    // legend->AddEntry(line1710Mass, "PDG mass", "l");
+    // legend->Draw();
+    // // cMassf0->SaveAs((path + "MassCompare_f1710_CoherentPhi0.png").c_str());
 
-    TCanvas *cMassf2 = new TCanvas("cMassf2", "Mass Comparison", 720, 720);
-    SetCanvasStyle(cMassf2, 0.15, 0.03, 0.05, 0.14);
-    SetHistoQA(hMass_f1525_Default);
-    SetHistoQA(hMass_f1525_Coherent);
-    hMass_f1525_Default->SetLineColor(kRed);
-    hMass_f1525_Default->SetMarkerColor(kRed);
-    hMass_f1525_Default->SetMarkerSize(1.5);
-    hMass_f1525_Coherent->SetLineColor(kBlue);
-    hMass_f1525_Coherent->SetMarkerColor(kBlue);
-    hMass_f1525_Coherent->SetMarkerSize(1.5);
-    hMass_f1525_Default->Draw("pe");
-    hMass_f1525_Coherent->Draw("pe same");
-    TLine *line1525Mass = new TLine(1, f1525Mass, 15, f1525Mass);
-    line1525Mass->SetLineStyle(2);
-    line1525Mass->SetLineColor(2);
-    line1525Mass->Draw("same");
-    TBox *band1525Mass = new TBox(1, f1525Mass - f1525MassErr, 15, f1525Mass + f1525MassErr);
-    band1525Mass->SetFillColor(kRed); // shaded
-    band1525Mass->SetFillStyle(3001); // hatched
-    band1525Mass->SetLineColor(kRed);
-    band1525Mass->SetLineWidth(1);
-    band1525Mass->Draw("same");
-    TLegend *legend2 = new TLegend(0.6, 0.7, 0.9, 0.9);
-    legend2->SetBorderSize(0);
-    legend2->SetFillStyle(0);
-    legend2->SetTextSize(0.035);
-    legend2->SetTextFont(42);
-    legend2->SetHeader("f_{2}'(1525) mass");
-    legend2->AddEntry(hMass_f1525_Default, "Default fit", "p");
-    legend2->AddEntry(hMass_f1525_Coherent, "Coherent Sum", "p");
-    legend2->AddEntry(line1525Mass, "PDG mass", "l");
-    legend2->Draw();
-    // cMassf2->SaveAs((path + "MassComparison_f1525.png").c_str());
-    // cMassf2->SaveAs((path + "MassCompare_f1525_CoherentPhi0.png").c_str());
+    // TCanvas *cMassf2 = new TCanvas("cMassf2", "Mass Comparison", 720, 720);
+    // SetCanvasStyle(cMassf2, 0.15, 0.03, 0.05, 0.14);
+    // SetHistoQA(hMass_f1525_Default);
+    // SetHistoQA(hMass_f1525_Coherent);
+    // hMass_f1525_Default->SetLineColor(kRed);
+    // hMass_f1525_Default->SetMarkerColor(kRed);
+    // hMass_f1525_Default->SetMarkerSize(1.5);
+    // hMass_f1525_Coherent->SetLineColor(kBlue);
+    // hMass_f1525_Coherent->SetMarkerColor(kBlue);
+    // hMass_f1525_Coherent->SetMarkerSize(1.5);
+    // hMass_f1525_Default->Draw("pe");
+    // hMass_f1525_Coherent->Draw("pe same");
+    // TLine *line1525Mass = new TLine(1, f1525Mass, 15, f1525Mass);
+    // line1525Mass->SetLineStyle(2);
+    // line1525Mass->SetLineColor(2);
+    // line1525Mass->Draw("same");
+    // TBox *band1525Mass = new TBox(1, f1525Mass - f1525MassErr, 15, f1525Mass + f1525MassErr);
+    // band1525Mass->SetFillColor(kRed); // shaded
+    // band1525Mass->SetFillStyle(3001); // hatched
+    // band1525Mass->SetLineColor(kRed);
+    // band1525Mass->SetLineWidth(1);
+    // band1525Mass->Draw("same");
+    // TLegend *legend2 = new TLegend(0.6, 0.7, 0.9, 0.9);
+    // legend2->SetBorderSize(0);
+    // legend2->SetFillStyle(0);
+    // legend2->SetTextSize(0.035);
+    // legend2->SetTextFont(42);
+    // legend2->SetHeader("f_{2}'(1525) mass");
+    // legend2->AddEntry(hMass_f1525_Default, "Default fit", "p");
+    // legend2->AddEntry(hMass_f1525_Coherent, "Coherent Sum", "p");
+    // legend2->AddEntry(line1525Mass, "PDG mass", "l");
+    // legend2->Draw();
+    // // cMassf2->SaveAs((path + "MassComparison_f1525.png").c_str());
+    // // cMassf2->SaveAs((path + "MassCompare_f1525_CoherentPhi0.png").c_str());
 
-    // Compare the spectra for default and variation case for f2(1525) and f0(1710)
-    TH1F *SpectraCoherent_f1525 = (TH1F *)fCoherent->Get("hYield1525Corrected");
-    TH1F *SpectraCoherent_f1710 = (TH1F *)fCoherent->Get("hYield1710Corrected");
+    // // Compare the spectra for default and variation case for f2(1525) and f0(1710)
+    // TH1F *SpectraCoherent_f1525 = (TH1F *)fCoherent->Get("hYield1525Corrected");
+    // TH1F *SpectraCoherent_f1710 = (TH1F *)fCoherent->Get("hYield1710Corrected");
+
+    TH1F *SpectraCoherent_f1525 = (TH1F *)fReweightedf2_Coherent->Get(Form("hYield1525Corrected_%s", indexStrCoherentf2.c_str()));
+    TH1F *SpectraCoherent_f1710 = (TH1F *)fReweightedf0_Coherent->Get(Form("hYield1710Corrected_%s", indexStrCoherentf0.c_str()));
 
     // TFile *fSigEventLossOld = new TFile("Loss_phi_mult0-100.root", "READ");
     // TFile *fSigEventLossNew = new TFile("../SignalLossPhiINEL.root", "READ");
@@ -496,6 +508,7 @@ void compare_mass_yield_coherent()
     legend4->AddEntry(graph_f0_2, "f_{0}(1710) (Coherent)", "p");
     legend4->AddEntry(pol1_meson, "Pol 1", "l");
     legend4->Draw();
+    cMeanPt->SaveAs((path + "plots/MeanPt_vs_Mass_CoherentComparePhase_0_Pi.png").c_str());
     // cMeanPt->SaveAs((path + "plots/MeanPt_vs_Mass_CoherentCompare.png").c_str());
     // cMeanPt->SaveAs((path + "plots/MeanPt_vs_Mass_CoherentComparePhi0.png").c_str());
 
@@ -631,14 +644,14 @@ void compare_mass_yield_coherent()
     hf21->SetMarkerStyle(21);
     hf21->SetMinimum(2e-7);
     hf21->Draw("SAME");
-    TLegend *legf2 = new TLegend(0.55, 0.7, 0.9, 0.9);
+    TLegend *legf2 = new TLegend(0.4, 0.7, 0.9, 0.9);
     legf2->SetBorderSize(0);
     legf2->SetFillStyle(0);
     legf2->SetTextSize(0.055);
     legf2->SetTextFont(42);
     legf2->AddEntry((TObject *)0, "f'_{2}(1525) spectra", "");
     legf2->AddEntry(hYieldReweightedf2, "Default", "p");
-    legf2->AddEntry(hf21, "Coherent", "p");
+    legf2->AddEntry(hf21, "Coherent (#Phi1 = 0, #Phi2 = #Pi)", "p");
     legf2->Draw();
     cSpectraf2->cd(2);
     TH1F *hRatiof2 = (TH1F *)hYieldReweightedf2->Clone("hRatiof2");
@@ -662,6 +675,7 @@ void compare_mass_yield_coherent()
     lineRatiof2->SetLineStyle(2);
     lineRatiof2->SetLineColor(kBlack);
     lineRatiof2->Draw();
+    cSpectraf2->SaveAs((path + "plots/SpectraComparison_f2_CoherentPhase_0_Pi.png").c_str());
     // cSpectraf2->SaveAs((path + "plots/SpectraComparison_f2_Coherent.png").c_str());
     // cSpectraf2->SaveAs((path + "plots/SpectraComparison_f2_CoherentPhi0.png").c_str());
 
@@ -690,14 +704,14 @@ void compare_mass_yield_coherent()
     hf01->SetMarkerStyle(21);
     hf01->SetMinimum(2e-7);
     hf01->Draw("SAME");
-    TLegend *legf0 = new TLegend(0.55, 0.7, 0.9, 0.9);
+    TLegend *legf0 = new TLegend(0.4, 0.7, 0.9, 0.9);
     legf0->SetBorderSize(0);
     legf0->SetFillStyle(0);
     legf0->SetTextSize(0.055);
     legf0->SetTextFont(42);
     legf0->AddEntry((TObject *)0, "f_{0}(1710) spectra", "");
     legf0->AddEntry(hYieldReweightedf0, "Default", "p");
-    legf0->AddEntry(hf01, "Coherent", "p");
+    legf0->AddEntry(hf01, "Coherent (#Phi1 = 0, #Phi2 = #Pi)", "p");
     legf0->Draw();
     cSpectraf0->cd(2);
     TH1F *hRatiof0 = (TH1F *)hYieldReweightedf0->Clone("hRatiof0");
@@ -721,6 +735,7 @@ void compare_mass_yield_coherent()
     lineRatiof0->SetLineStyle(2);
     lineRatiof0->SetLineColor(kBlack);
     lineRatiof0->Draw();
+    cSpectraf0->SaveAs((path + "plots/SpectraComparison_f0_CoherentPhase_0_Pi.png").c_str());
     // cSpectraf0->SaveAs((path + "plots/SpectraComparison_f0_Coherent.png").c_str());
     // cSpectraf0->SaveAs((path + "plots/SpectraComparison_f0_CoherentPhi0.png").c_str());
 }

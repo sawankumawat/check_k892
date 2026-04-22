@@ -37,11 +37,11 @@ void compare_yield_inelgt0_minBias()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = true;
+    bool isSameBins = false;
     // double inelNormRun2 = 0.892; event loss factor used in run 2
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass"; // 2023 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa_INEL/hInvMass"; // 2024 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2024 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -241,7 +241,7 @@ void compare_yield_inelgt0_minBias()
             gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
             gratio2->SetPoint(i, x_run2, thisanalysis2 / yield_run2);
             cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
-            cout << "Ratio 2 is " << thisanalysis2 / yield_run2 << endl;
+            // cout << "Ratio 2 is " << thisanalysis2 / yield_run2 << endl;
             // gratio3->SetPoint(i, x_run2, thisanalysis3 / yield_run2);
             double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
             double error2 = sqrt(pow(thisanalysis2 * y_error_run2 / (yield_run2 * yield_run2), 2));
@@ -283,10 +283,10 @@ void compare_yield_inelgt0_minBias()
     canvas_style(c1, pad1Size, pad2Size);
     c1->cd(1);
     SetHistoStyle(h1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    // SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+    SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
     h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     h1->SetMaximum(h1->GetMaximum() * 5);
-    h1->SetMinimum(h1->GetMinimum() * 0.1);
+    h1->SetMinimum(h1->GetMinimum() * 0.5);
     h1->GetYaxis()->SetTitleOffset(1.30);
     h1->GetXaxis()->SetTitleOffset(1.02);
     h1->SetMarkerStyle(20);
@@ -295,10 +295,10 @@ void compare_yield_inelgt0_minBias()
     h1->SetLineColor(kBlue);
     h1->SetMarkerColor(kBlue);
     h1->Draw("pe");
-    // h21->SetMarkerStyle(21);
-    // h21->SetMarkerSize(1);
-    // h21->SetMarkerColor(kRed);
-    // h21->SetLineColor(kRed);
+    h21->SetMarkerStyle(21);
+    h21->SetMarkerSize(1);
+    h21->SetMarkerColor(kRed);
+    h21->SetLineColor(kRed);
     // h21->Draw("pe same");
     // h31->SetMarkerStyle(22);
     // h31->SetMarkerSize(1);
@@ -324,11 +324,11 @@ void compare_yield_inelgt0_minBias()
 
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
-    leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", 0.0, 100.0));
-    leg->AddEntry(h1, "2023 data", "p");
+    leg->SetHeader("INEL > 0");
+    leg->AddEntry(h1, "2024 data", "p");
     // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
-    // leg->AddEntry(fitFcn, "Levy-Tsallis fit (pp 13.6 TeV)", "l");
+    leg->AddEntry(fitFcn1, "Levy-Tsallis", "l");
     leg->AddEntry(gRun2_minBias[minBiasFromWhichGraph], "pp 13 TeV (Published)", "p");
     leg->SetTextSize(0.05);
     leg->Draw();
@@ -342,7 +342,7 @@ void compare_yield_inelgt0_minBias()
     }
 
     SetGrapherrorStyle(gratio1);
-    // SetGrapherrorStyle(gratio2);
+    SetGrapherrorStyle(gratio2);
     gratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
     gratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     gratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -368,7 +368,7 @@ void compare_yield_inelgt0_minBias()
     gratio2->SetMarkerSize(1.0);
     gratio2->SetMarkerColor(kRed);
     gratio2->SetLineColor(kRed);
-    gratio2->Draw("p same");
+    // gratio2->Draw("p same");
     // gratio3->SetMarkerStyle(22);
     // gratio3->SetMarkerSize(1.0);
     // gratio3->SetMarkerColor(kGreen + 2);
@@ -380,5 +380,12 @@ void compare_yield_inelgt0_minBias()
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
+
+    //Draw a grey band with 20% uncertainty around the ratio of 1
+    TBox *box = new TBox(0, 0.8, 10, 1.2);
+    box->SetFillColor(kGray + 2);
+    box->SetFillStyle(3003);
+    box->Draw("same");
     c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
+
 }

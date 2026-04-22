@@ -9,31 +9,15 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-k892analysis";
 
 // const string kvariation = ""; // change the variation here
-// const string kvariation = "_CutsOnMotherParticle"; // change the variation here
-// const string kvariation = "_PtDepDCAxy"; // change the variation here
-// const string kvariation = "_RCT"; // change the variation here
-// const string kvariation = "_onlyTPC"; // change the variation here
-// const string kvariation = "_Min5ItsClusters"; // change the variation here
-// const string kvariation = "_PbPbCuts"; // change the variation here
-// const string kvariation = "_PtDepPID"; // change the variation here
-// const string kvariation = "_FakeTracks_id33593"; // change the variation here
-// const string kvariation = "_MID_id33593"; // change the variation here
-// const string kvariation = "_TPCChi2Min_id34810"; // change the variation here
-// const string kvariation = "_TrackRapidity0p3_id34810"; // change the variation here
-// const string kvariation = "_MCclosure_id34109"; // change the variation here
-// const string kvariation = "_PIDKa2"; // change the variation here
-// const string kvariation = "_PIDKa1_NoMID"; // change the variation here
-// const string kvariation = "_PIDKa2"; // change the variation here
-// const string kvariation = "_BetaTOF0p5";      // change the variation here
-// const string kvariation = "_GoodFT0vsPV";      // change the variation here
-// const string kvariation = "_GoodITSLayersAll"; // change the variation here
-// const string kvariation = "_ITSTPCRefit";       // change the variation here
-// const string kvariation = "_VertexITSTPC";      // change the variation here
-// const string kvariation = "_VertexTOFMatched";  // change the variation here
-// const string kvariation = "_ptDepPID";  // change the variation here
-// const string kvariation = "_NoRCT";  // change the variation here
-// const string kvariation = "_hasITS";  // change the variation here
-const string kvariation = "_INEL";  // change the variation here
+// const string kvariation = "_INEL";  // change the variation here
+// const string kvariation = "_INELgt0";  // change the variation here
+// const string kvariation = "_DeepAngle";  // change the variation here
+// const string kvariation = "_PVContributor";  // change the variation here
+// const string kvariation = "_LoosePID";  // change the variation here
+// const string kvariation = "_pTDepPID";  // change the variation here
+// const string kvariation = "_pTDepPIDTOF";  // change the variation here
+// const string kvariation = "_id35679";  // change the variation here
+const string kvariation = "_MC_closure";  // change the variation here
 ////********************************************************************************************
 
 // define datasets here
@@ -43,12 +27,11 @@ const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
 const string kSignalOutput_temp = "../output/" + kParticle; // output folder
 
 #ifdef DATASET_LHC220_pass7
-const string kDataset_temp = "LHC22o_pass7/";
+// const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataset_temp = "LHC22o_pass7/checks/";
 // const string kDataset_temp = "LHC22o_pass7/Occupancy_effect/";
 // const string kDataset_temp = "LHC22o_pass7/IR_study/";
-// const string kDataset_temp = "LHC22o_pass7/MC_closure/";
-const string kMCDataset = "../mc/LHC24f3c/";
+const string kDataset_temp = "LHC22o_pass7/MC_closure/";
 #endif
 
 #ifdef DATASET_LHC220_pass7
@@ -75,8 +58,12 @@ const string kMCDataset = "../mc/LHC24f3c/";
 // const string kDataFilename_temp2 = "586976.root"; //23 dataset
 // const string kDataFilename_temp2 = "586385.root"; // 24 dataset
 
-//*****************************Temporary***************************************
-const string kDataFilename_temp2 = "589661.root";
+//*****************************After SQM***************************************
+// const string kDataFilename_temp2 = "655628.root"; // 2024 dataset
+// const string kDataFilename_temp2 = "658306.root"; // 2024 dataset (DeepAngle, PV Contributor, INELgt0)
+// const string kDataFilename_temp2 = "658307.root"; // 2024 dataset (LoosePID, pTDepPID, pTDepPIDTOF)
+// const string kDataFilename_temp2 = "660453.root"; // 2023 dataset  (with All checks as for 2024)
+const string kDataFilename_temp2 = "657468.root"; // 2024 dataset  (MC for closure)
 #endif
 
 // final dataset name
@@ -94,7 +81,7 @@ const int kcanvasheight = 720 * 2;
 const int kcanvasdivide[2] = {klowerpad, kupperpad};
 
 float masspdg = 0.896;   // in GeV/c^2
-float widthpdg = 0.0473; // in 1 sigma GeV/c^2
+float widthpdg = 0.0487; // in 1 sigma GeV/c^2
 
 ////////////////////////////////////////////////////////////////////////////////////
 //                                                                                //
@@ -148,3 +135,29 @@ float widthpdg = 0.0473; // in 1 sigma GeV/c^2
 
 //*************************ItsTpcTracksCheck, betacutTOF******************************
 // const string kDataFilename_temp2 = "481941.root"; // LHC23_pass4_thin_small dataset, INEL > 0, No effect is seen
+
+//================Variation names===================
+// const string kvariation = "_CutsOnMotherParticle"; // change the variation here
+// const string kvariation = "_PtDepDCAxy"; // change the variation here
+// const string kvariation = "_RCT"; // change the variation here
+// const string kvariation = "_onlyTPC"; // change the variation here
+// const string kvariation = "_Min5ItsClusters"; // change the variation here
+// const string kvariation = "_PbPbCuts"; // change the variation here
+// const string kvariation = "_PtDepPID"; // change the variation here
+// const string kvariation = "_FakeTracks_id33593"; // change the variation here
+// const string kvariation = "_MID_id33593"; // change the variation here
+// const string kvariation = "_TPCChi2Min_id34810"; // change the variation here
+// const string kvariation = "_TrackRapidity0p3_id34810"; // change the variation here
+// const string kvariation = "_MCclosure_id34109"; // change the variation here
+// const string kvariation = "_PIDKa2"; // change the variation here
+// const string kvariation = "_PIDKa1_NoMID"; // change the variation here
+// const string kvariation = "_PIDKa2"; // change the variation here
+// const string kvariation = "_BetaTOF0p5";      // change the variation here
+// const string kvariation = "_GoodFT0vsPV";      // change the variation here
+// const string kvariation = "_GoodITSLayersAll"; // change the variation here
+// const string kvariation = "_ITSTPCRefit";       // change the variation here
+// const string kvariation = "_VertexITSTPC";      // change the variation here
+// const string kvariation = "_VertexTOFMatched";  // change the variation here
+// const string kvariation = "_ptDepPID";  // change the variation here
+// const string kvariation = "_NoRCT";  // change the variation here
+// const string kvariation = "_hasITS";  // change the variation here

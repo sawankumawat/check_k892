@@ -41,6 +41,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
+    double fitRangeMax = 15.0;
     // double inelNormFactorRun2[] = {0.997814, 0.998632, 0.998465, 0.997509, 0.993852, 0.985782, 0.971972, 0.935197, 0.756786}; // this is event loss factor used in run 2
 
     // ******************Correct placement of TPC crossed rows**************************
@@ -54,8 +55,12 @@ void plot_spectra()
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
 
     //==============================Pt-dependent PID=======================
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
+
+    //================================After SQM=======================
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2024 data
+    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/660453/kstarqa_id35679/hInvMass"; // 2023 data
 
     TString pathLevyFits = path + "/LevyFits";
     if (gSystem->mkdir(pathLevyFits, kTRUE))
@@ -131,14 +136,14 @@ void plot_spectra()
         hmult[i]->GetXaxis()->SetTitleSize(0.045);
         hmult[i]->GetYaxis()->SetTitleSize(0.045);
         hmult[i]->GetYaxis()->SetTitleOffset(1.3);
-        hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 15);
-        hmult[i]->SetMinimum(2e-7);
+        hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
+        hmult[i]->SetMinimum(7e-7);
         hmult[i]->SetMarkerStyle(markers[i - 1]);
         hmult[i]->Draw("pe same PLC PMC");
     }
     hmult[0]->SetMarkerStyle(markers[numofmultbins]);
     hmult[0]->SetMarkerSize(1.2);
-    hmult[0]->Draw("pe same PLC PMC");
+    // hmult[0]->Draw("pe same PLC PMC");
 
     if (!plotOnlyRaw)
     {
@@ -157,15 +162,15 @@ void plot_spectra()
             }
             /*************meanpT*****************byresonance*******************package*************************/
             Double_t min = 0.0;
-            Double_t max = 10.0;
+            Double_t max = fitRangeMax;
             Double_t loprecision = 0.01;
             Double_t hiprecision = 0.1;
             Option_t *opt = "RI0+";
             TString logfilename = "log.root";
             Double_t minfit = 0.0;
-            Double_t maxfit = 10.0;
+            Double_t maxfit = fitRangeMax;
 
-            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
+            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, fitRangeMax, 4);
             fitFcn->SetParameter(0, 5.0);
             // fitFcn->SetParameter(1, 0.05);
             fitFcn->SetParameter(1, 0.5);
@@ -184,15 +189,17 @@ void plot_spectra()
             fitFcn->SetLineColor(color);
             fitFcn->SetLineWidth(2);
             fitFcn->SetLineStyle(2);
-            fitFcn->Draw("l same");
+            if (imult != 0)
+                fitFcn->Draw("l same");
         }
     }
     c->cd(1);
 
-    TLegend *leg = new TLegend(0.37, 0.75, 0.95, 0.97);
+    // TLegend *leg = new TLegend(0.37, 0.75, 0.95, 0.97); // for 4 columns legend
+    TLegend *leg = new TLegend(0.47, 0.7, 0.98, 0.97);
     SetLegendStyle(leg);
-    leg->SetNColumns(4);
-    leg->AddEntry(hmult[0], "0-100%", "lpe");
+    leg->SetNColumns(3);
+    // leg->AddEntry(hmult[0], "0-100%", "lpe");
     for (int i = 1; i < numofmultbins + 1; i++)
     {
         // leg->AddEntry(hmult[i], Form("%.0f-%.0f%%(#times2^{%d})", mult_classes[i - 1], mult_classes[i], numofmultbins + 1 - i), "lpe");
@@ -207,7 +214,7 @@ void plot_spectra()
     hratios[1]->SetMinimum(0.1);
     hratios[1]->SetMaximum(10);
     hratios[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-    hratios[1]->GetYaxis()->SetTitle("Ratio to 0-100%");
+    hratios[1]->GetYaxis()->SetTitle("Ratio to INEL>0");
     hratios[1]->GetYaxis()->SetNdivisions(505);
     // hratios[0]->GetXaxis()->SetRangeUser(0, 25);
 
@@ -222,10 +229,10 @@ void plot_spectra()
         hratios[i]->SetMarkerStyle(markers[i]);
         hratios[i]->Draw("pe same PLC PMC");
     }
-    TLine *line = new TLine(0, 1, 20, 1);
+    TLine *line = new TLine(0, 1, 10, 1);
     line->SetLineStyle(2);
     line->SetLineColor(kBlack);
-    line->SetLineWidth(3);
+    line->SetLineWidth(2);
     line->Draw();
 
     TString outputfolder = path;
@@ -257,16 +264,16 @@ void plot_spectra()
             }
             /*************meanpT*****************byresonance*******************package*************************/
             Double_t min = 0.0;
-            Double_t max = 10.0;
+            Double_t max = fitRangeMax;
             Double_t loprecision = 0.01;
             Double_t hiprecision = 0.1;
             Option_t *opt = "RI+";
             TString logfilename = "log.root";
             Double_t minfit = 0.0;
-            Double_t maxfit = 10.0;
+            Double_t maxfit = fitRangeMax;
             // Double_t maxfit=8.0;
 
-            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
+            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, fitRangeMax, 4);
             fitFcn->SetParameter(0, 5.0);
             fitFcn->SetParameter(1, 0.5);
             // fitFcn->SetParameter(1, 50);
@@ -377,8 +384,8 @@ void plot_spectra()
         legMeanYield->SetBorderSize(0);
         legMeanYield->SetFillStyle(0);
         // legMeanYield->AddEntry(gMeanYieldRun2_5020MeV, "Run 2 (5.02 TeV)", "p");
-        legMeanYield->AddEntry(gMeanYieldRun2, "Run 2 (13 TeV)", "p");
         legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
+        legMeanYield->AddEntry(gMeanYieldRun2, "Run 2 (13 TeV)", "p");
         legMeanYield->Draw();
         cMeanYield->SaveAs(outputfolder + "/mean_yield_run2.png");
 

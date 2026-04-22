@@ -2,7 +2,7 @@
 #include "src/style.h"
 #include "src/fitfunc.h"
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
-void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false);
+void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false, bool isINEL = false);
 
 std::vector<int> markerStyles = {20, 21, 22, 23, 29, 33, 34, 47, 48, 49};
 std::vector<int> vibrantColors = {
@@ -22,6 +22,7 @@ void compare_multiple_spectra()
 {
     bool isCorrectedYield = true; // set false for efficency and corrected yield plots.
     bool isSinglePanel = false;   // Set to true if you want to plot only the first panel
+    bool isINEL = true;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
@@ -37,13 +38,20 @@ void compare_multiple_spectra()
     // vector<string> QAVariation = {"", "_BetaTOF0p5", "_GoodFT0vsPV", "_GoodITSLayersAll", "_ITSTPCRefit", "_VertexITSTPC", "_VertexTOFMatched"};
     // vector<string> legendnames = {"Default", "BetaTOF<0.5 ns", "GoodFT0 vs PV", "All ITS layers", "ITS-TPC refit", "Vertex ITSTPC", "Vertex TOF Matched"};
 
-    vector<string> QAVariation = {"", "_hasITS"};
-    vector<string> legendnames = {"Default", "has ITS"};
+    // vector<string> QAVariation = {"", "_hasITS"}; (train no. 589661)
+    // vector<string> legendnames = {"Default", "has ITS"};
+
+    //======After SQM========
+    vector<string> QAVariation = {"", "_LoosePID", "_pTDepPID", "_pTDepPIDTOF"}; //(Train no. 658307)
+    vector<string> legendnames = {"Default", "Loose PID", "pT Dependent PID", "pT Dependent PID with TOF"};
+
+    // vector<string> QAVariation = {"", "_DeepAngle", "_PVContributor"}; //(Train no. 658306)
+    // vector<string> legendnames = {"Default", "Deep Angle", "PV Contributor"};
 
     std::vector<TString> paths;
     for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/589661/kstarqa%s/hInvMass", variation.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/658307/kstarqa%s/hInvMass", variation.c_str()));
     }
     // // Additional push backs
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
@@ -94,10 +102,10 @@ void compare_multiple_spectra()
         return;
     }
 
-    plot_spectra(paths, isCorrectedYield, legendnames, isSinglePanel);
+    plot_spectra(paths, isCorrectedYield, legendnames, isSinglePanel, isINEL);
 }
 
-void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false)
+void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false, bool isINEL = false)
 {
     // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     float mult_classes[] = {0};
@@ -110,7 +118,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
 
     for (int ifiles = 0; ifiles < totalfiles; ifiles++)
     {
-        fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + "/corrected_spectra.root"), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
+        fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + "/corrected_spectra_INEL.root"), "read") : new TFile((paths[ifiles] + "/yield_INEL.root"), "read");
         // fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + Form("/corrected_spectra%s.root", realFileNames[ifiles].c_str())), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
         if (fspectra[ifiles]->IsZombie())
         {
@@ -121,8 +129,8 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
         for (int imult = 0; imult < numofmultbins + 1; imult++)
         {
             double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
-            double multhigh = (imult == 0) ? 100 : mult_classes[imult];
-            hmult[imult].push_back((isCorrectedYield) ? (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh)));
+            double multhigh = (imult == 0) ? (isINEL) ? 120 : 100 : mult_classes[imult];
+            hmult[imult].push_back((isCorrectedYield) ? (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh)) : (TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh)));
             // hmult[imult].push_back((TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/heff", multlow, multhigh)));
             // hmult[imult].push_back((TH1F *)fspectra[ifiles]->Get(Form("mult_%.0f-%.0f/SignalInAllPtBins/hfsig_pt7", multlow, multhigh)));
             if (hmult[imult][ifiles] == nullptr)
@@ -144,7 +152,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
     for (int imult = 0; imult < numofmultbins + 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
-        double multhigh = (imult == 0) ? 100 : mult_classes[imult];
+        double multhigh = (imult == 0) ? (isINEL) ? 120 : 100 : mult_classes[imult];
 
         TCanvas *c1 = new TCanvas("", "", 720, 720);
         double pad1Size, pad2Size;
@@ -200,7 +208,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
             // hmult[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
             hmult[imult][ifiles]->SetMarkerStyle(markerStyles[ifiles]);
             hmult[imult][ifiles]->SetMarkerColor(vibrantColors[ifiles]);
-            hmult[imult][ifiles]->SetMarkerSize(1.5);
+            hmult[imult][ifiles]->SetMarkerSize(1.0);
             // hmult[imult][ifiles]->SetMarkerSize(1);
             hmult[imult][ifiles]->SetLineColor(vibrantColors[ifiles]);
             // hmult[imult][ifiles]->SetMinimum(2e-5);
@@ -232,17 +240,20 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                 hratio[imult][ifiles]->GetYaxis()->SetLabelSize(0.04 / pad2Size);
                 hratio[imult][ifiles]->GetXaxis()->SetLabelSize(0.04 / pad2Size);
                 hratio[imult][ifiles]->SetMarkerStyle(markerStyles[ifiles]);
-                hratio[imult][ifiles]->SetMarkerSize(1.5);
+                hratio[imult][ifiles]->SetMarkerSize(1.0);
                 hratio[imult][ifiles]->SetMarkerColor(vibrantColors[ifiles]);
                 hratio[imult][ifiles]->SetLineColor(vibrantColors[ifiles]);
                 // hratio[imult][ifiles]->GetYaxis()->SetTitle(Form("Ratio to %s kHz", legendnames[0].c_str()));
                 // hratio[imult][ifiles]->GetYaxis()->SetTitle("Ratio to NN");
-                hratio[imult][ifiles]->GetYaxis()->SetTitle("Ratio to 2022 data");
+                hratio[imult][ifiles]->GetYaxis()->SetTitle("Ratio to default");
                 hratio[imult][ifiles]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
                 hratio[imult][ifiles]->GetXaxis()->CenterTitle(1);
                 hratio[imult][ifiles]->GetYaxis()->SetTitleOffset(0.75);
                 hratio[imult][ifiles]->GetXaxis()->SetTitleOffset(1.1);
                 hratio[imult][ifiles]->GetYaxis()->SetNdivisions(506);
+                if(isINEL)
+                hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 15);
+                else
                 hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
                 // hratio[imult][ifiles]->SetMinimum(0.86);
                 // hratio[imult][ifiles]->SetMaximum(3.14);

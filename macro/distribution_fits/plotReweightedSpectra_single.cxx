@@ -37,6 +37,7 @@ void plotReweightedSpectra_single()
 {
     bool otherQAPlots = true;
     gStyle->SetOptStat(0);
+
     // gStyle->SetOptFit(1111);
 
     string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
@@ -170,7 +171,7 @@ void plotReweightedSpectra_single()
     // legReweighted->AddEntry(hGenReweighted, "Reweighted Generated distribution", "p");
     // legReweighted->AddEntry(hRecReweighted, "Reweighted Reconstructed distribution", "p");
     // legReweighted->Draw();
-    // // cReweighted->SaveAs((savePath + "/ReweightedEfficiencyf0.png").c_str());
+    // // cReweighted->SaveAs((savePath + "/ReweightedEfficiencyf0.pdf").c_str());
 
     // TCanvas *cReweightedf2 = new TCanvas("cReweightedf2", "Reweighted Efficiency for f2'(1525)", 720, 720);
     // SetCanvasStyle(cReweightedf2, 0.18, 0.03, 0.05, 0.14);
@@ -227,10 +228,10 @@ void plotReweightedSpectra_single()
     // legReweighted2->Draw();
     // // hYieldReweighted->Write("f01710_Reweighted_Yield");
     // // hYieldReweighted2->Write("f21525_Reweighted_Yield");
-    // // cReweightedf2->SaveAs((savePath + "/ReweightedEfficiencyf2.png").c_str());
+    // // cReweightedf2->SaveAs((savePath + "/ReweightedEfficiencyf2.pdf").c_str());
 
     ////****************************Levy-Tsallis fit**********************************////
-    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties.root").c_str(), "read");
+    TFile *fSys = new TFile((path + "mult_0-100/Spectra/SystematicPlots/SystematicUncertainties_temp.root").c_str(), "read");
     if (fSys->IsZombie())
     {
         cout << "Error opening systematic uncertainty file" << endl;
@@ -267,6 +268,7 @@ void plotReweightedSpectra_single()
     // Using maximum deviation
     double relUncertLowpTExtrapolationf2 = 0.164614;
     double relUncertLowpTExtrapolationf0 = 0.108987;
+    double FT0visibleCrossSectionError = 0.06; // 6% uncertainty in visible cross section
 
     for (int i = 1; i <= hf21->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -320,7 +322,7 @@ void plotReweightedSpectra_single()
     cout << "<pT> = " << hout->GetBinContent(5) << endl;
     cout << "Stat. error " << hout->GetBinContent(6) << endl;
     cout << "Sys. error " << hout->GetBinContent(7) << endl;
-    // cout << "Sys. error High " << hout->GetBinContent(8) << endl; 
+    // cout << "Sys. error High " << hout->GetBinContent(8) << endl;
     // cout << "Low pT extrapolation error " << hout->GetBinContent(10) << endl;
 
     TH1 *hout2 = YieldMean(hf21, hf22, fitFcnf2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
@@ -338,12 +340,12 @@ void plotReweightedSpectra_single()
     gPad->SetLogy();
     SetHistoQA(hf01);
     hf01->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hf01->GetYaxis()->SetTitle("BR #times 1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hf01->GetYaxis()->SetTitle("BR #times (1/N_{evt}) #times d^{2}N/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-1}]");
     // hf01->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
     hf01->GetYaxis()->SetTitleOffset(1.7);
-    hf01->SetMarkerSize(1.5);
+    hf01->SetMarkerSize(1.7);
     // hf01->SetMaximum(hf01->GetMaximum() * 2);
-    hf01->SetMaximum(2e-3);
+    hf01->SetMaximum(9e-3);
     hf01->SetMinimum(9e-8);
     hf01->SetMarkerColor(kBlue);
     hf01->SetLineColor(kBlue);
@@ -359,17 +361,39 @@ void plotReweightedSpectra_single()
     fitFcnf0->Draw("l same");
 
     // Create legend with physics information
-    // TLegend *leg = new TLegend(0.53, 0.7, 0.9, 0.93); // to show only legend
-    TLegend *leg = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
-    leg->AddEntry((TObject *)0, "ALICE", "");
-    leg->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    leg->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    leg->AddEntry(hf01, "f_{0}(1710) spectra", "pe");
-    leg->AddEntry(fitFcnf0, "Levy-Tsallis fit", "l");
+    TLegend *leg = new TLegend(0.62, 0.751, 0.9, 0.9); // to show only legend
+    // TLegend *leg = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
+
+    // leg->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    // leg->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    leg->AddEntry(hf01, "f_{0}(1710) #rightarrow K_{S}^{0}K_{S}^{0}", "p");
+    // leg->AddEntry((TObject *)0, "INEL, |#it{y}| < 0.5", "");
+    leg->AddEntry(fitFcnf0, "L#acute{e}vy-Tsallis", "l");
+
+    // leg->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    // leg->AddEntry((TObject *)0, "pp #sqrt{#it{s}} = 13.6 TeV", "");
+    // leg->AddEntry((TObject *)0, "INEL, |#it{y}| < 0.5", "");
+    // leg->AddEntry(hf01, "f_{0}(1710) spectra", "p");
+    // leg->AddEntry(fitFcnf0, "L#acute{e}vy-Tsallis fit", "l");
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
     leg->SetTextSize(0.035);
     leg->Draw();
+
+    TLegend *leg22 = new TLegend(0.18, 0.76, 0.53, 0.93);
+    leg22->SetBorderSize(0);
+    leg22->SetFillStyle(0);
+    leg22->SetTextSize(0.035);
+    leg22->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    leg22->AddEntry((TObject *)0, "INEL pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    leg22->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
+    leg22->Draw();
+
+    TLatex lat;
+    lat.SetTextFont(42);
+    lat.SetTextSize(0.035);
+    lat.SetNDC();
+    lat.DrawLatex(0.2, 0.18, "Uncertainties: stat.(bars), sys.(boxes)");
 
     TPaveText *box = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
     box->SetFillColor(0); // white background
@@ -381,22 +405,24 @@ void plotReweightedSpectra_single()
     box->AddText(Form("n                        %.3f #pm %.3f", fitFcnf0->GetParameter(0), fitFcnf0->GetParError(0)));
     box->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf0->GetParameter(1), fitFcnf0->GetParError(1)));
     box->AddText(Form("T                        %.3f #pm %.3f", fitFcnf0->GetParameter(3), fitFcnf0->GetParError(3)));
-    box->Draw();
-    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FirstBinRemove.png").c_str());
-    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFitStatBox.png").c_str());
-    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFit.png").c_str());
-    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_reweightedFitValues.png").c_str());
+    // box->Draw();
+    cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_SQM.pdf").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_Default.pdf").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FirstBinRemove.pdf").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFitStatBox.pdf").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_FullFit.pdf").c_str());
+    // cCorrectedf0Fit->SaveAs((savePath + "/LevyFitf0_reweightedFitValues.pdf").c_str());
 
     TCanvas *cCorrectedf2Fit = new TCanvas("cCorrectedf2Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf2Fit, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
     SetHistoQA(hf21);
     hf21->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hf21->GetYaxis()->SetTitle("1/N_{evt} #times d^{2}N/(d#it{p}_{T}dy) (GeV/#it{c})^{-1}");
+    hf21->GetYaxis()->SetTitle("(1/N_{evt}) #times d^{2}N/(d#it{p}_{T}d#it{y}) [(GeV/#it{c})^{-1}]");
     hf21->GetYaxis()->SetTitleOffset(1.7);
-    hf21->SetMarkerSize(1.5);
+    hf21->SetMarkerSize(1.7);
     // hf21->SetMaximum(hf21->GetMaximum() * 7);
-    hf21->SetMaximum(4e-2);
+    hf21->SetMaximum(5e-1);
     // hf21->SetMaximum(4e-4);
     hf21->SetMinimum(2e-7);
     // hf21->SetMinimum(2e-9);
@@ -414,17 +440,28 @@ void plotReweightedSpectra_single()
     fitFcnf2->Draw("l same");
 
     // Create legend with physics information
-    // TLegend *leg2 = new TLegend(0.53, 0.7, 0.9, 0.93);
-    TLegend *leg2 = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
-    leg2->AddEntry((TObject *)0, "ALICE", "");
-    leg2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    leg2->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
-    leg2->AddEntry(hf21, "f_{2}'(1525) spectra", "pe");
-    leg2->AddEntry(fitFcnf2, "Levy-Tsallis fit", "l");
+    TLegend *leg2 = new TLegend(0.62, 0.751, 0.9, 0.9);
+    // TLegend *leg2 = new TLegend(0.23, 0.2, 0.5, 0.45); // to show fit parameters in statbox
+
+    // leg2->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    // leg2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
+    leg2->AddEntry(hf21, "f^{,}_{2}(1525) #rightarrow K_{S}^{0}K_{S}^{0}", "p");
+    // leg2->AddEntry(hf21, "\\mathrm{f}^{\\prime}_{2}(1525) \\rightarrow \\mathrm{K_{S}^{0}K_{S}^{0}}", "p");
+    // leg2->AddEntry((TObject *)0, "INEL, |#it{y}| < 0.5", "");
+    leg2->AddEntry(fitFcnf2, "L#acute{e}vy-Tsallis", "l");
+
+    // leg2->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    // leg2->AddEntry((TObject *)0, "pp #sqrt{#it{s}} = 13.6 TeV", "");
+    // leg2->AddEntry((TObject *)0, "INEL, |#it{y}| < 0.5", "");
+    // leg2->AddEntry(hf21, "f_{2}'(1525) spectra", "p");
+    // leg2->AddEntry(fitFcnf2, "L#acute{e}vy-Tsallis fit", "l");
     leg2->SetBorderSize(0);
     leg2->SetFillStyle(0);
     leg2->SetTextSize(0.035);
     leg2->Draw();
+    leg22->Draw();
+
+    lat.DrawLatex(0.2, 0.18, "Uncertainties: stat.(bars), sys.(boxes)");
 
     TPaveText *box2 = new TPaveText(0.60, 0.7, 0.98, 0.93, "NDC");
     box2->SetFillColor(0); // white background
@@ -436,12 +473,14 @@ void plotReweightedSpectra_single()
     box2->AddText(Form("n                        %.3f #pm %.3f", fitFcnf2->GetParameter(0), fitFcnf2->GetParError(0)));
     box2->AddText(Form("dN/dy        %.5f #pm %.5f", fitFcnf2->GetParameter(1), fitFcnf2->GetParError(1)));
     box2->AddText(Form("T                        %.3f #pm %.3f", fitFcnf2->GetParameter(3), fitFcnf2->GetParError(3)));
-    box2->Draw();
-    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FirstBinRemove.png").c_str());
-    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFitStatbox.png").c_str());
-    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFit.png").c_str());
-    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_reweighted.png").c_str());
-    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_reweightedFitValues.png").c_str());
+    // box2->Draw();
+    cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_SQM.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_Default.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FirstBinRemove.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFitStatbox.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_FullFit.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_reweighted.pdf").c_str());
+    // cCorrectedf2Fit->SaveAs((savePath + "/LevyFitf2_reweightedFitValues.pdf").c_str());
 
     // /*
     TFile *flightFlavourHadrons = new TFile("../spectra/LightFlavourHadronsProduction.root", "read");
@@ -455,14 +494,14 @@ void plotReweightedSpectra_single()
 
     int totalParticles = 9;
     string particles[9] = {"Pion", "Kaon", "K0s", "Kstar", "Phi", "Proton", "Lambda", "Xi", "Omega"};
-    string particlesLatex[9] = {"#pi", "K", "K^{0}_{S}", "K^{*0}", "#phi", "p", "#Lambda", "#Xi^{-}", "#Omega"};
-    double particleMass[9] = {0.13957, 0.49367, 0.49761, 0.89166, 1.01946, 0.93827, 1.11568, 1.3217, 1.67245}; // in GeV/c2
+    string particlesLatex[11] = {"#pi", "K", "K^{0}_{S}", "K^{*0}", "#phi", "p", "#Lambda", "#Xi^{-}", "#Omega", "#Xi^{0}", "#Sigma^{#pm}"};
+    double particleMass[11] = {0.13957, 0.49367, 0.49761, 0.89166, 1.01946, 0.93827, 1.11568, 1.3217, 1.67245, 1.5318, 1.385}; // in GeV/c2
     int colors[9] = {kBlack, kBlue, kGreen + 2, kOrange + 7, kViolet + 7, kCyan + 2, kMagenta + 2, kGray + 2, kPink + 2};
     int markers[9] = {21, 22, 23, 33, 34, 43, 45, 29, 39};
 
-    double meanPtAt13TeV[9];
-    double meanPtAt13TeV_err[9];
-    TGraphErrors *gMeanPt[9];
+    double meanPtAt13TeV[11];
+    double meanPtAt13TeV_err[11];
+    TGraphErrors *gMeanPt[11];
     TGraphAsymmErrors *gMeanPtvsMassMesons = new TGraphAsymmErrors();
     TGraphAsymmErrors *gMeanPtvsMassBaryons = new TGraphAsymmErrors();
     for (int i = 0; i < totalParticles; i++)
@@ -498,25 +537,37 @@ void plotReweightedSpectra_single()
         if (i < 5)
         {
             gMeanPtvsMassMesons->SetPoint(i, particleMass[i], meanPtAt13TeV[i]);
-            gMeanPtvsMassMesons->SetPointError(i, 0.02, 0.02, meanPtAt13TeV_err[i], meanPtAt13TeV_err[i]);
+            gMeanPtvsMassMesons->SetPointError(i, 0.023, 0.023, meanPtAt13TeV_err[i], meanPtAt13TeV_err[i]);
         }
         else
         {
             gMeanPtvsMassBaryons->SetPoint(i - 5, particleMass[i], meanPtAt13TeV[i]);
-            gMeanPtvsMassBaryons->SetPointError(i - 5, 0.02, 0.02, meanPtAt13TeV_err[i], meanPtAt13TeV_err[i]);
+            gMeanPtvsMassBaryons->SetPointError(i - 5, 0.023, 0.023, meanPtAt13TeV_err[i], meanPtAt13TeV_err[i]);
         }
     }
+    // Now in baryons add the points for Ξ(1530)0 and Σ(1385)±
+    // Σ(1385)±: Mass = 1385, <pT> = 1.29 +- 0.05
+    // Ξ(1530)0: Mass = 1531.8, <pT> = 1.44 +- 0.06
+    meanPtAt13TeV[9] = 1.44;
+    meanPtAt13TeV_err[9] = 0.06;
+    meanPtAt13TeV[10] = 1.29;
+    meanPtAt13TeV_err[10] = 0.05;
+    gMeanPtvsMassBaryons->SetPoint(5, 1.385, 1.29);
+    gMeanPtvsMassBaryons->SetPointError(5, 0.025, 0.025, 0.05, 0.05);
+    gMeanPtvsMassBaryons->SetPoint(6, 1.5318, 1.44);
+    gMeanPtvsMassBaryons->SetPointError(6, 0.025, 0.025, 0.06, 0.06);
+
     SetGraphStyleCommon(gMeanPtvsMassMesons);
     gMeanPtvsMassMesons->SetMarkerStyle(22);
-    gMeanPtvsMassMesons->SetMarkerColor(kMagenta);
-    gMeanPtvsMassMesons->SetLineColor(kMagenta);
+    gMeanPtvsMassMesons->SetMarkerColorAlpha(kMagenta, 0.5);
+    gMeanPtvsMassMesons->SetLineColorAlpha(kMagenta, 0.5);
     gMeanPtvsMassMesons->SetLineWidth(2);
     gMeanPtvsMassMesons->SetMarkerSize(1.7);
     gMeanPtvsMassMesons->SetFillStyle(0);
     SetGraphStyleCommon(gMeanPtvsMassBaryons);
     gMeanPtvsMassBaryons->SetMarkerStyle(34);
-    gMeanPtvsMassBaryons->SetMarkerColor(kRed);
-    gMeanPtvsMassBaryons->SetLineColor(kRed);
+    gMeanPtvsMassBaryons->SetMarkerColorAlpha(kOrange + 2, 0.75);
+    gMeanPtvsMassBaryons->SetLineColorAlpha(kOrange + 2, 0.75);
     gMeanPtvsMassBaryons->SetLineWidth(2);
     gMeanPtvsMassBaryons->SetMarkerSize(1.7);
     gMeanPtvsMassBaryons->SetFillStyle(0);
@@ -524,11 +575,13 @@ void plotReweightedSpectra_single()
     TCanvas *cMeanPt = new TCanvas("cMeanPt", "Mean pT vs mass", 720, 720);
     SetCanvasStyle(cMeanPt, 0.14, 0.03, 0.05, 0.14);
     gMeanPtvsMassMesons->GetXaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-    gMeanPtvsMassMesons->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
+    gMeanPtvsMassMesons->GetYaxis()->SetTitle("#LT#it{p}_{T}#GT (GeV/#it{c})");
     gMeanPtvsMassMesons->GetYaxis()->SetTitleOffset(1.3);
     gMeanPtvsMassMesons->SetMinimum(0.12);
     gMeanPtvsMassMesons->SetMaximum(3.59);
     gMeanPtvsMassMesons->GetXaxis()->SetLimits(0, 1.99);
+    gMeanPtvsMassMesons->GetXaxis()->SetTickLength(0.02);
+    gMeanPtvsMassMesons->GetYaxis()->SetTickLength(0.02);
     gMeanPtvsMassMesons->Draw("A 2"); // draw boxes for systematic errors
     TGraphAsymmErrors *gMeanPtvsMassMesonsSys = (TGraphAsymmErrors *)gMeanPtvsMassMesons->Clone("gMeanPtvsMassMesonsSys");
     gMeanPtvsMassMesonsSys->SetLineWidth(0); // to avoid showing error bars
@@ -539,14 +592,14 @@ void plotReweightedSpectra_single()
     gMeanPtvsMassBaryonsSys->Draw("P SAME");
 
     TF1 *pol1_meson = new TF1("pol1_meson", "pol1", 0.1, 1.89);
-    pol1_meson->SetLineColor(kYellow + 2);
+    pol1_meson->SetLineColorAlpha(kMagenta, 0.5);
     pol1_meson->SetLineStyle(2);
     gMeanPtvsMassMesons->Fit(pol1_meson, "R");
     double meanPt_f0_fromFit_meson = pol1_meson->Eval(1.710);
     // cout << "Mean pT of f0(1710) from fit is " << meanPt_f0_fromFit_meson << endl;
 
-    TF1 *pol1_baryon = new TF1("pol1_baryon", "pol1", 0.1, 1.89);
-    pol1_baryon->SetLineColor(kYellow + 2);
+    TF1 *pol1_baryon = new TF1("pol1_baryon", "pol1", 0.65, 1.89);
+    pol1_baryon->SetLineColorAlpha(kOrange + 2, 0.7);
     pol1_baryon->SetLineStyle(2);
     gMeanPtvsMassBaryons->Fit(pol1_baryon, "R");
     double meanPt_f0_fromFit_baryon = pol1_baryon->Eval(1.710);
@@ -556,13 +609,13 @@ void plotReweightedSpectra_single()
     double f2_mass = 1.5173;
     double f2_meanpt = hout2->GetBinContent(5);
     double f2_Staterr = hout2->GetBinContent(6);
-    double f2_SysErr = sqrt(hout2->GetBinContent(7) * hout2->GetBinContent(7) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
+    double f2_SysErr = sqrt(hout2->GetBinContent(7) * hout2->GetBinContent(7) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2 + FT0visibleCrossSectionError * FT0visibleCrossSectionError);
     // double f2_SysErrLow = sqrt(hout2->GetBinContent(8) * hout2->GetBinContent(8) + relUncertLowpTExtrapolationf2 * relUncertLowpTExtrapolationf2);
     // cout << "Sys High f2(1525) " << hout2->GetBinContent(7) << " Sys Low " << hout2->GetBinContent(8) << endl;
     // cout << "Mean pT of f2(1525) is " << f2_meanpt << " with stat error " << f2_Staterr << endl;
 
-    int f2_marker = 20;        // choose a unique marker style for f2(1525)
-    int f2_color = kGreen + 1; // choose a unique color for f2(1525)
+    int f2_marker = 20;   // choose a unique marker style for f2(1525)
+    int f2_color = kBlue; // choose a unique color for f2(1525)
     TGraphErrors *graph_f2 = new TGraphErrors(1);
     graph_f2->SetPoint(0, f2_mass, f2_meanpt);
     graph_f2->SetPointError(0, 0, f2_Staterr);
@@ -571,12 +624,12 @@ void plotReweightedSpectra_single()
     graph_f2->SetMarkerSize(1.7);
     graph_f2->SetLineColor(f2_color);
     graph_f2->SetLineWidth(2);
-    graph_f2->Draw("P SAME");
+    graph_f2->Draw("PZ SAME");
 
     // Draw systematic error as boxes using TGraphAsymmErrors
     TGraphAsymmErrors *graph_f2_sys = new TGraphAsymmErrors(1);
     graph_f2_sys->SetPoint(0, f2_mass, f2_meanpt);
-    graph_f2_sys->SetPointError(0, 0.02, 0.02, f2_SysErr, f2_SysErr);
+    graph_f2_sys->SetPointError(0, 0.023, 0.023, f2_SysErr, f2_SysErr);
     graph_f2_sys->SetLineColor(f2_color);
     graph_f2_sys->SetLineWidth(2);
     graph_f2_sys->SetFillStyle(0);
@@ -586,7 +639,7 @@ void plotReweightedSpectra_single()
     double f0_mass = 1.710;
     double f0_meanpt = hout->GetBinContent(5);
     double f0_Staterr = hout->GetBinContent(6);
-    double f0_SysErr = sqrt(hout->GetBinContent(7) * hout->GetBinContent(7) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
+    double f0_SysErr = sqrt(hout->GetBinContent(7) * hout->GetBinContent(7) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0 + FT0visibleCrossSectionError * FT0visibleCrossSectionError);
     // double f0_SysErrLow = sqrt(hout->GetBinContent(8) * hout->GetBinContent(8) + relUncertLowpTExtrapolationf0 * relUncertLowpTExtrapolationf0);
     // cout << "Sys Low f0(1710) " << hout->GetBinContent(7) << " Sys High " << hout->GetBinContent(8) << endl;
     // cout << "Sys total low " << f0_SysErrLow << " Sys total high " << f0_SysErrHigh << endl;
@@ -599,8 +652,8 @@ void plotReweightedSpectra_single()
     cout << "Sigma deviation of f0(1710) from baryonic fit is " << SigmaDeviationBaryon << endl;
     // cout << "Difference in mean value "<< fabs(meanPt_f0_fromFit_baryon - f0_meanpt) << " and total error " << sqrt(f0_SysErrLow * f0_SysErrLow + f0_SysErrHigh * f0_SysErrHigh + f0_Staterr * f0_Staterr) << endl;
 
-    int f0_marker = 21;   // choose a unique marker style for f0(1710)
-    int f0_color = kBlue; // choose a unique color for f0(1710)
+    int f0_marker = 21;  // choose a unique marker style for f0(1710)
+    int f0_color = kRed; // choose a unique color for f0(1710)
     TGraphErrors *graph_f0 = new TGraphErrors(1);
     graph_f0->SetPoint(0, f0_mass, f0_meanpt);
     graph_f0->SetPointError(0, 0, f0_Staterr);
@@ -609,11 +662,11 @@ void plotReweightedSpectra_single()
     graph_f0->SetMarkerSize(1.7);
     graph_f0->SetLineColor(f0_color);
     graph_f0->SetLineWidth(2);
-    graph_f0->Draw("P SAME");
+    graph_f0->Draw("PZ SAME");
 
     TGraphAsymmErrors *graph_f0_sys = new TGraphAsymmErrors(1);
     graph_f0_sys->SetPoint(0, f0_mass, f0_meanpt);
-    graph_f0_sys->SetPointError(0, 0.02, 0.02, f0_SysErr, f0_SysErr);
+    graph_f0_sys->SetPointError(0, 0.023, 0.023, f0_SysErr, f0_SysErr);
     graph_f0_sys->SetLineColor(f0_color);
     graph_f0_sys->SetLineWidth(2);
     graph_f0_sys->SetFillStyle(0);
@@ -623,7 +676,8 @@ void plotReweightedSpectra_single()
     TLatex latex;
     latex.SetTextAlign(22);
     latex.SetTextSize(0.035);
-    for (int i = 0; i < totalParticles; i++)
+    latex.SetTextFont(42);
+    for (int i = 0; i < totalParticles + 2; i++)
     {
         double x = particleMass[i];
         double y = meanPtAt13TeV[i];
@@ -632,33 +686,51 @@ void plotReweightedSpectra_single()
             latex.DrawLatex(x + 0.08, y + 0.18, particlesLatex[i].c_str());
         else if (i <= 4)
             latex.DrawLatex(x, y + 0.18, particlesLatex[i].c_str());
+        else if (i == 7)
+            latex.DrawLatex(x - 0.013, y - 0.2, particlesLatex[i].c_str());
+        else if (i == 9)
+            latex.DrawLatex(x, y - 0.18, particlesLatex[i].c_str());
+        else if (i == 10)
+            latex.DrawLatex(x + 0.02, y - 0.16, particlesLatex[i].c_str());
         else
             latex.DrawLatex(x, y - 0.16, particlesLatex[i].c_str());
     }
-    latex.DrawLatex(1.5173, hout2->GetBinContent(5) + 0.29, "f'_{2}(1525)");
-    latex.DrawLatex(1.710, hout->GetBinContent(5) + 0.29, "f_{0}(1710)");
+    // latex.SetTextFont(62);
+    latex.DrawLatex(1.5173, hout2->GetBinContent(5) + 0.30, "f^{,}_{2}");
+    latex.DrawLatex(1.710, hout->GetBinContent(5) + 0.33, "f_{0}");
 
-    TLegend *legend4 = new TLegend(0.17, 0.65, 0.63, 0.92);
+    TLegend *legend4 = new TLegend(0.48, 0.78, 0.72, 0.92);
     legend4->SetBorderSize(0);
     legend4->SetFillStyle(0);
     legend4->SetTextSize(0.035);
-    legend4->AddEntry(gMeanPtvsMassMesons, "Mesons (13 TeV)", "p");
-    legend4->AddEntry(gMeanPtvsMassBaryons, "Baryons (13 TeV)", "p");
-    legend4->AddEntry(graph_f2, "f'_{2}(1525) (13.6 TeV)", "p");
-    legend4->AddEntry(graph_f0, "f_{0}(1710) (13.6 TeV)", "p");
-    legend4->AddEntry(pol1_meson, "Pol 1", "l");
+    legend4->AddEntry((TObject *)0, "#sqrt{#it{s}} = 13 TeV", "h");
+    legend4->AddEntry(gMeanPtvsMassMesons, "Mesons", "p");
+    legend4->AddEntry(gMeanPtvsMassBaryons, "Baryons", "p");
     legend4->Draw();
 
-    TLegend *legend5 = new TLegend(0.52, 0.78, 0.87, 0.92);
+    TLegend *legend5 = new TLegend(0.71, 0.78, 0.93, 0.92);
     legend5->SetBorderSize(0);
     legend5->SetFillStyle(0);
     legend5->SetTextSize(0.035);
-    legend5->AddEntry((TObject *)0, "ALICE", "");
-    legend5->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
-    legend5->AddEntry((TObject *)0, "FT0M: 0-100%, |y|<0.5", "");
+    legend5->AddEntry((TObject *)0, "#sqrt{#it{s}} = 13.6 TeV", "h");
+    legend5->AddEntry(graph_f2, "f^{,}_{2}(1525)", "p");
+    legend5->AddEntry(graph_f0, "f_{0}(1710)", "p");
     legend5->Draw();
-    // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweightedFullFit.png").c_str());
-    // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweighted.png").c_str());
+
+    // TLegend *legend6 = new TLegend(0.52, 0.77, 0.87, 0.92);
+    TLegend *legend6 = new TLegend(0.12, 0.82, 0.36, 0.92);
+    legend6->SetBorderSize(0);
+    legend6->SetFillStyle(0);
+    legend6->SetTextSize(0.035);
+    legend6->AddEntry((TObject *)0, "ALICE Preliminary", "");
+    legend6->AddEntry((TObject *)0, "pp, |#it{y}| < 0.5", "");
+    legend6->Draw();
+    latex.SetTextFont(42);
+    latex.SetTextSize(0.035);
+    latex.DrawLatex(1.25, 0.41, "Uncertainties: stat.(bars), sys.(boxes)");
+    cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_SQM.pdf").c_str());
+    // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweightedFullFit.pdf").c_str());
+    // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweighted.pdf").c_str());
 
     // // Similarly plot the dN/dy/(2J+1) as a function of particle mass
     // vector<vector<float>> dNdyvalues_13TeV = {
@@ -779,7 +851,7 @@ void plotReweightedSpectra_single()
     // legend6->AddEntry(graph_f2_dNdy, "f'_{2}(1525) (13.6 TeV)", "p");
     // legend6->AddEntry(graph_f0_dNdy, "f_{0}(1710) (13.6 TeV)", "p");
     // legend6->Draw();
-    // // cdNdy->SaveAs((savePath + "/dNdy_vs_Mass_reweighted.png").c_str());
+    // // cdNdy->SaveAs((savePath + "/dNdy_vs_Mass_reweighted.pdf").c_str());
 
     /*
     // Reading by from the root file
@@ -911,7 +983,7 @@ void plotReweightedSpectra_single()
     lineUnity->SetLineColor(kRed);
     lineUnity->SetLineStyle(2);
     lineUnity->Draw("same");
-    cNewEfficiency->SaveAs((savePath + "/plots/EfficiencyComparisonf0.png").c_str());
+    cNewEfficiency->SaveAs((savePath + "/plots/EfficiencyComparisonf0.pdf").c_str());
 
     TCanvas *cNewEfficiency2 = new TCanvas("cNewEfficiency2", "New Efficiency Comparison for f2(1525)", 720, 720);
     SetCanvasStyle(cNewEfficiency2, 0.18, 0.03, 0.05, 0.14);
@@ -973,7 +1045,7 @@ void plotReweightedSpectra_single()
     lineUnity2->SetLineColor(kRed);
     lineUnity2->SetLineStyle(2);
     lineUnity2->Draw("same");
-    cNewEfficiency2->SaveAs((savePath + "/plots/EfficiencyComparisonf2.png").c_str());
+    cNewEfficiency2->SaveAs((savePath + "/plots/EfficiencyComparisonf2.pdf").c_str());
 
     if (!otherQAPlots)
     {
@@ -1027,7 +1099,7 @@ void plotReweightedSpectra_single()
     legYieldCompare->AddEntry(hYield1710Corrected, "Corrected spectra", "pe");
     legYieldCompare->AddEntry(hYieldReweighted, "Reweighted corrected spectra", "pe");
     legYieldCompare->Draw();
-    // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.png").c_str());
+    // cYieldCompare->SaveAs((savePath + "/plots/CorrectedYieldComparisonf0.pdf").c_str());
     if (!otherQAPlots)
         cYieldCompare->Close();
     */

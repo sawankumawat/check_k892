@@ -8,40 +8,40 @@ void analyze_kstar_spectra_pythia()
 {
     gStyle->SetOptStat(0);
 
-    // TFile *fpp13000GeV = new TFile("100M_events/kstar_pp_13TeV.root");
-    // TFile *fpp136000GeV = new TFile("100M_events/kstar_pp_13.6TeV.root");
+    // TFile *fpp13TeV = new TFile("100M_events/kstar_pp_13TeV.root");
+    // TFile *fpp13p6TeV = new TFile("100M_events/kstar_pp_13.6TeV.root");
 
-    TFile *fpp13000GeV = new TFile("500M_events_mult/13TeV/pythiaYield13.root");
-    TFile *fpp136000GeV = new TFile("500M_events_mult/13p6TeV/pythiaYield13p6.root");
+    TFile *fpp13TeV = new TFile("500M_events_mult/13TeV/pythiaYield13.root");
+    TFile *fpp13p6TeV = new TFile("500M_events_mult/13p6TeV/pythiaYield13p6.root");
 
-    if (fpp13000GeV->IsZombie() || fpp136000GeV->IsZombie())
+    if (fpp13TeV->IsZombie() || fpp13p6TeV->IsZombie())
     {
         cout << "Error opening file" << endl;
         return;
     }
 
-    // TH1F *hmultpp13 = (TH1F *)fpp13000GeV->Get("hmult");
-    // TH1F *hmultpp136 = (TH1F *)fpp136000GeV->Get("hmult");
-    // TH1F *spectrapp13 = (TH1F *)fpp13000GeV->Get("hkstarpp3");
-    // TH1F *spectrapp136 = (TH1F *)fpp136000GeV->Get("hkstarpp3");
+    // TH1F *hmultpp13 = (TH1F *)fpp13TeV->Get("hmult");
+    // TH1F *hmultpp136 = (TH1F *)fpp13p6TeV->Get("hmult");
+    // TH1F *spectrapp13 = (TH1F *)fpp13TeV->Get("hkstarpp3");
+    // TH1F *spectrapp136 = (TH1F *)fpp13p6TeV->Get("hkstarpp3");
 
-    // TH1F *hmultpp13 = (TH1F *)fpp13000GeV->Get("mult_dist");
-    // TH1F *hmultpp136 = (TH1F *)fpp136000GeV->Get("mult_dist");
-    // TH1F *spectrapp13 = (TH1F *)fpp13000GeV->Get("kstar_ptspectra");
-    // TH1F *spectrapp136 = (TH1F *)fpp136000GeV->Get("kstar_ptspectra");
-    // TH1F *spectraycut13 = (TH1F *)fpp13000GeV->Get("kstar_dist_ycut");
-    // TH1F *spectraycut136 = (TH1F *)fpp136000GeV->Get("kstar_dist_ycut");
-    // TH1F *spectraPhiycut13 = (TH1F *)fpp13000GeV->Get("phi_ptspectra");
-    // TH1F *spectraPhiycut136 = (TH1F *)fpp136000GeV->Get("phi_ptspectra");
+    // TH1F *hmultpp13 = (TH1F *)fpp13TeV->Get("mult_dist");
+    // TH1F *hmultpp136 = (TH1F *)fpp13p6TeV->Get("mult_dist");
+    // TH1F *spectrapp13 = (TH1F *)fpp13TeV->Get("kstar_ptspectra");
+    // TH1F *spectrapp136 = (TH1F *)fpp13p6TeV->Get("kstar_ptspectra");
+    // TH1F *spectraycut13 = (TH1F *)fpp13TeV->Get("kstar_dist_ycut");
+    // TH1F *spectraycut136 = (TH1F *)fpp13p6TeV->Get("kstar_dist_ycut");
+    // TH1F *spectraPhiycut13 = (TH1F *)fpp13TeV->Get("phi_ptspectra");
+    // TH1F *spectraPhiycut136 = (TH1F *)fpp13p6TeV->Get("phi_ptspectra");
 
-    TH1F *hmultpp13 = (TH1F *)fpp13000GeV->Get("hmultV0");
-    TH1F *hmultpp136 = (TH1F *)fpp136000GeV->Get("hmultFT0");
-    TH1F *spectrapp13 = (TH1F *)fpp13000GeV->Get("hKstarV0");
-    TH1F *spectrapp136 = (TH1F *)fpp136000GeV->Get("hKstarFT0");
-    TH1F *spectraycut13 = (TH1F *)fpp13000GeV->Get("hKstarV0ycut");
-    TH1F *spectraycut136 = (TH1F *)fpp136000GeV->Get("hKstarFT0ycut");
-    TH1F *spectraPhiycut13 = (TH1F *)fpp13000GeV->Get("hPhiV0ycut");
-    TH1F *spectraPhiycut136 = (TH1F *)fpp136000GeV->Get("hPhiFT0ycut");
+    TH1F *hmultpp13 = (TH1F *)fpp13TeV->Get("hmultV0");
+    TH1F *hmultpp136 = (TH1F *)fpp13p6TeV->Get("hmultFT0");
+    TH1F *spectrapp13 = (TH1F *)fpp13TeV->Get("hKstarV0");
+    TH1F *spectrapp136 = (TH1F *)fpp13p6TeV->Get("hKstarFT0");
+    TH1F *spectraycut13 = (TH1F *)fpp13TeV->Get("hKstarV0ycut");
+    TH1F *spectraycut136 = (TH1F *)fpp13p6TeV->Get("hKstarFT0ycut");
+    TH1F *spectraPhiycut13 = (TH1F *)fpp13TeV->Get("hPhiV0ycut");
+    TH1F *spectraPhiycut136 = (TH1F *)fpp13p6TeV->Get("hPhiFT0ycut");
 
     if (hmultpp13 == nullptr || hmultpp136 == nullptr || spectrapp13 == nullptr || spectrapp136 == nullptr || spectraycut13 == nullptr || spectraycut136 == nullptr || spectraPhiycut13 == nullptr || spectraPhiycut136 == nullptr)
     {
@@ -163,7 +163,7 @@ void analyze_kstar_spectra_pythia()
     leg->SetTextFont(42);
     leg->SetTextSize(0.03 / pad1Size);
     leg->AddEntry((TObject *)0, "Pythia simulations", "");
-    leg->AddEntry((TObject *)0, "K*^{0}(892) spectra", "");
+    leg->AddEntry((TObject *)0, "K*^{0} #rightarrow K^{#pm}#pi^{#mp}", "");
     leg->AddEntry(hkstarSpectra13p6, "pp 13.6 TeV", "p");
     leg->AddEntry(hkstarSpectra13, "pp 13 TeV", "p");
     leg->Draw();
@@ -217,7 +217,7 @@ void analyze_kstar_spectra_pythia()
     hkstarSpectraYcut13p6->Draw("pe same");
     leg->Clear();
     leg->AddEntry((TObject *)0, "Pythia simulations", "");
-    leg->AddEntry((TObject *)0, "K*^{0}(892) spectra |y|<0.5", "");
+    leg->AddEntry((TObject *)0, "K*^{0} #rightarrow K^{#pm}#pi^{#mp}, |y|<0.5", "");
     leg->AddEntry(hkstarSpectraYcut13p6, "pp 13.6 TeV", "p");
     leg->AddEntry(hkstarSpectraYcut13, "pp 13 TeV", "p");
     leg->Draw();
@@ -266,7 +266,7 @@ void analyze_kstar_spectra_pythia()
     hphiSpectra13p6->Draw("pe same");
     leg->Clear();
     leg->AddEntry((TObject *)0, "Pythia simulations", "");
-    leg->AddEntry((TObject *)0, "#phi(1020) spectra |y|<0.5", "");
+    leg->AddEntry((TObject *)0, "#phi(1020) #rightarrow K^{+}#K^{-}, |y|<0.5", "");
     leg->AddEntry(hphiSpectra13p6, "pp 13.6 TeV", "p");
     leg->AddEntry(hphiSpectra13, "pp 13 TeV", "p");
     leg->Draw();

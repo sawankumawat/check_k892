@@ -31,17 +31,25 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }
 
 void compare_yield_inelgt0_minBias()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = false;
+    bool isSameBins = true;
     // double inelNormRun2 = 0.892; event loss factor used in run 2
+    // 663738 (OnlyTPC)
+    // 664559 (TOFshift, TOFshiftMID)
+    // 670168 (2023 data with two MC productions)
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2023 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2024 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2023 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -325,7 +333,7 @@ void compare_yield_inelgt0_minBias()
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
     leg->SetHeader("INEL > 0");
-    leg->AddEntry(h1, "2024 data", "p");
+    leg->AddEntry(h1, "2024 data (TPC only)", "p");
     // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
     leg->AddEntry(fitFcn1, "Levy-Tsallis", "l");
@@ -358,10 +366,12 @@ void compare_yield_inelgt0_minBias()
     gratio1->GetXaxis()->SetTitleOffset(1.1);
     gratio1->GetYaxis()->SetNdivisions(506);
     gratio1->GetXaxis()->SetRangeUser(0, 10);
-    // gratio1->GetHistogram()->SetMaximum(1.6);
-    // gratio1->GetHistogram()->SetMinimum(0.6);
-    gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
-    gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
+    // gratio1->GetHistogram()->SetMaximum(2.4);
+    // gratio1->GetHistogram()->SetMinimum(0.3);
+    gratio1->GetHistogram()->SetMaximum(1.45);
+    gratio1->GetHistogram()->SetMinimum(0.65);
+    // gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
+    // gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
     // gratio1->SetMinimum(0.45);
     gratio1->Draw("ap");
     gratio2->SetMarkerStyle(21);
@@ -381,11 +391,10 @@ void compare_yield_inelgt0_minBias()
     line->SetLineColor(1);
     line->Draw();
 
-    //Draw a grey band with 20% uncertainty around the ratio of 1
-    TBox *box = new TBox(0, 0.8, 10, 1.2);
+    // Draw a grey band with 20% uncertainty around the ratio of 1
+    TBox *box = new TBox(0, 0.9, 10, 1.1);
     box->SetFillColor(kGray + 2);
     box->SetFillStyle(3003);
     box->Draw("same");
     c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
-
 }

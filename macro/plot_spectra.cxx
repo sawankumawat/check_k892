@@ -34,6 +34,11 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.002);
     pad2->SetTopMargin(0.04);
+
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }
 
 void plot_spectra()
@@ -59,7 +64,7 @@ void plot_spectra()
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
 
     //================================After SQM=======================
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/658306/kstarqa_INELgt0/hInvMass"; // 2024 data
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/660453/kstarqa_id35679/hInvMass"; // 2023 data
 
     TString pathLevyFits = path + "/LevyFits";
@@ -99,7 +104,7 @@ void plot_spectra()
 
         if (hmult[i] == nullptr)
         {
-            cout << "Histogram others not found" << endl;
+            cout << "Histogram not found in path: " << Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", mult_classes[i - 1], mult_classes[i]) << endl;
             return;
         }
         // hmult[i]->Scale(inelNormFactorRun2[i - 1]);

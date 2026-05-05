@@ -22,7 +22,7 @@ void compare_multiple_spectra()
 {
     bool isCorrectedYield = true; // set false for efficency and corrected yield plots.
     bool isSinglePanel = false;   // Set to true if you want to plot only the first panel
-    bool isINEL = true;
+    bool isINEL = false;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
@@ -42,8 +42,11 @@ void compare_multiple_spectra()
     // vector<string> legendnames = {"Default", "has ITS"};
 
     //======After SQM========
-    vector<string> QAVariation = {"", "_LoosePID", "_pTDepPID", "_pTDepPIDTOF"}; //(Train no. 658307)
-    vector<string> legendnames = {"Default", "Loose PID", "pT Dependent PID", "pT Dependent PID with TOF"};
+    // vector<string> QAVariation = {"", "_LoosePID", "_pTDepPID", "_pTDepPIDTOF"}; //(Train no. 658307)
+    // vector<string> legendnames = {"Default", "Loose PID", "pT Dependent PID", "pT Dependent PID with TOF"};
+
+    vector<string> QAVariation = {"", "_MIDptDep",}; //(Train no. 658307)
+    vector<string> legendnames = {"Default", "With MID cut"};
 
     // vector<string> QAVariation = {"", "_DeepAngle", "_PVContributor"}; //(Train no. 658306)
     // vector<string> legendnames = {"Default", "Deep Angle", "PV Contributor"};
@@ -51,7 +54,7 @@ void compare_multiple_spectra()
     std::vector<TString> paths;
     for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/658307/kstarqa%s/hInvMass", variation.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/660943/kstarqa%s/hInvMass", variation.c_str()));
     }
     // // Additional push backs
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
@@ -118,7 +121,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
 
     for (int ifiles = 0; ifiles < totalfiles; ifiles++)
     {
-        fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + "/corrected_spectra_INEL.root"), "read") : new TFile((paths[ifiles] + "/yield_INEL.root"), "read");
+        fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + "/corrected_spectra.root"), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
         // fspectra[ifiles] = (isCorrectedYield) ? new TFile((paths[ifiles] + Form("/corrected_spectra%s.root", realFileNames[ifiles].c_str())), "read") : new TFile((paths[ifiles] + "/yield.root"), "read");
         if (fspectra[ifiles]->IsZombie())
         {
@@ -173,7 +176,7 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
         leg->SetNColumns(2);
         (isSinglePanel) ? leg->SetTextSize(0.035) : leg->SetTextSize(0.035);
         // leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-        leg->SetHeader("Interaction Rate (kHz)");
+        // leg->SetHeader("Interaction Rate (kHz)");
         // leg->SetHeader("Occupancy Cut");
         // leg->SetHeader("Different Selections");
 
@@ -224,8 +227,8 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
         t2->SetTextFont(42);
         t2->DrawLatex(0.22, 0.9, Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
         t2->DrawLatex(0.22, 0.85, Form("pp 13.6 TeV"));
-        // t2->DrawLatex(0.22, 0.80, Form("LHC24_pass1_minBias"));
-        t2->DrawLatex(0.22, 0.80, Form("LHC23_pass4_thin"));
+        t2->DrawLatex(0.22, 0.80, Form("LHC24_pass1_minBias"));
+        // t2->DrawLatex(0.22, 0.80, Form("LHC23_pass4_thin"));
         // t2->DrawLatex(0.22, 0.80, Form("LHC22o_pass7"));
         // t2->DrawLatex(0.22, 0.75, "0.6 < #it{p}_{T} < 0.7 (GeV/#it{c})");
 
@@ -251,14 +254,14 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                 hratio[imult][ifiles]->GetYaxis()->SetTitleOffset(0.75);
                 hratio[imult][ifiles]->GetXaxis()->SetTitleOffset(1.1);
                 hratio[imult][ifiles]->GetYaxis()->SetNdivisions(506);
-                if(isINEL)
-                hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 15);
+                if (isINEL)
+                    hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 15);
                 else
-                hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
+                    hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
                 // hratio[imult][ifiles]->SetMinimum(0.86);
                 // hratio[imult][ifiles]->SetMaximum(3.14);
-                hratio[imult][ifiles]->SetMinimum(0.7);
-                hratio[imult][ifiles]->SetMaximum(1.71);
+                hratio[imult][ifiles]->SetMinimum(0.65);
+                hratio[imult][ifiles]->SetMaximum(1.45);
                 hratio[imult][ifiles]->Draw("pe same");
             }
             TLine *line = new TLine(0, 1, 10, 1);
@@ -291,4 +294,8 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }

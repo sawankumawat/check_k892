@@ -22,51 +22,59 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+
+    pad1->SetTicks(1, 1);
+    pad2->SetTicks(1, 1);
 }
 
 void mc_closure()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/657468/kstarqa_MC_closure/hInvMass"; // path for yield.root file (from rec MC)
-    string path2 = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/MC_closure";                           // MC file path
+    // string MCfile = "657468"; // 2024 (Old with mother id checked in kstarqa code)
+    // string MCfile = "665348"; // 2024 (Mother id check commented in the kstarqa code)
+    // string MCfile = "666966"; // pp reference MC
+    string MCfile = "667890"; // 2024 (MC_closure, MC_closure_INEL, MC_closure_OnlyTPC: all with TOF shift)
+
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/" + MCfile + "/kstarqa_MC_closure_OnlyTPC/hInvMass"; // path for yield.root file (from rec MC)
+    string path2 = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/MC_closure/";                                             // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
 
-    // TFile *fspectra1 = new TFile((path1 + "/yield.root").c_str(), "read");
-    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
-    TFile *fspectra2 = new TFile((path2 + "/657468.root").c_str(), "read");
-
+    TFile *fspectra1 = new TFile((path1 + "/yield.root").c_str(), "read");
+    // TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
+    TFile *fspectra2 = new TFile((path2 + MCfile + ".root").c_str(), "read");
+    // TFile *fspectra2 = new TFile("/home/sawan/check_k892/mc/LHC24f3c/665524.root"); // temporary
     if (fspectra1->IsZombie() || fspectra2->IsZombie())
     {
         cout << "Error: files not found" << endl;
         return;
     }
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
     TH1F *hmult1[numofmultbins + 1];
     TH1F *hmult2[numofmultbins + 1];
 
-    // THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/h2KstarRecpt2");
-    THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT");
+    THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa_OnlyTPC/hInvMass/h2KstarRecpt2");
+    // THnSparseF *hSparseRec = (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT");
     if (hSparseRec == nullptr)
     {
         cout << "Error reading efficiency histogram MC" << endl;
         return;
     }
-    TH1D *h1recmult = (TH1D *)fspectra2->Get("kstarqa/hInvMass/h1RecMult");
+    TH1D *h1recmult = (TH1D *)fspectra2->Get("kstarqa_OnlyTPC/hInvMass/h1RecMult");
 
     for (int imult = 0; imult < numofmultbins + 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
 
-        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh));
-        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", multlow, multhigh));
+        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
         if (hmult1[imult] == nullptr)
         {
@@ -81,7 +89,7 @@ void mc_closure()
 
         TH1D *h1rec = hSparseRec->Projection(0, "E");
         int entries = h1recmult->Integral(h1recmult->GetXaxis()->FindBin(multlow + 1e-3), h1recmult->GetXaxis()->FindBin(multhigh - 1e-3));
-        cout<<"multiplicity class "<<multlow<<" - "<<multhigh<<" : "<<entries<<endl;
+        cout << "multiplicity class " << multlow << " - " << multhigh << " : " << entries << endl;
 
         for (int i = 0; i < hmult1[imult]->GetNbinsX(); i++)
         {
@@ -163,6 +171,6 @@ void mc_closure()
         line->SetLineColor(1);
         line->Draw();
 
-        c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.png", multlow, multhigh));
+        // c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.png", multlow, multhigh));
     }
 }

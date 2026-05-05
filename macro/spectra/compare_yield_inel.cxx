@@ -31,6 +31,11 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }
 
 void compare_yield_inel()
@@ -38,6 +43,7 @@ void compare_yield_inel()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     bool isSameBins = true;
+    bool removeNormFactorsRun2 = true;
 
     ////Normalization factors used in run 2 INEL study:
     double f_norm_run2 = 0.7448;
@@ -128,8 +134,8 @@ void compare_yield_inel()
     hmult2->Scale(2.0); //
     // hmult1->Scale(f_norm_run2 * f_vtx_run2); // Adding same correction factors as run2 for comparison
     // hmult2->Scale(f_norm_run2 * f_vtx_run2);
-    hmult1->Scale(f_norm_run3 * f_vtx_run2);
-    hmult2->Scale(f_norm_run3 * f_vtx_run2);
+    hmult1->Scale(f_norm_run3);
+    hmult2->Scale(f_norm_run3);
     hmult1->Multiply(hSignalLoss);
     hmult2->Multiply(hSignalLoss);
 
@@ -226,6 +232,14 @@ void compare_yield_inel()
             x_error = gRun2_minBias->GetErrorX(i);
             y_error_run2 = gRun2_minBias->GetErrorY(i);
 
+            if (removeNormFactorsRun2)
+            {
+                yield_run2 = yield_run2 / (f_norm_run2 * f_vtx_run2);
+                y_error_run2 = y_error_run2 / (f_norm_run2 * f_vtx_run2);
+                gRun2_minBias->SetPoint(i, x_run2, yield_run2);
+                gRun2_minBias->SetPointError(i, x_error, y_error_run2);
+            }
+
             double thisanalysis1 = fitFcn1->Eval(x_run2);
             double thisanalysis2 = fitFcn2->Eval(x_run2);
             // double thisanalysis3 = fitFcn3->Eval(x_run2);
@@ -257,6 +271,15 @@ void compare_yield_inel()
             gRun2_minBias->GetPoint(i, x_run2, yield_run2);
             x_error = gRun2_minBias->GetErrorX(i);
             y_error_run2 = gRun2_minBias->GetErrorY(i);
+
+            if (removeNormFactorsRun2)
+            {
+                yield_run2 = yield_run2 / (f_norm_run2 * f_vtx_run2);
+                y_error_run2 = y_error_run2 / (f_norm_run2 * f_vtx_run2);
+                gRun2_minBias->SetPoint(i, x_run2, yield_run2);
+                gRun2_minBias->SetPointError(i, x_error, y_error_run2);
+            }
+
             double binvalue = hmultClone1->GetBinContent(i + 1);
             double binvalue2 = hmultClone2->GetBinContent(i + 1);
             gratio1->SetPoint(i, x_run2, binvalue / yield_run2);
@@ -370,5 +393,6 @@ void compare_yield_inel()
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
-    c1->SaveAs(outputPath + "/YieldRatioINEL.png");
+    TString saveName = (removeNormFactorsRun2)? "YieldRatioINEL_woNormFactorsRun2.png" : "YieldRatioINEL.png";
+    c1->SaveAs(outputPath + "/" + saveName);
 }

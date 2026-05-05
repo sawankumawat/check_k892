@@ -38,12 +38,12 @@ void SetgrStyle(TGraph *h, Int_t mcolor, Int_t mstyle, Float_t msize, Float_t Ts
 
 void SetHistoQA(TH1 *h)
 {
+    h->SetTitle(0);
     h->SetMarkerStyle(8);
     h->SetMarkerSize(1);
     h->SetMarkerColor(1);
     h->SetLineColor(1);
     h->SetLineWidth(2);
-    h->SetTitle(0);
     // h->GetXaxis()->SetNdivisions(506);
     // h->GetYaxis()->SetNdivisions(505);
     h->GetXaxis()->SetLabelOffset(0.015);
@@ -56,7 +56,7 @@ void SetHistoQA(TH1 *h)
     h->GetXaxis()->CenterTitle(true);
     h->GetYaxis()->CenterTitle(true);
     h->GetYaxis()->SetTitleOffset(1.4);
-    h->GetYaxis()->SetDecimals(false);
+    // h->GetYaxis()->SetDecimals(false);
     h->GetYaxis()->SetLabelOffset(0.015);
     h->GetYaxis()->SetLabelFont(42);
     h->GetYaxis()->SetLabelSize(0.045);

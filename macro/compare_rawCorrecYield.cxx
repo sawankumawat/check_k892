@@ -21,6 +21,10 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.02);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }
 void compare_rawCorrecYield()
 {
@@ -190,7 +194,7 @@ void compare_rawCorrecYield()
         // hratio3->SetMarkerColor(kGreen + 2);
         // hratio3->SetLineColor(kGreen + 2);
         // hratio3->Draw("p same");
-        
+
         TLine *line = new TLine(0, 1, 10, 1);
         line->SetLineStyle(2);
         line->SetLineWidth(2);

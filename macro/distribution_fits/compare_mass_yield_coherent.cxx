@@ -759,4 +759,8 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     pad1->SetTopMargin(0.06);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }

@@ -1,7 +1,7 @@
 
 // The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
-const bool multipanel_plots = 0;
+const bool multipanel_plots = 1;
 const bool save_plots = 1;
 // const string kfoldername_temp = "kstarqa_id21631/hInvMass";
 const string kfoldername_temp = "kstarqa/hInvMass";
@@ -16,8 +16,19 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_LoosePID";  // change the variation here
 // const string kvariation = "_pTDepPID";  // change the variation here
 // const string kvariation = "_pTDepPIDTOF";  // change the variation here
+// const string kvariation = "_MID";  // change the variation here
+// const string kvariation = "_MID_small";  // change the variation here
+// const string kvariation = "_MID_verySmall";  // change the variation here
+// const string kvariation = "_MIDptDep";  // change the variation here
+// const string kvariation = "_MIDptDep2";  // change the variation here
+// const string kvariation = "_MIDptDep2_small";  // change the variation here
+// const string kvariation = "_MIDptDep2_verySmall";  // change the variation here
+// const string kvariation = "_TOF3"; // change the variation here
+const string kvariation = "_TOF3_withoutSquareCut"; // change the variation here
 // const string kvariation = "_id35679";  // change the variation here
-const string kvariation = "_MC_closure";  // change the variation here
+// const string kvariation = "_MC_closure_OnlyTPC";  // change the variation here
+// const string kvariation = "_OnlyTPC";  // change the variation here
+// const string kvariation = "_TOFshift";  // change the variation here
 ////********************************************************************************************
 
 // define datasets here
@@ -27,11 +38,11 @@ const string kDataFilename_temp1 = "../data/" + kParticle;  // data file
 const string kSignalOutput_temp = "../output/" + kParticle; // output folder
 
 #ifdef DATASET_LHC220_pass7
-// const string kDataset_temp = "LHC22o_pass7/";
+const string kDataset_temp = "LHC22o_pass7/";
+// const string kDataset_temp = "LHC22o_pass7/MC_closure/";
 // const string kDataset_temp = "LHC22o_pass7/checks/";
 // const string kDataset_temp = "LHC22o_pass7/Occupancy_effect/";
 // const string kDataset_temp = "LHC22o_pass7/IR_study/";
-const string kDataset_temp = "LHC22o_pass7/MC_closure/";
 #endif
 
 #ifdef DATASET_LHC220_pass7
@@ -59,11 +70,28 @@ const string kDataset_temp = "LHC22o_pass7/MC_closure/";
 // const string kDataFilename_temp2 = "586385.root"; // 24 dataset
 
 //*****************************After SQM***************************************
+//==========2023 data===========
+// const string kDataFilename_temp2 = "660453.root"; // 2023 dataset  (with All checks as above)
+// const string kDataFilename_temp2 = "662039.root"; // 2023 dataset  (No RCT)
+// const string kDataFilename_temp2 = "670168.root"; // 2023 dataset  (Base, INEL)
+
+//=========Other Checks============
+// const string kDataFilename_temp2 = "657468.root"; // 2024 dataset  (MC for closure)
+// const string kDataFilename_temp2 = "664785.root"; // 2024 dataset  (MC for closure)
+// const string kDataFilename_temp2 = "665348.root"; // 2024 dataset  (MC for closure with TOF shift)
+// const string kDataFilename_temp2 = "667890.root"; // 2024 dataset  (MC for closure with higher TOF shift)
+// const string kDataFilename_temp2 = "666966.root"; // pp 5.36 dataset  (MC for closure, mistakenly used TOFFT0)
 // const string kDataFilename_temp2 = "655628.root"; // 2024 dataset
-// const string kDataFilename_temp2 = "658306.root"; // 2024 dataset (DeepAngle, PV Contributor, INELgt0)
 // const string kDataFilename_temp2 = "658307.root"; // 2024 dataset (LoosePID, pTDepPID, pTDepPIDTOF)
-// const string kDataFilename_temp2 = "660453.root"; // 2023 dataset  (with All checks as for 2024)
-const string kDataFilename_temp2 = "657468.root"; // 2024 dataset  (MC for closure)
+// const string kDataFilename_temp2 = "661905.root"; // 2024 dataset  (Event_Time dependency check in TOF)
+// const string kDataFilename_temp2 = "658306.root"; // 2024 dataset (DeepAngle, PV Contributor, INELgt0)
+const string kDataFilename_temp2 = "668039.root"; // 2024 dataset (With square PID: Base, MID, MIDptDep2)
+// const string kDataFilename_temp2 = "668605.root"; // 2024 dataset (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
+
+//==========2024 data===========
+// const string kDataFilename_temp2 = "663738.root"; // 2024 dataset (Base, OnlyTPC)
+// const string kDataFilename_temp2 = "660943.root"; // 2024 dataset (Base, LoosePID, pTDepPID, pTDepPIDTOF, MIDptDep, MID)
+// const string kDataFilename_temp2 = "664559.root"; // 2024 dataset (Base, INEL, TOFshift, TOFshiftMID)
 #endif
 
 // final dataset name

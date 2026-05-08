@@ -45,8 +45,11 @@ void compare_multiple_spectra()
     // vector<string> QAVariation = {"", "_LoosePID", "_pTDepPID", "_pTDepPIDTOF"}; //(Train no. 658307)
     // vector<string> legendnames = {"Default", "Loose PID", "pT Dependent PID", "pT Dependent PID with TOF"};
 
-    vector<string> QAVariation = {"", "_MIDptDep",}; //(Train no. 658307)
-    vector<string> legendnames = {"Default", "With MID cut"};
+    // vector<string> QAVariation = {"", "_MIDptDep",}; //(Train no. 658307)
+    // vector<string> legendnames = {"Default", "With MID cut"};
+
+    vector<string> QAVariation = {"_TOF3_withoutSquareCut", "_MIDptDep2_0p3_TOF3", "_MIDptDep2_small_TOF3", "_MIDptDep2_TOF3"}; //(Train no. 672297 (default is copied from 668605))
+    vector<string> legendnames = {"Default", "MID 0.3#sigma", "MID 0.5#sigma", "MID 1#sigma"};
 
     // vector<string> QAVariation = {"", "_DeepAngle", "_PVContributor"}; //(Train no. 658306)
     // vector<string> legendnames = {"Default", "Deep Angle", "PV Contributor"};
@@ -54,7 +57,7 @@ void compare_multiple_spectra()
     std::vector<TString> paths;
     for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/660943/kstarqa%s/hInvMass", variation.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/672297/kstarqa%s/hInvMass", variation.c_str()));
     }
     // // Additional push backs
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
@@ -110,7 +113,7 @@ void compare_multiple_spectra()
 
 void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<string> legendnames = {}, bool isSinglePanel = false, bool isINEL = false)
 {
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     float mult_classes[] = {0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     int totalfiles = paths.size();
@@ -238,7 +241,8 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
             for (int ifiles = 1; ifiles < totalfiles; ifiles++) // Start from 1 to skip the reference file
             {
                 SetHistoQA(hratio[imult][ifiles]);
-                hratio[imult][ifiles]->GetYaxis()->SetTitleSize(0.026 / pad2Size);
+                gPad->SetGridy(1);
+                hratio[imult][ifiles]->GetYaxis()->SetTitleSize(0.04 / pad2Size);
                 hratio[imult][ifiles]->GetXaxis()->SetTitleSize(0.04 / pad2Size);
                 hratio[imult][ifiles]->GetYaxis()->SetLabelSize(0.04 / pad2Size);
                 hratio[imult][ifiles]->GetXaxis()->SetLabelSize(0.04 / pad2Size);
@@ -248,10 +252,10 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                 hratio[imult][ifiles]->SetLineColor(vibrantColors[ifiles]);
                 // hratio[imult][ifiles]->GetYaxis()->SetTitle(Form("Ratio to %s kHz", legendnames[0].c_str()));
                 // hratio[imult][ifiles]->GetYaxis()->SetTitle("Ratio to NN");
-                hratio[imult][ifiles]->GetYaxis()->SetTitle("Ratio to default");
+                hratio[imult][ifiles]->GetYaxis()->SetTitle("Var. / Def.");
                 hratio[imult][ifiles]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
                 hratio[imult][ifiles]->GetXaxis()->CenterTitle(1);
-                hratio[imult][ifiles]->GetYaxis()->SetTitleOffset(0.75);
+                hratio[imult][ifiles]->GetYaxis()->SetTitleOffset(1.7 * pad2Size);
                 hratio[imult][ifiles]->GetXaxis()->SetTitleOffset(1.1);
                 hratio[imult][ifiles]->GetYaxis()->SetNdivisions(506);
                 if (isINEL)
@@ -260,8 +264,10 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                     hratio[imult][ifiles]->GetXaxis()->SetRangeUser(0, 10);
                 // hratio[imult][ifiles]->SetMinimum(0.86);
                 // hratio[imult][ifiles]->SetMaximum(3.14);
-                hratio[imult][ifiles]->SetMinimum(0.65);
-                hratio[imult][ifiles]->SetMaximum(1.45);
+                // hratio[imult][ifiles]->SetMinimum(0.65);
+                // hratio[imult][ifiles]->SetMaximum(1.45);
+                hratio[imult][ifiles]->SetMinimum(0.75);
+                hratio[imult][ifiles]->SetMaximum(1.35);
                 hratio[imult][ifiles]->Draw("pe same");
             }
             TLine *line = new TLine(0, 1, 10, 1);

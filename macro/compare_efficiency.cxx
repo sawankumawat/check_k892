@@ -33,11 +33,15 @@ void compare_efficiency()
     // TString path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/663738/kstarqa/hInvMass"; // without TOF shift
     // TString path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/664559/kstarqa/hInvMass"; // with OverrideFT0
     // TString path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/664559/kstarqa/hInvMass"; // without overrideFT0
+    // TString path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass";
+    // TString path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2/hInvMass";
+    // TString path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2_small/hInvMass";
+    // TString path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2_verySmall/hInvMass";
 
-    TString path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass";
-    TString path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2/hInvMass";
-    TString path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2_small/hInvMass";
-    TString path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_MIDptDep2_verySmall/hInvMass";
+    TString path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass";
+    TString path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/672297/kstarqa_MIDptDep2_TOF3/hInvMass";
+    TString path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/672297/kstarqa_MIDptDep2_small_TOF3/hInvMass";
+    TString path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/672297/kstarqa_MIDptDep2_0p3_TOF3/hInvMass";
 
     TFile *fileShift = new TFile(path1 + "/corrected_spectra.root", "read");
     TFile *fileNoShift = new TFile(path2 + "/corrected_spectra.root", "read");
@@ -93,10 +97,16 @@ void compare_efficiency()
     // legEff->AddEntry(hEffVar1, "Without overrideFT0", "p");
     // legEff->AddEntry(hEffDefault, "With TOF shift", "p");
     // legEff->AddEntry(hEffVar1, "Without TOF shift", "p");
+
+    // legEff->AddEntry(hEffVar1, "No MID", "p");
+    // legEff->AddEntry(hEffDefault, "MID cut (1#sigma)", "p");
+    // legEff->AddEntry(hEffVar2, "MID cut (0.5#sigma)", "p");
+    // legEff->AddEntry(hEffVar3, "MID cut (0.1#sigma)", "p");
+
     legEff->AddEntry(hEffVar1, "No MID", "p");
     legEff->AddEntry(hEffDefault, "MID cut (1#sigma)", "p");
     legEff->AddEntry(hEffVar2, "MID cut (0.5#sigma)", "p");
-    legEff->AddEntry(hEffVar3, "MID cut (0.1#sigma)", "p");
+    legEff->AddEntry(hEffVar3, "MID cut (0.3#sigma)", "p");
     legEff->Draw();
 
     cEff->cd(2);

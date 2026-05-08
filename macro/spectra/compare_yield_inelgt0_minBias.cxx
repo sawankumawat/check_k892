@@ -47,6 +47,8 @@ void compare_yield_inelgt0_minBias()
     // 663738 (OnlyTPC)
     // 664559 (TOFshift, TOFshiftMID)
     // 670168 (2023 data with two MC productions)
+    // 668605 (2024 data: Base, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall, TOF3_withoutSquareCut)
+    // 672297 (2024 data: MIDptDep2_TOF3, MIDptDep2_small_TOF3, MIDptDep2_0p3_TOF3)
 
     string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
     string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2023 data
@@ -70,7 +72,7 @@ void compare_yield_inelgt0_minBias()
         return;
     }
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     cout << "number of multiplicity bins are " << numofmultbins << endl;
 
@@ -268,10 +270,16 @@ void compare_yield_inelgt0_minBias()
             cout << "Number of bins in histogram is " << hmult1->GetNbinsX() << endl;
             return;
         }
+        cout << "Number of points in Run2 minBias graph is " << gRun2_minBias[minBiasFromWhichGraph]->GetN() << endl;
         for (int i = 0; i < gRun2_minBias[minBiasFromWhichGraph]->GetN(); i++)
         {
             double x_run2, yield_run2, x_error, y_error_run2;
             gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
+            if (i == 12)
+                yield_run2 = yield_run2 * 0.87; // to account for event loss in run 2 for 0-1 multiplicity class
+            if (i == 9)
+                yield_run2 = yield_run2 * 1.05; // to account for event loss in run 2 for 1-5 multiplicity class
+            gRun2_minBias[minBiasFromWhichGraph]->SetPoint(i, x_run2, yield_run2);
             x_error = gRun2_minBias[minBiasFromWhichGraph]->GetErrorX(i);
             y_error_run2 = gRun2_minBias[minBiasFromWhichGraph]->GetErrorY(i);
             double binvalue = hmultClone1->GetBinContent(i + 1);

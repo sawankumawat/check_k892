@@ -46,7 +46,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    double fitRangeMax = 15.0;
+    double fitRangeMax = 18.0;
     // double inelNormFactorRun2[] = {0.997814, 0.998632, 0.998465, 0.997509, 0.993852, 0.985782, 0.971972, 0.935197, 0.756786}; // this is event loss factor used in run 2
 
     // ******************Correct placement of TPC crossed rows**************************
@@ -82,7 +82,7 @@ void plot_spectra()
         return;
     }
     int markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 47};
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
 
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     TH1F *hmult[numofmultbins + 1];
@@ -294,14 +294,19 @@ void plot_spectra()
             fitFcn->SetLineStyle(2);
 
             TH1 *hout = YieldMean(h1, h2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+
+            // Taking from Levy fit
             meanpT[imult - 1] = hout->GetBinContent(5);
             meanpT_err[imult - 1] = hout->GetBinContent(6);
             yield[imult - 1] = hout->GetBinContent(1);
             yield_err[imult - 1] = hout->GetBinContent(2);
-            // for (Int_t ip = 0; ip < 9; ip++)
-            // {
-            //     cout << hout->GetBinContent(ip + 1) << endl;
-            // }
+
+            // //// Taking from histogram directly
+            // meanpT[imult - 1] = hmultClone[imult]->GetMean();
+            // meanpT_err[imult - 1] = hmultClone[imult]->GetMeanError();
+            // yield[imult - 1] = hout->GetBinContent(1);
+            // yield_err[imult - 1] = hout->GetBinContent(2);
+
             gStyle->SetOptFit(1111);
             gStyle->SetOptStat(1110);
             TCanvas *clevy = new TCanvas("", "", 720, 720);
@@ -335,8 +340,8 @@ void plot_spectra()
         ctemp->SaveAs(outputfolder + "/spectra_temp.png");
 
         // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
-        double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.19, 10.86, 9.09, 7.63, 5.87, 3.69};
-        double dnch_detaRun3_err[] = {0.31, 0.25, 0.21, 0.18, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
+        double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
+        double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
         TGraphErrors *gMeanYieldRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, yield_err);
         TGraphErrors *gMeanpTRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, meanpT_err);

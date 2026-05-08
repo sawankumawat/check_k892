@@ -54,7 +54,7 @@ void compare_rawCorrecYield()
         return;
     }
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
     TH1F *hmult1[numofmultbins + 1];

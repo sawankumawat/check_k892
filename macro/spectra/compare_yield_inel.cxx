@@ -114,7 +114,7 @@ void compare_yield_inel()
         return;
     }
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     cout << "number of multiplicity bins are " << numofmultbins << endl;
 
@@ -393,6 +393,6 @@ void compare_yield_inel()
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
-    TString saveName = (removeNormFactorsRun2)? "YieldRatioINEL_woNormFactorsRun2.png" : "YieldRatioINEL.png";
+    TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.png" : "YieldRatioINEL.png";
     c1->SaveAs(outputPath + "/" + saveName);
 }

@@ -23,7 +23,7 @@ void kstar_sparse()
     string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
-    bool makeQAplots = true;
+    bool makeQAplots = false;
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
     bool isINEL = false;
@@ -49,7 +49,8 @@ void kstar_sparse()
     TCanvas *cgrid_bkg1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
     TCanvas *cgrid2 = nullptr;
     TCanvas *cgrid_bkg2 = nullptr;
-    if (Npt > 16)
+    // if (Npt > 16)
+    if (Npt > 9)
     {
         cgrid2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
         cgrid_bkg2 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
@@ -90,7 +91,8 @@ void kstar_sparse()
     {
         cgrid1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
         cgrid_bkg1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-        if (Npt > 16)
+        // if (Npt > 16)
+        if (Npt > 9)
         {
             cgrid2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
             cgrid_bkg2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
@@ -121,7 +123,7 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
@@ -420,8 +422,8 @@ void kstar_sparse()
 
                 fitFcn->SetParameter(1, widthpdg); // width
                 fitFcn->FixParameter(1, widthpdg); // width
-                // fitFcn->SetParLimits(1, 0.04, 0.06); // width
-                // fitFcn->SetParLimits(1, 0.04, 0.06); // width
+                // fitFcn->SetParLimits(1, 0.048, 0.06); // width
+                // fitFcn->SetParLimits(1, kWidthLimit[ip][0], kWidthLimit[ip][1]); // width
                 fitFcn->SetParameter(2, 10e4);     // yield
                 fitFcn->SetParLimits(2, 0.0, 1e8); // Yield
 
@@ -731,7 +733,8 @@ void kstar_sparse()
             {
                 cgrid1->SaveAs(outputfolder_mult + ("/grid1." + outputtype).c_str());
                 cgrid_bkg1->SaveAs(outputfolder_mult + ("/grid_bkg1." + outputtype).c_str());
-                if (Npt > 16)
+                // if (Npt > 16)
+                if (Npt > 9)
                 {
                     cgrid2->SaveAs(outputfolder_mult + ("/grid2." + outputtype).c_str());
                     cgrid_bkg2->SaveAs(outputfolder_mult + ("/grid_bkg2." + outputtype).c_str());
@@ -741,7 +744,8 @@ void kstar_sparse()
             {
                 cgrid1->Close();
                 cgrid_bkg1->Close();
-                if (Npt > 16)
+                // if (Npt > 16)
+                if (Npt > 9)
                 {
                     cgrid2->Close();
                     cgrid_bkg2->Close();
@@ -880,6 +884,10 @@ void kstar_sparse()
     cout << "============= End of the code =============" << endl;
     cout << "Data file used: " << kDataFilename.c_str() << endl;
     cout << "Selection used: " << (isINEL ? "INEL" : "INEL > 0") << endl;
+    cout << "Format of output plots: " << outputtype.c_str() << endl;
+    cout << "Residual background function: " << kbkg.c_str() << endl;
+    cout << "Number of pT bins: " << Npt << endl;
+    (multipanel_plots) ? cout << "Canvas: "<<klowerpad<<"x"<<kupperpad<<" multi-panel" << endl : cout << "Canvas: Single panel plots" << endl;
 
     if (makeQAplots)
     {

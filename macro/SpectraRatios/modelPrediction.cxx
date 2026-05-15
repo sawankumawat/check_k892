@@ -6,8 +6,9 @@
 
 void modelPrediction()
 {
-    // TFile *fmodel = new TFile("ModelRootFiles/Pythia_Monash.root", "read");
-    TFile *fmodel = new TFile("ModelRootFiles/EPOS_large.root", "read");
+    //_id53739 for Pythia Monash with rescattering
+    TFile *fmodel = new TFile("ModelRootFiles/Pythia_Monash.root", "read");
+    // TFile *fmodel = new TFile("ModelRootFiles/EPOS.root", "read");
     if (fmodel->IsZombie())
     {
         cout << "Error: file not found" << endl;
@@ -131,8 +132,8 @@ void modelPrediction()
         }
     }
 
-    // TFile *fData = new TFile("levy_fit.root", "read");
-    TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Pr_results.root", "read");
+    TFile *fData = new TFile("levy_fit.root", "read");
+    // TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Pr_results.root", "read");
     if (fData->IsZombie())
     {
         cout << "Error: Data file not found" << endl;

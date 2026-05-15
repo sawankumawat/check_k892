@@ -49,9 +49,10 @@ void compare_yield_inelgt0_minBias()
     // 670168 (2023 data with two MC productions)
     // 668605 (2024 data: Base, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall, TOF3_withoutSquareCut)
     // 672297 (2024 data: MIDptDep2_TOF3, MIDptDep2_small_TOF3, MIDptDep2_0p3_TOF3)
+    // 675391 (2024 data: MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2023 data
+    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass"; // 2024 data
+    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass"; // 2023 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -341,7 +342,7 @@ void compare_yield_inelgt0_minBias()
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
     leg->SetHeader("INEL > 0");
-    leg->AddEntry(h1, "2024 data (TPC only)", "p");
+    leg->AddEntry(h1, "2024 data", "p");
     // leg->AddEntry(h21, "2024 data", "p");
     // leg->AddEntry(h31, "2024 data", "p");
     leg->AddEntry(fitFcn1, "Levy-Tsallis", "l");

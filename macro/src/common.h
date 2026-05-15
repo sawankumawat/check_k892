@@ -8,8 +8,14 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-kstar892analysis";
 // const string kfoldername_temp = "lf-k892analysis";
 
-// const string kvariation = "";
+const string kvariation = "";
+// const string kvariation = "_MC_closure";
 // const string kvariation = "_MC_closure_MID0p3";
+// const string kvariation = "_MC_closure_MID";
+// const string kvariation = "_MC_closure_NoITSROF";
+// const string kvariation = "_MC_closure_PVContributor";
+// const string kvariation = "_MC_closure_WithoutTOFShift";
+// const string kvariation = "_MC_closure_OnlyTPC";
 // const string kvariation = "_INEL";
 // const string kvariation = "_INELgt0";
 // const string kvariation = "_DeepAngle";
@@ -25,7 +31,7 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_MIDptDep2_small";
 // const string kvariation = "_MIDptDep2_verySmall";
 // const string kvariation = "_TOF3";
-const string kvariation = "_TOF3_withoutSquareCut";
+// const string kvariation = "_TOF3_withoutSquareCut";
 // const string kvariation = "_id35679";
 // const string kvariation = "_OnlyTPC";
 // const string kvariation = "_TOFshift";
@@ -33,6 +39,10 @@ const string kvariation = "_TOF3_withoutSquareCut";
 // const string kvariation = "_MIDptDep2_small_TOF3";
 // const string kvariation = "_MIDptDep2_TOF3";
 // const string kvariation = "_MIDptDep2_verySmall_TOF3";
+// const string kvariation = "_MIDNew_TOF2";
+// const string kvariation = "_MIDNew_TOF3";
+// const string kvariation = "_SquarePID_TOF2";
+// const string kvariation = "_SquarePID_TOF3";
 ////********************************************************************************************
 
 // define datasets here
@@ -79,26 +89,31 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "662039.root"; // (No RCT)
 // const string kDataFilename_temp2 = "670168.root"; // (Base, INEL)
 
-//=========Other Checks============
+//===========MC closure===========
 // const string kDataFilename_temp2 = "666966.root"; // pp 5.36 dataset  (MC for closure, mistakenly used TOFFT0)
 // const string kDataFilename_temp2 = "657468.root"; // (MC for closure)
 // const string kDataFilename_temp2 = "664785.root"; // (MC for closure)
 // const string kDataFilename_temp2 = "665348.root"; // (MC for closure with TOF shift)
 // const string kDataFilename_temp2 = "667890.root"; // (MC for closure with higher TOF shift)
+// const string kDataFilename_temp2 = "669655.root"; // (MC_closure)
+// const string kDataFilename_temp2 = "673285.root"; // (TOF3: MC_closure, MC_closure_INEL, MC_closure_MID0p3)
+// const string kDataFilename_temp2 = "674418.root"; // (TOF3 with checks on Mother: MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_PVContributor, MC_closure_WithoutTOFShift)
+// const string kDataFilename_temp2 = "677471.root"; // (MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_PVContributor, MC_closure_WithoutTOFShift, MC_closure_OnlyTPC)
+
+//=========Other Checks============
 // const string kDataFilename_temp2 = "655628.root"; // (Base, INEL)
 // const string kDataFilename_temp2 = "658307.root"; // (LoosePID, pTDepPID, pTDepPIDTOF)
 // const string kDataFilename_temp2 = "661905.root"; // (Event_Time dependency check in TOF)
 // const string kDataFilename_temp2 = "658306.root"; // (DeepAngle, PV Contributor, INELgt0)
 // const string kDataFilename_temp2 = "668039.root"; // (With square PID: Base, MID, MIDptDep2)
-const string kDataFilename_temp2 = "668605.root"; // (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
+// const string kDataFilename_temp2 = "668605.root"; // (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
 // const string kDataFilename_temp2 = "672297.root"; // (Base (2sigma TOF), MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
-// const string kDataFilename_temp2 = "669655.root"; // (MC_closure)
-// const string kDataFilename_temp2 = "673285.root"; // (TOF3: MC_closure, MC_closure_INEL, MC_closure_MID0p3)
+// const string kDataFilename_temp2 = "675391.root"; // (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 
 //==========2024 data===========
 // const string kDataFilename_temp2 = "663738.root"; // (Base, OnlyTPC)
 // const string kDataFilename_temp2 = "660943.root"; // (Base, LoosePID, pTDepPID, pTDepPIDTOF, MIDptDep, MID)
-// const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
+const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
 #endif
 
 // final dataset name

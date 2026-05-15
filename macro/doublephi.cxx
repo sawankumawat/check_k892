@@ -13,11 +13,11 @@ void doublephi()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1111);
     bool MixedEventExist = false;
-    bool isQA = false;
+    bool isQA = true;
     bool isSavePlots = true;
-    bool isPhiQA = false;
+    bool isPhiQA = true;
     // TString dataFilePath = "../data/doublePhi/";
-    TString dataFilePath = "/home/sawan/alice/practice/";
+    TString dataFilePath = "/home/sawan/alice/practice/DoublePhiAnalyzedFiles/";
     TLatex lat;
     lat.SetNDC();
     lat.SetTextSize(0.04);
@@ -349,16 +349,16 @@ void doublephi()
         TH1F *hPurity = new TH1F("hPurity", "hPurity", nPtBinsPhi, pTbinsPhi);
         TCanvas *cPhiSignal = new TCanvas("", "", 1440, 720);
         SetCanvasStyle(cPhiSignal, 0.13, 0.06, 0.05, 0.13);
-        cPhiSignal->Divide(4, 4);
+        cPhiSignal->Divide(4, 3);
         TCanvas *cPhiMassCorrelation = new TCanvas("", "cPhiMassCorrelation", 1440, 720);
         SetCanvasStyle(cPhiMassCorrelation, 0.13, 0.06, 0.05, 0.13);
-        cPhiMassCorrelation->Divide(4, 4);
+        cPhiMassCorrelation->Divide(4, 3);
         TCanvas *cDeltaRKaonP = new TCanvas("", "cDeltaRKaonP", 1440, 720);
         SetCanvasStyle(cDeltaRKaonP, 0.13, 0.06, 0.05, 0.13);
-        cDeltaRKaonP->Divide(3, 4);
+        cDeltaRKaonP->Divide(4, 3);
         TCanvas *cDeltaRPhi = new TCanvas("", "cDeltaRPhi", 1440, 720);
         SetCanvasStyle(cDeltaRPhi, 0.13, 0.06, 0.05, 0.13);
-        cDeltaRPhi->Divide(3, 4);
+        cDeltaRPhi->Divide(4, 3);
 
         for (int ibinsPhi = 0; ibinsPhi < nPtBinsPhi; ibinsPhi++)
         {
@@ -771,7 +771,7 @@ void doublephi()
         // if (isSavePlots)
         //     cDeltaRKaon->SaveAs(outputPathQA + "DeltaR_Kaons.png");
 
-        float pTbins[] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0};
+        float pTbins[] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 5.0, 10.0};
         int nPtBins = sizeof(pTbins) / sizeof(float) - 1;
         TLatex lat;
         lat.SetNDC();
@@ -820,9 +820,9 @@ void doublephi()
         // if (isSavePlots)
         //     cnSigmaTPCKaonMinus->SaveAs(outputPathQA + "2DSigmaTPC_KaonMinusvsPt.png");
 
-        TCanvas *cnSigmaTPCKaonPlusvsPt = new TCanvas("cnSigmaTPCKaonPlusvsPt", "nSigmaTPC Kaon Plus vs Pt", 1440, 720);
+        TCanvas *cnSigmaTPCKaonPlusvsPt = new TCanvas("cnSigmaTPCKaonPlusvsPt", "nSigmaTPC Kaon Plus vs Pt", 1440, 1080);
         SetCanvasStyle(cnSigmaTPCKaonPlusvsPt, 0.11, 0.06, 0.05, 0.10);
-        cnSigmaTPCKaonPlusvsPt->Divide(4, 5);
+        cnSigmaTPCKaonPlusvsPt->Divide(4, 4);
         for (int i = 0; i < nPtBins; i++)
         {
             cnSigmaTPCKaonPlusvsPt->cd(i + 1);
@@ -860,7 +860,7 @@ void doublephi()
 
         if (hnSigmaTOFKaonPlus != nullptr)
         {
-            TCanvas *cnSigmaTOFKaonPlusvsPt = new TCanvas("cnSigmaTOFKaonPlusvsPt", "nSigmaTOF Kaon Plus vs Pt", 1080, 720);
+            TCanvas *cnSigmaTOFKaonPlusvsPt = new TCanvas("cnSigmaTOFKaonPlusvsPt", "nSigmaTOF Kaon Plus vs Pt", 1440, 1080);
             SetCanvasStyle(cnSigmaTOFKaonPlusvsPt, 0.11, 0.06, 0.05, 0.10);
             cnSigmaTOFKaonPlusvsPt->Divide(4, 4);
             for (int i = 0; i < nPtBins; i++)
@@ -943,9 +943,9 @@ void doublephi()
         // if(isSavePlots)
         // cnSigmaTPCTOFKaon->SaveAs(outputPathQA + "3DSigmaTPCTOF_Kaon_vs_P.png");
 
-        TCanvas *cnSigmaTPCTOFKaonvsPt = new TCanvas("cnSigmaTPCTOFKaonvsPt", "nSigmaTPC and TOF Kaon vs Pt", 1080, 720);
+        TCanvas *cnSigmaTPCTOFKaonvsPt = new TCanvas("cnSigmaTPCTOFKaonvsPt", "nSigmaTPC and TOF Kaon vs Pt", 1440, 1080);
         SetCanvasStyle(cnSigmaTPCTOFKaonvsPt, 0.11, 0.06, 0.05, 0.10);
-        cnSigmaTPCTOFKaonvsPt->Divide(2, 3);
+        cnSigmaTPCTOFKaonvsPt->Divide(3, 2);
         float pTbins_forCombinedTPCTOF[] = {0.5, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0};
         int nPtBins_forCombinedTPCTOF = sizeof(pTbins_forCombinedTPCTOF) / sizeof(float) - 1;
         for (int i = 0; i < nPtBins_forCombinedTPCTOF; i++)

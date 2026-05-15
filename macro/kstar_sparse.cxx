@@ -27,7 +27,7 @@ void kstar_sparse()
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
     bool isINEL = false;
-    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
+    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
     //********************************************************************************
 
@@ -123,8 +123,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -223,6 +223,8 @@ void kstar_sparse()
                 subdir = dir->mkdir("SignalInAllPtBins");
             }
             subdir->cd();
+
+            float prevWidth = widthpdg;
 
             for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
             {
@@ -424,8 +426,10 @@ void kstar_sparse()
                 fitFcn->FixParameter(1, widthpdg); // width
                 // fitFcn->SetParLimits(1, 0.048, 0.06); // width
                 // fitFcn->SetParLimits(1, kWidthLimit[ip][0], kWidthLimit[ip][1]); // width
+                // fitFcn->SetParLimits(1, prevWidth, prevWidth + 0.003); // For MC closure test in min bias
+
                 fitFcn->SetParameter(2, 10e4);     // yield
-                fitFcn->SetParLimits(2, 0.0, 1e8); // Yield
+                fitFcn->SetParLimits(2, 0.0, 1e8); // Yield2
 
                 // // //pol3 parameters
                 // fitFcn->SetParameter(3, -1e6);
@@ -439,6 +443,8 @@ void kstar_sparse()
                 // freopen("/dev/null", "w", stdout);
 
                 r = hfsig->Fit(fitFcn, "REBMS0+"); // signal after bkg subtraction
+
+                prevWidth = fitFcn->GetParameter(1);
 
                 // Restore standard output
                 // fflush(stdout);
@@ -1022,6 +1028,10 @@ void kstar_sparse()
         TH1F *h1DNsigmaTPCPion[6];
         TH1F *h1DNsigmaTOFKaon[6];
         TH1F *h1DNsigmaTOFPion[6];
+        TH1F *h1DNsigmaTPCKaon_pt[6];
+        TH1F *h1DNsigmaTPCPion_pt[6];
+        TH1F *h1DNsigmaTOFKaon_pt[6];
+        TH1F *h1DNsigmaTOFPion_pt[6];
 
         for (int i = 0; i < 6; i++)
         {
@@ -1041,11 +1051,18 @@ void kstar_sparse()
             // Now lets make 1D projections with limit on multiplicity ranges
             int lowBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][0] + 0.001);
             int highBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][1] - 0.001);
+            int lowBinpT = hNsigmaTPCKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i] + 0.001);
+            int highBinpT = hNsigmaTPCKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i + 1] - 0.001);
 
             h1DNsigmaTPCKaon[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
             h1DNsigmaTPCPion[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
             h1DNsigmaTOFKaon[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
             h1DNsigmaTOFPion[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
+
+            h1DNsigmaTPCKaon_pt[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
+            h1DNsigmaTPCPion_pt[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
+            h1DNsigmaTOFKaon_pt[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
+            h1DNsigmaTOFPion_pt[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
         }
 
         TCanvas *cNsigmaTPCKaon = new TCanvas("cNsigmaTPCKaon", "Nsigma TPC Kaon", 720, 720);
@@ -1154,7 +1171,7 @@ void kstar_sparse()
             h1DNsigmaTPCKaon[i]->SetMarkerColor(colors[i]);
             h1DNsigmaTPCKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
             h1DNsigmaTPCKaon[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCKaon[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
             h1DNsigmaTPCKaon[i]->SetMaximum(h1DNsigmaTPCKaon[i]->GetMaximum() * 4.7);
             h1DNsigmaTPCKaon[i]->Draw("p same");
             leg1DPID->AddEntry(h1DNsigmaTPCKaon[i], Form("%d-%d%%", multRangesForTPCandTOF[i][0], multRangesForTPCandTOF[i][1]), "p");
@@ -1175,7 +1192,7 @@ void kstar_sparse()
             h1DNsigmaTPCPion[i]->SetMarkerColor(colors[i]);
             h1DNsigmaTPCPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
             h1DNsigmaTPCPion[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTPCPion[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
             h1DNsigmaTPCPion[i]->SetMaximum(h1DNsigmaTPCPion[i]->GetMaximum() * 4.7);
             h1DNsigmaTPCPion[i]->Draw("p same");
         }
@@ -1194,7 +1211,7 @@ void kstar_sparse()
             h1DNsigmaTOFKaon[i]->SetMarkerColor(colors[i]);
             h1DNsigmaTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
             h1DNsigmaTOFKaon[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFKaon[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFKaon[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
             h1DNsigmaTOFKaon[i]->SetMaximum(h1DNsigmaTOFKaon[i]->GetMaximum() * 4.7);
             h1DNsigmaTOFKaon[i]->Draw("p same");
         }
@@ -1213,7 +1230,7 @@ void kstar_sparse()
             h1DNsigmaTOFPion[i]->SetMarkerColor(colors[i]);
             h1DNsigmaTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
             h1DNsigmaTOFPion[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFPion[i]->GetXaxis()->SetRangeUser(-2.5, 2.5);
+            h1DNsigmaTOFPion[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
             h1DNsigmaTOFPion[i]->SetMaximum(h1DNsigmaTOFPion[i]->GetMaximum() * 4.7);
             h1DNsigmaTOFPion[i]->Draw("p same");
         }
@@ -1223,5 +1240,101 @@ void kstar_sparse()
         lineTOFPion->SetLineColor(2);
         lineTOFPion->Draw();
         cNsigmaTOFPion_1D->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D." + outputtype).c_str());
+
+        TCanvas *cNsigmaTPCKaon_1D_pt = new TCanvas("cNsigmaTPCKaon_1D_pt", "Nsigma TPC Kaon 1D pT", 720, 720);
+        SetCanvasStyle(cNsigmaTPCKaon_1D_pt, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTPCKaon_1D_pt->SetGrid(1, 1);
+
+        TCanvas *cNsigmaTPCPion_1D_pt = new TCanvas("cNsigmaTPCPion_1D_pt", "Nsigma TPC Pion 1D pT", 720, 720);
+        SetCanvasStyle(cNsigmaTPCPion_1D_pt, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTPCPion_1D_pt->SetGrid(1, 1);
+
+        TCanvas *cNsigmaTOFKaon_1D_pt = new TCanvas("cNsigmaTOFKaon_1D_pt", "Nsigma TOF Kaon 1D pT", 720, 720);
+        SetCanvasStyle(cNsigmaTOFKaon_1D_pt, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTOFKaon_1D_pt->SetGrid(1, 1);
+
+        TCanvas *cNsigmaTOFPion_1D_pt = new TCanvas("cNsigmaTOFPion_1D_pt", "Nsigma TOF Pion 1D pT", 720, 720);
+        SetCanvasStyle(cNsigmaTOFPion_1D_pt, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTOFPion_1D_pt->SetGrid(1, 1);
+
+        TLegend *leg1DPID_pt = new TLegend(0.17, 0.82, 0.8, 0.92);
+        leg1DPID_pt->SetNColumns(3);
+        leg1DPID_pt->SetTextSize(0.028);
+        leg1DPID_pt->SetFillStyle(0);
+        leg1DPID_pt->SetBorderSize(0);
+        leg1DPID_pt->SetTextFont(42);
+        leg1DPID_pt->SetHeader("#it{p}_{T} ranges");
+
+        for (int i = 0; i < 6; i++)
+        {
+            cNsigmaTPCKaon_1D_pt->cd();
+            SetHistoQA(h1DNsigmaTPCKaon_pt[i]);
+            h1DNsigmaTPCKaon_pt[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCKaon_pt[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
+            h1DNsigmaTPCKaon_pt[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCKaon_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
+            h1DNsigmaTPCKaon_pt[i]->SetMaximum(h1DNsigmaTPCKaon_pt[i]->GetMaximum() * 25);
+            h1DNsigmaTPCKaon_pt[i]->Draw("p same");
+            leg1DPID_pt->AddEntry(h1DNsigmaTPCKaon_pt[i], Form("%.1f-%.1f", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]), "p");
+
+            cNsigmaTPCPion_1D_pt->cd();
+            SetHistoQA(h1DNsigmaTPCPion_pt[i]);
+            h1DNsigmaTPCPion_pt[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTPCPion_pt[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
+            h1DNsigmaTPCPion_pt[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTPCPion_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
+            h1DNsigmaTPCPion_pt[i]->SetMaximum(h1DNsigmaTPCPion_pt[i]->GetMaximum() * 3);
+            h1DNsigmaTPCPion_pt[i]->Draw("p same");
+
+            cNsigmaTOFKaon_1D_pt->cd();
+            SetHistoQA(h1DNsigmaTOFKaon_pt[i]);
+            h1DNsigmaTOFKaon_pt[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFKaon_pt[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
+            h1DNsigmaTOFKaon_pt[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFKaon_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
+            h1DNsigmaTOFKaon_pt[i]->SetMaximum(h1DNsigmaTOFKaon_pt[i]->GetMaximum() * 70);
+            h1DNsigmaTOFKaon_pt[i]->Draw("p same");
+
+            cNsigmaTOFPion_1D_pt->cd();
+            SetHistoQA(h1DNsigmaTOFPion_pt[i]);
+            h1DNsigmaTOFPion_pt[i]->SetMarkerColor(colors[i]);
+            h1DNsigmaTOFPion_pt[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
+            h1DNsigmaTOFPion_pt[i]->GetYaxis()->SetTitle("Counts");
+            h1DNsigmaTOFPion_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
+            h1DNsigmaTOFPion_pt[i]->SetMaximum(h1DNsigmaTOFPion_pt[i]->GetMaximum() * 13);
+            h1DNsigmaTOFPion_pt[i]->Draw("p same");
+        }
+
+        cNsigmaTPCKaon_1D_pt->cd();
+        leg1DPID_pt->Draw();
+        TLine *lineTPCKaon_pt = new TLine(0, 0, 0, h1DNsigmaTPCKaon_pt[0]->GetMaximum());
+        lineTPCKaon_pt->SetLineStyle(2);
+        lineTPCKaon_pt->SetLineColor(2);
+        lineTPCKaon_pt->Draw();
+        cNsigmaTPCKaon_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_1D_pt." + outputtype).c_str());
+
+        cNsigmaTPCPion_1D_pt->cd();
+        leg1DPID_pt->Draw();
+        TLine *lineTPCPion_pt = new TLine(0, 0, 0, h1DNsigmaTPCPion_pt[0]->GetMaximum());
+        lineTPCPion_pt->SetLineStyle(2);
+        lineTPCPion_pt->SetLineColor(2);
+        lineTPCPion_pt->Draw();
+        cNsigmaTPCPion_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTPCPion_1D_pt." + outputtype).c_str());
+
+        cNsigmaTOFKaon_1D_pt->cd();
+        leg1DPID_pt->Draw();
+        TLine *lineTOFKaon_pt = new TLine(0, 0, 0, h1DNsigmaTOFKaon_pt[0]->GetMaximum());
+        lineTOFKaon_pt->SetLineStyle(2);
+        lineTOFKaon_pt->SetLineColor(2);
+        lineTOFKaon_pt->Draw();
+        cNsigmaTOFKaon_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_1D_pt." + outputtype).c_str());
+
+        cNsigmaTOFPion_1D_pt->cd();
+        leg1DPID_pt->Draw();
+        TLine *lineTOFPion_pt = new TLine(0, 0, 0, h1DNsigmaTOFPion_pt[0]->GetMaximum());
+        lineTOFPion_pt->SetLineStyle(2);
+        lineTOFPion_pt->SetLineColor(2);
+        lineTOFPion_pt->Draw();
+        cNsigmaTOFPion_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D_pt." + outputtype).c_str());
     }
 }

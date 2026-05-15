@@ -12,7 +12,7 @@ void mc_closure()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     bool isMinBias = true;
-    bool isINEL = true;
+    bool isINEL = false;
     bool compareAfterEfficiencyCorrection = false;
 
     // string MCfile = "657468"; // 2024 (Old with mother id checked in kstarqa code)
@@ -20,8 +20,11 @@ void mc_closure()
     // string MCfile = "666966"; // pp reference MC
     // string MCfile = "667890"; // 2024 (MC_closure, MC_closure_INEL, MC_closure_OnlyTPC: all with TOF shift)
     // string MCfile = "669655"; // 2024 (MC_closure)
-    string MCfile = "673285"; // 2024 (TOF3: MC_closure, MC_closure_INEL, MC_closure_MID0p3)
-    string MC_path = "MC_closure_INEL";
+    // string MCfile = "673285"; // 2024 (TOF3: MC_closure, MC_closure_INEL, MC_closure_MID0p3)
+    // string MCfile = "674418"; // 2024 (TOF3 with checks on Mother: MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_WithoutTOFShift)
+    string MCfile = "677471"; // 2024 (MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_WithoutTOFShift, MC_closure_OnlyTPC, MC_closure_PVContributor)
+
+    string MC_path = "MC_closure_PVContributor";
 
     string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/" + MCfile + "/kstarqa_" + MC_path + "/hInvMass"; // path for yield.root file (from rec MC)
     string path2 = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/MC_closure/";                                                  // MC file path
@@ -49,7 +52,7 @@ void mc_closure()
     TH1F *heff[numofmultbins + 1];
 
     THnSparseF *hSparseRec;
-    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT") : (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h2KstarRecpt1", MC_path.c_str()));
+    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT") : (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()));
     if (hSparseRec == nullptr)
     {
         cout << "Error reading efficiency histogram MC" << endl;
@@ -59,9 +62,13 @@ void mc_closure()
     double multhigh, multlow;
     TCanvas *cEfficiency = new TCanvas("cEfficiency", "cEfficiency", 720, 720);
     SetCanvasStyle(cEfficiency, 0.15, 0.03, 0.03, 0.15);
+    TFile *fOutput = new TFile((savePath + "/MCClosure.root"), "RECREATE");
 
     for (int imult = 0; imult < numofmultbins + 1; imult++)
     {
+        fOutput->cd();
+        TDirectory *dir = fOutput->mkdir(Form("mult_%.0f-%.0f", (imult == 0) ? 0 : mult_classes[imult - 1], (imult == 0) ? ((isINEL) ? 120 : 100) : mult_classes[imult]));
+        dir->cd();
         if (imult == 0)
         {
             multlow = 0;
@@ -142,6 +149,8 @@ void mc_closure()
         hmult2[imult]->SetLineColor(kBlue);
         hmult2[imult]->SetLineWidth(2);
         hmult2[imult]->Draw("pe same");
+        hmult1[imult]->Write("FitYield");
+        hmult2[imult]->Write("ReconstructedSpectra");
 
         TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
         SetLegendStyle(leg);
@@ -152,6 +161,7 @@ void mc_closure()
         leg->Draw();
 
         c1->cd(2);
+        gPad->SetGridy(1);
         TH1F *hdummy = (TH1F *)hmult1[0]->Clone();
         for (int i = 0; i < hdummy->GetNbinsX(); i++)
         {
@@ -165,7 +175,7 @@ void mc_closure()
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
         hratio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
         hratio1->SetMarkerStyle(20);
-        hratio1->SetMarkerSize(1.0);
+        hratio1->SetMarkerSize(1.1);
         // hratio1->SetMarkerColor(kBlue);
         // hratio1->SetLineColor(kBlue);
         hratio1->GetYaxis()->SetTitle("#frac{Rec Yield (Fit)}{True Yield}");
@@ -174,10 +184,11 @@ void mc_closure()
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
         hratio1->GetYaxis()->SetNdivisions(505);
-        hratio1->SetMaximum(1.1);
-        hratio1->SetMinimum(0.7);
+        hratio1->SetMaximum(1.23);
+        hratio1->SetMinimum(0.75);
         hratio1->GetXaxis()->SetRangeUser(0, 15);
         hratio1->Draw("p");
+        hratio1->Write("Ratio");
 
         TLine *line = new TLine(0, 1, 10, 1);
         line->SetLineStyle(2);

@@ -34,10 +34,8 @@ void compare_multiple_spectra()
     // std::vector<string> legendnames = {"Simple", "NN", "Tune", "Tune+NN"}; // checking MC with and without NN
     // std::vector<string> legendnames = {"No cut", "< 1000", "< 750", "< 500"}; // interaction rates
     // std::vector<string> legendnames = {"Default", "MID", "|y|<0.3", "OnlyTPC"}; // signal shapes comparison
-
     // vector<string> QAVariation = {"", "_BetaTOF0p5", "_GoodFT0vsPV", "_GoodITSLayersAll", "_ITSTPCRefit", "_VertexITSTPC", "_VertexTOFMatched"};
     // vector<string> legendnames = {"Default", "BetaTOF<0.5 ns", "GoodFT0 vs PV", "All ITS layers", "ITS-TPC refit", "Vertex ITSTPC", "Vertex TOF Matched"};
-
     // vector<string> QAVariation = {"", "_hasITS"}; (train no. 589661)
     // vector<string> legendnames = {"Default", "has ITS"};
 
@@ -48,16 +46,25 @@ void compare_multiple_spectra()
     // vector<string> QAVariation = {"", "_MIDptDep",}; //(Train no. 658307)
     // vector<string> legendnames = {"Default", "With MID cut"};
 
-    vector<string> QAVariation = {"_TOF3_withoutSquareCut", "_MIDptDep2_0p3_TOF3", "_MIDptDep2_small_TOF3", "_MIDptDep2_TOF3"}; //(Train no. 672297 (default is copied from 668605))
-    vector<string> legendnames = {"Default", "MID 0.3#sigma", "MID 0.5#sigma", "MID 1#sigma"};
+    // vector<string> QAVariation = {"_TOF3_withoutSquareCut", "_MIDptDep2_0p3_TOF3", "_MIDptDep2_small_TOF3", "_MIDptDep2_TOF3"}; //(Train no. 672297 (default is copied from 668605))
+    // vector<string> legendnames = {"Default", "MID 0.3#sigma", "MID 0.5#sigma", "MID 1#sigma"};
 
     // vector<string> QAVariation = {"", "_DeepAngle", "_PVContributor"}; //(Train no. 658306)
     // vector<string> legendnames = {"Default", "Deep Angle", "PV Contributor"};
 
+    // vector<string> QAVariation = {"_noTOFshift", ""};  // (Train 672297)
+    // vector<string> legendnames = {"TOF 3#sigma (no shift)", "TOF 3#sigma (shifted)"};
+
+    // vector<string> QAVariation = {"_TOF3_withoutSquareCut_withoutShift", "_TOF3_withoutSquareCut"}; // Train 668605
+    // vector<string> legendnames = {"TOF 3#sigma (no shift)", "TOF 3#sigma (shifted)"};
+
+    vector<string> QAVariation = {"", "_TOF3_withoutSquareCut"}; // Train 668605
+    vector<string> legendnames = {"TPC-TOF 2#sigma", "TPC-TOF 3#sigma"};
+
     std::vector<TString> paths;
     for (const auto &variation : QAVariation)
     {
-        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/672297/kstarqa%s/hInvMass", variation.c_str()));
+        paths.emplace_back(Form("/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa%s/hInvMass", variation.c_str()));
     }
     // // Additional push backs
     // paths.push_back("/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass");         // 2022 data
@@ -174,9 +181,9 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
             pad1Size = 4.0 / 4.5; // Full canvas size for single panel
             pad2Size = 4.0 / 4.5; // No second pad
         }
-        TLegend *leg = new TLegend(0.5, 0.7, 0.93, 0.94);
+        TLegend *leg = new TLegend(0.7, 0.7, 0.93, 0.94);
         SetLegendStyle(leg);
-        leg->SetNColumns(2);
+        // leg->SetNColumns(2);
         (isSinglePanel) ? leg->SetTextSize(0.035) : leg->SetTextSize(0.035);
         // leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
         // leg->SetHeader("Interaction Rate (kHz)");
@@ -266,8 +273,8 @@ void plot_spectra(vector<TString> paths, bool isCorrectedYield = false, vector<s
                 // hratio[imult][ifiles]->SetMaximum(3.14);
                 // hratio[imult][ifiles]->SetMinimum(0.65);
                 // hratio[imult][ifiles]->SetMaximum(1.45);
-                hratio[imult][ifiles]->SetMinimum(0.75);
-                hratio[imult][ifiles]->SetMaximum(1.35);
+                hratio[imult][ifiles]->SetMinimum(0.85);
+                hratio[imult][ifiles]->SetMaximum(1.25);
                 hratio[imult][ifiles]->Draw("pe same");
             }
             TLine *line = new TLine(0, 1, 10, 1);

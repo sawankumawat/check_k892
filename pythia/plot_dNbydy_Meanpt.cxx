@@ -32,6 +32,18 @@ void plot_dNbydy_Meanpt()
     TGraph *gRun3_dNdy = new TGraph(n, mult_run3, dNdy_run3);
     TGraph *gRun2_dNdy = new TGraph(n, mult_run2, dNdy_run2);
 
+    // for (int ipoint = 0; ipoint < n; ipoint++)
+    // {
+    //     double x, y;
+    //     gRun3_dNdy->GetPoint(ipoint, x, y);
+    //     y = y * 2;
+    //     gRun3_dNdy->SetPoint(ipoint, x, y);
+    //     double x2, y2;
+    //     gRun2_dNdy->GetPoint(ipoint, x2, y2);
+    //     y2 = y2 * 2;
+    //     gRun2_dNdy->SetPoint(ipoint, x2, y2);
+    // }
+
     // Style
     gRun3_pt->SetMarkerStyle(20);
     gRun3_pt->SetMarkerColor(kRed);
@@ -53,6 +65,15 @@ void plot_dNbydy_Meanpt()
     gRun2_dNdy->SetLineColor(kBlue);
     gRun2_dNdy->SetMarkerSize(1.3);
 
+    TFile *fData = new TFile("../macro/SpectraRatios/levy_fit.root", "read");
+    if (fData->IsZombie())
+    {
+        cout << "Error opening data file" << endl;
+        return;
+    }
+    TGraphErrors *gMeanpTRun3Data = (TGraphErrors *)fData->Get("gMeanpTRun3");
+    TGraphErrors *gMeanYieldRun3Data = (TGraphErrors *)fData->Get("gMeanYieldRun3");
+
     // Canvas
     TCanvas *c = new TCanvas("c", "pT vs multiplicity", 720, 720);
     SetCanvasStyle(c, 0.14, 0.02, 0.05, 0.14);
@@ -60,19 +81,29 @@ void plot_dNbydy_Meanpt()
     gRun3_pt->SetTitle(";dN_{ch}/d#eta; <p_{T}> (GeV/c)");
     gRun3_pt->Draw("AP"); // Axis + Points
     gRun2_pt->Draw("P SAME");
+    gMeanpTRun3Data->SetMarkerStyle(24);
+    gMeanpTRun3Data->SetMarkerColor(kRed);
+    gMeanpTRun3Data->SetLineColor(kRed);
+    gMeanpTRun3Data->SetMarkerSize(1.3);
+    gMeanpTRun3Data->Draw("P SAME");
 
     // Legend
     TLegend *leg = new TLegend(0.6, 0.2, 0.85, 0.35);
     leg->AddEntry(gRun3_pt, "Run 3", "p");
     leg->AddEntry(gRun2_pt, "Run 2", "p");
     leg->Draw();
-    c->SaveAs("ptSpectra/pt_vs_mult.png");
+    // c->SaveAs("ptSpectra/pt_vs_mult.png");
 
     TCanvas *c2 = new TCanvas("c2", "dN/dy vs multiplicity", 720, 720);
     SetCanvasStyle(c2, 0.14, 0.02, 0.05, 0.14);
     gRun3_dNdy->SetTitle(";dN_{ch}/d#eta; dN/dy");
     gRun3_dNdy->Draw("AP");
     gRun2_dNdy->Draw("P SAME");
+    gMeanYieldRun3Data->SetMarkerStyle(24);
+    gMeanYieldRun3Data->SetMarkerColor(kRed);
+    gMeanYieldRun3Data->SetLineColor(kRed);
+    gMeanYieldRun3Data->SetMarkerSize(1.3);
+    gMeanYieldRun3Data->Draw("P SAME");
     leg->Draw();
-    c2->SaveAs("ptSpectra/dNdy_vs_mult.png");
+    // c2->SaveAs("ptSpectra/dNdy_vs_mult.png");
 }

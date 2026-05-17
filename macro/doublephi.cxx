@@ -8,14 +8,16 @@ Double_t BW_pol3(double *x, double *par);
 Double_t BW_pol2(double *x, double *par);
 Double_t relBW(double *x, double *par);
 
+// In hyperloop train output for ac+ah+ai we have less stats than locally ran ac+ah train. However PID selection in local train is PID4, while in hyperloop it is 0,1,2.
+
 void doublephi()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1111);
     bool MixedEventExist = false;
-    bool isQA = true;
+    bool isQA = false;
     bool isSavePlots = true;
-    bool isPhiQA = true;
+    bool isPhiQA = false;
     // TString dataFilePath = "../data/doublePhi/";
     TString dataFilePath = "/home/sawan/alice/practice/DoublePhiAnalyzedFiles/";
     TLatex lat;
@@ -26,12 +28,15 @@ void doublephi()
     // TString fileName = "LHC25ac_allWagons"; // Triggered data (LHC25ac)
     // TString fileName = "Analysis541300PID4New"; // Triggered data (LHC25a5)
     // TString fileName = "Analysis549273PID4New"; // Triggered data (LHC25ah)
-    TString fileName = "Analysis_ac_ah_MergedPID4ME"; // Triggered data (LHC25ah+ac)
     // TString fileName = "AnalysisResults"; // Both dataset with third axis as pt1*pt2
     // TString fileName = "AnalysisResultsLHC25ah_hyperloop"; // From hyperloop
+    // TString fileName = "Analysis_ac_ah_MergedPID4ME"; // Triggered data (LHC25ah+ac)
+
+    // TString fileName = "597653"; // LHC25_pass1_skimmed
+    TString fileName = "AnalysisResults_675200"; // LHC25_pass1_skimmed
 
     TString subWagon = "";
-    // TString subWagon = "_pid1";
+    // TString subWagon = "_pid1_opti4";
     // TString subWagon = "_LoosePID";
     // TString subWagon = "_DeepAngle";
     // TString subWagon = "_StrategyPID1";
@@ -71,11 +76,63 @@ void doublephi()
     TH1D *hPtCorrelation = hunlike->Projection(5, "E");
     hDeltaRPhiPhi->Write("hDeltaRPhiPhi");
     hDeltaMassDifference->Write("hDeltaMassDifference");
+    cout << "Stats from DeltaRPhiPhi projection: " << hDeltaRPhiPhi->GetEntries() << endl;
+
+    TCanvas *cDeltaRKaon = new TCanvas("cDeltaRKaon", "#DeltaR Kaon vs p_{T}", 720, 720);
+    SetCanvasStyle(cDeltaRKaon, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hDeltaRKaon);
+    hDeltaRKaon->GetXaxis()->SetTitle("#DeltaR Kaon (cm)");
+    hDeltaRKaon->SetMarkerStyle(20);
+    hDeltaRKaon->GetYaxis()->SetMaxDigits(3);
+    hDeltaRKaon->SetMarkerSize(1.0);
+    hDeltaRKaon->Draw("HIST");
+    if (isSavePlots)
+        cDeltaRKaon->SaveAs(outputPath + "deltaR_kaon.png");
+
+    TCanvas *cDeltaRPhi = new TCanvas("cDeltaRPhi", "#DeltaR #phi vs p_{T}", 720, 720);
+    SetCanvasStyle(cDeltaRPhi, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hDeltaRPhiPhi);
+    hDeltaRPhiPhi->SetTitle(0);
+    hDeltaRPhiPhi->GetXaxis()->SetTitle("#DeltaR_{#phi#phi}");
+    hDeltaRPhiPhi->GetYaxis()->SetTitle("Counts");
+    hDeltaRPhiPhi->SetMarkerStyle(20);
+    hDeltaRPhiPhi->GetYaxis()->SetMaxDigits(3);
+    hDeltaRPhiPhi->SetMarkerSize(1.0);
+    hDeltaRPhiPhi->Draw("HIST");
+    if (isSavePlots)
+        cDeltaRPhi->SaveAs(outputPath + "deltaR_phi.png");
+
+    TCanvas *cDeltaMassDifference = new TCanvas("cDeltaMassDifference", "#DeltaM vs p_{T}", 720, 720);
+    SetCanvasStyle(cDeltaMassDifference, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hDeltaMassDifference);
+    hDeltaMassDifference->GetXaxis()->SetTitle("#DeltaM (GeV/#  it{c}^{2})");
+    hDeltaMassDifference->SetMarkerStyle(20);
+    hDeltaMassDifference->GetYaxis()->SetMaxDigits(3);
+    hDeltaMassDifference->SetMarkerSize(1.0);
+    hDeltaMassDifference->Draw("HIST");
+    if (isSavePlots)
+        cDeltaMassDifference->SaveAs(outputPath + "deltaM.png");
+
+    TCanvas *cPtCorrelation = new TCanvas("cPtCorrelation", "Pt Correlation", 720, 720);
+    SetCanvasStyle(cPtCorrelation, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hPtCorrelation);
+    hPtCorrelation->GetXaxis()->SetTitle("Pt Correlation (GeV/#it{c})");
+    hPtCorrelation->SetMarkerStyle(20);
+    hPtCorrelation->GetYaxis()->SetMaxDigits(3);
+    hPtCorrelation->SetMarkerSize(1.0);
+    hPtCorrelation->GetXaxis()->SetRangeUser(0.0, 10.0);
+    int binMax = hPtCorrelation->GetMaximumBin();
+    double maxXvalue = hPtCorrelation->GetXaxis()->GetBinCenter(binMax);
+    hPtCorrelation->Draw("HIST");
+    lat.DrawLatex(0.7, 0.82, Form("Peak %.1f", maxXvalue));
+    lat.DrawLatex(0.7, 0.75, Form("Mean %.1f", hPtCorrelation->GetMean()));
+    if (isSavePlots)
+        cPtCorrelation->SaveAs(outputPath + "pt_correlation.png");
 
     int deltaRKaonLow = hunlike->GetAxis(1)->FindBin(0.0 + 0.0001);
     int deltaRKaonHigh = hunlike->GetAxis(1)->FindBin(20.0 - 0.0001);
 
-    int lowbinpT = hunlike->GetAxis(2)->FindBin(3.0 + 0.01);
+    int lowbinpT = hunlike->GetAxis(2)->FindBin(1.0 + 0.01);
     int highbinpT = hunlike->GetAxis(2)->FindBin(100.0 - 0.01);
 
     int deltaRPhiLow = hunlike->GetAxis(3)->FindBin(0.5 + 0.0001);
@@ -172,11 +229,13 @@ void doublephi()
     bkgfunc->Draw("same");
 
     double signalCounts = (BWfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
-                                            BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2)))/ hmass->GetBinWidth(1);
+                                            BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
+                          hmass->GetBinWidth(1);
     double signalBkgCount = hmass->Integral(hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2)),
                                             hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2)));
     double bkgCounts = (bkgfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
-                                          BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2)))/ hmass->GetBinWidth(1);
+                                          BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
+                       hmass->GetBinWidth(1);
     double singalBinCount = signalBkgCount - bkgCounts;
     cout << "Signal counts: " << signalCounts << endl;
     cout << "Signal counts (bin): " << singalBinCount << endl;
@@ -195,57 +254,6 @@ void doublephi()
     leg->SetTextSize(0.035);
     leg->AddEntry(hmass, "Same event #Phi#Phi", "lpe");
     leg->Draw();
-
-    TCanvas *cDeltaRKaon = new TCanvas("cDeltaRKaon", "#DeltaR Kaon vs p_{T}", 720, 720);
-    SetCanvasStyle(cDeltaRKaon, 0.15, 0.03, 0.05, 0.15);
-    SetHistoQA(hDeltaRKaon);
-    hDeltaRKaon->GetXaxis()->SetTitle("#DeltaR Kaon (cm)");
-    hDeltaRKaon->SetMarkerStyle(20);
-    hDeltaRKaon->GetYaxis()->SetMaxDigits(3);
-    hDeltaRKaon->SetMarkerSize(1.0);
-    hDeltaRKaon->Draw("HIST");
-    if (isSavePlots)
-        cDeltaRKaon->SaveAs(outputPath + "deltaR_kaon.png");
-
-    TCanvas *cDeltaRPhi = new TCanvas("cDeltaRPhi", "#DeltaR #phi vs p_{T}", 720, 720);
-    SetCanvasStyle(cDeltaRPhi, 0.15, 0.03, 0.05, 0.15);
-    SetHistoQA(hDeltaRPhiPhi);
-    hDeltaRPhiPhi->SetTitle(0);
-    hDeltaRPhiPhi->GetXaxis()->SetTitle("#DeltaR_{#phi#phi}");
-    hDeltaRPhiPhi->GetYaxis()->SetTitle("Counts");
-    hDeltaRPhiPhi->SetMarkerStyle(20);
-    hDeltaRPhiPhi->GetYaxis()->SetMaxDigits(3);
-    hDeltaRPhiPhi->SetMarkerSize(1.0);
-    hDeltaRPhiPhi->Draw("HIST");
-    if (isSavePlots)
-        cDeltaRPhi->SaveAs(outputPath + "deltaR_phi.png");
-
-    TCanvas *cDeltaMassDifference = new TCanvas("cDeltaMassDifference", "#DeltaM vs p_{T}", 720, 720);
-    SetCanvasStyle(cDeltaMassDifference, 0.15, 0.03, 0.05, 0.15);
-    SetHistoQA(hDeltaMassDifference);
-    hDeltaMassDifference->GetXaxis()->SetTitle("#DeltaM (GeV/#  it{c}^{2})");
-    hDeltaMassDifference->SetMarkerStyle(20);
-    hDeltaMassDifference->GetYaxis()->SetMaxDigits(3);
-    hDeltaMassDifference->SetMarkerSize(1.0);
-    hDeltaMassDifference->Draw("HIST");
-    if (isSavePlots)
-        cDeltaMassDifference->SaveAs(outputPath + "deltaM.png");
-
-    TCanvas *cPtCorrelation = new TCanvas("cPtCorrelation", "Pt Correlation", 720, 720);
-    SetCanvasStyle(cPtCorrelation, 0.15, 0.03, 0.05, 0.15);
-    SetHistoQA(hPtCorrelation);
-    hPtCorrelation->GetXaxis()->SetTitle("Pt Correlation (GeV/#it{c})");
-    hPtCorrelation->SetMarkerStyle(20);
-    hPtCorrelation->GetYaxis()->SetMaxDigits(3);
-    hPtCorrelation->SetMarkerSize(1.0);
-    hPtCorrelation->GetXaxis()->SetRangeUser(0.0, 10.0);
-    int binMax = hPtCorrelation->GetMaximumBin();
-    double maxXvalue = hPtCorrelation->GetXaxis()->GetBinCenter(binMax);
-    hPtCorrelation->Draw("HIST");
-    lat.DrawLatex(0.7, 0.82, Form("Peak %.1f", maxXvalue));
-    lat.DrawLatex(0.7, 0.75, Form("Mean %.1f", hPtCorrelation->GetMean()));
-    if (isSavePlots)
-        cPtCorrelation->SaveAs(outputPath + "pt_correlation.png");
 
     TH1D *hmassmixed;
     if (MixedEventExist)

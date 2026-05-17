@@ -96,6 +96,8 @@ void ChargedParticleMult_run3()
             hRegions[r]->SetBinContent(b, hmultpp136->GetBinContent(b));
         }
 
+        // cout <<"Total event in region " << percentiles[10 - r -1] * 100 << "% - " << hmultpp136->Integral(lowBin, prevBin) << endl;
+
         prevBin = lowBin - 1;
     }
 

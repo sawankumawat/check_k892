@@ -23,22 +23,26 @@ std::vector<int> lineStyles = {1, 1, 1, 1, 1, 1};
 void compare_doublePhiPlots()
 {
     gStyle->SetOptStat(0);
-    const int TotalFiles = 4;
+    const int TotalFiles = 2;
     vector<TFile *> compareFiles(TotalFiles);
     // TString dataFilePath = "../output/doublePhi/508501/";
     // TString dataFilePath = "../output/doublePhi/LHC25ac_allWagons/";
-    vector<TString> dataFilePath = {"Analysis541300PID100", "Analysis541300PID101", "Analysis541300PID4", "Analysis541300PID7"};
-    TString outputFilePath = dataFilePath[0] + "ComparePlots/";
+    // vector<TString> dataFilePath = {"Analysis541300PID100", "Analysis541300PID101", "Analysis541300PID4", "Analysis541300PID7"};
+    vector<TString> dataFilePath = {"AnalysisResults_ac_ah_new", "AnalysisResults_ac_ah_new"};
+    // TString outputFilePath = dataFilePath[0] + "ComparePlots/";
+    TString outputFilePath = "/home/sawan/check_k892/output/doublePhi/" + dataFilePath[0] + "/ComparePlots/";
     gSystem->Exec("mkdir -p " + outputFilePath);
     // TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi_LoosePID.root", "PhiPhi_DeepAngle.root"};
     // TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi_DeltaRDaughter2.root", "PhiPhi_DeltaRDaughter4.root"};
     // TString fileNames[TotalFiles] = {"PhiPhi_noRcut.root", "PhiPhi_R2.root", "PhiPhi_R4.root", "PhiPhi.root", "PhiPhi_R7.root"};
-    TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi.root", "PhiPhi.root", "PhiPhi.root"};
+    TString fileNames[TotalFiles] = {"PhiPhi_PID1000.root", "PhiPhi.root"};
+    // TString fileNames[TotalFiles] = {"PhiPhi.root", "PhiPhi.root", "PhiPhi.root", "PhiPhi.root"};
     // TString fileNames[TotalFiles] = {"PhiPhi_LoosePID.root", "PhiPhi.root", "PhiPhi_StrategyPID1.root"};
     // TString LegendNames[TotalFiles] = {"Loose PID", "#it{p}_{T} dependent PID", "TOF Hit"};
     // TString LegendNames[TotalFiles] = {"Not cut", "#DeltaR_{K^{+}K^{-}} > 0.2", "#DeltaR_{K^{+}K^{-}} > 0.4"};
     // TString LegendNames[TotalFiles] = {"Not cut", "#DeltaR_{#Phi#Phi} > 0.2", "#DeltaR_{#Phi#Phi} > 0.4", "#DeltaR_{#Phi#Phi} > 0.5", "#DeltaR_{#Phi#Phi} > 0.7"};
-    TString LegendNames[TotalFiles] = {"PID 100", "PID 101", "PID 4", "PID 7"};
+    // TString LegendNames[TotalFiles] = {"PID 100", "PID 101", "PID 4", "PID 7"};
+    TString LegendNames[TotalFiles] = {"|n#sigma_{TPC}| < 2", "#it{p}_{T} dependent PID"};
     TH1F *hPhiMassFit[TotalFiles];
     TH1F *hPhiMassResolutionFit[TotalFiles];
     TH1F *hPhiYieldFit[TotalFiles];
@@ -60,6 +64,8 @@ void compare_doublePhiPlots()
     SetCanvasStyle(cCompareEfficiency, 0.15, 0.03, 0.05, 0.15);
     TCanvas *cPurityxEfficiency = new TCanvas("cPurityxEfficiency", "Compare Phi Purity x Efficiency", 720, 720);
     SetCanvasStyle(cPurityxEfficiency, 0.15, 0.03, 0.05, 0.15);
+    TCanvas *cYieldRatio = new TCanvas("cYieldRatio", "Compare Ratio of Phi Yield Fit Parameters", 720, 720);
+    SetCanvasStyle(cYieldRatio, 0.15, 0.03, 0.05, 0.15);
     // TCanvas *cCompareNumPhi = new TCanvas("cCompareNumPhi", "Compare Number of #Phi mesons in an event", 720, 720);
     // SetCanvasStyle(cCompareNumPhi, 0.15, 0.05, 0.05, 0.15);
     // TCanvas *cComparePhiPhiInvMass = new TCanvas("cComparePhiPhiInvMass", "Compare #Phi#Phi Invariant Mass", 720, 720);
@@ -90,6 +96,8 @@ void compare_doublePhiPlots()
     legPhiPhiMass->SetTextFont(42);
     legPhiPhiMass->SetTextSize(0.03);
 
+    TH1F *hYieldRatio[TotalFiles - 1];
+
     for (int i = 0; i < TotalFiles; i++)
     {
         compareFiles[i] = new TFile("/home/sawan/check_k892/output/doublePhi/" + dataFilePath[i] + "/" + fileNames[i]);
@@ -107,6 +115,34 @@ void compare_doublePhiPlots()
         hPhiPhiInvMass[i] = (TH1F *)compareFiles[i]->Get("rawInvMass_PhiPhi");
         hPurityxEfficiency[i] = new TH1F(Form("hPurityxEfficiency_%d", i), "hPurityxEfficiency", hPurity[i]->GetNbinsX(), hPurity[i]->GetXaxis()->GetXmin(), hPurity[i]->GetXaxis()->GetXmax());
 
+        cYieldRatio->cd();
+        if (i > 0)
+        {
+            hYieldRatio[i - 1] = (TH1F *)hPhiYieldFit[i]->Clone("hYieldRatio");
+            hYieldRatio[i - 1]->Divide(hPhiYieldFit[0]);
+            hYieldRatio[i - 1]->SetTitle("");
+            hYieldRatio[i - 1]->GetYaxis()->SetTitle("Ratio to " + LegendNames[0]);
+            hYieldRatio[i - 1]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+            hYieldRatio[i - 1]->SetMarkerStyle(markerStyles[i]);
+            hYieldRatio[i - 1]->SetMarkerColor(vibrantColors[i]);
+            hYieldRatio[i - 1]->SetLineColor(vibrantColors[i]);
+            hYieldRatio[i - 1]->SetMarkerSize(1.3);
+            hYieldRatio[i - 1]->SetLineWidth(3);
+        }
+        if (i == 1)
+        {
+            hYieldRatio[i - 1]->GetYaxis()->SetRangeUser(0.0, 1.1);
+            hYieldRatio[i - 1]->Draw("HIST");
+        }
+        else if (i > 1)
+        {
+            hYieldRatio[i - 1]->Draw("HIST same");
+        }
+        if (i == TotalFiles - 1)
+        {
+            legMassRes->Draw();
+        }
+
         // Compute Purity x Efficiency per pT bin for the current file index `i`.
         // Use a separate bin index to avoid shadowing `i` (which indexes the file arrays).
         if (hPurity[i] && hPhiEfficiency[i])
@@ -118,7 +154,8 @@ void compare_doublePhiPlots()
             {
                 float purity = hPurity[i]->GetBinContent(b);
                 float efficiency = hPhiEfficiency[i]->GetBinContent(b);
-                if (hPurityxEfficiency[i]) hPurityxEfficiency[i]->SetBinContent(b, purity * efficiency / 100.0);
+                if (hPurityxEfficiency[i])
+                    hPurityxEfficiency[i]->SetBinContent(b, purity * efficiency / 100.0);
             }
         }
 
@@ -200,7 +237,7 @@ void compare_doublePhiPlots()
         hPurity[i]->SetLineWidth(3);
         if (i == 0)
         {
-            hPurity[i]->GetYaxis()->SetRangeUser(30, 109);
+            hPurity[i]->GetYaxis()->SetRangeUser(0, 100);
             hPurity[i]->Draw("HIST");
         }
         else
@@ -348,6 +385,7 @@ void compare_doublePhiPlots()
     cComparePurity->SaveAs(outputFilePath + "Compare_Phi_Purity.png");
     cCompareEfficiency->SaveAs(outputFilePath + "Compare_Phi_Efficiency.png");
     cPurityxEfficiency->SaveAs(outputFilePath + "Compare_Phi_PurityxEfficiency.png");
+    cYieldRatio->SaveAs(outputFilePath + "Compare_Phi_Yield_Fit_Ratio.png");
     // cCompareNumPhi->SaveAs(outputFilePath + "Compare_NumPhi.png");
     // cComparePhiPhiInvMass->SaveAs(outputFilePath + "Compare_PhiPhi_InvMass.png");
 }

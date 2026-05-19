@@ -122,7 +122,7 @@ const std::vector<vector<float>> kNormRangepT = {
 const std::vector<vector<float>> kFitRange = {
     // // // ME background, small dataset
     // // 13.6 TeV, INEL>0
-    {0.78, 1.04}, // 0.0 - 0.4
+    {0.75, 1.04}, // 0.0 - 0.4
     {0.74, 1.05}, // 0.4 - 0.8
     {0.75, 1.03}, // 0.8 - 1.2
     {0.79, 1.03}, // 1.2 - 1.6

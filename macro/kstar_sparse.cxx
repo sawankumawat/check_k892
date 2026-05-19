@@ -11,6 +11,12 @@
 
 using namespace std;
 
+////Initial parameters from template fit
+float mean_CB[] = {0.7875, 0.7527, 0.7678, 0.7684, 0.7686, 0.769, 0.7698, 0.7709, 0.7706, 0.7715, 0.7712, 0.7712, 0.7715, 0.7721};
+float sigma_CB[] = {0.06119, 0.07456, 0.08454, 0.08353, 0.08075, 0.07841, 0.07658, 0.07632, 0.07539, 0.07474, 0.07387, 0.07425, 0.07425, 0.07309};
+float alpha_CB[] = {1.2, 0.8809, 0.5499, 0.5506, 0.6135, 0.7388, 0.8244, 0.8935, 0.9161, 0.9677, 0.9634, 0.9524, 0.9648, 1.031};
+float n_CB[] = {146.8, 139.5, 127.8, 1.23, 0.6261, 0.3242, 0.2302, 0.1739, 0.1594, 0.1275, 0.1449, 0.1551, 0.1463, 0.1128};
+
 void kstar_sparse()
 {
     TStopwatch timer;
@@ -20,7 +26,7 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = false;
@@ -123,8 +129,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -377,7 +383,7 @@ void kstar_sparse()
 
                 //****************************************************************************************************
 
-                TF1 *fitFcn, *fitFcn1;
+                TF1 *fitFcn, *fitFcn1, *fitFcn2;
 
                 if (kbkg == "pol2")
                 {
@@ -394,8 +400,18 @@ void kstar_sparse()
                     fitFcn = new TF1("fitfunc", BWExpo, lowfitrange, highfitrange, 7);
                     fitFcn1 = new TF1("fitfunc1", Expo, lowfitrange, highfitrange, 4);
                 }
+                else if (kbkg == "CBpol2")
+                {
+                    fitFcn = new TF1("fitfunc", BWCBpol2, lowfitrange, highfitrange, 11);
+                    fitFcn1 = new TF1("fitfunc1", CBRightpol2, lowfitrange, highfitrange, 8);
+                }
+                else if (kbkg == "CBpol3")
+                {
+                    fitFcn = new TF1("fitfunc", BWCBpol3, lowfitrange, highfitrange, 12);
+                    fitFcn1 = new TF1("fitfunc1", CBRightpol3, lowfitrange, highfitrange, 9);
+                }
 
-                TF1 *fitFcn2 = new TF1("fitFcn2", BW, lowfitrange, highfitrange, 3); // only signal
+                fitFcn2 = new TF1("fitFcn2", BW, lowfitrange, highfitrange, 3); // only signal
 
                 fitFcn->SetParameter(0, masspdg); // mass
                 // fitFcn->SetParLimits(0, 0.7, 0.98); // mass limits
@@ -436,6 +452,21 @@ void kstar_sparse()
                 // fitFcn->SetParameter(4, 1e6);
                 // fitFcn->SetParameter(5, -1e6);
                 // fitFcn->SetParameter(6, 1e6);
+
+                ////CBpol2 parameters
+                if (kbkg == "CBpol2" || kbkg == "CBpol3")
+                {
+                    fitFcn->SetParameter(3, 1);
+                    fitFcn->FixParameter(4, mean_CB[ip]);
+                    fitFcn->FixParameter(5, sigma_CB[ip]);
+                    fitFcn->FixParameter(6, alpha_CB[ip]);
+                    fitFcn->FixParameter(7, n_CB[ip]);
+                    fitFcn->SetParameter(8, 1e7);
+                    fitFcn->SetParameter(9, 1e7);
+                    fitFcn->SetParameter(10, 1e7);
+                    if (kbkg == "CBpol3")
+                        fitFcn->SetParameter(11, 1e7);
+                }
 
                 fitFcn->SetParNames("Mass", "Width", "Yield", "A", "B", "C", "D");
                 // Redirect standard output to /dev/null
@@ -893,7 +924,7 @@ void kstar_sparse()
     cout << "Format of output plots: " << outputtype.c_str() << endl;
     cout << "Residual background function: " << kbkg.c_str() << endl;
     cout << "Number of pT bins: " << Npt << endl;
-    (multipanel_plots) ? cout << "Canvas: "<<klowerpad<<"x"<<kupperpad<<" multi-panel" << endl : cout << "Canvas: Single panel plots" << endl;
+    (multipanel_plots) ? cout << "Canvas: " << klowerpad << "x" << kupperpad << " multi-panel" << endl : cout << "Canvas: Single panel plots" << endl;
 
     if (makeQAplots)
     {

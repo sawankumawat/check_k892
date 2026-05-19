@@ -37,7 +37,7 @@ void efficiency()
     // string data_path = "658307/kstarqa/hInvMass"; // 2024 (LoossePID, pTDepPID, pTDepPIDTOF)
     // string data_path = "MC_closure/657468/kstarqa_MC_closure/hInvMass"; (MC closure)
     // string data_path = "668039/kstarqa/hInvMass"; // 2024 (With square PID: Base, MID, MIDptDep2)
-    string data_path = "668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
+    // string data_path = "668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
     // string data_path = "672297/kstarqa/hInvMass"; // (Base (2sigma TOF), MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
     // string data_path = "MC_closure/669655/kstarqa_MC_closure/hInvMass"; // (MC_closure)
     // string data_path = "675391/kstarqa_SquarePID_TOF3_noTOFshift/hInvMass"; // (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
@@ -47,6 +47,7 @@ void efficiency()
     // string data_path = "660943/kstarqa/hInvMass"; // 2024 (Base, INEL, MID, MIDptDep, pTDepPID, pTDepPIDTOF, LoosePID)
     // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
     // string data_path = "664559/kstarqa/hInvMass"; // 2024 (Base, INEL, TOFshift, TOFshiftMID)
+    string data_path = "679906/kstarqa/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
 
     data_path = common_data_path + data_path + ((kResBkg == "MIX") ? "" : "/" + kResBkg);
     TString outputfolder = data_path + (isINEL ? "/efficiency/INEL" : "/efficiency");
@@ -74,7 +75,7 @@ void efficiency()
     // string MCpath = "670822.root"; // 2024 MC (Base, MID, MID_small, MID_verySmall, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall)
     // string MCpath = "669641.root"; // 2024 MC (All square cut: Base, MID, MIDptDep2, TOF3, TOF3_withoutSquareCut)
     // string MCpath = "672420.root"; // 2024 MC (MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
-    string MCpath = "673285.root"; // 2024 MC (TOF3_WithoutShift)
+    // string MCpath = "673285.root"; // 2024 MC (TOF3_WithoutShift)
     // string MCpath = "675035.root"; // 2024 MC (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 
     //==========2024 MC===========
@@ -84,6 +85,7 @@ void efficiency()
     // string MCpath = "665348.root"; // 2024 MC (All are TOFshifted, INEL, MC_closure, corrections for INEL)
     // string MCpath = "665524.root"; // 2024 MC (ToF shift with PID also shifted (base), INEL)
     // string MCpath = "667875.root"; // 2024 MC (higher TOF shift for pions, Base, MID, MIDptDep, MIDptDep2)
+    string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
 
     TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
     MCpath = common_MC_path + MCpath;
@@ -94,8 +96,8 @@ void efficiency()
         cout << "Error opening files in the path " << data_path << " or " << MCpath << endl;
         return;
     }
-    const string genpath = "kstarqa_TOF3_WithoutShift/hInvMass";
-    const string recpath = "kstarqa_TOF3_WithoutShift/hInvMass";
+    const string genpath = "kstarqa/hInvMass";
+    const string recpath = "kstarqa/hInvMass";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -150,8 +152,8 @@ void efficiency()
         // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
 
         vector<double> nChParticlesFromMult;
-        // int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
-        int multLoopEnd = 1;
+        int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+        // int multLoopEnd = 1;
         int multlow, multhigh;
 
         TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");

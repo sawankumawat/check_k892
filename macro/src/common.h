@@ -1,7 +1,7 @@
 
 // The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
-const bool multipanel_plots = 1;
+const bool multipanel_plots = 0;
 const bool save_plots = 1;
 // const string kfoldername_temp = "kstarqa_id21631/hInvMass";
 const string kfoldername_temp = "kstarqa/hInvMass";
@@ -106,14 +106,15 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "661905.root"; // (Event_Time dependency check in TOF)
 // const string kDataFilename_temp2 = "658306.root"; // (DeepAngle, PV Contributor, INELgt0)
 // const string kDataFilename_temp2 = "668039.root"; // (With square PID: Base, MID, MIDptDep2)
-// const string kDataFilename_temp2 = "668605.root"; // (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
 // const string kDataFilename_temp2 = "672297.root"; // (Base (2sigma TOF), MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
 // const string kDataFilename_temp2 = "675391.root"; // (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
+// const string kDataFilename_temp2 = "668605.root"; // (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
 
 //==========2024 data===========
 // const string kDataFilename_temp2 = "663738.root"; // (Base, OnlyTPC)
 // const string kDataFilename_temp2 = "660943.root"; // (Base, LoosePID, pTDepPID, pTDepPIDTOF, MIDptDep, MID)
-const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
+// const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
+const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
 #endif
 
 // final dataset name

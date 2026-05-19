@@ -16,7 +16,7 @@ void toy_model2()
 
     gStyle->SetOptStat(0);
     // Define masses (GeV/c^2)
-    double m_mother = 2.714; // Mass of f1710
+    double m_mother = 1.710; // Mass of f1710
     // double m_daughter1 = 1.0194; // daughter 1 (Phi mass)
     // double m_daughter2 = 1.0194; // daughter 2 (Phi mass)
     double m_daughter1 = 0.497611; // daughter 1 (K0s mass)

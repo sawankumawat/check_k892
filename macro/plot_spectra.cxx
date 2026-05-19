@@ -64,7 +64,7 @@ void plot_spectra()
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
 
     //================================After SQM=======================
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
+    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
     // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/660453/kstarqa_id35679/hInvMass"; // 2023 data
 
     TString pathLevyFits = path + "/LevyFits";
@@ -176,7 +176,7 @@ void plot_spectra()
             Double_t maxfit = fitRangeMax;
 
             TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, fitRangeMax, 4);
-            fitFcn->SetParameter(0, 5.0);
+            fitFcn->SetParameter(0, 7.0);
             // fitFcn->SetParameter(1, 0.05);
             fitFcn->SetParameter(1, 0.5);
             fitFcn->FixParameter(2, 0.895);

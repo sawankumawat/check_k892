@@ -190,6 +190,46 @@ Double_t CrystalBall(double *x, double *par)
     return y1;
 }
 
+Double_t CrystalBallRight(double *x, double *par)
+{
+    // par[0] normalization
+    // par[1] mean of gaussian
+    // par[2] sigma of gaussian
+    // par[3] alpha
+    // par[4] n
+
+    double t = (x[0] - par[1]) / par[2];
+    double absAlpha_L = fabs(par[3]);
+    double n = par[4];
+    double y1 = 0;
+
+    if (t > absAlpha_L) // changed: < -absAlpha_L  →  > absAlpha_L for tail on right side
+    {
+        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n / absAlpha_L, n);
+        double b = (n / absAlpha_L) - absAlpha_L;
+        y1 = par[0] * (a / TMath::Power(b + t, n)); // changed: (b - t)  →  (b + t)
+    }
+    else if (t <= absAlpha_L) // changed: >= -absAlpha_L  →  <= absAlpha_L
+    {
+        y1 = par[0] * exp(-0.5 * t * t);
+    }
+    return y1;
+}
+
+Double_t CBRightpol2(double *x, double *par)
+{
+    double CB = CrystalBallRight(x, &par[0]);
+    double pol2 = par[5] + par[6] * x[0] + par[7] * x[0] * x[0];
+    return (CB + pol2);
+}
+
+Double_t CBRightpol3(double *x, double *par)
+{
+    double CB = CrystalBallRight(x, &par[0]);
+    double pol3 = par[5] + par[6] * x[0] + par[7] * x[0] * x[0] + par[8] * x[0] * x[0] * x[0];
+    return (CB + pol3);
+}
+
 Double_t DoubleCrystalBall(Double_t *x, Double_t *par)
 {
     // par[0] normalization
@@ -234,6 +274,7 @@ Double_t CrystalBallpol2(double *x, double *par)
     return (CB + pol2);
 }
 
+
 Double_t DoubleCrystalBallpol1(double *x, double *par)
 {
     double DCB = DoubleCrystalBall(x, &par[0]);
@@ -253,6 +294,22 @@ Double_t DoubleCrystalBallpol3(double *x, double *par)
     double DCB = DoubleCrystalBall(x, &par[0]);
     double pol3 = par[10] + par[9] * x[0] + par[8] * x[0] * x[0] + par[7] * x[0] * x[0] * x[0];
     return (DCB + pol3);
+}
+
+Double_t BWCBpol2(double *x, double *par)
+{
+    double BW = RelativisticBW(x, &par[0]);
+    double CB = CrystalBallRight(x, &par[3]);
+    double pol2 = par[10] + par[9] * x[0] + par[8] * x[0] * x[0];
+    return (BW + CB + pol2);
+}
+
+Double_t BWCBpol3(double *x, double *par)
+{
+    double BW = RelativisticBW(x, &par[0]);
+    double CB = CrystalBallRight(x, &par[3]);
+    double pol3 = par[11] + par[10] * x[0] + par[9] * x[0] * x[0] + par[8] * x[0] * x[0] * x[0];
+    return (BW + CB + pol3);
 }
 
 Double_t Boltzman(double *x, double *par)

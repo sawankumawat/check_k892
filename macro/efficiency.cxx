@@ -9,7 +9,7 @@ void efficiency()
 {
     bool makePIDplots = true; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "png"; // pdf, eps
+    string outputtype = "pdf"; // pdf, eps
     bool isINEL = false;
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -23,8 +23,8 @@ void efficiency()
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
     // ****************Data files ********************
-    string common_data_path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/";
-    string common_MC_path = "/home/sawan/check_k892/mc/LHC24f3c/";
+    string common_data_path = "../output/kstar/LHC22o_pass7/";
+    string common_MC_path = "../mc/LHC24f3c/";
 
     //================================After SQM=======================
     //============2023 data===========
@@ -101,6 +101,9 @@ void efficiency()
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
+    string QaPath = genpath.substr(0, genpath.length() - 9);
+    cout << "QaPath: " << QaPath << endl;
+    TH1F *hMult = (TH1F *)fileeff->Get(Form("%s/hInvMass/h1RecMult2", QaPath.c_str()));
 
     if (!skipEfficiencyPlots)
     {
@@ -157,6 +160,7 @@ void efficiency()
         int multlow, multhigh;
 
         TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
+        hMult->Write("Multiplicity");
         TH1F *hChi2byNDF[multLoopEnd];
         TH1F *hMass[multLoopEnd];
         TH1F *hWidth[multLoopEnd];
@@ -311,7 +315,7 @@ void efficiency()
             // heff[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
             // heff[imult]->GetYaxis()->SetTitleOffset(1.6);
             // heff[imult]->Draw();
-            // c1->SaveAs(outputfolder + Form("/efficiency_%d_%d.png", multlow, multhigh));
+            // c1->SaveAs(outputfolder + Form("/efficiency_%d_%d.%s", multlow, multhigh, outputtype.c_str()));
 
             TCanvas *c2 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c2, 0.18, 0.06, 0.01, 0.14);
@@ -321,7 +325,7 @@ void efficiency()
             hyieldBinCount->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
             hyieldBinCount->GetYaxis()->SetTitleOffset(1.8);
             hyieldBinCount->Draw("ep");
-            // c2->SaveAs(outputfolder + Form("/corrected_spectra_BinCount_%d_%d.png", multlow, multhigh));
+            // c2->SaveAs(outputfolder + Form("/corrected_spectra_BinCount_%d_%d.%s", multlow, multhigh, outputtype.c_str()));
 
             TCanvas *c3 = new TCanvas("", "", 720, 720);
             SetCanvasStyle(c3, 0.18, 0.06, 0.01, 0.14);
@@ -331,7 +335,7 @@ void efficiency()
             hyieldIntegral->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
             hyieldIntegral->GetYaxis()->SetTitleOffset(1.8);
             hyieldIntegral->Draw("ep");
-            c3->SaveAs(outputfolder + Form("/corrected_spectra_Integral_%d_%d.png", multlow, multhigh));
+            c3->SaveAs(outputfolder + Form("/corrected_spectra_Integral_%d_%d.%s", multlow, multhigh, outputtype.c_str()));
 
             TH1F *hlossCorrected_integral = (TH1F *)hyieldIntegral->Clone("hlossCorrected_integral");
             TH1F *hlossCorrected_bincount = (TH1F *)hyieldBinCount->Clone("hlossCorrected_bincount");
@@ -344,6 +348,8 @@ void efficiency()
             TDirectory *dir = spectra->mkdir(Form("mult_%d-%d", multlow, multhigh));
             dir->cd();
             heff[imult]->Write("heff");
+            h1rec->Write("Reconstructed");
+            h1gen->Write("Generated");
             hyieldBinCount->Write("corrected_spectra_BinCount");
             hyieldIntegral->Write("corrected_spectra_Integral");
             hlossCorrected_integral->Write("corrected_spectra_Integral_final");
@@ -358,7 +364,7 @@ void efficiency()
         // h1gen->GetYaxis()->SetTitle("Generated Events");
         // h1gen->GetYaxis()->SetTitleOffset(1.6);
         // h1gen->Draw("ep");
-        // cGeneratedMult->SaveAs(outputfolder + "/generated_pT.png");
+        // cGeneratedMult->SaveAs(outputfolder + "/generated_pT." + outputtype);
 
         // TCanvas *cReconstructedMult = new TCanvas("", "", 720, 720);
         // SetCanvasStyle(cReconstructedMult, 0.16, 0.06, 0.01, 0.14);
@@ -367,7 +373,7 @@ void efficiency()
         // h1rec->GetYaxis()->SetTitle("Reconstructed Events");
         // h1rec->GetYaxis()->SetTitleOffset(1.6);
         // h1rec->Draw("ep");
-        // cReconstructedMult->SaveAs(outputfolder + "/reconstructed_pT.png");
+        // cReconstructedMult->SaveAs(outputfolder + "/reconstructed_pT." + outputtype);
 
         // //************Take ratio of min bias efficiency with any other efficiency file********************
         // TFile *fileEff2 = new TFile("/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa_PIDKa1/hInvMass/efficiency/beforeCalibration/corrected_spectra.root"); // File for efficiency comparison
@@ -412,23 +418,30 @@ void efficiency()
         // line1->SetLineColor(kBlack);
         // line1->SetLineStyle(2);
         // line1->Draw("same");
-        // cRatioEff->SaveAs(outputfolder + "/efficiency_ratio.png");
+        // cRatioEff->SaveAs(outputfolder + "/efficiency_ratio." + outputtype);
 
         //// Plot other plots for all multiplicity bins
         TCanvas *cefficiency = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cefficiency, 0.16, 0.06, 0.01, 0.14);
+        double pad1Size, pad2Size;
+        canvas_style(cefficiency, pad1Size, pad2Size);
+        cefficiency->cd(1);
         for (int imult = 0; imult < multLoopEnd; imult++)
         {
             SetHistoQA(heff[imult]);
             heff[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
             heff[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-            heff[imult]->GetYaxis()->SetTitleOffset(1.6);
-            heff[imult]->SetMaximum(0.65);
+            heff[imult]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+            heff[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+            heff[imult]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+            heff[imult]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+            heff[imult]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
+            heff[imult]->SetMaximum(0.75);
             heff[imult]->SetMarkerStyle(markers[imult]);
             heff[imult]->SetMarkerSize(1.2);
             heff[imult]->Draw("pe same PLC PMC");
         }
-        TF1 *pol1fit = new TF1("pol1fit", "pol1", 7.0, 14);
+        TF1 *pol1fit = new TF1("pol1fit", "pol1", 7.0, 20);
         pol1fit->FixParameter(1, 0.0); // Fixing the slope to 0
         pol1fit->SetLineColor(kBlack);
         pol1fit->SetLineWidth(2);
@@ -451,7 +464,29 @@ void efficiency()
             legall->AddEntry(heff[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "p");
         }
         legall->Draw();
-        cefficiency->SaveAs(outputfolder + "/efficiency_all_mult.png");
+
+        cefficiency->cd(2);
+        gPad->SetGridy(1);
+        for (int imult = 1; imult < multLoopEnd; imult++)
+        {
+            TH1F *hRatio1 = (TH1F *)heff[imult]->Clone(Form("hRatio1_%d", imult));
+            SetHistoQA(hRatio1);
+            hRatio1->Divide(heff[0]);
+            hRatio1->GetYaxis()->SetTitleSize(0.03 / pad2Size);
+            hRatio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+            hRatio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+            hRatio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+            hRatio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+            hRatio1->GetYaxis()->SetTitle("Ratio to 0-100%");
+            hRatio1->GetYaxis()->SetTitleOffset(2.1 * pad2Size);
+            hRatio1->SetMarkerStyle(20);
+            hRatio1->SetMarkerSize(1.0);
+            hRatio1->GetYaxis()->SetNdivisions(505);
+            hRatio1->GetYaxis()->SetRangeUser(0.69, 1.29);
+            hRatio1->Draw("ep same PLC PMC");
+        }
+
+        cefficiency->SaveAs(outputfolder + "/efficiency_all_mult." + outputtype);
 
         // Generate colors
         int allColors[11];
@@ -496,7 +531,7 @@ void efficiency()
         // lineEventLoss->SetLineColor(2);
         // lineEventLoss->SetLineWidth(2);
         // lineEventLoss->Draw();
-        cEventLoss->SaveAs(outputfolder + "/event_loss.png");
+        cEventLoss->SaveAs(outputfolder + "/event_loss." + outputtype);
 
         TCanvas *cSignalLoss = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
@@ -518,8 +553,8 @@ void efficiency()
             hSignalLoss[imult]->GetYaxis()->SetTitle("Event and signal loss");
             hSignalLoss[imult]->GetYaxis()->SetTitleOffset(1.6);
             hSignalLoss[imult]->SetStats(0);
-            hSignalLoss[imult]->SetMaximum(1.29);
-            hSignalLoss[imult]->SetMinimum(0.3);
+            hSignalLoss[imult]->SetMaximum(0.92);
+            hSignalLoss[imult]->SetMinimum(0.42);
             hSignalLoss[imult]->SetMarkerStyle(markers[imult]);
             hSignalLoss[imult]->SetMarkerSize(1.2);
             hSignalLoss[imult]->SetLineColor(colors[imult]);
@@ -533,7 +568,7 @@ void efficiency()
         }
         legall->AddEntry(heventloss[0], "Event Loss", "l");
         legall->Draw();
-        cSignalLoss->SaveAs(outputfolder + "/signal_loss_all_mult.png");
+        cSignalLoss->SaveAs(outputfolder + "/signal_loss_all_mult." + outputtype);
 
         TCanvas *cEventBySignalLoss = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cEventBySignalLoss, 0.16, 0.06, 0.01, 0.14);
@@ -565,7 +600,7 @@ void efficiency()
             legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
         }
         legall->Draw();
-        cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss.png");
+        cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss." + outputtype);
 
         TCanvas *cEventSplit = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cEventSplit, 0.16, 0.06, 0.01, 0.14);
@@ -586,7 +621,7 @@ void efficiency()
             lat.SetTextSize(0.04);
             lat.DrawLatex(0.2, 0.8, Form("Multiplicity: %.0f-%.0f%%", mult_classes[0], 100.0));
         }
-        cEventSplit->SaveAs(outputfolder + "/event_splitting.png");
+        cEventSplit->SaveAs(outputfolder + "/event_splitting." + outputtype);
 
         TCanvas *cSignificance = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cSignificance, 0.16, 0.06, 0.06, 0.14);
@@ -608,7 +643,7 @@ void efficiency()
             legall->AddEntry(hSignificance[imult], Form("%d-%d%%", multlow, multhigh), "p");
         }
         legall->Draw();
-        cSignificance->SaveAs(outputfolder + "/significance_all_mult.png");
+        cSignificance->SaveAs(outputfolder + "/significance_all_mult." + outputtype);
 
         TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
@@ -627,7 +662,7 @@ void efficiency()
             hChi2byNDF[imult]->Draw("p same PLC PMC");
         }
         legall->Draw();
-        cChi2byNDF->SaveAs(outputfolder + "/chi2byNDF_all_mult.png");
+        cChi2byNDF->SaveAs(outputfolder + "/chi2byNDF_all_mult." + outputtype);
 
         TCanvas *cMass = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
@@ -650,7 +685,7 @@ void efficiency()
         linePDG->Draw();
         legall->AddEntry(linePDG, "PDG Mass", "l");
         legall->Draw();
-        cMass->SaveAs(outputfolder + "/mass_all_mult.png");
+        cMass->SaveAs(outputfolder + "/mass_all_mult." + outputtype);
 
         TCanvas *cWidth = new TCanvas("", "", 720, 720);
         SetCanvasStyle(cWidth, 0.16, 0.06, 0.01, 0.14);
@@ -674,13 +709,11 @@ void efficiency()
             hWidth[imult]->Draw("pe same PLC PMC");
         }
         legall->Draw();
-        cWidth->SaveAs(outputfolder + "/width_all_mult.png");
+        cWidth->SaveAs(outputfolder + "/width_all_mult." + outputtype);
     }
 
     if (makePIDplots)
     {
-        string QaPath = genpath.substr(0, genpath.length() - 9);
-        cout << "QaPath: " << QaPath << endl;
         TString output_QA_folder = data_path + "/QA/MC";
         TString output_QA_folder_before = data_path + "/QA/MC/before";
         gSystem->mkdir(output_QA_folder, kTRUE);
@@ -688,14 +721,14 @@ void efficiency()
 
         TH3F *hDCAxy3D = (TH3F *)fileeff->Get(Form("%s/eventSelection/hDcaxy_cent_pt", QaPath.c_str()));
         TH3F *hDCAz3D = (TH3F *)fileeff->Get(Form("%s/eventSelection/hDcaz_cent_pt", QaPath.c_str()));
-        TH1F *hMult = (TH1F *)fileeff->Get(Form("%s/eventSelection/hMultiplicity", QaPath.c_str()));
+        // TH1F *hMult = (TH1F *)fileeff->Get(Form("%s/hInvMass/h1RecMult2", QaPath.c_str()));
         TH1F *hvz = (TH1F *)fileeff->Get(Form("%s/eventSelection/hVertexZRec", QaPath.c_str()));
         TH1F *hoccupancy = (TH1F *)fileeff->Get(Form("%s/eventSelection/hOccupancy", QaPath.c_str()));
         TH1F *hEventCut = (TH1F *)fileeff->Get(Form("%s/eventSelection/hEventCut", QaPath.c_str()));
         TH1F *htracksRecMC = (TH1F *)fileeff->Get(Form("%s/eventSelection/recMCparticles", QaPath.c_str()));
         TH1D *hDCAxy = hDCAxy3D->ProjectionX("hDCAxy", -1, -1, -1, -1);
         TH1D *hDCAz = hDCAz3D->ProjectionX("hDCAz", -1, -1, -1, -1);
-        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksRecMC == nullptr)
+        if (hDCAxy == nullptr || hDCAz == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksRecMC == nullptr)
         {
             cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
             return;
@@ -725,13 +758,15 @@ void efficiency()
             return;
         }
 
-        outputtype = "png";
+        // outputtype = "png";
         TCanvas *cMult = new TCanvas("cMult", "Multiplicity", 720, 720);
         SetCanvasStyle(cMult, 0.14, 0.03, 0.06, 0.14);
         SetHistoQA(hMult);
         // hMult->GetXaxis()->SetTitle("Multiplicity (%)");
         hMult->GetXaxis()->SetTitle("Multiplicity (%)");
         hMult->GetYaxis()->SetTitle("Counts");
+        hMult->GetXaxis()->SetRangeUser(0, 109.5);
+        hMult->SetMaximum(0.13e9);
         hMult->Draw();
         cMult->SaveAs(output_QA_folder + ("/Multiplicity." + outputtype).c_str());
 
@@ -757,16 +792,41 @@ void efficiency()
         htracksRecMC->Draw();
         cTracksData->SaveAs(output_QA_folder + ("/TracksRecMC." + outputtype).c_str());
 
-        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1080, 720);
-        SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
+        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 720, 720);
+        SetCanvasStyle(cEventCut, 0.13, 0.05, 0.06, 0.17);
         SetHistoQA(hEventCut);
         gPad->SetGrid(1, 0);
         // gPad->SetLogy(1);
+        hEventCut->GetXaxis()->SetBinLabel(4, "INEL > 0");
+        hEventCut->SetBinContent(4, hEventCut->GetBinContent(9));
         hEventCut->SetTitle("Event selections");
         hEventCut->GetYaxis()->SetTitle("Counts");
-        hEventCut->GetYaxis()->SetTitleOffset(0.8);
-        hEventCut->GetXaxis()->SetRangeUser(0, 11);
+        hEventCut->GetXaxis()->SetRangeUser(0, 4);
+        hEventCut->SetMinimum(0);
+        hEventCut->SetMaximum(hEventCut->GetBinContent(1) * 1.2);
         hEventCut->Draw();
+        double firstBin = hEventCut->GetBinContent(1);
+
+        TLatex latex;
+        latex.SetTextSize(0.03);
+        latex.SetTextAlign(22); // centered
+
+        for (int i = 1; i <= 4; i++)
+        {
+
+            double content = hEventCut->GetBinContent(i);
+
+            double percent = 0;
+            if (firstBin > 0)
+                percent = (content / firstBin) * 100.0;
+
+            TString label = Form("%.1f%%", percent);
+
+            double x = hEventCut->GetBinCenter(i);
+            double y = content * 1.05; // slightly above bin
+
+            latex.DrawLatex(x, y, label);
+        }
         cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
 
         //===============PID plots==========================

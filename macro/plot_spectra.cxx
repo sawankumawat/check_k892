@@ -46,26 +46,27 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    double fitRangeMax = 18.0;
+    TString outputType = "pdf"; // pdf, png
+    double fitRangeMax = 20.0;
     // double inelNormFactorRun2[] = {0.997814, 0.998632, 0.998465, 0.997509, 0.993852, 0.985782, 0.971972, 0.935197, 0.756786}; // this is event loss factor used in run 2
 
     // ******************Correct placement of TPC crossed rows**************************
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/459908/kstarqa_PIDKa2/hInvMass"; // 2023 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/460233/kstarqa_PIDKa2/hInvMass"; // 2024 data
+    // string path = "../output/kstar/LHC22o_pass7/459845/kstarqa/hInvMass"; // 2022 data
+    // string path = "../output/kstar/LHC22o_pass7/459908/kstarqa_PIDKa2/hInvMass"; // 2023 data
+    // string path = "../output/kstar/LHC22o_pass7/460233/kstarqa_PIDKa2/hInvMass"; // 2024 data
 
     //*********************PID Variations for Kaon (without MID)************************
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // 2022 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
+    // string path = "../output/kstar/LHC22o_pass7/480317/kstarqa/hInvMass"; // 2022 data
+    // string path = "../output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2023 data
+    // string path = "../output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2024 data
 
     //==============================Pt-dependent PID=======================
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
+    // string path = "../output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
+    // string path = "../output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
 
     //================================After SQM=======================
-    string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
-    // string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/660453/kstarqa_id35679/hInvMass"; // 2023 data
+    string path = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
+    // string path = "../output/kstar/LHC22o_pass7/660453/kstarqa_id35679/hInvMass"; // 2023 data
 
     TString pathLevyFits = path + "/LevyFits";
     if (gSystem->mkdir(pathLevyFits, kTRUE))
@@ -142,7 +143,7 @@ void plot_spectra()
         hmult[i]->GetYaxis()->SetTitleSize(0.045);
         hmult[i]->GetYaxis()->SetTitleOffset(1.3);
         hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
-        hmult[i]->SetMinimum(7e-7);
+        hmult[i]->SetMinimum(3e-8);
         hmult[i]->SetMarkerStyle(markers[i - 1]);
         hmult[i]->Draw("pe same PLC PMC");
     }
@@ -169,9 +170,9 @@ void plot_spectra()
             Double_t min = 0.0;
             Double_t max = fitRangeMax;
             Double_t loprecision = 0.01;
-            Double_t hiprecision = 0.1;
+            Double_t hiprecision = 0.5;
             Option_t *opt = "RI0+";
-            TString logfilename = "log.root";
+            TString logfilename = pathLevyFits + "/log_fit.root";
             Double_t minfit = 0.0;
             Double_t maxfit = fitRangeMax;
 
@@ -217,7 +218,7 @@ void plot_spectra()
     c->cd(2);
     gPad->SetLogy(1);
     hratios[1]->SetMinimum(0.1);
-    hratios[1]->SetMaximum(10);
+    hratios[1]->SetMaximum(13);
     hratios[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     hratios[1]->GetYaxis()->SetTitle("Ratio to INEL>0");
     hratios[1]->GetYaxis()->SetNdivisions(505);
@@ -241,11 +242,11 @@ void plot_spectra()
     line->Draw();
 
     TString outputfolder = path;
-    (plotOnlyRaw) ? c->SaveAs(outputfolder + "/spectra_raw.png") : c->SaveAs(outputfolder + "/spectra.png");
+    TString spectraPath = (plotOnlyRaw) ? outputfolder + "/spectra_raw." + outputType : outputfolder + "/spectra." + outputType;
+    c->SaveAs(spectraPath.Data());
 
     if (!plotOnlyRaw)
     {
-
         TCanvas *ctemp = new TCanvas("ctemp", "ctemp", 720, 720);
         SetCanvasStyle(ctemp, 0.15, 0.03, 0.03, 0.15);
         gPad->SetLogy();
@@ -271,14 +272,15 @@ void plot_spectra()
             Double_t min = 0.0;
             Double_t max = fitRangeMax;
             Double_t loprecision = 0.01;
-            Double_t hiprecision = 0.1;
+            Double_t hiprecision = 0.5;
             Option_t *opt = "RI+";
-            TString logfilename = "log.root";
+            TString logfilename = pathLevyFits + "/log_mean.root";
             Double_t minfit = 0.0;
             Double_t maxfit = fitRangeMax;
             // Double_t maxfit=8.0;
 
-            TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, fitRangeMax, 4);
+            // TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, fitRangeMax, 4);
+            TF1 *fitFcn = new TF1(Form("fitfunc_%d", imult), FuncLavy, 0.0, fitRangeMax, 4);
             fitFcn->SetParameter(0, 5.0);
             fitFcn->SetParameter(1, 0.5);
             // fitFcn->SetParameter(1, 50);
@@ -309,21 +311,23 @@ void plot_spectra()
 
             gStyle->SetOptFit(1111);
             gStyle->SetOptStat(1110);
-            TCanvas *clevy = new TCanvas("", "", 720, 720);
+            TCanvas *clevy = new TCanvas(Form("clevy_%d", imult), Form("clevy_%d", imult), 720, 720);
             SetCanvasStyle(clevy, 0.18, 0.03, 0.03, 0.15);
             gPad->SetLogy();
             h1->SetLineColor(color);
             h1->SetMarkerColor(color);
             h1->SetStats(1);
             h1->Draw();
-            clevy->SaveAs(pathLevyFits + Form("/levy_fit_mult_%.0f-%.0f.png", mult_classes[imult - 1], mult_classes[imult]));
+            TString levyFitPath = pathLevyFits + Form("/levy_fit_mult_%.0f-%.0f.%s", mult_classes[imult - 1], mult_classes[imult], outputType.Data());
+            clevy->SaveAs(levyFitPath.Data());
+            delete clevy;
 
             cout << "Multiplicity class " << mult_classes[imult - 1] << " - " << mult_classes[imult] << endl;
             cout << "dN/dy: " << yield[imult - 1] << " +/- " << yield_err[imult - 1] << endl;
             cout << "<pT>: " << meanpT[imult - 1] << " +/- " << meanpT_err[imult - 1] << endl;
             cout << "\n\n";
 
-            ctemp->cd(0);
+            ctemp->cd();
             hmultClone[imult]->SetMarkerStyle(markers[imult]);
             hmultClone[imult]->SetMarkerSize(1.2);
             hmultClone[imult]->GetYaxis()->SetTitleOffset(1.3);
@@ -337,7 +341,8 @@ void plot_spectra()
             fitFcn->SetLineStyle(2);
             fitFcn->Draw("l same");
         }
-        ctemp->SaveAs(outputfolder + "/spectra_temp.png");
+        TString tempPath = outputfolder + "/spectra_temp." + outputType;
+        ctemp->SaveAs(tempPath.Data());
 
         // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
         double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
@@ -397,7 +402,8 @@ void plot_spectra()
         legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
         legMeanYield->AddEntry(gMeanYieldRun2, "Run 2 (13 TeV)", "p");
         legMeanYield->Draw();
-        cMeanYield->SaveAs(outputfolder + "/mean_yield_run2.png");
+        TString yieldPath = outputfolder + "/mean_yield_run2." + outputType;
+        cMeanYield->SaveAs(yieldPath.Data());
 
         TCanvas *cMeanpT = new TCanvas("cMeanpT", "cMeanpT", 720, 720);
         SetCanvasStyle(cMeanpT, 0.15, 0.03, 0.03, 0.15);
@@ -423,28 +429,29 @@ void plot_spectra()
         // gMeanpTRun2_5020MeV->Draw("P same");
         legMeanYield->Draw();
         gMeanpTRun3->Write("gMeanpTRun3");
-        cMeanpT->SaveAs(outputfolder + "/mean_pT_run2.png");
+        TString ptPath = outputfolder + "/mean_pT_run2." + outputType;
+        cMeanpT->SaveAs(ptPath.Data());
     }
 }
 
 // IR study
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass"; // 450 kHz
-//  string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 650 kHz
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data (500 kHz)
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass"; // 2023 data (135 kHz)
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data (500 kHz)
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/463114/kstarqa/hInvMass"; // 1-2 MHz
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/535069/kstarqa/hInvMass"; // 14 kHz
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/535545/kstarqa/hInvMass"; // 70 kHz
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/535645/kstarqa/hInvMass"; // 135 kHz
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass"; // 450 kHz
+//  string path = "../output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 650 kHz
+// string path = "../output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data (500 kHz)
+// string path = "../output/kstar/LHC22o_pass7/IR_study/459908/kstarqa/hInvMass"; // 2023 data (135 kHz)
+// string path = "../output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data (500 kHz)
 
 // Checks on the data
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/checks/473185/kstarqa_MID_id33593/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
+// string path = "../output/kstar/LHC22o_pass7/checks/473185/kstarqa_MID_id33593/hInvMass"; // LHC24_pass1_minBias dataset, INEL > 0
 
 ////*************************PID Variations for Kaon (without MID, multcentTable)**************************
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/999999/kstarqa/hInvMass"; // 2022 data
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480448/kstarqa/hInvMass"; // 2023 data
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480358/kstarqa/hInvMass"; // 2024 data
+// string path = "../output/kstar/LHC22o_pass7/999999/kstarqa/hInvMass"; // 2022 data
+// string path = "../output/kstar/LHC22o_pass7/480448/kstarqa/hInvMass"; // 2023 data
+// string path = "../output/kstar/LHC22o_pass7/480358/kstarqa/hInvMass"; // 2024 data
 
 //*************************ItsTpcTracksCheck, betacutTOF******************************
-// string path = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/481941/kstarqa_PIDKa1_itstpc/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0
+// string path = "../output/kstar/LHC22o_pass7/481941/kstarqa_PIDKa1_itstpc/hInvMass"; // LHC23_pass4_thin_small dataset, INEL > 0

@@ -26,8 +26,8 @@ void mc_closure()
 
     string MC_path = "MC_closure_PVContributor";
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/MC_closure/" + MCfile + "/kstarqa_" + MC_path + "/hInvMass"; // path for yield.root file (from rec MC)
-    string path2 = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/MC_closure/";                                                  // MC file path
+    string path1 = "../output/kstar/LHC22o_pass7/MC_closure/" + MCfile + "/kstarqa_" + MC_path + "/hInvMass"; // path for yield.root file (from rec MC)
+    string path2 = "../data/kstar/LHC22o_pass7/MC_closure/";                                                  // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
@@ -52,10 +52,10 @@ void mc_closure()
     TH1F *heff[numofmultbins + 1];
 
     THnSparseF *hSparseRec;
-    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT") : (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()));
+    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/hk892GenpT", MC_path.c_str())) : (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()));
     if (hSparseRec == nullptr)
     {
-        cout << "Error reading efficiency histogram MC" << endl;
+        cout << "Error reading efficiency histogram MC in the path "<< Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()) << endl;
         return;
     }
     TH1D *h1recmult = (TH1D *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h1RecMult", MC_path.c_str()));
@@ -141,7 +141,7 @@ void mc_closure()
         hmult1[imult]->GetXaxis()->SetTitleOffset(1.02);
         hmult1[imult]->SetMarkerStyle(20);
         hmult1[imult]->SetMarkerSize(1);
-        hmult1[imult]->GetXaxis()->SetRangeUser(0, 15);
+        // hmult1[imult]->GetXaxis()->SetRangeUser(0, 15);
         hmult1[imult]->Draw("pe");
         hmult2[imult]->SetMarkerStyle(21);
         hmult2[imult]->SetMarkerSize(1);
@@ -155,8 +155,8 @@ void mc_closure()
         TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-        leg->AddEntry(hmult1[imult], "Reconstructed Yield (Fit)", "lpe");
-        leg->AddEntry(hmult2[imult], "True Yield (reconstructed K*)", "lpe");
+        leg->AddEntry(hmult2[imult], "MC Generated", "lpe");
+        leg->AddEntry(hmult1[imult], "MC Rec. (AxE corrected)", "lpe");
         leg->SetTextSize(0.04);
         leg->Draw();
 
@@ -178,7 +178,7 @@ void mc_closure()
         hratio1->SetMarkerSize(1.1);
         // hratio1->SetMarkerColor(kBlue);
         // hratio1->SetLineColor(kBlue);
-        hratio1->GetYaxis()->SetTitle("#frac{Rec Yield (Fit)}{True Yield}");
+        hratio1->GetYaxis()->SetTitle("#frac{MC Rec.}{MC Gen.}");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
@@ -186,7 +186,7 @@ void mc_closure()
         hratio1->GetYaxis()->SetNdivisions(505);
         hratio1->SetMaximum(1.23);
         hratio1->SetMinimum(0.75);
-        hratio1->GetXaxis()->SetRangeUser(0, 15);
+        // hratio1->GetXaxis()->SetRangeUser(0, 15);
         hratio1->Draw("p");
         hratio1->Write("Ratio");
 
@@ -195,7 +195,7 @@ void mc_closure()
         line->SetLineWidth(2);
         line->SetLineColor(1);
         line->Draw();
-        c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.png", multlow, multhigh));
+        c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.pdf", multlow, multhigh));
 
         cEfficiency->cd();
         heff[imult]->SetMarkerStyle(20);

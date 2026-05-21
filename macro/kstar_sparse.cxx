@@ -26,7 +26,7 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "png";     // pdf, eps
+    string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = false;
@@ -440,7 +440,7 @@ void kstar_sparse()
 
                 fitFcn->SetParameter(1, widthpdg); // width
                 fitFcn->FixParameter(1, widthpdg); // width
-                // fitFcn->SetParLimits(1, 0.048, 0.06); // width
+                // fitFcn->SetParLimits(1, 0.049, 0.06); // width
                 // fitFcn->SetParLimits(1, kWidthLimit[ip][0], kWidthLimit[ip][1]); // width
                 // fitFcn->SetParLimits(1, prevWidth, prevWidth + 0.003); // For MC closure test in min bias
 
@@ -625,14 +625,14 @@ void kstar_sparse()
                 hfsig->GetYaxis()->SetMaxDigits(3);
                 hfsig->GetYaxis()->CenterTitle(1);
                 hfsig->GetYaxis()->SetTitleOffset(1.45);
-                hfsig->GetYaxis()->SetTitle(Form("Counts/%.0f MeV/#it{c}^{2}", binwidth_file * 1000));
+                hfsig->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
                 SetHistoQA(hfbkg);
                 hfbkg->SetLineColor(kRed);
                 hfbkg->SetMarkerColor(kRed);
                 hfbkg->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
                 // hfsig->GetYaxis()->SetMaxDigits(3);
-                hfbkg->GetYaxis()->SetTitle(Form("Counts/%.0f MeV/#it{c}^{2}", binwidth_file * 1000));
+                hfbkg->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
                 fitFcn1->SetLineColor(4);
                 fitFcn1->SetLineStyle(2);
@@ -662,12 +662,14 @@ void kstar_sparse()
                 //     hfsig->SetMaximum(hfsig->GetMaximum() * 0.9);
 
                 // else
-                hfsig->SetMaximum(hfsig->GetMaximum() * 1.1);
+                hfsig->SetMaximum(hfsig->GetMaximum() * 1.3);
                 fitFcn->SetLineWidth(2);
                 fitFcn1->SetLineWidth(2);
                 fitFcn2->SetLineWidth(2);
                 hfsig->GetXaxis()->SetRangeUser(0.7, 1.11);
                 hfsig->SetMarkerSize(1.0);
+                if (ip != 0 && ip != 1 && ip != 2)
+                    hfsig->SetMinimum(0);
                 hfsig->Draw("e");
                 fitFcn->Draw("same");
                 fitFcn1->Draw("same");
@@ -683,10 +685,11 @@ void kstar_sparse()
                 pag->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
                 pag->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
                 pag->AddEntry((TObject *)0, Form("#it{p}_{T} = %.1f-%.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
-                pag->Draw();
+                if (!multipanel_plots)
+                    pag->Draw();
 
-                // TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
-                TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
+                TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
+                // TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
                 pag2->SetBorderSize(0);
                 pag2->SetTextFont(42);
                 pag2->SetTextSize(0.035);
@@ -694,7 +697,9 @@ void kstar_sparse()
                 pag2->AddEntry(fitFcn, "BW+pol3", "l");
                 pag2->AddEntry(fitFcn1, "BW", "l");
                 pag2->AddEntry(fitFcn2, "pol3", "l");
-                // pag2->Draw();
+                pag2->Draw();
+                if (multipanel_plots)
+                    t2->DrawLatex(0.27, 0.95, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
 
                 double fitprob = fitFcn->GetProb();
                 // pag->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f", Mass[ip], ErrorMass[ip]), "");
@@ -734,7 +739,7 @@ void kstar_sparse()
                 hfbkg->SetMarkerSize(1.0);
                 fHistTotal[ip]->GetXaxis()->SetRangeUser(0.7, 1.3);
                 fHistTotal[ip]->Draw("pe");
-                fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/(%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
+                fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
                 TLatex *ltx = new TLatex(0.27, 0.95, name);
                 ltx->SetNDC();
@@ -747,9 +752,11 @@ void kstar_sparse()
                     hbkg_nopeak->Draw("BAR same");
                 // (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
                 ltx->Draw();
-                pag->Draw();
+                if (!multipanel_plots)
+                    pag->Draw();
 
-                TLegend *pag3 = new TLegend(0.7, 0.65, 0.9, 0.9);
+                TLegend *pag3;
+                pag3 = (!multipanel_plots) ? new TLegend(0.7, 0.65, 0.9, 0.9) : new TLegend(0.2, 0.7, 0.45, 0.9);
                 pag3->SetBorderSize(0);
                 pag3->SetTextFont(42);
                 pag3->SetTextSize(0.035);
@@ -758,6 +765,9 @@ void kstar_sparse()
                 pag3->AddEntry(hfbkg, "Bkg", "p");
                 pag3->AddEntry(hbkg_nopeak, "Norm. region", "f");
                 pag3->Draw();
+
+                if (multipanel_plots)
+                    t2->DrawLatex(0.27, 0.95, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
 
                 if (multipanel_plots == 0 && save_plots == 1 && save_bkg_plots == 1)
                     cSigbkg[ip]->SaveAs(Form(outputfolder_mult + ("/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
@@ -768,20 +778,20 @@ void kstar_sparse()
             } // pt loop ends
             if (multipanel_plots == 1 && save_plots == 1)
             {
-                cgrid1->SaveAs(outputfolder_mult + ("/grid1." + outputtype).c_str());
-                cgrid_bkg1->SaveAs(outputfolder_mult + ("/grid_bkg1." + outputtype).c_str());
-                // if (Npt > 16)
-                if (Npt > 9)
+                cgrid1->SaveAs(outputfolder_mult + (Form("/grid1_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
+                cgrid_bkg1->SaveAs(outputfolder_mult + (Form("/gridBkg1_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
+
+                if (Npt >= klowerpad * kupperpad)
                 {
-                    cgrid2->SaveAs(outputfolder_mult + ("/grid2." + outputtype).c_str());
-                    cgrid_bkg2->SaveAs(outputfolder_mult + ("/grid_bkg2." + outputtype).c_str());
+                    cgrid2->SaveAs(outputfolder_mult + (Form("/grid2_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
+                    cgrid_bkg2->SaveAs(outputfolder_mult + (Form("/gridBkg2_mult%d_%d.") + outputtype).c_str());
                 }
             }
             if (multipanel_plots == 0)
             {
                 cgrid1->Close();
                 cgrid_bkg1->Close();
-                // if (Npt > 16)
+
                 if (Npt > 9)
                 {
                     cgrid2->Close();
@@ -970,7 +980,7 @@ void kstar_sparse()
             return;
         }
 
-        outputtype = "png";
+        outputtype = "pdf";
 
         TCanvas *cDCAxy = new TCanvas("cDCAxy", "DCAxy", 720, 720);
         SetCanvasStyle(cDCAxy, 0.14, 0.03, 0.06, 0.14);
@@ -995,6 +1005,7 @@ void kstar_sparse()
         SetCanvasStyle(cMult, 0.14, 0.03, 0.06, 0.14);
         SetHistoQA(hMult);
         // hMult->GetXaxis()->SetTitle("Multiplicity (%)");
+        hMult->GetXaxis()->SetRangeUser(0, 109.5);
         hMult->GetXaxis()->SetTitle("Multiplicity (%)");
         hMult->GetYaxis()->SetTitle("Counts");
         hMult->Draw();
@@ -1032,16 +1043,41 @@ void kstar_sparse()
         htracksData->Draw();
         cTracksData->SaveAs(output_QA_folder + ("/TracksData." + outputtype).c_str());
 
-        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 1080, 720);
+        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 720, 720);
         SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
         SetHistoQA(hEventCut);
         gPad->SetGrid(1, 0);
         // gPad->SetLogy(1);
-        hEventCut->SetTitle("Event selections");
+        hEventCut->GetXaxis()->SetBinLabel(4, "INEL > 0");
+        hEventCut->SetBinContent(4, hEventCut->GetBinContent(9));
+        hEventCut->SetTitle("Event selections (Data)");
         hEventCut->GetYaxis()->SetTitle("Counts");
-        hEventCut->GetYaxis()->SetTitleOffset(0.8);
-        hEventCut->GetXaxis()->SetRangeUser(0, 11);
+        hEventCut->GetXaxis()->SetRangeUser(0, 4);
+        hEventCut->SetMinimum(0);
+        hEventCut->SetMaximum(hEventCut->GetBinContent(1) * 1.2);
         hEventCut->Draw();
+        double firstBin = hEventCut->GetBinContent(1);
+
+        TLatex latex;
+        latex.SetTextSize(0.03);
+        latex.SetTextAlign(22); // centered
+
+        for (int i = 1; i <= 4; i++)
+        {
+
+            double content = hEventCut->GetBinContent(i);
+
+            double percent = 0;
+            if (firstBin > 0)
+                percent = (content / firstBin) * 100.0;
+
+            TString label = Form("%.1f%%", percent);
+
+            double x = hEventCut->GetBinCenter(i);
+            double y = content * 1.05; // slightly above bin
+
+            latex.DrawLatex(x, y, label);
+        }
         cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
 
         //===============PID plots==========================
@@ -1189,6 +1225,7 @@ void kstar_sparse()
 
         TCanvas *cNsigmaTPCKaon_1D = new TCanvas("cNsigmaTPCKaon_1D", "Nsigma TPC Kaon 1D", 720, 720);
         SetCanvasStyle(cNsigmaTPCKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTPCKaon_1D->SetGrid(1, 1);
         TLegend *leg1DPID = new TLegend(0.17, 0.82, 0.6, 0.92);
         leg1DPID->SetNColumns(3);
         leg1DPID->SetTextSize(0.028);
@@ -1217,6 +1254,7 @@ void kstar_sparse()
 
         TCanvas *cNsigmaTPCPion_1D = new TCanvas("cNsigmaTPCPion_1D", "Nsigma TPC Pion 1D", 720, 720);
         SetCanvasStyle(cNsigmaTPCPion_1D, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTPCPion_1D->SetGrid(1, 1);
         for (int i = 0; i < 6; i++)
         {
             SetHistoQA(h1DNsigmaTPCPion[i]);
@@ -1236,6 +1274,7 @@ void kstar_sparse()
 
         TCanvas *cNsigmaTOFKaon_1D = new TCanvas("cNsigmaTOFKaon_1D", "Nsigma TOF Kaon 1D", 720, 720);
         SetCanvasStyle(cNsigmaTOFKaon_1D, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTOFKaon_1D->SetGrid(1, 1);
         for (int i = 0; i < 6; i++)
         {
             SetHistoQA(h1DNsigmaTOFKaon[i]);
@@ -1255,6 +1294,7 @@ void kstar_sparse()
 
         TCanvas *cNsigmaTOFPion_1D = new TCanvas("cNsigmaTOFPion_1D", "Nsigma TOF Pion 1D", 720, 720);
         SetCanvasStyle(cNsigmaTOFPion_1D, 0.14, 0.05, 0.06, 0.14);
+        cNsigmaTOFPion_1D->SetGrid(1, 1);
         for (int i = 0; i < 6; i++)
         {
             SetHistoQA(h1DNsigmaTOFPion[i]);

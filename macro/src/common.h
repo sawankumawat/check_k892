@@ -8,7 +8,7 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-kstar892analysis";
 // const string kfoldername_temp = "lf-k892analysis";
 
-const string kvariation = "";
+// const string kvariation = "";
 // const string kvariation = "_MC_closure";
 // const string kvariation = "_MC_closure_MID0p3";
 // const string kvariation = "_MC_closure_MID";
@@ -43,6 +43,15 @@ const string kvariation = "";
 // const string kvariation = "_MIDNew_TOF3";
 // const string kvariation = "_SquarePID_TOF2";
 // const string kvariation = "_SquarePID_TOF3";
+
+//// Systematic variations
+// const string kvariation = "_FT0C";
+// const string kvariation = "_FV0A";
+// const string kvariation = "_TPC1p5_combined2";
+const string kvariation = "_TPC2p5_combined3p5";
+// const string kvariation = "_DCAvar1";
+// const string kvariation = "_DCAvar2";
+// const string kvariation = "_NoPVContributor";
 ////********************************************************************************************
 
 // define datasets here
@@ -61,27 +70,6 @@ const string kDataset_temp = "LHC22o_pass7/";
 
 #ifdef DATASET_LHC220_pass7
 
-//*****************************Corrected TPC crossed rows********************************
-// const string kDataFilename_temp2 = "459845.root"; // LHC22_pass7_medium dataset, INEL > 0
-// const string kDataFilename_temp2 = "459908.root"; // LHC23_pass4_thin_small dataset, INEL > 0
-// const string kDataFilename_temp2 = "460233.root"; // LHC24_pass1_minBias dataset, INEL > 0
-
-//**********************************MID cuts***************************************
-// const string kDataFilename_temp2 = "477779.root"; // LHC22_pass7_medium dataset, INEL > 0
-// const string kDataFilename_temp2 = "478015.root"; // LHC23_pass4_thin_small dataset, INEL > 0
-// const string kDataFilename_temp2 = "477833.root"; // LHC24_pass1_minBias dataset, INEL > 0
-
-//*************************PID Variations for Kaon (without MID)**************************
-// const string kDataFilename_temp2 = "480317.root"; // LHC22_pass7_medium dataset, INEL > 0
-// const string kDataFilename_temp2 = "480447.root"; // LHC23_pass4_thin_small dataset, INEL > 0
-// const string kDataFilename_temp2 = "480657.root"; // LHC24_pass1_minBias dataset, INEL > 0
-
-//****************************QA checks all ***************************************************
-// const string kDataFilename_temp2 = "585940.root"; // LHC23_pass4_thin_small dataset, INEL > 0
-
-//*****************************pT-dependent PID***************************************
-// const string kDataFilename_temp2 = "586976.root"; //23 dataset
-// const string kDataFilename_temp2 = "586385.root"; // 24 dataset
 
 //*****************************After SQM***************************************
 //==========2023 data===========
@@ -115,6 +103,7 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "660943.root"; // (Base, LoosePID, pTDepPID, pTDepPIDTOF, MIDptDep, MID)
 // const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
 const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
+// const string kDataFilename_temp2 = "682963.root"; // (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 #endif
 
 // final dataset name
@@ -214,3 +203,25 @@ float widthpdg = 0.0487; // in 1 sigma GeV/c^2
 // const string kvariation = "_ptDepPID";  // change the variation here
 // const string kvariation = "_NoRCT";  // change the variation here
 // const string kvariation = "_hasITS";  // change the variation here
+
+//*****************************Corrected TPC crossed rows********************************
+// const string kDataFilename_temp2 = "459845.root"; // LHC22_pass7_medium dataset, INEL > 0
+// const string kDataFilename_temp2 = "459908.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+// const string kDataFilename_temp2 = "460233.root"; // LHC24_pass1_minBias dataset, INEL > 0
+
+//**********************************MID cuts***************************************
+// const string kDataFilename_temp2 = "477779.root"; // LHC22_pass7_medium dataset, INEL > 0
+// const string kDataFilename_temp2 = "478015.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+// const string kDataFilename_temp2 = "477833.root"; // LHC24_pass1_minBias dataset, INEL > 0
+
+//*************************PID Variations for Kaon (without MID)**************************
+// const string kDataFilename_temp2 = "480317.root"; // LHC22_pass7_medium dataset, INEL > 0
+// const string kDataFilename_temp2 = "480447.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+// const string kDataFilename_temp2 = "480657.root"; // LHC24_pass1_minBias dataset, INEL > 0
+
+//****************************QA checks all ***************************************************
+// const string kDataFilename_temp2 = "585940.root"; // LHC23_pass4_thin_small dataset, INEL > 0
+
+//*****************************pT-dependent PID***************************************
+// const string kDataFilename_temp2 = "586976.root"; //23 dataset
+// const string kDataFilename_temp2 = "586385.root"; // 24 dataset

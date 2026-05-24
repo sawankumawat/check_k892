@@ -51,8 +51,8 @@ void compare_yield_inelgt0_minBias()
     // 672297 (2024 data: MIDptDep2_TOF3, MIDptDep2_small_TOF3, MIDptDep2_0p3_TOF3)
     // 675391 (2024 data: MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass"; // 2024 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/668605/kstarqa/hInvMass"; // 2023 data
+    string path1 = "../../output/kstar/LHC22o_pass7/672297/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
+    string path2 = "../../output/kstar/LHC22o_pass7/672297/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2023 data
     TString outputPath = path2 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -276,6 +276,10 @@ void compare_yield_inelgt0_minBias()
         {
             double x_run2, yield_run2, x_error, y_error_run2;
             gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
+            if (i == 4 || i == 5)
+                yield_run2 = yield_run2 * 1.03; // to account for event loss in run 2 for 15-20 and 20-30 multiplicity classes
+            if (i == 6 || i == 7)
+                yield_run2 = yield_run2 * 0.94; // to account for event loss in run 2 for 5-10 and 10-15 multiplicity classes
             if (i == 12)
                 yield_run2 = yield_run2 * 0.87; // to account for event loss in run 2 for 0-1 multiplicity class
             if (i == 9)

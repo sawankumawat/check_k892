@@ -14,8 +14,8 @@ void efficiency()
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
-    // string sysVars[] = {"", "pol2", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidhtFree"};
-    TString sysVars[] = {""};
+    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    // TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
@@ -29,7 +29,8 @@ void efficiency()
     string common_data_path = "../output/kstar/LHC22o_pass7/";
     string common_MC_path = "../mc/LHC24f3c/";
 
-    for (int ivar = 0; ivar < nSysVars; ivar++)
+    // for (int ivar = 0; ivar < nSysVars; ivar++)
+    for (int ivar = 0; ivar < 1; ivar++)
     {
 
         if (ivar > 1 && kResBkg != "MIX")
@@ -47,7 +48,7 @@ void efficiency()
         //============2023 data===========
         // string data_path = "660453/kstarqa_id35679/hInvMass"; // 2023 (pTDepPID, pTDepPID, pTDepPIDTOF)
         // string data_path = "670168/kstarqa/hInvMass"; // 2023 (Base, INEL)
-        
+
         //===========Other checks==============
         // string data_path = "655628/kstarqa/hInvMass"; // 2024
         // string data_path = "661905/kstarqa/hInvMass"; // 2024 (Event_time dependency check in TOF)
@@ -64,7 +65,7 @@ void efficiency()
         // string data_path = "660943/kstarqa/hInvMass"; // 2024 (Base, INEL, MID, MIDptDep, pTDepPID, pTDepPIDTOF, LoosePID)
         // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
         // string data_path = "664559/kstarqa/hInvMass"; // 2024 (Base, INEL, TOFshift, TOFshiftMID)
-        string data_path = "679906/kstarqa_FV0A/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
+        string data_path = "679906/kstarqa/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
         // string data_path = "682963/kstarqa_NoPVContributor/hInvMass"; // 2024 (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
         TString outputfolder;
@@ -118,17 +119,22 @@ void efficiency()
         string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
         // string MCpath = "683085.root"; // 2024 MC (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
-        TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
+        // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
+        // if (fileraw->IsZombie())
+        // {
+        //     cout << "Error opening data in the path " << data_path << endl;
+        // }
+
         MCpath = common_MC_path + MCpath;
         TFile *fileeff = new TFile(MCpath.c_str(), "READ"); // MC file
 
-        if (fileeff->IsZombie() || fileraw->IsZombie())
+        if (fileeff->IsZombie())
         {
-            cout << "Error opening files in the path " << data_path << " or " << MCpath << endl;
+            cout << "Error opening efficiency in the path " << MCpath << endl;
             return;
         }
-        const string genpath = "kstarqa_FV0A/hInvMass";
-        const string recpath = "kstarqa_FV0A/hInvMass";
+        const string genpath = "kstarqa/hInvMass";
+        const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -185,11 +191,11 @@ void efficiency()
             // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
 
             vector<double> nChParticlesFromMult;
-            // int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
-            int multLoopEnd = 1;
+            int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+            // int multLoopEnd = 1;
             int multlow, multhigh;
 
-            TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
+            // TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
             hMult->Write("Multiplicity");
             TH1F *hChi2byNDF[multLoopEnd];
             TH1F *hMass[multLoopEnd];
@@ -216,6 +222,14 @@ void efficiency()
                     multlow = mult_classes[imult - 1];
                     multhigh = mult_classes[imult];
                 }
+                TFile *fileraw = new TFile((data_path + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "READ"); // datafile
+                if (fileraw->IsZombie())
+                {
+                    cout << "Error opening data in the path " << data_path + Form("/yield_%d_%d.root", multlow, multhigh) << endl;
+                    return;
+                }
+                TFile *spectra = new TFile((data_path + Form("/corrected_spectra_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+
                 cout << "Mult low is " << multlow << " and mult high is " << multhigh << endl;
                 hChi2byNDF[imult] = (TH1F *)fileraw->Get(Form("mult_%d-%d/chi2byNDF", multlow, multhigh));
                 hMass[imult] = (TH1F *)fileraw->Get(Form("mult_%d-%d/mass", multlow, multhigh));

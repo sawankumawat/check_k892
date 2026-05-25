@@ -45,10 +45,11 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_SquarePID_TOF3";
 
 //// Systematic variations
+const string kvariation = "";
 // const string kvariation = "_FT0C";
 // const string kvariation = "_FV0A";
 // const string kvariation = "_TPC1p5_combined2";
-const string kvariation = "_TPC2p5_combined3p5";
+// const string kvariation = "_TPC2p5_combined3p5";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
 // const string kvariation = "_NoPVContributor";

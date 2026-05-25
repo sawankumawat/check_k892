@@ -44,7 +44,7 @@ void systematics()
     // 7.         WidthFree                       (1)
     // 8.         DCA variations                  (2)
     // 9.         PV contributor                  (1)
-    // 10.        PID variations                  (2)
+    // 10.        PID variations                  (2)// Currently using 1
     // 11.        Multiplicity estimator          (2)
     // 12.        Material Budget                 (2)
 
@@ -72,7 +72,8 @@ void systematics()
     int totalSizeTrackSel = DCAvars.size() + PVcontributorVars.size();
 
     //// For PID variations
-    vector<string> PIDVars = {"TPC1p5_combined2", "TPC2p5_combined3p5"};
+    // vector<string> PIDVars = {"TPC1p5_combined2", "TPC2p5_combined3p5"};
+    vector<string> PIDVars = {"TPC2p5_combined3p5"};
 
     //// Multiplicity estimator variations
     vector<string> multEstVars = {"FT0C", "FV0A"};

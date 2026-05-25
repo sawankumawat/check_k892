@@ -21,8 +21,8 @@ void kstar_sparse()
     TStopwatch timer;
     timer.Start();
     //*************************** change here ***************************************
-    // string sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidhtFree"};
-    TString sysVars[] = {""};
+    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
+    // TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -35,6 +35,7 @@ void kstar_sparse()
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
     bool isINEL = false;
+
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
     TCanvas *cgrid1 = new TCanvas("", "", kcanvaswidth, kcanvasheight);
@@ -117,8 +118,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -154,7 +155,8 @@ void kstar_sparse()
         std::cout << "Folder " << output_QA_folder << " created successfully." << std::endl;
     }
 
-    for (int ivar = 0; ivar < nSysVars; ivar++)
+    // for (int ivar = 0; ivar < nSysVars; ivar++)
+    for (int ivar = 0; ivar < 1; ivar++)
     {
         if (nSysVars > 1 && (kResBkg != "MIX" || kbkg != "pol3"))
         {
@@ -163,24 +165,26 @@ void kstar_sparse()
         }
 
         //***********************************************************************************
-        TFile *filecmp;
         if (calcInvMass)
         {
             TString outputRootDir = (ivar == 0)
-                                        ? koutputfolder + resBkgFolder + kbkgFolder
-                                        : koutputfolder + "/" + sysVars[ivar] + kbkgFolder;
+            ? koutputfolder + resBkgFolder + kbkgFolder
+            : koutputfolder + "/" + sysVars[ivar] + kbkgFolder;
             if (gSystem->mkdir(outputRootDir, kTRUE))
             {
                 std::cout << "Folder " << outputRootDir << " created successfully." << std::endl;
             }
-            if (ivar == 0)
-            {
-                filecmp = (isINEL) ? new TFile((koutputfolder + resBkgFolder + kbkgFolder + "/yield_INEL.root").c_str(), "RECREATE") : new TFile((koutputfolder + resBkgFolder + kbkgFolder + "/yield.root").c_str(), "RECREATE");
-            }
-            else
-            {
-                filecmp = (isINEL) ? new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + "/yield_INEL.root").c_str(), "RECREATE") : new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + "/yield.root").c_str(), "RECREATE");
-            }
+
+            //// Commented it out to store separate root files for each multiplicity bin (for systematics)
+            // TFile *filecmp;
+            // if (ivar == 0)
+            // {
+            //     filecmp = (isINEL) ? new TFile((koutputfolder + resBkgFolder + kbkgFolder + "/yield_INEL.root").c_str(), "RECREATE") : new TFile((koutputfolder + resBkgFolder + kbkgFolder + "/yield.root").c_str(), "RECREATE");
+            // }
+            // else
+            // {
+            //     filecmp = (isINEL) ? new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + "/yield_INEL.root").c_str(), "RECREATE") : new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + "/yield.root").c_str(), "RECREATE");
+            // }
         }
 
         for (int imult = 0; imult < nmultbins + 1; imult++)
@@ -217,6 +221,8 @@ void kstar_sparse()
                 multlow = mult_classes[imult - 1];
                 multhigh = mult_classes[imult];
             }
+
+            TFile *filecmp = new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
 
             double Event = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 1e-5), hmult->GetXaxis()->FindBin(multhigh - 1e-5));
             cout << "Event in mult bin " << imult << " is " << Event << endl;
@@ -485,7 +491,7 @@ void kstar_sparse()
                     }
 
                     fitFcn->SetParameter(1, widthpdg); // width
-                    if (sysVars[ivar] != "WidhtFree")
+                    if (sysVars[ivar] != "WidthFree")
                         fitFcn->FixParameter(1, widthpdg); // width
                     else
                         fitFcn->SetParLimits(1, 0.044, 0.054); // width

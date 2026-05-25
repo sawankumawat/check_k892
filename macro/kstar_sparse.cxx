@@ -21,8 +21,8 @@ void kstar_sparse()
     TStopwatch timer;
     timer.Start();
     //*************************** change here ***************************************
-    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
-    // TString sysVars[] = {""};
+    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
+    TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -118,8 +118,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -155,8 +155,8 @@ void kstar_sparse()
         std::cout << "Folder " << output_QA_folder << " created successfully." << std::endl;
     }
 
-    // for (int ivar = 0; ivar < nSysVars; ivar++)
-    for (int ivar = 0; ivar < 1; ivar++)
+    for (int ivar = 0; ivar < nSysVars; ivar++)
+    // for (int ivar = 0; ivar < 1; ivar++)
     {
         if (nSysVars > 1 && (kResBkg != "MIX" || kbkg != "pol3"))
         {
@@ -168,8 +168,8 @@ void kstar_sparse()
         if (calcInvMass)
         {
             TString outputRootDir = (ivar == 0)
-            ? koutputfolder + resBkgFolder + kbkgFolder
-            : koutputfolder + "/" + sysVars[ivar] + kbkgFolder;
+                                        ? koutputfolder + resBkgFolder + kbkgFolder
+                                        : koutputfolder + "/" + sysVars[ivar] + kbkgFolder;
             if (gSystem->mkdir(outputRootDir, kTRUE))
             {
                 std::cout << "Folder " << outputRootDir << " created successfully." << std::endl;
@@ -222,7 +222,17 @@ void kstar_sparse()
                 multhigh = mult_classes[imult];
             }
 
-            TFile *filecmp = new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+            // TFile *filecmp = new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+
+            TFile *filecmp;
+            if (ivar == 0)
+            {
+                filecmp = new TFile((koutputfolder + resBkgFolder + kbkgFolder + + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+            }
+            else
+            {
+                filecmp = new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+            }
 
             double Event = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 1e-5), hmult->GetXaxis()->FindBin(multhigh - 1e-5));
             cout << "Event in mult bin " << imult << " is " << Event << endl;
@@ -907,7 +917,7 @@ void kstar_sparse()
                     hwidth->GetXaxis()->SetTitle("p_{T} (GeV/c)");
                     hwidth->GetYaxis()->SetTitle("Width (GeV)");
                     SetHistoQA(hwidth);
-                    hwidth->SetMaximum(hwidth->GetMaximum() * 2);
+                    hwidth->GetYaxis()->SetRangeUser(0.04, 0.06);
                     hwidth->SetMinimum(0);
                     hwidth->SetStats(0);
                     hwidth->Draw("pe");

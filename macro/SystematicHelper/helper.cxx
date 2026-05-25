@@ -9,47 +9,82 @@ HistogramOperations::HistogramOperations() {} // Default constructor implementat
 
 TH1D *HistogramOperations::CalculateRatio(TH1D *defaulthist, TH1 *varhist)
 {
+        if (defaulthist == nullptr || varhist == nullptr)
+        {
+                std::cout << "CalculateRatio: null histogram input. Skipping." << std::endl;
+                return nullptr;
+        }
+
         TH1D *hRatio = (TH1D *)varhist->Clone();
+        if (hRatio == nullptr)
+        {
+                std::cout << "CalculateRatio: failed to clone variation histogram." << std::endl;
+                return nullptr;
+        }
         hRatio->Divide(defaulthist);
         return hRatio;
 }
 
 TH1D *HistogramOperations::RelativeUncertainty(TH1D *defaulthist, std::vector<TH1 *> &variationHistograms)
 {
-        int vecsize = variationHistograms.size();
-        TH1D *hrelunsq[vecsize];
-        for (int i = 0; i < vecsize; i++)
+        if (defaulthist == nullptr)
         {
-                hrelunsq[i] = (TH1D *)variationHistograms[i]->Clone();
-                for (int j = 0; j < hrelunsq[i]->GetNbinsX(); j++)
+                std::cout << "RelativeUncertainty: default histogram is null." << std::endl;
+                return nullptr;
+        }
+
+        TH1D *hrelunsq = (TH1D *)defaulthist->Clone();
+        if (hrelunsq == nullptr)
+        {
+                std::cout << "RelativeUncertainty: failed to clone default histogram." << std::endl;
+                return nullptr;
+        }
+        hrelunsq->Reset("ICES");
+
+        int validVariations = 0;
+        for (size_t i = 0; i < variationHistograms.size(); i++)
+        {
+                TH1 *varHist = variationHistograms[i];
+                if (varHist == nullptr)
                 {
+                        std::cout << "RelativeUncertainty: null variation histogram at index " << i << ". Skipping." << std::endl;
+                        continue;
+                }
+
+                validVariations++;
+                for (int j = 0; j < hrelunsq->GetNbinsX(); j++)
+                {
+                        if (j + 1 > varHist->GetNbinsX())
+                        {
+                                continue;
+                        }
+
                         double def = defaulthist->GetBinContent(j + 1);
-                        double var = variationHistograms[i]->GetBinContent(j + 1);
+                        double var = varHist->GetBinContent(j + 1);
                         double relunsq = 0;
                         if (def != 0)
                         {
                                 relunsq = pow(def - var, 2) / pow(def, 2);
                         }
-                        else
-                        {
-                                relunsq = 0;
-                        }
-                        hrelunsq[i]->SetBinContent(j + 1, relunsq);
-                }
-                if (i != 0)
-                {
-                        hrelunsq[0]->Add(hrelunsq[i]);
+
+                        hrelunsq->SetBinContent(j + 1, hrelunsq->GetBinContent(j + 1) + relunsq);
                 }
         }
 
-        hrelunsq[0]->Scale(1.0 / vecsize);
-
-        for (int i = 0; i < hrelunsq[0]->GetNbinsX(); i++)
+        if (validVariations == 0)
         {
-                hrelunsq[0]->SetBinContent(i + 1, sqrt(hrelunsq[0]->GetBinContent(i + 1)));
+                std::cout << "RelativeUncertainty: no valid variation histograms, returning zero histogram." << std::endl;
+                return hrelunsq;
         }
 
-        return hrelunsq[0];
+        hrelunsq->Scale(1.0 / validVariations);
+
+        for (int i = 0; i < hrelunsq->GetNbinsX(); i++)
+        {
+                hrelunsq->SetBinContent(i + 1, sqrt(hrelunsq->GetBinContent(i + 1)));
+        }
+
+        return hrelunsq;
 }
 
 TH1D *HistogramOperations::sigma(std::vector<TH1D *> &variationHistograms)
@@ -115,6 +150,13 @@ TH1D *HistogramOperations::smooth(TH1D *hist1, int n = 2)
 
 TH1D *HistogramOperations::barlowcheck(TH1D *hdefault, TH1 *hvariation, bool &checkbar)
 {
+        if (hdefault == nullptr || hvariation == nullptr)
+        {
+                std::cout << "barlowcheck: null histogram input. Skipping." << std::endl;
+                checkbar = false;
+                return nullptr;
+        }
+
         bool barlow = false;
         bool barlowtemp[4];
         TH1D *hbarlow = new TH1D("", "", 50, -50, 50);
@@ -126,6 +168,10 @@ TH1D *HistogramOperations::barlowcheck(TH1D *hdefault, TH1 *hvariation, bool &ch
                 double defstaterror = hdefault->GetBinError(i + 1);
                 double varstaterror = hvariation->GetBinError(i + 1);
                 double statsigma = sqrt(std::abs(pow(defstaterror, 2) - pow(varstaterror, 2)));
+                if (statsigma == 0)
+                {
+                        continue;
+                }
                 double n = delta / statsigma;
                 // cout<<"\n\n n is "<<n<<endl;
                 hbarlow->Fill(n);

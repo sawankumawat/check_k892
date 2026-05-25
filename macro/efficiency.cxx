@@ -14,8 +14,8 @@ void efficiency()
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
-    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
-    // TString sysVars[] = {""};
+    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
@@ -65,7 +65,7 @@ void efficiency()
         // string data_path = "660943/kstarqa/hInvMass"; // 2024 (Base, INEL, MID, MIDptDep, pTDepPID, pTDepPIDTOF, LoosePID)
         // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
         // string data_path = "664559/kstarqa/hInvMass"; // 2024 (Base, INEL, TOFshift, TOFshiftMID)
-        string data_path = "679906/kstarqa/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
+        string data_path = "679906/kstarqa_TPC2p5_combined3p5/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
         // string data_path = "682963/kstarqa_NoPVContributor/hInvMass"; // 2024 (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
         TString outputfolder;
@@ -133,8 +133,9 @@ void efficiency()
             cout << "Error opening efficiency in the path " << MCpath << endl;
             return;
         }
-        const string genpath = "kstarqa/hInvMass";
-        const string recpath = "kstarqa/hInvMass";
+
+        const string genpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
+        const string recpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins

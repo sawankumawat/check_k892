@@ -15,8 +15,9 @@ double pT_bins[Npt + 1] = {1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0}; // 2022 data
 const int pt_start = 0;
 const int pt_end = Npt;
 
-const int Nmult = 4;
-double mult_classes[Nmult + 1] = {0.0, 20.0, 50.0, 70.0, 100.0};
+const int Nmult = 1;
+double mult_classes[Nmult + 1] = {0.0, 100.0};
+// double mult_classes[Nmult + 1] = {0.0, 20.0, 50.0, 70.0, 100.0};
 #endif
 #ifdef KKchannel
 const Int_t Npt = 1;

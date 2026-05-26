@@ -19,11 +19,14 @@ void glueball_KsKs_channel()
     // change here ***********************************************************
     // const string kResBkg = "MIX";
     const string kResBkg = "ROTATED";
+    const bool isAngularStudy = true;
     const bool makeQAplots = false;
     const bool calculate_inv_mass = true;
     const bool save_invmass_distributions = true;
     const bool save_multiPanel_plots = false;
     // change here ***********************************************************
+
+    const std::vector<float> thetaBins = {-1.0, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 1.0};
 
     std::vector<std::string> variations = {
         "", "_DCA0p1", "_TPCPID2", "_TPCPID5", "_TPCMinCls100", "_TPCMinCls60", "_DCAv0dau0p3", "_DCAv0dau1p0", "_Ks_selection2p5", "_Ks_selection5", "_cospa0p95", "_cospa0p992", "_decay_rad1p0", "_lambda_rej4", "_lambda_rej6", "_lifetime15", "_lifetime25"}; // All variations
@@ -37,9 +40,15 @@ void glueball_KsKs_channel()
 
         TString outputfolder = kSignalOutput + "/" + kchannel + "/" + foldername_final;
         TString outputQAfolder = kSignalOutput + "/" + kchannel + "/" + foldername_final + "/QA";
-        const string outputfolder_str = kSignalOutput + "/" + kchannel + "/" + foldername_final;
-        const string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + foldername_final + "/QA";
-        // Create the folder using TSystem::mkdir()
+        string outputfolder_str = kSignalOutput + "/" + kchannel + "/" + foldername_final;
+        string outputQAfolder_str = kSignalOutput + "/" + kchannel + "/" + foldername_final + "/QA";
+
+        if (isAngularStudy)
+        {
+            outputfolder = outputfolder + "/AngularStudy";
+            outputfolder_str = outputfolder_str + "/AngularStudy";
+        }
+
         if (gSystem->mkdir(outputfolder, kTRUE))
         {
             std::cout << "Folder " << outputfolder << " created successfully." << std::endl;
@@ -76,13 +85,8 @@ void glueball_KsKs_channel()
         }
         // showing all the folders in the root file as well as their contents
         // printDirectoryContents(fInputFile);
-        // if (save_invmass_distributions)
-        // {
-        //     // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "cosTheta" + ".root").c_str(), "RECREATE");
-        // }
-        // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + Form("_pT_%.1f_%.1f.root", pT_bins[0], pT_bins[1])).c_str(), "RECREATE");
-        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPt_finerBin2.root").c_str(), "RECREATE");
-        // TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + "_allPt_normright.root").c_str(), "RECREATE");
+
+        TFile *fileInvDistPair = new TFile((outputfolder_str + "/hglue_" + kResBkg + ((isAngularStudy) ? "_angular.root" : "_allPt.root")).c_str(), "RECREATE");
 
         TH1F *hmult = (TH1F *)fInputFile->Get((foldername_final + "/eventSelection/hmultiplicity").c_str());
         hmult->Write("multiplicity_histogram");
@@ -120,9 +124,11 @@ void glueball_KsKs_channel()
                  << "mixed event: " << fHistME->GetEntries() << "\n"
                  << "rotated bkg/2: " << fHistRot->GetEntries() / 2 << endl;
 
-            TH1D *fHistTotal[Npt];
-            TH1D *fHistBkg[Npt];
-            TH1D *fHistRotated[Npt];
+            const int activeBinCount = isAngularStudy ? static_cast<int>(thetaBins.size()) - 1 : pt_end - pt_start;
+
+            std::vector<TH1D *> fHistTotal(activeBinCount);
+            std::vector<TH1D *> fHistBkg(activeBinCount);
+            std::vector<TH1D *> fHistRotated(activeBinCount);
 
             TCanvas *cbkgall1;
             TCanvas *cbkgall2;
@@ -145,9 +151,9 @@ void glueball_KsKs_channel()
                 csigall2->Divide(2, 2);
             }
 
-            TH1D *hbkg_temp[Npt];
-            TH1D *hbkg_nopeak_temp[Npt];
-            TH1D *hsig_temp[Npt];
+            std::vector<TH1D *> hbkg_temp(activeBinCount);
+            std::vector<TH1D *> hbkg_nopeak_temp(activeBinCount);
+            std::vector<TH1D *> hsig_temp(activeBinCount);
 
             // TFile *fileInvDistPair;
             // if (Npt == 1)
@@ -209,7 +215,7 @@ void glueball_KsKs_channel()
                 cout << "energy low value is " << energylow << endl;
                 cout << "energy high value is " << energyhigh << endl;
 
-                auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
+                auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[binIndex] / fHistTotal[ip]->GetXaxis()->GetNbins();
                 cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
 
                 //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
@@ -220,11 +226,11 @@ void glueball_KsKs_channel()
 
                 if (kResBkg == "MIX" || kResBkg == "ROTATED")
                 {
-                    auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                    auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
 
-                    auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                    auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
 
-                    auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                    auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
 
                     auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
                     auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
@@ -242,8 +248,8 @@ void glueball_KsKs_channel()
                         hfbkg->Scale(normfactor_rotated);
                     }
 
-                    hfbkg->Rebin(kRebin[ip]);
-                    hfsig->Rebin(kRebin[ip]);
+                    hfbkg->Rebin(kRebin[binIndex]);
+                    hfsig->Rebin(kRebin[binIndex]);
 
                     hfsig->Add(hfbkg, -1);
                 }
@@ -256,7 +262,7 @@ void glueball_KsKs_channel()
                 //     hfsig->Add(hfbkg, -1);
                 // }
 
-                fHistTotal[ip]->Rebin(kRebin[ip]);
+                fHistTotal[ip]->Rebin(kRebin[binIndex]);
 
                 //*****************************************************************************************************
                 TCanvas *c1 = new TCanvas("", "", 720, 720);
@@ -426,10 +432,10 @@ void glueball_KsKs_channel()
             // float pt_binsTemp[] = {0.0, 1.0, 2.0, 3.0};
             TCanvas *c1divide = new TCanvas("", "all_bins", 1440, 720);
             SetCanvasStyle(c1divide, 0.15, 0.03, 0.05, 0.15);
-            c1divide->Divide(3, 2);
+            c1divide->Divide(isAngularStudy ? 4 : 3, 2);
             TCanvas *c2divide = new TCanvas("", "all_bins", 1440, 720);
             SetCanvasStyle(c2divide, 0.15, 0.03, 0.05, 0.15);
-            c2divide->Divide(3, 2);
+            c2divide->Divide(isAngularStudy ? 4 : 3, 2);
 
             // /*
 
@@ -451,21 +457,53 @@ void glueball_KsKs_channel()
                 TDirectory *dir = fileInvDistPair->mkdir(Form("multiplicity_%.0f_%.0f", (float)multlow, (float)multhigh));
                 dir->cd();
 
-                for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
-                // for (Int_t ip = 0; ip < 4; ip++) // start pt bin loop
+                for (int ip = 0; ip < activeBinCount; ip++) // start pt/theta bin loop
                 {
-                    float lowpt = pT_bins[ip];
-                    float highpt = pT_bins[ip + 1];
-                    // float lowpt = pt_binsTemp[ip];
-                    // float highpt = 30.0;
+                    const size_t binIndex = std::min(static_cast<size_t>(ip), kRebin.size() - 1);
+                    const size_t normIndex = std::min(static_cast<size_t>(ip), kNormRangepT.size() - 1);
 
-                    cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
-                    int lbin = fHistNum->GetAxis(1)->FindBin(lowpt + 1e-3);
-                    int hbin = fHistNum->GetAxis(1)->FindBin(highpt - 1e-3);
+                    float lowpt = pT_bins[pt_start];
+                    float highpt = pT_bins[pt_start + 1];
+                    float lowTheta = thetaBins.front();
+                    float highTheta = thetaBins.back();
 
-                    fHistNum->GetAxis(1)->SetRange(lbin, hbin);
-                    fHistME->GetAxis(1)->SetRange(lbin, hbin);
-                    fHistRot->GetAxis(1)->SetRange(lbin, hbin);
+                    if (isAngularStudy)
+                    {
+                        lowTheta = thetaBins[ip];
+                        highTheta = thetaBins[ip + 1];
+                        cout << "low theta value is " << lowTheta << " high theta value is " << highTheta << endl;
+                    }
+                    else
+                    {
+                        lowpt = pT_bins[ip];
+                        highpt = pT_bins[ip + 1];
+                        cout << "low pt value is " << lowpt << " high pt value is " << highpt << endl;
+                    }
+
+                    int lbin = isAngularStudy ? fHistNum->GetAxis(3)->FindBin(lowTheta + 1e-3) : fHistNum->GetAxis(1)->FindBin(lowpt + 1e-3);
+                    int hbin = isAngularStudy ? fHistNum->GetAxis(3)->FindBin(highTheta - 1e-3) : fHistNum->GetAxis(1)->FindBin(highpt - 1e-3);
+
+                    if (isAngularStudy)
+                    {
+                        int lbinpT = fHistNum->GetAxis(1)->FindBin(pT_bins[pt_start] + 1e-3);
+                        int hbinpT = fHistNum->GetAxis(1)->FindBin(pT_bins[pt_start + 1] - 1e-3);
+
+                        cout << "the value of lpt is " << fHistNum->GetAxis(1)->GetBinLowEdge(lbinpT) << endl;
+                        cout << "the value of hpt is " << fHistNum->GetAxis(1)->GetBinUpEdge(hbinpT) << endl;
+
+                        fHistNum->GetAxis(1)->SetRange(lbinpT, hbinpT);
+                        fHistME->GetAxis(1)->SetRange(lbinpT, hbinpT);
+                        fHistRot->GetAxis(1)->SetRange(lbinpT, hbinpT);
+                    }
+                    else
+                    {
+                        fHistNum->GetAxis(1)->SetRange(lbin, hbin);
+                        fHistME->GetAxis(1)->SetRange(lbin, hbin);
+                        fHistRot->GetAxis(1)->SetRange(lbin, hbin);
+                    }
+
+                    const std::string scanTag = isAngularStudy ? "theta" : "pt";
+                    const std::string scanDisplay = isAngularStudy ? Form("#bf{%.1f < cos(#theta) < %.1f}", lowTheta, highTheta) : Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt);
 
                     int lbinmult = fHistNum->GetAxis(0)->FindBin(multlow + 1e-3);
                     int hbinmult = fHistNum->GetAxis(0)->FindBin(multhigh - 1e-3);
@@ -486,7 +524,7 @@ void glueball_KsKs_channel()
                     cout << "energy low value is " << energylow << endl;
                     cout << "energy high value is " << energyhigh << endl;
 
-                    auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
+                    auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[binIndex] / fHistTotal[ip]->GetXaxis()->GetNbins();
                     cout << "*********The bin width is:  " << binwidth_file << "*********" << endl;
 
                     //**Cloning sig+bkg histogram for like sign or mixed event subtraction *********************************************************
@@ -497,9 +535,9 @@ void glueball_KsKs_channel()
 
                     if (kResBkg == "MIX" || kResBkg == "ROTATED")
                     {
-                        auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
-                        auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
-                        auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[ip][1])));
+                        auto sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistTotal[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
+                        auto bkg_integral = (fHistBkg[ip]->Integral(fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistBkg[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
+                        auto bkg_integral_rotated = (fHistRotated[ip]->Integral(fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][0]), fHistRotated[ip]->GetXaxis()->FindBin(kNormRangepT[normIndex][1])));
                         auto normfactor = sigbkg_integral / bkg_integral;                 // scaling factor for mixed bkg
                         auto normfactor_rotated = sigbkg_integral / bkg_integral_rotated; // scaling factor for rotated bkg
                         cout << "\n\n normalization factor " << 1. / normfactor << "\n\n";
@@ -516,21 +554,13 @@ void glueball_KsKs_channel()
                             hfbkg->Scale(normfactor_rotated);
                         }
 
-                        hfbkg->Rebin(kRebin[ip]);
-                        hfsig->Rebin(kRebin[ip]);
+                        hfbkg->Rebin(kRebin[binIndex]);
+                        hfsig->Rebin(kRebin[binIndex]);
 
                         hfsig->Add(hfbkg, -1);
                     }
-                    // else if (kResBkg == "ROTATED")
-                    // {
-                    //     hfbkg = (TH1D *)fHistRotated[ip]->Clone();
-                    //     hfbkg->Scale(0.5);
-                    //     hfbkg->Rebin(kRebin[ip]);
-                    //     hfsig->Rebin(kRebin[ip]);
-                    //     hfsig->Add(hfbkg, -1);
-                    // }
 
-                    fHistTotal[ip]->Rebin(kRebin[ip]);
+                    fHistTotal[ip]->Rebin(kRebin[binIndex]);
 
                     //*****************************************************************************************************
                     // TCanvas *c1 = new TCanvas("", "", 720, 720);
@@ -558,7 +588,8 @@ void glueball_KsKs_channel()
                     linesig->SetLineWidth(2);
                     // linesig->Draw("same");
                     // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
-                    hfsig->Write(Form("ksks_subtracted_invmass_pt_%.1f_%.1f", lowpt, highpt));
+                    hfsig->Write(Form("ksks_subtracted_invmass_%s_%.1f_%.1f", scanTag.c_str(), isAngularStudy ? lowTheta : lowpt, isAngularStudy ? highTheta : highpt));
+
                     // gPad->Update();
                     // TPaveStats *ps = (TPaveStats *)hfsig->FindObject("stats");
                     // if (ps)
@@ -573,6 +604,7 @@ void glueball_KsKs_channel()
                     // gPad->Modified(); // Necessary to update the canvas with the new text size
                     // gPad->Update();
                     // TLegend *lp2 = DrawLegend(0.55, 0.58, 0.85, 0.89);
+
                     TLegend *lp2 = DrawLegend(0.55, 0.65, 0.85, 0.92);
                     lp2->SetTextSize(0.039);
                     // lp2->SetTextSize(0.055);
@@ -582,11 +614,15 @@ void glueball_KsKs_channel()
                     lp2->AddEntry((TObject *)0, "pp, #sqrt{#it{s}} = 13.6 TeV", "");
                     lp2->AddEntry((TObject *)0, "FT0M, 0-100%", "");
                     lp2->AddEntry((TObject *)0, "|#it{y}| < 0.5", "");
-                    // lp2->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpt, highpt), "");
+                    // if (ip == 0)
+                    // lp2->AddEntry((TObject *)0, scanDisplay.c_str(), "");
                     if (ip == 0)
                         lp2->Draw("same");
 
-                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    // t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    t2->DrawLatex(0.55, 0.6, scanDisplay.c_str());
+
+
                     TLine *lineat0 = new TLine(1.0, 0, 2.50, 0);
                     lineat0->SetLineColor(kRed);
                     lineat0->SetLineStyle(2);
@@ -634,8 +670,8 @@ void glueball_KsKs_channel()
                     // fHistTotal[ip]->SetMaximum(1.2 * fHistTotal[ip]->GetMaximum());
                     fHistTotal[ip]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
                     fHistTotal[ip]->Draw("E");
-                    fHistTotal[ip]->Write(Form("ksks_invmass_pt_%.1f_%.1f", lowpt, highpt));
-                    hfbkg->Write(Form("ksks_bkg_pt_%.1f_%.1f", lowpt, highpt));
+                    fHistTotal[ip]->Write(Form("ksks_invmass_%s_%.1f_%.1f", scanTag.c_str(), isAngularStudy ? lowTheta : lowpt, isAngularStudy ? highTheta : highpt));
+                    hfbkg->Write(Form("ksks_bkg_%s_%.1f_%.1f", scanTag.c_str(), isAngularStudy ? lowTheta : lowpt, isAngularStudy ? highTheta : highpt));
                     // if (save_invmass_distributions)
                     // {
                     //     c2->SaveAs((outputfolder_str + "/hglueball_invmass_only_." + Form("pT_%.1f_%.1f_.", lowpt, highpt) + koutputtype).c_str());
@@ -661,7 +697,8 @@ void glueball_KsKs_channel()
                         leg->Draw();
                         lp2->Draw("same");
                     }
-                    t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    // t2->DrawLatex(0.6, 0.6, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
+                    t2->DrawLatex(0.55, 0.6, scanDisplay.c_str());
 
                     // // t2->DrawLatex(0.27, 0.96, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", lowpt, highpt));
                     // if (save_invmass_distributions)
@@ -685,8 +722,8 @@ void glueball_KsKs_channel()
 
             // */
 
-            c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all" + kResBkg + "." + koutputtype).c_str());
-            c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all" + kResBkg + "." + koutputtype).c_str());
+            c1divide->SaveAs((outputfolder_str + "/hglueball_signal_all_" + (isAngularStudy ? string("theta") : string("pt")) + kResBkg + "." + koutputtype).c_str());
+            c2divide->SaveAs((outputfolder_str + "/hglueball_invmass_all_" + (isAngularStudy ? string("theta") : string("pt")) + kResBkg + "." + koutputtype).c_str());
 
             // TCanvas *cbkg = new TCanvas("", "", 1080, 720);
             // cbkg->Divide(2, 2);

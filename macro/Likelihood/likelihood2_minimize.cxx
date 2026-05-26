@@ -183,6 +183,7 @@ void likelihood2_minimize()
     //--------------------------------------------------
     // Draw histogram and the best fit
     //--------------------------------------------------
+    TCanvas *c = new TCanvas("", "", 720, 720);
     h->SetLineColor(kBlack);
     h->Draw();
     TF1 *f = new TF1("f", totalFunction, 0, 10, 2);
@@ -190,6 +191,7 @@ void likelihood2_minimize()
     f->SetParameter(1, bestNb);
     f->SetLineStyle(2);
     f->Draw("same");
+    c->SaveAs("Plots/ToyData_fit.png");
 
     //--------------------------------------------------
     // Compare the results with ROOT L fit option which does the same thing and also provides uncertainties on the parameters.

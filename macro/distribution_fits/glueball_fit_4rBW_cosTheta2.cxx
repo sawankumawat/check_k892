@@ -4,12 +4,12 @@
 using namespace std;
 
 // Forward declarations
-void glueball_fit_4rBW_simple();
+void glueball_fit_4rBW_cosTheta2();
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 int main()
 {
-    glueball_fit_4rBW_simple();
+    glueball_fit_4rBW_cosTheta2();
     return 0;
 }
 
@@ -28,7 +28,7 @@ Double_t BWsum_constWidth(double *x, double *par);
 Double_t coherent_sum(double *x, double *par);
 Double_t CoherentSum_modifiedBoltzmann(double *x, double *par);
 
-void glueball_fit_4rBW_simple()
+void glueball_fit_4rBW_cosTheta2()
 {
     // Note that the main source of systematic i.e. signal extraction is still remaining to be done
     std::vector<std::string> variations = {
@@ -40,53 +40,14 @@ void glueball_fit_4rBW_simple()
 
         //****************systematics train*******************************
         const string kvariation1 = variations[isysvars];
-        //======== For fitting and normalization range variations ==========
-        // const string kvariation1 = "_Default3";
-        // const string kvariation1 = "_fitLow1p07";
-        // const string kvariation1 = "_fitHigh2p17";
-        // const string kvariation1 = "_fitHigh2p25"; // Low fit is 1.045 (without it same as default)
-        // const string kvariation1 = "_normLeft"; // 2.4-2.5 (fitlow 1.07 for 7-10 GeV/c)
-        // const string kvariation1 = "_normRight"; // 2.6-2.7
-        // const string kvariation1 = "_AllParametersFree"; // Limit on width is (1 * f1710WidthErr)
-        // const string kvariation1 = "_AllParametersFixed";
-        // const string kvariation1 = "_f0WidthFree"; // Limit on width is (1 * f1710WidthErr)
-        // const string kvariation1 = "_f2WidthFree";
-        //======== For fit function variation =============================
-        // const string kvariation1 = "_FitChKstar"; //( Uncomment if (ipt == 1) BEexpol->SetParLimits(9, 560, 3500);)
-        // const string kvariation1 = "_FitExpoHERA"; // ( Uncomment if (ipt == 1) BEexpol->SetParLimits(9, 580, 3500);)
-        // const string kvariation1 = "_ConstWidth"; // Unable to fit properly, specifically 1-2 GeV/c. Also relative uncertaintly is very large in the the yields.
-        // const string kvariation1 = "_CoherentSum";
-        // const string kvariation1 = "_CoherentSumPhiPi";
-        // string kvariation1 = "BeforeCombinatorialSubtraction";
-        // string VariationTempPlot = "Exponential_HERA";
-        // const string kvariation1 = "Mix2";
-        // const string kvariation1 = "_CoherentSumBothFixed2";
 
-        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // default file
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances" + kvariation1; // for systematics studies (excluding signal extraction)
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances";
-
-        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/mult_0-100/";
-        // string path2 = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/";
-        string path2 = path + "/fits/4rBw_fits/pt_dependent/mult_0-100/";
-
-        //******************for default study with full train ************************
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances"; // 2022 dataset (old)
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435448/KsKs_Channel/higher-mass-resonances"; //2022 dataset (new)
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435450/KsKs_Channel/higher-mass-resonances"; // 2023 dataset
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/435449/KsKs_Channel/higher-mass-resonances"; // 2024 dataset
-        // string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/504802/KsKs_Channel/higher-mass-resonances_CS_Frame"; // 2023 dataset (derived data)
-
-        string savepath = path + "/fits/4rBw_fits/pt_dependent/";
-        // string savepath = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/systematic2022_new/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+        string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/683092/KsKs_Channel/higher-mass-resonances/AngularStudy"; // default file
+        string path2 = path + "/fits/";
+        string savepath = path + "/fits/";
 
         gSystem->Exec(("mkdir -p " + savepath).c_str());
 
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
-        // TFile *f = new TFile((path + "/hglue_MIX_allPt.root").c_str(), "READ");
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPt_normleft.root").c_str(), "READ");
-        // TFile *f = new TFile((path + "/hglue_ROTATED_allPtMult3.root").c_str(), "READ");
-        TFile *f = new TFile((path + "/hglue_ROTATED_allPt_finerBin2.root").c_str(), "READ");
+        TFile *file = new TFile((path + "/hglue_ROTATED_angular.root").c_str(), "READ");
 
         int colors[] = {kGreen + 4, 28, kMagenta, kBlue};
         double masses[] = {f1270Mass, a1320Mass, f1525Mass, f1710Mass};
@@ -94,20 +55,20 @@ void glueball_fit_4rBW_simple()
         string resonance_names[] = {"f_{2}(1270)", "a_{2}(1320)^{0}", "f'_{2}(1525)", "f_{0}(1710)"};
         string resonance_mass[] = {"1270", "1320", "1525", "1710"};
 
-        if (f->IsZombie())
+        if (file->IsZombie())
         {
             cout << "Error opening file" << endl;
             return;
         }
-// #define b_massdepWidth_modifiedBoltzmann
-#define coherentSum
+#define b_massdepWidth_modifiedBoltzmann
+// #define coherentSum
 #define residual_subtracted
 // #define doublepanelplot
 #define multiPanelPlots
         // #define singlePanelPlots
         // #define before_combinatorialPlots
 
-        TH1F *hmult = (TH1F *)f->Get("multiplicity_histogram");
+        TH1F *hmult = (TH1F *)file->Get("multiplicity_histogram");
         if (hmult == nullptr)
         {
             cout << "Multiplicity histogram not found" << endl;
@@ -128,21 +89,15 @@ void glueball_fit_4rBW_simple()
         cMultiPanelWithBkg->Divide(3, 2);
 #endif
 #endif
-        // (2022 data) // In first pT bin (1.07, 1.85) for coherent sum
         vector<vector<pair<float, float>>> fitRanges = {
-            {{1.07, 2.05}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
-            {{1.05, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-20%
-            {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.03, 2.20}, {1.05, 2.20}},  // 20-50%
-            {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
-            {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}}}; // 70-100%
+            {{1.07, 2.05}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},
+            {{1.05, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}}};
 
-        // // (2023 data)
-        // vector<vector<pair<float, float>>> fitRanges = {
-        //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-100%
-        //     {{1.06, 2.20}, {1.09, 2.15}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 0-20%
-        //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.03, 2.20}, {1.07, 2.20}},  // 20-50%
-        //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}},  // 50-70%
-        //     {{1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}, {1.05, 2.20}}}; // 70-100%
+        float cosThetaBins[] = {-1.0, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 1.0};
+        bool folding = false;
+        int nBinsTheta = sizeof(cosThetaBins) / sizeof(cosThetaBins[0]) - 1;
+        if (folding)
+            nBinsTheta = nBinsTheta / 2;
 
         TFile *fDefault = new TFile((savepath + "/FitParam" + kvariation1 + ".root").c_str(), "recreate");
 
@@ -160,7 +115,7 @@ void glueball_fit_4rBW_simple()
                 multhigh = mult_classes[imult];
             }
             // All the required histograms to be stored
-            TH1F *hChi2NDF = new TH1F("hChi2NDF", "Chi2/NDF vs pT", Npt, pT_bins);
+            TH1F *hChi2NDF = new TH1F("hChi2NDF", "Chi2/NDF vs Theta", nBinsTheta, cosThetaBins);
             TH1F *hSignificance[4];
             TH1F *hStatSignificance[4];
             TH1F *hMass[4];
@@ -171,19 +126,15 @@ void glueball_fit_4rBW_simple()
 
             for (int ires = 0; ires < 4; ires++)
             {
-                hSignificance[ires] = new TH1F(Form("hSignificance%d", (int)masses[ires]), Form("Significance of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
-                hStatSignificance[ires] = new TH1F(Form("hStatSignificance%d", (int)masses[ires]), Form("Statistical Significance of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
-                hMass[ires] = new TH1F(Form("hMass%d", (int)masses[ires]), Form("Mass of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
-                hWidth[ires] = new TH1F(Form("hWidth%d", (int)masses[ires]), Form("Width of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
-                hYield[ires] = new TH1F(Form("hYield%d", (int)masses[ires]), Form("Raw Yield of %s vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
+                hSignificance[ires] = new TH1F(Form("hSignificance%d", (int)masses[ires]), Form("Significance of %s vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
+                hStatSignificance[ires] = new TH1F(Form("hStatSignificance%d", (int)masses[ires]), Form("Statistical Significance of %s vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
+                hMass[ires] = new TH1F(Form("hMass%d", (int)masses[ires]), Form("Mass of %s vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
+                hWidth[ires] = new TH1F(Form("hWidth%d", (int)masses[ires]), Form("Width of %s vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
+                hYield[ires] = new TH1F(Form("hYield%d", (int)masses[ires]), Form("Raw Yield of %s vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
 
-                hMass_res[ires] = new TH1F(Form("hMass_res%d", (int)masses[ires]), Form("Mass of %s from Residual vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
-                hYield_res[ires] = new TH1F(Form("hYield_res%d", (int)masses[ires]), Form("Raw Yield of %s from Residual vs pT", resonance_names[ires].c_str()), Npt, pT_bins);
+                hMass_res[ires] = new TH1F(Form("hMass_res%d", (int)masses[ires]), Form("Mass of %s from Residual vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
+                hYield_res[ires] = new TH1F(Form("hYield_res%d", (int)masses[ires]), Form("Raw Yield of %s from Residual vs Theta", resonance_names[ires].c_str()), nBinsTheta, cosThetaBins);
             }
-
-            // // Temporary for single multiplicity class checking
-            // multlow = 0;
-            // multhigh = 100;
 
             total_events = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 0.01), hmult->GetXaxis()->FindBin(multhigh - 0.01));
 
@@ -191,45 +142,32 @@ void glueball_fit_4rBW_simple()
             gSystem->Exec(("mkdir -p " + savepath_mult).c_str());
             float maxRanges[] = {1.25, 1.4, 1.6, 1.8, 1.8, 2.0, 2.2};
 
-            for (int ipt = 0; ipt < Npt; ipt++)
-            // for (int ipt = 4; ipt < 5; ipt++)
+            for (int itheta = 0; itheta < nBinsTheta; itheta++)
             {
-                float lowpT = pT_bins[ipt];
-                float highpT = pT_bins[ipt + 1];
-
-                // // Temporary for single bins checking
-                // float lowpT = 10.0;
-                // float highpT = 15.0;
+                float lowTheta = cosThetaBins[itheta];
+                float highTheta = cosThetaBins[itheta + 1];
 
                 // for (int irange = 0; irange < fitranges.size(); irange++)
-                for (int irange = 0; irange < 1; irange++)
+                for (int irange = 0; irange < 1; irange++) // for fit range
                 {
                     // float fitlow = fitranges[irange][0];
                     // float fithigh = fitranges[irange][1];
-                    float fitlow = fitRanges[imult][ipt].first;
-                    float fithigh = fitRanges[imult][ipt].second;
+                    float fitlow = fitRanges[imult][itheta].first;
+                    float fithigh = fitRanges[imult][itheta].second;
                     cout << "fit low is " << fitlow << endl;
                     cout << "fit high is " << fithigh << endl;
 
                     cout << "Low fit range is " << fitlow << ", High fit range is " << fithigh << endl;
 
                     TH1F *hinvMass, *hraw, *hbkg;
-                    // if (ipt == 0 || ipt == 1)
-                    // {
-                    //     hinvMass = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    //     hraw = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    //     hbkg = (TH1F *)ftemp->Get(Form("multiplicity_%d_%d/ksks_bkg_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    // }
-                    // else
-                    {
-                        hinvMass = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                        hraw = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                        hbkg = (TH1F *)f->Get(Form("multiplicity_%d_%d/ksks_bkg_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT));
-                    }
+
+                    hinvMass = (TH1F *)file->Get(Form("multiplicity_%d_%d/ksks_subtracted_invmass_theta_%.1f_%.1f", multlow, multhigh, lowTheta, highTheta));
+                    hraw = (TH1F *)file->Get(Form("multiplicity_%d_%d/ksks_invmass_theta_%.1f_%.1f", multlow, multhigh, lowTheta, highTheta));
+                    hbkg = (TH1F *)file->Get(Form("multiplicity_%d_%d/ksks_bkg_theta_%.1f_%.1f", multlow, multhigh, lowTheta, highTheta));
 
                     if (hinvMass == nullptr || hraw == nullptr || hbkg == nullptr)
                     {
-                        cout << "Error opening histogram: " << Form("multiplicity_%d_%d/ksks_subtracted_invmass_pt_%.1f_%.1f", multlow, multhigh, lowpT, highpT) << endl;
+                        cout << "Error opening histogram: " << Form("multiplicity_%d_%d/ksks_subtracted_invmass_theta_%.1f_%.1f", multlow, multhigh, lowTheta, highTheta) << endl;
                         return;
                     }
 
@@ -241,14 +179,12 @@ void glueball_fit_4rBW_simple()
                     c->cd();
 #endif
 #ifdef multiPanelPlots
-                    cMultiPanelFit->cd(ipt + 1);
+                    cMultiPanelFit->cd(itheta + 1);
                     gPad->SetTopMargin(0.06);
                     gPad->SetBottomMargin(0.14);
                     gPad->SetLeftMargin(0.13);
                     gPad->SetRightMargin(0.05);
 #endif
-                    // if (ipt == Npt - 2 || ipt == Npt - 1)
-                    //     hinvMass->Rebin(2);
 
                     double binwidthfile = (hinvMass->GetXaxis()->GetXmax() - hinvMass->GetXaxis()->GetXmin()) / hinvMass->GetXaxis()->GetNbins();
                     cout << "Binwidth file is " << binwidthfile << endl;
@@ -257,7 +193,7 @@ void glueball_fit_4rBW_simple()
                     hinvMass->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
                     hinvMass->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
                     TH1F *hinvMassClone = (TH1F *)hinvMass->Clone("hinvMassClone");
-                    hinvMass->SetMaximum(maxRanges[ipt] * hinvMass->GetMaximum());
+                    hinvMass->SetMaximum(maxRanges[itheta] * hinvMass->GetMaximum());
                     // hinvMass->SetMaximum(2.0 * hinvMass->GetMaximum());
 #ifdef multiPanelPlots
                     hinvMass->GetYaxis()->SetTitleOffset(1.15);
@@ -306,7 +242,7 @@ void glueball_fit_4rBW_simple()
 
                     double parameters[] = {1.1e4, f1270Mass, f1270Width, 5.8e3, a1320Mass, a1320Width, 1.6e4, f1525Mass, f1525Width, 3.1e3, f1710Mass, f1710Width};
 
-                    if ((imult == 3 && ipt == 3) || (imult == 4 && ipt == 3) || (imult == 4 && ipt == 4))
+                    if ((imult == 3 && itheta == 3) || (imult == 4 && itheta == 3) || (imult == 4 && itheta == 4))
                     {
                         parameters[0] = 3500;
                         parameters[3] = 2000;
@@ -323,7 +259,7 @@ void glueball_fit_4rBW_simple()
                     }
 
                     // //********systematic studies*************
-                    double initial_param_bkg[] = {1.37518e5, 0.6, 6.071167, 1.04}; // default fit
+                    double initial_param_bkg[] = {4.3e7, -0.9, 8.478, 0.4}; // default fit
                     // double initial_param_bkg[] = {9.5e6, -0.007, -2.4, -0.15}; // for expol K*+- and expo hera
                     // double initial_param_bkg[] = {6.8e5, -0.2, 2.8}; // for Exponential HERA
                     // double initial_param_bkg[] = {1.4e5, -0.1, 5.071167, 1.0}; // const width BW
@@ -335,7 +271,7 @@ void glueball_fit_4rBW_simple()
                     BEexpol_initial->SetParameter(size_fitparams + 3, initial_param_bkg[3]); // 1.098     // Free
                     // BEexpol_initial->FixParameter(size_fitparams + 3, 1.1); // Fix for Constant width case
                     BEexpol_initial->SetParLimits(size_fitparams + 3, 0.5, 3.0); // Use only for default fit
-                    // if (ipt == 0){
+                    // if (itheta == 0){
                     //     BEexpol_initial->SetParLimits(size_fitparams + 0, 1e2, 1e7);
                     //     BEexpol_initial->SetParLimits(size_fitparams + 1, 0.0, 0.5);
                     // }
@@ -372,19 +308,14 @@ void glueball_fit_4rBW_simple()
                         BEexpol->SetParLimits(par_limits[i][0], parameters[param_index] - par_limits[i][1], parameters[param_index] + par_limits[i][1]);
                     }
 
-                    // if (!(imult == 4 && ipt == 4) && !(imult == 1 && ipt == 0)) // second condition added for temp fix for 2023 data
-                    // {
-                    //     BEexpol->SetParLimits(0, 0, 1e6);
-                    //     BEexpol->SetParLimits(3, 0, 1e6);
-                    // }
                     BEexpol->SetParLimits(0, 0, 1e6);
                     BEexpol->SetParLimits(3, 0, 1e6);
-                    // BEexpol->SetParLimits(6, 0, 1e6); // For expol1
-                    if (ipt == 0)
-                    {
-                        // BEexpol->SetParLimits(6, 0, 1e6);
-                        BEexpol->SetParLimits(9, 0, 1e6);
-                    }
+                    // // BEexpol->SetParLimits(6, 0, 1e6); // For expol1
+                    // if (itheta == 0)
+                    // {
+                    //     // BEexpol->SetParLimits(6, 0, 1e6);
+                    //     BEexpol->SetParLimits(9, 0, 1e6);
+                    // }
 
                     BEexpol->FixParameter(2, f1270Width);
                     BEexpol->FixParameter(5, a1320Width);
@@ -399,28 +330,11 @@ void glueball_fit_4rBW_simple()
 
                     // BEexpol->FixParameter(10, f1710Mass);
                     BEexpol->FixParameter(11, f1710Width);
-                    if (ipt == 0)
+                    if (itheta == 0)
                         BEexpol->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
-                    // if (ipt == 0) // for width free case (used for comparison with pt-integrated fit)
-                    // {
-                    //     BEexpol->SetParLimits(11, f1710Width - 0.01, f1710Width + 0.01);
-                    // }
-
-                    // if (ipt == 1)
-                    //     BEexpol->SetParLimits(9, 350, 450); // 580-3500, used in
-
-                    // if (ipt == 2)
-                    //     BEexpol->SetParLimits(9, 200, 590); // for TPC PID2
-
-                    // if (ipt == 0)
-                    //     BEexpol->SetParLimits(9, 0, 145); // for TPC min clusters100, 60 (fit 1.07 - 2.15), 140, 145
-
-                    // BEexpol->SetParLimits(size_fitparams + 3, 0.5, 3.0);
-                    // BEexpol->FixParameter(size_fitparams + 3, 1.0);
-
                     TFitResultPtr fitResultptr;
-                    if (ipt == 0)
+                    if (itheta == 0)
                         fitResultptr = hinvMass->Fit("BEexpol", "REBS");
                     else
                         fitResultptr = hinvMass->Fit("BEexpol", "REBMS");
@@ -487,7 +401,7 @@ void glueball_fit_4rBW_simple()
 
                     // onlyBW_clone->FixParameter(10, f1710Mass);
                     onlyBW_clone->FixParameter(11, f1710Width);
-                    if (ipt == 0)
+                    if (itheta == 0)
                         onlyBW_clone->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
                     onlyBW->SetLineColor(4);
@@ -525,7 +439,7 @@ void glueball_fit_4rBW_simple()
                     ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
                     ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
 #ifdef multiPanelPlots
-                    if (ipt == 0)
+                    if (itheta == 0)
                         ltemp->Draw("same");
 #else
                     ltemp->Draw("same");
@@ -543,7 +457,7 @@ void glueball_fit_4rBW_simple()
                     lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
                     lat1.DrawLatex(0.255, 0.85, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
 #endif
-                    lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -563,10 +477,10 @@ void glueball_fit_4rBW_simple()
                         double amplitude_err = BEexpol->GetParError(3 * i);
                         double statSignificance = amplitude / amplitude_err;
                         cout << "Statistical significance of " << resonance_names[i] << " is " << statSignificance << endl;
-                        hSignificance[i]->SetBinContent(ipt + 1, significance);
-                        hSignificance[i]->SetBinError(ipt + 1, 0);
-                        hStatSignificance[i]->SetBinContent(ipt + 1, statSignificance);
-                        hStatSignificance[i]->SetBinError(ipt + 1, 0);
+                        hSignificance[i]->SetBinContent(itheta + 1, significance);
+                        hSignificance[i]->SetBinError(itheta + 1, 0);
+                        hStatSignificance[i]->SetBinContent(itheta + 1, statSignificance);
+                        hStatSignificance[i]->SetBinError(itheta + 1, 0);
                     }
 #endif
 
@@ -610,7 +524,7 @@ void glueball_fit_4rBW_simple()
                     BEexpol->SetParameter(size_fitparams + 1, initial_param_bkg[1]);
                     BEexpol->SetParameter(size_fitparams + 2, initial_param_bkg[2]);
                     BEexpol->SetParameter(size_fitparams + 3, initial_param_bkg[3]);
-                    if (ipt < Npt - 1)
+                    if (itheta < nBinsTheta - 1)
                         BEexpol->SetParLimits(size_fitparams + 3, 0.99, 2.5);
                     else
                         BEexpol->SetParLimits(size_fitparams + 3, 0.9, 2.5);
@@ -633,7 +547,7 @@ void glueball_fit_4rBW_simple()
 
                     // BEexpol->SetParameter(10, f1710Mass);
                     BEexpol->FixParameter(11, f1710Width);
-                    if (ipt == 0)
+                    if (itheta == 0)
                         BEexpol->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
                     // BEexpol->FixParameter(12, TMath::Pi()); // Fix phase 1
@@ -641,12 +555,12 @@ void glueball_fit_4rBW_simple()
 
                     // BEexpol->FixParameter(13, 0.0);         // Fix phase 2
                     BEexpol->FixParameter(13, TMath::Pi()); // Fix phase 2
-                    
+
                     // BEexpol->SetParLimits(12, 0, 2 * TMath::Pi()); // Set limits for phase 1
                     // BEexpol->SetParLimits(13, 0, 2 * TMath::Pi()); // Set limits for phase 2
 
                     TFitResultPtr fitResultptr;
-                    // if (ipt == 0 || ipt == Npt - 1)
+                    // if (itheta == 0 || itheta == nBinsTheta - 1)
                     fitResultptr = hinvMass->Fit("BEexpol", "REBS"); // comment while using toy mc and likelihood fits
                     // else
                     //     fitResultptr = hinvMass->Fit("BEexpol", "REBMS"); // comment while using toy mc and likelihood fits
@@ -707,7 +621,7 @@ void glueball_fit_4rBW_simple()
 
                     // onlyBW_clone->FixParameter(10, f1710Mass);
                     onlyBW_clone->FixParameter(11, f1710Width);
-                    if (ipt == 0)
+                    if (itheta == 0)
                         onlyBW_clone->SetParLimits(10, f1710Mass - 0.02, f1710Mass + 0.02);
 
                     // onlyBW_clone->FixParameter(12, TMath::Pi());
@@ -754,7 +668,7 @@ void glueball_fit_4rBW_simple()
                     ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
                     ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
 #ifdef multiPanelPlots
-                    if (ipt == 0)
+                    if (itheta == 0)
                         ltemp->Draw("same");
 #else
                     ltemp->Draw("same");
@@ -772,7 +686,7 @@ void glueball_fit_4rBW_simple()
                     lat1.DrawLatex(0.255, 0.89, "pp, #sqrt{#it{s}} = 13.6 TeV");
                     lat1.DrawLatex(0.255, 0.85, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
 #endif
-                    lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    lat1.DrawLatex(0.255, 0.815, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
 
                     for (int i = 0; i < 4; i++)
                     {
@@ -792,10 +706,10 @@ void glueball_fit_4rBW_simple()
                         double amplitude_err = BEexpol->GetParError(3 * i);
                         double statSignificance = amplitude / amplitude_err;
                         cout << "Statistical significance of " << resonance_names[i] << " is " << statSignificance << endl;
-                        hSignificance[i]->SetBinContent(ipt + 1, significance);
-                        hSignificance[i]->SetBinError(ipt + 1, 0);
-                        hStatSignificance[i]->SetBinContent(ipt + 1, statSignificance);
-                        hStatSignificance[i]->SetBinError(ipt + 1, 0);
+                        hSignificance[i]->SetBinContent(itheta + 1, significance);
+                        hSignificance[i]->SetBinError(itheta + 1, 0);
+                        hStatSignificance[i]->SetBinContent(itheta + 1, statSignificance);
+                        hStatSignificance[i]->SetBinError(itheta + 1, 0);
                     }
 #endif
 
@@ -815,11 +729,11 @@ void glueball_fit_4rBW_simple()
                         ptstats->SetY2NDC(0.92);
                         ptstats->Draw("same");
                     }
-// c->SaveAs((savepath + Form("/rBWfit_pt_%.2f_%.2f_%s.png", lowpT, highpT, kvariation1.c_str())).c_str());
+// c->SaveAs((savepath + Form("/rBWfit_theta_%.2f_%.2f_%s.png", lowTheta, highTheta, kvariation1.c_str())).c_str());
 // c->SaveAs((savepath + "/rBWfit.png").c_str());
 // c->SaveAs((savepath + Form("/rBWfit_fit_%.2f_%.2f.png", fitlow, fithigh)).c_str());
 #ifdef singlePanelPlots
-                    c->SaveAs((savepath_mult + Form("/rBWfit_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+                    c->SaveAs((savepath_mult + Form("/rBWfit_theta_%.1f_%.1f.png", lowTheta, highTheta)).c_str());
 #endif
 
                     double fitnorm1525 = BEexpol->GetParameter(6);
@@ -867,7 +781,7 @@ void glueball_fit_4rBW_simple()
                     SetCanvasStyle(c2, 0.14, 0.03, 0.05, 0.14);
 #endif
 #ifdef multiPanelPlots
-                    cMultiPanelResidual->cd(ipt + 1);
+                    cMultiPanelResidual->cd(itheta + 1);
                     gPad->SetTopMargin(0.06);
                     gPad->SetBottomMargin(0.14);
 #endif
@@ -928,7 +842,7 @@ void glueball_fit_4rBW_simple()
                     // lVertical->Draw("same");
 #ifdef multiPanelPlots
                     lat2.SetTextSize(0.05);
-                    if (ipt == 0)
+                    if (itheta == 0)
                         ltemp2->Draw("same");
 #else
                     lat2.SetTextSize(0.03);
@@ -939,11 +853,11 @@ void glueball_fit_4rBW_simple()
                     lat2.DrawLatex(0.215, 0.90, "Residual BG subtracted");
                     lat2.DrawLatex(0.215, 0.86, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
 #endif
-                    lat2.DrawLatex(0.215, 0.82, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    lat2.DrawLatex(0.215, 0.82, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
 
 // c2->SaveAs((savepath + "/rBWfit_residual_" + kvariation1 + ".png").c_str());
 #ifdef singlePanelPlots
-                    c2->SaveAs((savepath_mult + Form("/rBWfit_residual_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+                    c2->SaveAs((savepath_mult + Form("/rBWfit_residual_theta_%.1f_%.1f.png", lowTheta, highTheta)).c_str());
 #ifdef before_combinatorialPlots
                     TCanvas *cSigWithBkg = new TCanvas("", "", 720, 720);
                     SetCanvasStyle(cSigWithBkg, 0.14, 0.03, 0.05, 0.14);
@@ -972,8 +886,8 @@ void glueball_fit_4rBW_simple()
                     lat1.DrawLatex(0.58, 0.89, "ALICE");
                     lat1.DrawLatex(0.58, 0.835, "pp, #sqrt{#it{s}} = 13.6 TeV");
                     lat1.DrawLatex(0.58, 0.785, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
-                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
-                    cSigWithBkg->SaveAs((savepath_mult + Form("/SignalWithBkg_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
+                    cSigWithBkg->SaveAs((savepath_mult + Form("/SignalWithBkg_theta_%.1f_%.1f.png", lowTheta, highTheta)).c_str());
 
                     TCanvas *cSignalWithoutFit = new TCanvas("", "", 720, 720);
                     SetCanvasStyle(cSignalWithoutFit, 0.14, 0.03, 0.05, 0.14);
@@ -984,26 +898,14 @@ void glueball_fit_4rBW_simple()
                     lat1.DrawLatex(0.58, 0.89, "ALICE");
                     lat1.DrawLatex(0.58, 0.835, "pp, #sqrt{#it{s}} = 13.6 TeV");
                     lat1.DrawLatex(0.58, 0.785, Form("FT0M: %d-%d%%), |y|<0.5", multlow, multhigh));
-                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
-                    cSignalWithoutFit->SaveAs((savepath_mult + Form("/SignalWithoutFit_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+                    lat1.DrawLatex(0.58, 0.735, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
+                    cSignalWithoutFit->SaveAs((savepath_mult + Form("/SignalWithoutFit_theta_%.1f_%.1f.png", lowTheta, highTheta)).c_str());
 #endif
 #endif
 #endif
 
-                    float ptBinWidth = highpT - lowpT;
+                    float thetaBinWidth = highTheta - lowTheta;
                     double fitrangelow = 1.001; // to avoid mass thresold (in denominator of BW function there is x^2 - m^2).
-                    // double fitrangehigh = 2.499;
-                    // double fitrangelow = BEexpol->GetXmin();
-                    // double fitrangehigh = BEexpol->GetXmax();
-
-                    // TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
-                    // TMatrixDSym cov1;
-                    // TMatrixDSym cov2;
-                    // cov.GetSub(0, 11, 0, 11, cov1);
-                    // cov.GetSub(12, 15, 12, 15, cov2);
-                    // Double_t *b = cov1.GetMatrixArray();
-                    // Double_t *a = cov2.GetMatrixArray();
-                    // Double_t *para = onlyBW_clone->GetParameters();
 
                     float nsigma_yield = 5.0;
                     double fitRegion1270_low = f1270Mass - nsigma_yield * f1270Width;
@@ -1025,10 +927,10 @@ void glueball_fit_4rBW_simple()
                         fitRegion1710_low = fitrangelow;
 
                     // // Yield calculation
-                    double yield1270Integral = singlefits[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1320Integral = singlefits[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1525Integral = singlefits[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1710Integral = singlefits[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1270Integral = singlefits[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1320Integral = singlefits[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1525Integral = singlefits[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1710Integral = singlefits[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (thetaBinWidth * binwidthfile * total_events);
 
                     // Create individual covariance matrices for each resonance (3x3 each)
                     TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
@@ -1050,10 +952,10 @@ void glueball_fit_4rBW_simple()
                     Double_t *para1710 = singlefits[3]->GetParameters();
 
                     // Errors propagation for yields using the covariance matrix
-                    double yield1270_err = singlefits[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270, cov1270_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1320_err = singlefits[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320, cov1320_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1525_err = singlefits[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525, cov1525_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1710_err = singlefits[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710, cov1710_array) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1270_err = singlefits[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270, cov1270_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1320_err = singlefits[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320, cov1320_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1525_err = singlefits[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525, cov1525_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1710_err = singlefits[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710, cov1710_array) / (thetaBinWidth * binwidthfile * total_events);
 
                     cout << "Yield 1270: " << yield1270Integral << " +- " << yield1270_err << endl;
                     cout << "Yield 1320: " << yield1320Integral << " +- " << yield1320_err << endl;
@@ -1062,10 +964,10 @@ void glueball_fit_4rBW_simple()
 
 #ifdef residual_subtracted
                     // Yield calculation after residual background subtraction
-                    double yield1270Integral_res = singlefits1[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1320Integral_res = singlefits1[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1525Integral_res = singlefits1[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1710Integral_res = singlefits1[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1270Integral_res = singlefits1[0]->Integral(fitRegion1270_low, fitRegion1270_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1320Integral_res = singlefits1[1]->Integral(fitRegion1320_low, fitRegion1320_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1525Integral_res = singlefits1[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1710Integral_res = singlefits1[3]->Integral(fitRegion1710_low, fitRegion1710_high) / (thetaBinWidth * binwidthfile * total_events);
 
                     // Individual covariance matrices after residual background subtraction
                     TMatrixDSym cov_res = fitResultptr_res->GetCovarianceMatrix();
@@ -1087,14 +989,14 @@ void glueball_fit_4rBW_simple()
                     Double_t *para1710_res = singlefits1[3]->GetParameters();
 
                     // Errors for residual background subtracted yields
-                    double yield1270_res_err = singlefits1[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270_res, cov1270_res_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1320_res_err = singlefits1[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320_res, cov1320_res_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1525_res_err = singlefits1[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525_res, cov1525_res_array) / (ptBinWidth * binwidthfile * total_events);
-                    double yield1710_res_err = singlefits1[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710_res, cov1710_res_array) / (ptBinWidth * binwidthfile * total_events);
+                    double yield1270_res_err = singlefits1[0]->IntegralError(fitRegion1270_low, fitRegion1270_high, para1270_res, cov1270_res_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1320_res_err = singlefits1[1]->IntegralError(fitRegion1320_low, fitRegion1320_high, para1320_res, cov1320_res_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1525_res_err = singlefits1[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525_res, cov1525_res_array) / (thetaBinWidth * binwidthfile * total_events);
+                    double yield1710_res_err = singlefits1[3]->IntegralError(fitRegion1710_low, fitRegion1710_high, para1710_res, cov1710_res_array) / (thetaBinWidth * binwidthfile * total_events);
 #endif
 
-                    hChi2NDF->SetBinContent(ipt + 1, BEexpol->GetChisquare() / BEexpol->GetNDF());
-                    hChi2NDF->SetBinError(ipt + 1, 0);
+                    hChi2NDF->SetBinContent(itheta + 1, BEexpol->GetChisquare() / BEexpol->GetNDF());
+                    hChi2NDF->SetBinError(itheta + 1, 0);
                     for (int ires = 0; ires < 4; ires++)
                     {
                         double mass_temp = 0.0;
@@ -1160,19 +1062,19 @@ void glueball_fit_4rBW_simple()
 #endif
                         }
 
-                        hMass[ires]->SetBinContent(ipt + 1, mass_temp);
-                        hMass[ires]->SetBinError(ipt + 1, massErr_temp);
-                        hWidth[ires]->SetBinContent(ipt + 1, width_temp);
-                        hWidth[ires]->SetBinError(ipt + 1, widthErr_temp);
-                        hYield[ires]->SetBinContent(ipt + 1, yield_temp);
-                        hYield[ires]->SetBinError(ipt + 1, yieldErr_temp);
+                        hMass[ires]->SetBinContent(itheta + 1, mass_temp);
+                        hMass[ires]->SetBinError(itheta + 1, massErr_temp);
+                        hWidth[ires]->SetBinContent(itheta + 1, width_temp);
+                        hWidth[ires]->SetBinError(itheta + 1, widthErr_temp);
+                        hYield[ires]->SetBinContent(itheta + 1, yield_temp);
+                        hYield[ires]->SetBinError(itheta + 1, yieldErr_temp);
 
 // For residual background subtracted results
 #ifdef residual_subtracted
-                        hMass_res[ires]->SetBinContent(ipt + 1, onlyBW_clone->GetParameter(3 * ires + 1));
-                        hMass_res[ires]->SetBinError(ipt + 1, onlyBW_clone->GetParError(3 * ires + 1));
-                        hYield_res[ires]->SetBinContent(ipt + 1, yield_res_temp);
-                        hYield_res[ires]->SetBinError(ipt + 1, yieldErr_res_temp);
+                        hMass_res[ires]->SetBinContent(itheta + 1, onlyBW_clone->GetParameter(3 * ires + 1));
+                        hMass_res[ires]->SetBinError(itheta + 1, onlyBW_clone->GetParError(3 * ires + 1));
+                        hYield_res[ires]->SetBinContent(itheta + 1, yield_res_temp);
+                        hYield_res[ires]->SetBinError(itheta + 1, yieldErr_res_temp);
 #endif
                     }
 
@@ -1272,7 +1174,7 @@ void glueball_fit_4rBW_simple()
                     // lat5.DrawLatex(0.32, 0.80, "ALICE Performance");
                     lat5.DrawLatex(0.32, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV");
                     lat5.DrawLatex(0.32, 0.73, "FT0M: 0-100%, |#it{y}| < 0.5");
-                    lat5.DrawLatex(0.32, 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowpT, highpT));
+                    lat5.DrawLatex(0.32, 0.65, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", lowTheta, highTheta));
 
                     // TLatex *text4 = new TLatex(0.65, 0.80, "ALICE, work in progress");
                     // text4->SetNDC();
@@ -1308,7 +1210,7 @@ void glueball_fit_4rBW_simple()
                     lat6.DrawLatex(0.59, 0.86, "Residual background subtraction");
                     // lat6.DrawLatex(0.65, 0.70, "pp #sqrt{#it{s}} = 13.6 TeV");
                     // lat6.DrawLatex(0.65, 0.60, "FT0M: 0-100%, |#it{y}|<0.5");
-                    // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", lowpT, highpT));
+                    // lat6.DrawLatex(0.65, 0.50, Form("%.1f < #it{p}_{T} #leq %.1f GeV/c", lowTheta, highTheta));
 
                     // TLegend *leg = new TLegend(0.65, 0.50, 0.99, 0.83);
                     // leg->SetFillStyle(0);
@@ -1365,13 +1267,13 @@ void glueball_fit_4rBW_simple()
                     textLeft1->Draw();
 
                     // c1->SaveAs("/home/sawan/Music/r4BWfit_doublepanel.png");
-                    c1->SaveAs((savepath_mult + Form("/rBWfit_doublepanel_pt_%.1f_%.1f.png", lowpT, highpT)).c_str());
+                    c1->SaveAs((savepath_mult + Form("/rBWfit_doublepanel_theta_%.1f_%.1f.png", lowTheta, highTheta)).c_str());
 
 #endif
 
 #ifdef multiPanelPlots
 #ifdef before_combinatorialPlots
-                    cMultiPanelWithBkg->cd(ipt + 1);
+                    cMultiPanelWithBkg->cd(itheta + 1);
                     gPad->SetTopMargin(0.06);
                     gPad->SetBottomMargin(0.14);
                     gPad->SetLeftMargin(0.13);
@@ -1381,7 +1283,7 @@ void glueball_fit_4rBW_simple()
                     hraw->GetYaxis()->SetTitleOffset(1.2);
                     hraw->Draw("pe");
                     hbkg->Draw("pe same");
-                    if (ipt == 0)
+                    if (itheta == 0)
                     {
                         TLegend *ltemp3 = new TLegend(0.5, 0.55, 0.92, 0.80);
                         ltemp3->SetFillStyle(0);
@@ -1394,7 +1296,7 @@ void glueball_fit_4rBW_simple()
                         ltemp3->AddEntry(hbkg, "Same event rotational bkg", "p");
                         ltemp3->Draw("same");
                     }
-                    lat2.DrawLatex(0.5, 0.83, Form("%.1f < p_{T} < %.1f GeV/c", lowpT, highpT));
+                    lat2.DrawLatex(0.5, 0.83, Form("%.1f < p_{T} < %.1f GeV/c", lowTheta, highTheta));
 #endif
 #endif
 
@@ -1425,43 +1327,6 @@ void glueball_fit_4rBW_simple()
 #ifdef before_combinatorialPlots
             cMultiPanelWithBkg->SaveAs((path2 + Form("/rBWfit_withbkg_multpanel_%s.png", kvariation1.c_str())).c_str());
 #endif
-            // TFile *fDefaultTemp = new TFile("/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/mult_0-100/Spectra/spectra_Default4.root", "READ");
-            // TH1F *hMass_f1710_Default = (TH1F *)fDefaultTemp->Get("hMass_1710");
-            // TCanvas *cMass1710 = new TCanvas("", "", 720, 720);
-            // SetCanvasStyle(cMass1710, 0.14, 0.03, 0.05, 0.14);
-            // SetHistoQA(hMass[3]);
-            // SetHistoQA(hMass_f1710_Default);
-            // hMass_f1710_Default->GetYaxis()->SetRangeUser(1.56, 1.89);
-            // hMass_f1710_Default->SetMarkerSize(1.5);
-            // hMass_f1710_Default->Draw("pe");
-            // hMass[3]->SetMarkerStyle(21);
-            // hMass[3]->SetMarkerSize(1.5);
-            // hMass[3]->SetLineColor(2);
-            // hMass[3]->SetMarkerColor(2);
-            // hMass[3]->Draw("pe same");
-            // TLine *line1710Mass = new TLine(1, f1710Mass, 15, f1710Mass);
-            // line1710Mass->SetLineStyle(2);
-            // line1710Mass->SetLineColor(2);
-            // line1710Mass->Draw("same");
-            // TBox *band1710Mass = new TBox(1, f1710Mass - f1710MassErr, 15, f1710Mass + f1710MassErr);
-            // band1710Mass->SetFillColor(kRed); // shaded
-            // band1710Mass->SetFillStyle(3001); // hatched
-            // band1710Mass->SetLineColor(kRed);
-            // band1710Mass->SetLineWidth(1);
-            // band1710Mass->Draw("same");
-            // TLegend *legMass1710 = new TLegend(0.5, 0.6, 0.9, 0.9);
-            // legMass1710->SetFillStyle(0);
-            // legMass1710->SetTextFont(42);
-            // legMass1710->SetBorderSize(0);
-            // legMass1710->SetTextSize(0.04);
-            // legMass1710->SetHeader("f_{0}(1710) mass");
-            // legMass1710->AddEntry(hMass_f1710_Default, "Default", "p");
-            // legMass1710->AddEntry(hMass[3], Form("%s", VariationTempPlot.c_str()), "p");
-            // legMass1710->AddEntry(line1710Mass, "PDG mass", "l");
-            // legMass1710->Draw("same");
-            // cMass1710->SaveAs(Form("%s/Spectra/plots/Temp/hMass_f1710_comparison_%s.png", path2.c_str(), VariationTempPlot.c_str()));
-            // cMultiPanelFit->SaveAs(Form("%s/Spectra/plots/Temp/cFit_%s.png", path2.c_str(), VariationTempPlot.c_str()));
-            // cMultiPanelResidual->SaveAs(Form("%s/Spectra/plots/Temp/cResidual_%s.png", path2.c_str(), VariationTempPlot.c_str()));
 #endif
         } // end of multiplicity loop
 

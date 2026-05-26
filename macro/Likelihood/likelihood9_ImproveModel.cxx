@@ -83,6 +83,7 @@ double totalFunction_pol2(double *x, double *par)
 
 void likelihood9_ImproveModel()
 {
+    gStyle->SetOptStat(0);
     //--------------------------------------------------
     // Create toy histogram
     //--------------------------------------------------
@@ -105,8 +106,8 @@ void likelihood9_ImproveModel()
     // Generate background
     //--------------------------------------------------
 
-    // TF1 *fbkg = new TF1("fbkg", "0.1 + 0.02*x", 0, 10); // pol1 background
-    TF1 *fbkg = new TF1("fbkg", "0.1 + 0.02*x + 0.01*x*x", 0, 10); // pol2 background
+    TF1 *fbkg = new TF1("fbkg", "0.1 + 0.02*x", 0, 10); // pol1 background
+    // TF1 *fbkg = new TF1("fbkg", "0.1 + 0.02*x + 0.01*x*x", 0, 10); // pol2 background
 
     for (int i = 0; i < 9000; i++)
     {
@@ -201,6 +202,7 @@ void likelihood9_ImproveModel()
     //--------------------------------------------------
     // Draw histogram and the best fit
     //--------------------------------------------------
+    TCanvas *c = new TCanvas("", "", 720, 720);
     h->SetLineColor(kBlack);
     h->Draw();
     TF1 *f = new TF1("f", totalFunction, 0, 10, 2);
@@ -232,7 +234,8 @@ void likelihood9_ImproveModel()
             // NEW parameter
             //--------------------------------------------------
 
-            for (double p2 = 0.008; p2 <= 0.012; p2 += 0.0005)
+            // for (double p2 = 0.008; p2 <= 0.012; p2 += 0.0005)
+            for (double p2 = -0.0001; p2 <= 0.0001; p2 += 0.00005)
             {
                 double logL = 0;
 
@@ -315,6 +318,14 @@ void likelihood9_ImproveModel()
     f_pol2->SetLineStyle(3);
     f_pol2->SetLineColor(kBlue);
     f_pol2->Draw("same");
+
+    TLegend *legend = new TLegend(0.6, 0.7, 0.88, 0.88);
+    legend->SetBorderSize(0);
+    legend->SetFillStyle(0);
+    legend->AddEntry(f, "pol1", "l");
+    legend->AddEntry(f_pol2, "pol2", "l");
+    legend->Draw();
+    c->SaveAs("Plots/ModelComparison.png");
 }
 
 //===============Results===============

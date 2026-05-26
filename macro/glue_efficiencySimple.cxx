@@ -15,7 +15,7 @@ void glue_efficiencySimple()
 
     // TFile *f = new TFile("/home/sawan/check_k892/mc/LHC24l1/463655.root", "read");
     // TFile *f = new TFile("/home/sawan/alice/practice/AnalysisResults_Gap4.root", "read");
-    TFile *f = new TFile("/home/sawan/Downloads/AnalysisResults.root", "read");
+    TFile *f = new TFile("/home/sawan/Downloads/AnalysisResults2.root", "read");
 
     if (f->IsZombie())
     {

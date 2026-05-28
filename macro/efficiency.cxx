@@ -14,8 +14,8 @@ void efficiency()
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
-    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
-    TString sysVars[] = {""};
+    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    // TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
@@ -30,7 +30,7 @@ void efficiency()
     string common_MC_path = "../mc/LHC24f3c/";
 
     // for (int ivar = 0; ivar < nSysVars; ivar++)
-    for (int ivar = 0; ivar < 1; ivar++)
+    for (int ivar = 1; ivar < 2; ivar++)
     {
 
         if (ivar > 1 && kResBkg != "MIX")
@@ -65,8 +65,7 @@ void efficiency()
         // string data_path = "660943/kstarqa/hInvMass"; // 2024 (Base, INEL, MID, MIDptDep, pTDepPID, pTDepPIDTOF, LoosePID)
         // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
         // string data_path = "664559/kstarqa/hInvMass"; // 2024 (Base, INEL, TOFshift, TOFshiftMID)
-        string data_path = "679906/kstarqa_TPC2p5_combined3p5/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
-        // string data_path = "682963/kstarqa_NoPVContributor/hInvMass"; // 2024 (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
+        string data_path = "679906/kstarqa/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
 
         TString outputfolder;
         if (ivar == 0)
@@ -108,6 +107,8 @@ void efficiency()
         // string MCpath = "675035.root"; // 2024 MC (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
         // string MCpath = "679882.root"; // 2024 MC (Material budget -10%) (Both ovveride and TOF shift is required for this MC also)
         // string MCpath = "679867.root"; // 2024 MC (Material budget +10%)
+        // string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
+        // string MCpath = "683085.root"; // 2024 MC (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
         //==========2024 MC===========
         // string MCpath = "658377.root"; // 2024 MC (QA+PID checks with INEL)
@@ -116,8 +117,7 @@ void efficiency()
         // string MCpath = "665348.root"; // 2024 MC (All are TOFshifted, INEL, MC_closure, corrections for INEL)
         // string MCpath = "665524.root"; // 2024 MC (ToF shift with PID also shifted (base), INEL)
         // string MCpath = "667875.root"; // 2024 MC (higher TOF shift for pions, Base, MID, MIDptDep, MIDptDep2)
-        string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
-        // string MCpath = "683085.root"; // 2024 MC (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
+        string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -134,8 +134,8 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
-        const string recpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
+        const string genpath = "kstarqa/hInvMass";
+        const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins

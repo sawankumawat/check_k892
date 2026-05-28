@@ -45,11 +45,11 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_SquarePID_TOF3";
 
 //// Systematic variations
-// const string kvariation = "";
+const string kvariation = "";
 // const string kvariation = "_FT0C";
 // const string kvariation = "_FV0A";
 // const string kvariation = "_TPC1p5_combined2";
-const string kvariation = "_TPC2p5_combined3p5";
+// const string kvariation = "_TPC2p5_combined3p5";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
 // const string kvariation = "_NoPVContributor";
@@ -98,13 +98,15 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "672297.root"; // (Base (2sigma TOF), MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
 // const string kDataFilename_temp2 = "675391.root"; // (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 // const string kDataFilename_temp2 = "668605.root"; // (Base, MID, MID_small, MID_verySmall, MIDptDep, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall (With Square PID): TOF3, TOF3_withoutSquareCut)
+// const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
+// const string kDataFilename_temp2 = "682963.root"; // (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
 //==========2024 data===========
 // const string kDataFilename_temp2 = "663738.root"; // (Base, OnlyTPC)
 // const string kDataFilename_temp2 = "660943.root"; // (Base, LoosePID, pTDepPID, pTDepPIDTOF, MIDptDep, MID)
 // const string kDataFilename_temp2 = "664559.root"; // (Base, INEL, TOFshift, TOFshiftMID)
-const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
-// const string kDataFilename_temp2 = "682963.root"; // (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
+const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
+
 #endif
 
 // final dataset name

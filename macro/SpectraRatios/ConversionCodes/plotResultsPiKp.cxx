@@ -8,8 +8,8 @@ void plotResultsPiKp()
 {
     vector<string> particleType = {"Pi", "Ka", "Pr"};
     int selectParticle = 0;
-    TFile *fresultsPos = new TFile(Form("PiKp_Run3_Results/Yeild_meanpT/Yields_Pos_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
-    TFile *fresultsNeg = new TFile(Form("PiKp_Run3_Results/Yeild_meanpT/Yields_Neg_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
+    TFile *fresultsPos = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Pos_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
+    TFile *fresultsNeg = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Neg_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
     if (fresultsPos->IsZombie() || fresultsNeg->IsZombie())
     {
         cout << "Error: Results files not found" << endl;
@@ -50,7 +50,7 @@ void plotResultsPiKp()
     gMeanYieldRun3Data->GetXaxis()->SetTitle("dN_{ch}/d#eta");
     gMeanYieldRun3Data->Draw("AP");
 
-    TFile *fOutput = new TFile(Form("PiKp_Run3_Results/Sawan/%s_results.root", particleType[selectParticle].c_str()), "recreate");
+    TFile *fOutput = new TFile(Form("../PiKp_Run3_Results/Sawan/%s_results.root", particleType[selectParticle].c_str()), "recreate");
     gMeanpTRun3Data->Write("gMeanpTRun3");
     gMeanYieldRun3Data->Write("gMeanYieldRun3");
 

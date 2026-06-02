@@ -107,7 +107,7 @@ void SetHistoQA2D(TH2 *h)
     h->GetZaxis()->SetMaxDigits(3);
 }
 
-void SetGrapherrorStyle(TGraphErrors *gr)
+void SetGraphErrorStyle(TGraphErrors *gr)
 {
     gr->SetTitle(0);
     gr->SetMarkerStyle(20);
@@ -204,6 +204,7 @@ void SetLegendStyle(TLegend *l)
     l->SetBorderSize(0);
     l->SetTextFont(42);
     l->SetFillStyle(0);
+    l->SetTextSize(0.04);
 }
 
 void SetLineStyle(TLine *line, int linecolor)

@@ -7,15 +7,15 @@
 void modelPrediction2()
 {
     //_id53739 for Pythia Monash with rescattering
-    // TFile *fmodel = new TFile("ModelRootFiles/Pythia_Shoving.root", "read");
-    TFile *fmodel = new TFile("ModelRootFiles/EPOS.root", "read");
+    TFile *fmodel = new TFile("ModelRootFiles/Pythia_Monash.root", "read");
+    // TFile *fmodel = new TFile("ModelRootFiles/EPOS.root", "read");
     if (fmodel->IsZombie())
     {
         cout << "Error: file not found" << endl;
         return;
     }
     vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton"};
-    int selectParticle = 0;
+    int selectParticle = 3;
 
     TH2D *hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
     TH2D *hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleTypes[selectParticle].c_str()));
@@ -92,7 +92,7 @@ void modelPrediction2()
         delete hPt;
     }
 
-    TFile *fData = new TFile("levy_fit.root", "read");
+    TFile *fData = new TFile("../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/Results.root", "read");
     // TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Pr_results.root", "read");
     if (fData->IsZombie())
     {

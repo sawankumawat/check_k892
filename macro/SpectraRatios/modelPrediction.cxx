@@ -14,9 +14,16 @@ void modelPrediction()
         cout << "Error: file not found" << endl;
         return;
     }
+    TFile *fEPOSLocal = new TFile("EPOS_output_NoUrQMD.root", "read");
+    TGraphErrors *gKstarYield = (TGraphErrors *)fEPOSLocal->Get("kstar_vs_mult_urqmdOFF");
+    if (gKstarYield == nullptr)
+    {
+        cout << "Error: histogram not found in EPOS local file" << endl;
+    }
+
     vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton"};
     int selectParticle = 0;
-    
+
     TH2D *hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
     TH2D *hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleTypes[selectParticle].c_str()));
     if (hNch05VsFT0M == nullptr || hParticlevsFT0M == nullptr)
@@ -132,8 +139,8 @@ void modelPrediction()
         }
     }
 
-    TFile *fData = new TFile("levy_fit.root", "read");
-    // TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Pr_results.root", "read");
+    // TFile *fData = new TFile("../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/Results.root", "read");
+    TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Ka_results.root", "read");
     if (fData->IsZombie())
     {
         cout << "Error: Data file not found" << endl;
@@ -204,6 +211,7 @@ void modelPrediction()
     gMeanYieldRun3Data->Draw("AP");
     gMeanYield->Draw("E3 same");
     gMeanYield->Draw("l same");
+    gKstarYield->Draw("l same");
 
     // gMeanYieldRun2Data->SetMarkerStyle(25);
     // gMeanYieldRun2Data->SetMarkerSize(1.2);

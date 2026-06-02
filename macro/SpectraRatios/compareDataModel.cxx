@@ -8,8 +8,8 @@ int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrang
 
 void compareDataModel()
 {
-    TFile *fData = new TFile("levy_fit.root", "read");
-    // TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Pr_results.root", "read");
+    // TFile *fData = new TFile("levy_fit.root", "read");
+    TFile *fData = new TFile("PiKp_Run3_Results/Sawan/Ka_results.root", "read");
     TFile *fModel = new TFile("ModelResults.root", "read");
     if (fData->IsZombie() || fModel->IsZombie())
     {

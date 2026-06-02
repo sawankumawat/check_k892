@@ -277,7 +277,7 @@ void plot_spectra()
                 TH1F *h1 = (TH1F *)hmultClone[imult]->Clone("h1");
                 TH1F *h2 = (TH1F *)hmultClone[imult]->Clone("h2");
 
-                for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
+                for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
                     double systemerr = (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i));
                     h2->SetBinError(i, systemerr);
@@ -416,7 +416,7 @@ void plot_spectra()
             gMeanYieldRun2Box->GetYaxis()->SetRangeUser(0.0, 0.89);
             gMeanYieldRun2Box->SetTitle(0);
             gMeanYieldRun2Box->Draw("A2P");
-            gMeanYieldRun2Box->Write("gMeanYieldRun2");
+            gMeanYieldRun2Box->Write("gMeanYieldRun2_sys");
             SetGrapherrorStyle(gMeanYieldRun3);
             gMeanYieldRun3->SetMarkerStyle(21);
             gMeanYieldRun3->SetMarkerSize(1.2);
@@ -428,6 +428,7 @@ void plot_spectra()
             gMeanYieldRun3_sys->SetFillStyle(0);
             gMeanYieldRun3_sys->SetLineWidth(2);
             gMeanYieldRun3_sys->Draw("2 same");
+            gMeanYieldRun3_sys->Write("gMeanYieldRun3_sys");
             gMeanYieldRun3->Draw("P same");
             gMeanYieldRun3->Write("gMeanYieldRun3");
 
@@ -463,7 +464,7 @@ void plot_spectra()
             gMeanpTRun2Box->GetYaxis()->SetRangeUser(0.25, 2.09);
             gMeanpTRun2Box->SetTitle("");
             gMeanpTRun2Box->Draw("A2P");
-            gMeanpTRun2Box->Write("gMeanpTRun2");
+            gMeanpTRun2Box->Write("gMeanpTRun2_sys");
 
             SetGrapherrorStyle(gMeanpTRun3);
             gMeanpTRun3->SetMarkerStyle(21);
@@ -475,6 +476,7 @@ void plot_spectra()
             gMeanpTRun3_sys->SetFillStyle(0);
             gMeanpTRun3_sys->SetLineWidth(2);
             gMeanpTRun3_sys->Draw("2 same");
+            gMeanpTRun3_sys->Write("gMeanpTRun3_sys");
             gMeanpTRun3->Draw("P same");
 
             gMeanpTRun2_5020MeV->SetLineColor(kGreen + 2);

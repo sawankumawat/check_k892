@@ -8,7 +8,7 @@
 void SaveModelPrediction()
 {
     const vector<string> modelNames = {"EPOS", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving"};
-    const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton"};
+    const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "Kshort"};
     TFile *fOutput = new TFile("ModelResults.root", "recreate");
 
     for (const auto &modelName : modelNames)

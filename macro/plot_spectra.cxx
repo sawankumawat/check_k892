@@ -373,6 +373,47 @@ void plot_spectra()
             }
             TGraphErrors *gMeanYieldRun2 = (TGraphErrors *)fRun2->Get("Table 41/Graph1D_y1");
             TGraphErrors *gMeanpTRun2 = (TGraphErrors *)fRun2->Get("Table 39/Graph1D_y1");
+
+            TH1D *hMeanYieldRun2_stat = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e1"); // stat error
+            TH1D *hMeanYieldRun2_sys = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e2");  // sys error
+            // TH1D *hMeanYieldRun2_sysUncorr = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e3"); // uncorrelated sys error
+            TH1D *hMeanpTRun2_stat = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e1"); // stat error
+            TH1D *hMeanpTRun2_sys = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e2");  // sys error
+            // TH1D *hMeanpTRun2_sysUncorr = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e3"); // uncorrelated sys error
+
+            TGraphErrors *gMeanYieldRun2_stat = new TGraphErrors(gMeanYieldRun2->GetN());
+            TGraphErrors *gMeanpTRun2_stat = new TGraphErrors(gMeanpTRun2->GetN());
+            TGraphErrors *gMeanYieldRun2_sys = new TGraphErrors(gMeanYieldRun2->GetN());
+            TGraphErrors *gMeanpTRun2_sys = new TGraphErrors(gMeanpTRun2->GetN());
+
+            for(int i = 0; i < gMeanYieldRun2->GetN(); ++i)
+            {
+                double x = 0.0, y = 0.0;
+                gMeanYieldRun2->GetPoint(i, x, y);
+                int bin = hMeanYieldRun2_stat->FindBin(x);
+                double ex = gMeanYieldRun2->GetErrorX(i);
+                double ey_stat = hMeanYieldRun2_stat->GetBinContent(bin);
+                double ey_sys = hMeanYieldRun2_sys->GetBinContent(bin);
+                // double ey_sysUncorr = hMeanYieldRun2_sysUncorr->GetBinContent(bin);
+
+                gMeanYieldRun2_stat->SetPoint(i, x, y);
+                gMeanYieldRun2_stat->SetPointError(i, ex, ey_stat);
+
+                gMeanYieldRun2_sys->SetPoint(i, x, y);
+                gMeanYieldRun2_sys->SetPointError(i, ex, ey_sys);
+
+                // Similarly for mean pT
+                gMeanpTRun2->GetPoint(i, x, y);
+                double pt_stat = hMeanpTRun2_stat->GetBinContent(bin);
+                double pt_sys = hMeanpTRun2_sys->GetBinContent(bin);
+                // double pt_sysUncorr = hMeanpTRun2_sysUncorr->GetBinContent(bin);
+                gMeanpTRun2_stat->SetPoint(i, x, y);
+                gMeanpTRun2_stat->SetPointError(i, ex, pt_stat);
+
+                gMeanpTRun2_sys->SetPoint(i, x, y);
+                gMeanpTRun2_sys->SetPointError(i, ex, pt_sys);
+            }
+
             TGraphErrors *gMeanYieldRun2_5020MeV = (TGraphErrors *)fpp5020MeV->Get("Table 5/Graph1D_y1");
             TGraphErrors *gMeanpTRun2_5020MeV = (TGraphErrors *)fpp5020MeV->Get("Table 6/Graph1D_y1");
 
@@ -382,54 +423,40 @@ void plot_spectra()
                 return;
             }
 
-            auto makeBoxGraph = [](TGraphErrors *source) {
-                auto boxGraph = new TGraphAsymmErrors(source->GetN());
-                for (int i = 0; i < source->GetN(); ++i)
-                {
-                    double x = 0.0;
-                    double y = 0.0;
-                    source->GetPoint(i, x, y);
-                    boxGraph->SetPoint(i, x, y);
-                    double ex = source->GetErrorX(i);
-                    double ey = source->GetErrorY(i);
-                    boxGraph->SetPointError(i, ex, ex, ey, ey);
-                }
-                return boxGraph;
-            };
-
-            TGraphAsymmErrors *gMeanYieldRun2Box = makeBoxGraph(gMeanYieldRun2);
-            TGraphAsymmErrors *gMeanpTRun2Box = makeBoxGraph(gMeanpTRun2);
-
             TFile *fLevyFit = new TFile(outputfolder + "/Results.root", "recreate");
 
             TCanvas *cMeanYield = new TCanvas("cMeanYield", "cMeanYield", 720, 720);
             SetCanvasStyle(cMeanYield, 0.15, 0.03, 0.03, 0.15);
-            SetGraphStyle(gMeanYieldRun2Box);
-            gMeanYieldRun2Box->SetMarkerStyle(20);
-            gMeanYieldRun2Box->SetMarkerSize(1.2);
-            gMeanYieldRun2Box->SetMarkerColor(kRed);
-            gMeanYieldRun2Box->SetLineColor(kRed);
-            gMeanYieldRun2Box->SetFillColorAlpha(kRed, 0.20);
-            gMeanYieldRun2Box->SetFillStyle(1001);
-            gMeanYieldRun2Box->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-            gMeanYieldRun2Box->GetYaxis()->SetTitle("dN/dy");
-            gMeanYieldRun2Box->GetYaxis()->SetRangeUser(0.0, 0.89);
-            gMeanYieldRun2Box->SetTitle(0);
-            gMeanYieldRun2Box->Draw("A2P");
-            gMeanYieldRun2Box->Write("gMeanYieldRun2_sys");
-            SetGrapherrorStyle(gMeanYieldRun3);
+            SetGraphStyle(gMeanYieldRun2_stat);
+            gMeanYieldRun2_stat->SetMarkerStyle(20);
+            gMeanYieldRun2_stat->SetMarkerSize(1.2);
+            gMeanYieldRun2_stat->SetMarkerColor(kRed);
+            gMeanYieldRun2_stat->SetLineColor(kRed);
+            gMeanYieldRun2_stat->GetXaxis()->SetTitle("dN_{ch}/d#eta");
+            gMeanYieldRun2_stat->GetYaxis()->SetTitle("dN/dy");
+            gMeanYieldRun2_stat->GetYaxis()->SetRangeUser(0.0, 0.89);
+            gMeanYieldRun2_stat->SetTitle(0);
+            gMeanYieldRun2_stat->Draw("AP");
+            gMeanYieldRun2_stat->Write("gMeanYieldRun2_stat");
+            gMeanYieldRun2_sys->SetFillStyle(0);
+            gMeanYieldRun2_sys->SetLineWidth(2);
+            gMeanYieldRun2_sys->SetLineColor(kRed);
+            gMeanYieldRun2_sys->Draw("5 same");
+            gMeanYieldRun2_sys->Write("gMeanYieldRun2_sys");
+
+            SetGraphErrorStyle(gMeanYieldRun3);
             gMeanYieldRun3->SetMarkerStyle(21);
             gMeanYieldRun3->SetMarkerSize(1.2);
             gMeanYieldRun3->SetMarkerColor(kBlue);
             gMeanYieldRun3->SetLineColor(kBlue);
+            gMeanYieldRun3->Draw("pe same");
 
             gMeanYieldRun3_sys->SetMarkerColor(kBlue);
             gMeanYieldRun3_sys->SetLineColor(kBlue);
             gMeanYieldRun3_sys->SetFillStyle(0);
             gMeanYieldRun3_sys->SetLineWidth(2);
-            gMeanYieldRun3_sys->Draw("2 same");
+            gMeanYieldRun3_sys->Draw("5 same");
             gMeanYieldRun3_sys->Write("gMeanYieldRun3_sys");
-            gMeanYieldRun3->Draw("P same");
             gMeanYieldRun3->Write("gMeanYieldRun3");
 
             gMeanYieldRun2_5020MeV->SetLineColor(kGreen + 2);
@@ -444,7 +471,7 @@ void plot_spectra()
             // legMeanYield->AddEntry(gMeanYieldRun2_5020MeV, "Run 2 (5.02 TeV)", "p");
             legMeanYield->SetHeader("pp collisions");
             legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
-            legMeanYield->AddEntry(gMeanYieldRun2Box, "Run 2 (13 TeV)", "pf");
+            legMeanYield->AddEntry(gMeanYieldRun2_stat, "Run 2 (13 TeV)", "p");
             legMeanYield->Draw();
 
             TString yieldPath = outputfolder + "/mean_yield." + outputType;
@@ -452,32 +479,35 @@ void plot_spectra()
 
             TCanvas *cMeanpT = new TCanvas("cMeanpT", "cMeanpT", 720, 720);
             SetCanvasStyle(cMeanpT, 0.15, 0.03, 0.03, 0.15);
-            SetGraphStyle(gMeanpTRun2Box);
-            gMeanpTRun2Box->SetMarkerStyle(20);
-            gMeanpTRun2Box->SetMarkerSize(1.2);
-            gMeanpTRun2Box->SetMarkerColor(kRed);
-            gMeanpTRun2Box->SetLineColor(kRed);
-            gMeanpTRun2Box->SetFillColorAlpha(kRed, 0.20);
-            gMeanpTRun2Box->SetFillStyle(1001);
-            gMeanpTRun2Box->GetXaxis()->SetTitle("dN_{ch}/d#eta");
-            gMeanpTRun2Box->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
-            gMeanpTRun2Box->GetYaxis()->SetRangeUser(0.25, 2.09);
-            gMeanpTRun2Box->SetTitle("");
-            gMeanpTRun2Box->Draw("A2P");
-            gMeanpTRun2Box->Write("gMeanpTRun2_sys");
+            SetGraphStyle(gMeanpTRun2_stat);
+            gMeanpTRun2_stat->SetMarkerStyle(20);
+            gMeanpTRun2_stat->SetMarkerSize(1.2);
+            gMeanpTRun2_stat->SetMarkerColor(kRed);
+            gMeanpTRun2_stat->SetLineColor(kRed);
+            gMeanpTRun2_stat->GetXaxis()->SetTitle("dN_{ch}/d#eta");
+            gMeanpTRun2_stat->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
+            gMeanpTRun2_stat->GetYaxis()->SetRangeUser(0.25, 2.09);
+            gMeanpTRun2_stat->SetTitle("");
+            gMeanpTRun2_stat->Draw("ape");
+            gMeanpTRun2_stat->Write("gMeanpTRun2_sys");
+            gMeanpTRun2_sys->SetFillStyle(0);
+            gMeanpTRun2_sys->SetLineWidth(2);
+            gMeanpTRun2_sys->SetLineColor(kRed);
+            gMeanpTRun2_sys->Draw("5 same");
+            gMeanpTRun2_sys->Write("gMeanpTRun2_sys");
 
-            SetGrapherrorStyle(gMeanpTRun3);
+            SetGraphErrorStyle(gMeanpTRun3);
             gMeanpTRun3->SetMarkerStyle(21);
             gMeanpTRun3->SetMarkerSize(1.2);
             gMeanpTRun3->SetMarkerColor(kBlue);
             gMeanpTRun3->SetLineColor(kBlue);
+            gMeanpTRun3->Draw("pe same");
 
             gMeanpTRun3_sys->SetLineColor(kBlue);
             gMeanpTRun3_sys->SetFillStyle(0);
             gMeanpTRun3_sys->SetLineWidth(2);
-            gMeanpTRun3_sys->Draw("2 same");
+            gMeanpTRun3_sys->Draw("5 same");
             gMeanpTRun3_sys->Write("gMeanpTRun3_sys");
-            gMeanpTRun3->Draw("P same");
 
             gMeanpTRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanpTRun2_5020MeV->SetMarkerColor(kGreen + 2);

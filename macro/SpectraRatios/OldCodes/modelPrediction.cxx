@@ -206,12 +206,12 @@ void modelPrediction()
     gMeanYieldRun3Data->SetMarkerSize(1.2);
     gMeanYieldRun3Data->SetMarkerColor(kRed);
     gMeanYieldRun3Data->SetLineColor(kRed);
-    gMeanYieldRun3Data->GetYaxis()->SetRangeUser(0, 0.69);
+    gMeanYieldRun3Data->GetYaxis()->SetRangeUser(0, 1.89);
     gMeanYieldRun3Data->GetXaxis()->SetLimits(0, 28.9);
     gMeanYieldRun3Data->Draw("AP");
     gMeanYield->Draw("E3 same");
     gMeanYield->Draw("l same");
-    gKstarYield->Draw("l same");
+    // gKstarYield->Draw("l same");
 
     // gMeanYieldRun2Data->SetMarkerStyle(25);
     // gMeanYieldRun2Data->SetMarkerSize(1.2);

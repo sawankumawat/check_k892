@@ -1,13 +1,11 @@
 #include <iostream>
 #include <iomanip>
-#include "../src/style.h"
-#include "../src/fitfunc.h"
-#include "../src/initializations.h"
+#include "../../src/style.h"
 
 void plotResultsPiKp()
 {
     vector<string> particleType = {"Pi", "Ka", "Pr"};
-    int selectParticle = 0;
+    int selectParticle = 2;
     TFile *fresultsPos = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Pos_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
     TFile *fresultsNeg = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Neg_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
     if (fresultsPos->IsZombie() || fresultsNeg->IsZombie())
@@ -20,20 +18,30 @@ void plotResultsPiKp()
     float multClasses[] = {0.0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nBinsMult = sizeof(dnch_detaRun3) / sizeof(dnch_detaRun3[0]);
     TGraphErrors *gMeanpTRun3Data = new TGraphErrors(nBinsMult);
+    TGraphErrors *gMeanpTRun3Data_sys = new TGraphErrors(nBinsMult);
     TGraphErrors *gMeanYieldRun3Data = new TGraphErrors(nBinsMult);
+    TGraphErrors *gMeanYieldRun3Data_sys = new TGraphErrors(nBinsMult);
 
     for (int ibins = 1; ibins <= nBinsMult; ++ibins)
     {
         TH1F *hResultsPos = (TH1F *)fresultsPos->Get(Form("IntegratedWithLevi_%.2f_%.2f", multClasses[ibins - 1], multClasses[ibins]));
         TH1F *hResultsNeg = (TH1F *)fresultsNeg->Get(Form("IntegratedWithLevi_%.2f_%.2f", multClasses[ibins - 1], multClasses[ibins]));
         double yield = (hResultsPos->GetBinContent(1) + hResultsNeg->GetBinContent(1)) / 2.0;
-        double yieldErr = sqrt(pow(hResultsPos->GetBinContent(3), 2) + pow(hResultsNeg->GetBinContent(3), 2)) / 2.0;
+        double yieldErr = sqrt((pow(hResultsPos->GetBinContent(2), 2) + pow(hResultsNeg->GetBinContent(2), 2)) / 2.0);
+        double yieldSysErr = sqrt((pow(hResultsPos->GetBinContent(3), 2) + pow(hResultsNeg->GetBinContent(3), 2)) / 2.0);
         double meanpT = (hResultsPos->GetBinContent(5) + hResultsNeg->GetBinContent(5)) / 2.0;
-        double meanpTErr = sqrt(pow(hResultsPos->GetBinContent(7), 2) + pow(hResultsNeg->GetBinContent(7), 2)) / 2.0;
+        double meanpTErr = sqrt((pow(hResultsPos->GetBinContent(6), 2) + pow(hResultsNeg->GetBinContent(6), 2)) / 2.0);
+        double meanpTSysErr = sqrt((pow(hResultsPos->GetBinContent(7), 2) + pow(hResultsNeg->GetBinContent(7), 2)) / 2.0);
+
         gMeanYieldRun3Data->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], yield);
         gMeanYieldRun3Data->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], yieldErr);
+        gMeanYieldRun3Data_sys->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], yield);
+        gMeanYieldRun3Data_sys->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], yieldSysErr);
+
         gMeanpTRun3Data->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], meanpT);
         gMeanpTRun3Data->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], meanpTErr);
+        gMeanpTRun3Data_sys->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], meanpT);
+        gMeanpTRun3Data_sys->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], meanpTSysErr);
     }
 
     TCanvas *cMeanpTvsNch = new TCanvas("cMeanpTvsNch", "cMeanpTvsNch", 720, 720);
@@ -53,6 +61,8 @@ void plotResultsPiKp()
     TFile *fOutput = new TFile(Form("../PiKp_Run3_Results/Sawan/%s_results.root", particleType[selectParticle].c_str()), "recreate");
     gMeanpTRun3Data->Write("gMeanpTRun3");
     gMeanYieldRun3Data->Write("gMeanYieldRun3");
+    gMeanpTRun3Data_sys->Write("gMeanpTRun3_sys");
+    gMeanYieldRun3Data_sys->Write("gMeanYieldRun3_sys");
 
     TH1D *hSpectraPos[nBinsMult + 1];
     TH1D *hSpectraNeg[nBinsMult + 1];
@@ -70,8 +80,8 @@ void plotResultsPiKp()
             multlow = (int)multClasses[imult - 1];
             multhigh = (int)multClasses[imult];
         }
-        TFile *fSpectraPos = new TFile(Form("PiKp_Run3_Results/Pos%s_LHC24_pass1_INELgt0_cent%d_%d.root", particleType[selectParticle].c_str(), multlow, multhigh), "read");
-        TFile *fSpectraNeg = new TFile(Form("PiKp_Run3_Results/Neg%s_LHC24_pass1_INELgt0_cent%d_%d.root", particleType[selectParticle].c_str(), multlow, multhigh), "read");
+        TFile *fSpectraPos = new TFile(Form("../PiKp_Run3_Results/Pos%s_LHC24_pass1_INELgt0_cent%d_%d.root", particleType[selectParticle].c_str(), multlow, multhigh), "read");
+        TFile *fSpectraNeg = new TFile(Form("../PiKp_Run3_Results/Neg%s_LHC24_pass1_INELgt0_cent%d_%d.root", particleType[selectParticle].c_str(), multlow, multhigh), "read");
         if (fSpectraPos->IsZombie() || fSpectraNeg->IsZombie())
         {
             cout << "Error: Spectra files not found for multiplicity class " << multlow << "-" << multhigh << endl;

@@ -2,10 +2,11 @@
 #include <iomanip>
 #include "../src/style.h"
 
-void ParticleRatio()
+void ParticleRatio2()
 {
     string KstarPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
     TFile *fKstar = new TFile((KstarPath + "Results.root").c_str(), "read");
+    // TFile *fKstar = new TFile("/home/sawan/Downloads/OO.root", "read");
     if (fKstar->IsZombie())
     {
         cout << "Error: Kstar file not found" << endl;
@@ -26,8 +27,8 @@ void ParticleRatio()
         return;
     }
 
-    TGraphErrors *gMPtKstar = (TGraphErrors *)fKstar->Get("gMeanpTRun3_sys");
-    TGraphErrors *gMYieldKstar = (TGraphErrors *)fKstar->Get("gMeanYieldRun3_sys");
+    TH1F *gMPtKstar = (TH1F *)fKstar->Get("hdNdyStat");
+    TH1F *gMYieldKstar = (TH1F *)fKstar->Get("hdNdySys");
     if (gMPtKstar == nullptr || gMYieldKstar == nullptr)
     {
         cout << "Error: Kstar graphs not found" << endl;
@@ -56,9 +57,8 @@ void ParticleRatio()
     //======================================================
     //    ===========EPOS local model files===========
     //======================================================
-    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA.root", "read");
-    // TFile *fEPOS_noUrQMD = new TFile("ModelRootFiles/EPOS_finalQA_noUrQMD2.root", "read");
-    // TFile *fEPOS = new TFile("EPOS_finalQA_OOSarjeeta.root", "read");
+    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA.root", "read");
+    TFile *fEPOS = new TFile("EPOS_finalQA_OOSarjeeta.root", "read");
     if (fEPOS->IsZombie())
     {
         cout << "Error: EPOS file not found" << endl;
@@ -93,8 +93,7 @@ void ParticleRatio()
 
     TGraphErrors *gMYieldKstarEPOS_IST9_ITY80 = (TGraphErrors *)fEPOS->Get("IST9_ITY80/kstar_vs_mult");
     TGraphErrors *gMYieldKstarEPOS_IST9_ITY81 = (TGraphErrors *)fEPOS->Get("IST9_ITY81/kstar_vs_mult");
-    TGraphErrors *gMYieldKstarEPOS_IST7 = (TGraphErrors *)fEPOS->Get("IST6/kstar_vs_mult");
-    // TGraphErrors *gMYieldKstarEPOS_IST7 = (TGraphErrors *)fEPOS_noUrQMD->Get("IST7/kstar_vs_mult");
+    TGraphErrors *gMYieldKstarEPOS_IST7 = (TGraphErrors *)fEPOS->Get("IST7/kstar_vs_mult");
     if (gMYieldKstarEPOS_IST9_ITY80 == nullptr || gMYieldKstarEPOS_IST9_ITY81 == nullptr || gMYieldKstarEPOS_IST7 == nullptr)
     {
         cout << "Error: EPOS resonance variation graphs not found" << endl;
@@ -111,19 +110,13 @@ void ParticleRatio()
         return;
     }
 
-    //================================================
-    //==============Models from hyperloop outputs======
-    //=================================================
-
-    
-
     //======================================================
     //    ================Plots=====================
     //======================================================
-
+    gStyle->SetOptStat(0);
     TCanvas *cdNdyKstar = new TCanvas("cdNdyKstar", "cdNdyKstar", 720, 720);
     SetCanvasStyle(cdNdyKstar, 0.15, 0.03, 0.03, 0.15);
-    SetGraphErrorStyle(gMYieldKstar);
+    SetHistoQA(gMYieldKstar);
     SetGraphErrorStyle(gMYieldKstarEPOS_IST9);
     SetGraphErrorStyle(gMYieldKstarEPOS_IST9_ITY80);
     SetGraphErrorStyle(gMYieldKstarEPOS_IST9_ITY81);
@@ -131,9 +124,9 @@ void ParticleRatio()
     gMYieldKstar->SetTitle(0);
     gMYieldKstar->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gMYieldKstar->GetYaxis()->SetTitle("dN/dy");
-    gMYieldKstar->GetXaxis()->SetLimits(0, 27);
-    gMYieldKstar->GetYaxis()->SetRangeUser(0, 0.8);
-    gMYieldKstar->Draw("AP");
+    // gMYieldKstar->GetXaxis()->SetLimits(0, 270);
+    gMYieldKstar->GetYaxis()->SetRangeUser(0, 6.1);
+    gMYieldKstar->Draw("PE");
     gMYieldKstarEPOS_IST9->Draw("l same");
     gMYieldKstarEPOS_IST9_ITY80->SetLineColor(kBlue);
     gMYieldKstarEPOS_IST9_ITY80->SetLineStyle(2);
@@ -161,7 +154,7 @@ void ParticleRatio()
 
     TCanvas *cMeanPtKstar = new TCanvas("cMeanPtKstar", "cMeanPtKstar", 720, 720);
     SetCanvasStyle(cMeanPtKstar, 0.15, 0.03, 0.03, 0.15);
-    SetGraphErrorStyle(gMPtKstar);
+    SetHistoQA(gMPtKstar);
     SetGraphErrorStyle(gMeanPtKstarEPOS_IST9);
     SetGraphErrorStyle(gMeanPtKstarEPOS_IST9_ITY80);
     SetGraphErrorStyle(gMeanPtKstarEPOS_IST9_ITY81);
@@ -169,9 +162,9 @@ void ParticleRatio()
     gMPtKstar->SetTitle(0);
     gMPtKstar->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gMPtKstar->GetYaxis()->SetTitle("<p_{T}> (GeV/c)");
-    gMPtKstar->GetXaxis()->SetLimits(0, 27);
-    gMPtKstar->GetYaxis()->SetRangeUser(0.0, 1.89);
-    gMPtKstar->Draw("AP");
+    // gMPtKstar->GetXaxis()->SetLimits(0, 270);
+    gMPtKstar->GetYaxis()->SetRangeUser(0.0, 2.89);
+    gMPtKstar->Draw("PE");
     gMeanPtKstarEPOS_IST9->Draw("l same");
     gMeanPtKstarEPOS_IST9_ITY80->SetLineColor(kBlue);
     gMeanPtKstarEPOS_IST9_ITY80->SetLineStyle(2);
@@ -185,193 +178,192 @@ void ParticleRatio()
     legend->Draw();
     cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar_EPOS_UrQMDON.png");
 
-    //====================================================
-    //   ================K*/K Ratio===================
-    //====================================================
+    // //====================================================
+    // //   ================K*/K Ratio===================
+    // //====================================================
 
-    TCanvas *cRatioKstarKaon = new TCanvas("cRatioKstarKaon", "cRatioKstarKaon", 720, 720);
-    SetCanvasStyle(cRatioKstarKaon, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors *gRatioKstarKaon = new TGraphErrors(gMYieldKstar->GetN());
-    gRatioKstarKaon->SetTitle(0);
-    gRatioKstarKaon->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioKstarKaon->GetYaxis()->SetTitle("dN/dy");
-    gRatioKstarKaon->GetXaxis()->SetLimits(0, 27);
-    if (gRatioKstarKaon->GetN() != gMYieldKaon->GetN())
-    {
-        cout << "Error: Kstar and Kaon graphs have different number of points" << endl;
-        return;
-    }
-    for (int i = 0; i < gRatioKstarKaon->GetN(); ++i)
-    {
-        double xKaon, yKaon, xKstar, yKstar;
-        gMYieldKaon->GetPoint(i, xKaon, yKaon);    // It is average of K+ and K- yields
-        gMYieldKstar->GetPoint(i, xKstar, yKstar); // It is average of K*0 and K*0bar yields
-        double yRatio = (yKaon != 0) ? yKstar / (yKaon) : 0;
-        gRatioKstarKaon->SetPoint(i, xKstar, yRatio);
-        double yKaonErr = gMYieldKaon->GetErrorY(i);
-        double yKstarErr = gMYieldKstar->GetErrorY(i);
-        double yRatioErr = (yKaon != 0) ? sqrt(pow(yKstarErr / yKaon, 2) + pow(yKstar * yKaonErr / (yKaon * yKaon), 2)) : 0;
-        gRatioKstarKaon->SetPointError(i, 0, yRatioErr);
-        // cout << "<dN_{ch}/d#eta> " << xKaon << ": Kstar error / value = " << (yKstarErr / yKstar) * 100 << "%, kaon error / value = " << (yKaonErr / yKaon) * 100 << "%, ratio error / value = " << (yRatioErr / yRatio) * 100 << "%" << endl;
-    }
-    SetGraphErrorStyle(gRatioKstarKaon);
-    gRatioKstarKaon->GetYaxis()->SetRangeUser(0.2, 0.52);
-    gRatioKstarKaon->GetXaxis()->SetLimits(0, 27);
-    gRatioKstarKaon->Draw("APE");
+    // TCanvas *cRatioKstarKaon = new TCanvas("cRatioKstarKaon", "cRatioKstarKaon", 720, 720);
+    // SetCanvasStyle(cRatioKstarKaon, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioKstarKaon = new TGraphErrors(gMYieldKstar->GetN());
+    // gRatioKstarKaon->SetTitle(0);
+    // gRatioKstarKaon->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioKstarKaon->GetYaxis()->SetTitle("dN/dy");
+    // gRatioKstarKaon->GetXaxis()->SetLimits(0, 270);
+    // if (gRatioKstarKaon->GetN() != gMYieldKaon->GetN())
+    // {
+    //     cout << "Error: Kstar and Kaon graphs have different number of points" << endl;
+    //     return;
+    // }
+    // for (int i = 0; i < gRatioKstarKaon->GetN(); ++i)
+    // {
+    //     double xKaon, yKaon, xKstar, yKstar;
+    //     gMYieldKaon->GetPoint(i, xKaon, yKaon);    // It is average of K+ and K- yields
+    //     gMYieldKstar->GetPoint(i, xKstar, yKstar); // It is average of K*0 and K*0bar yields
+    //     double yRatio = (yKaon != 0) ? yKstar / (yKaon) : 0;
+    //     gRatioKstarKaon->SetPoint(i, xKstar, yRatio);
+    //     double yKaonErr = gMYieldKaon->GetErrorY(i);
+    //     double yKstarErr = gMYieldKstar->GetErrorY(i);
+    //     double yRatioErr = (yKaon != 0) ? sqrt(pow(yKstarErr / yKaon, 2) + pow(yKstar * yKaonErr / (yKaon * yKaon), 2)) : 0;
+    //     gRatioKstarKaon->SetPointError(i, 0, yRatioErr);
+    //     // cout << "<dN_{ch}/d#eta> " << xKaon << ": Kstar error / value = " << (yKstarErr / yKstar) * 100 << "%, kaon error / value = " << (yKaonErr / yKaon) * 100 << "%, ratio error / value = " << (yRatioErr / yRatio) * 100 << "%" << endl;
+    // }
+    // SetGraphErrorStyle(gRatioKstarKaon);
+    // gRatioKstarKaon->GetYaxis()->SetRangeUser(0.2, 0.52);
+    // gRatioKstarKaon->GetXaxis()->SetLimits(0, 270);
+    // gRatioKstarKaon->Draw("APE");
 
-    TGraphErrors *gRatioKstarKaonEPOS_UrQMDON = new TGraphErrors(gMYieldKstarEPOS_IST9->GetN());
-    TGraphErrors *gRatioKstarKaonEPOS_WithoutRescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY80->GetN());
-    TGraphErrors *gRatioKstarKaonEPOS_Rescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY81->GetN());
-    TGraphErrors *gRatioKstarKaonEPOS_NoUrQMD = new TGraphErrors(gMYieldKstarEPOS_IST7->GetN());
-    if (gMYieldKstarEPOS_IST9->GetN() != gMYieldKaonEPOS_IST0->GetN())
-    {
-        cout << "Error: Kstar and Kaon EPOS graphs have different number of points" << endl;
-        return;
-    }
-    for (int i = 0; i < gRatioKstarKaonEPOS_UrQMDON->GetN(); ++i)
-    {
-        double xKaon, yKaon1, xKstar, yKstar1, yKstar2, yKstar3, yKstar4;
-        gMYieldKaonEPOS_IST0->GetPoint(i, xKaon, yKaon1);
-        gMYieldKstarEPOS_IST9->GetPoint(i, xKstar, yKstar1);
-        double yRatio1 = (yKaon1 != 0) ? yKstar1 / (yKaon1) : 0;
-        gRatioKstarKaonEPOS_UrQMDON->SetPoint(i, xKstar, yRatio1);
-        gRatioKstarKaonEPOS_UrQMDON->SetPointError(i, 0, 0);
-        // cout << "EPOS UrQMD ON - <dN_{ch}/d#eta> " << xKaon << ": Kstar yield = " << yKstar1 << ", Kaon yield = " << yKaon1 << endl;
+    // TGraphErrors *gRatioKstarKaonEPOS_UrQMDON = new TGraphErrors(gMYieldKstarEPOS_IST9->GetN());
+    // TGraphErrors *gRatioKstarKaonEPOS_WithoutRescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY80->GetN());
+    // TGraphErrors *gRatioKstarKaonEPOS_Rescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY81->GetN());
+    // TGraphErrors *gRatioKstarKaonEPOS_NoUrQMD = new TGraphErrors(gMYieldKstarEPOS_IST7->GetN());
+    // if (gMYieldKstarEPOS_IST9->GetN() != gMYieldKaonEPOS_IST0->GetN())
+    // {
+    //     cout << "Error: Kstar and Kaon EPOS graphs have different number of points" << endl;
+    //     return;
+    // }
+    // for (int i = 0; i < gRatioKstarKaonEPOS_UrQMDON->GetN(); ++i)
+    // {
+    //     double xKaon, yKaon1, xKstar, yKstar1, yKstar2, yKstar3, yKstar4;
+    //     gMYieldKaonEPOS_IST0->GetPoint(i, xKaon, yKaon1);
+    //     gMYieldKstarEPOS_IST9->GetPoint(i, xKstar, yKstar1);
+    //     double yRatio1 = (yKaon1 != 0) ? yKstar1 / (yKaon1) : 0;
+    //     gRatioKstarKaonEPOS_UrQMDON->SetPoint(i, xKstar, yRatio1);
+    //     gRatioKstarKaonEPOS_UrQMDON->SetPointError(i, 0, 0);
+    //     // cout << "EPOS UrQMD ON - <dN_{ch}/d#eta> " << xKaon << ": Kstar yield = " << yKstar1 << ", Kaon yield = " << yKaon1 << endl;
 
-        gMYieldKstarEPOS_IST9_ITY80->GetPoint(i, xKstar, yKstar2);
-        double yRatio2 = (yKaon1 != 0) ? yKstar2 / (yKaon1) : 0;
-        gRatioKstarKaonEPOS_WithoutRescattering->SetPoint(i, xKstar, yRatio2);
-        gRatioKstarKaonEPOS_WithoutRescattering->SetPointError(i, 0, 0);
+    //     gMYieldKstarEPOS_IST9_ITY80->GetPoint(i, xKstar, yKstar2);
+    //     double yRatio2 = (yKaon1 != 0) ? yKstar2 / (yKaon1) : 0;
+    //     gRatioKstarKaonEPOS_WithoutRescattering->SetPoint(i, xKstar, yRatio2);
+    //     gRatioKstarKaonEPOS_WithoutRescattering->SetPointError(i, 0, 0);
 
-        gMYieldKstarEPOS_IST9_ITY81->GetPoint(i, xKstar, yKstar3);
-        yKstar3 = yKstar3 + yKstar2;
-        double yRatio3 = (yKaon1 != 0) ? yKstar3 / (yKaon1) : 0;
-        gRatioKstarKaonEPOS_Rescattering->SetPoint(i, xKstar, yRatio3);
-        gRatioKstarKaonEPOS_Rescattering->SetPointError(i, 0, 0);
+    //     gMYieldKstarEPOS_IST9_ITY81->GetPoint(i, xKstar, yKstar3);
+    //     double yRatio3 = (yKaon1 != 0) ? yKstar3 / (yKaon1) : 0;
+    //     gRatioKstarKaonEPOS_Rescattering->SetPoint(i, xKstar, yRatio3);
+    //     gRatioKstarKaonEPOS_Rescattering->SetPointError(i, 0, 0);
 
-        gMYieldKstarEPOS_IST7->GetPoint(i, xKstar, yKstar4);
-        double yRatio4 = (yKaon1 != 0) ? yKstar4 / (yKaon1) : 0;
-        gRatioKstarKaonEPOS_NoUrQMD->SetPoint(i, xKstar, yRatio4);
-        gRatioKstarKaonEPOS_NoUrQMD->SetPointError(i, 0, 0);
-    }
-    SetGraphErrorStyle(gRatioKstarKaonEPOS_UrQMDON);
-    gRatioKstarKaonEPOS_UrQMDON->SetLineColor(kRed);
-    gRatioKstarKaonEPOS_UrQMDON->SetLineStyle(2);
-    gRatioKstarKaonEPOS_UrQMDON->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKaonEPOS_WithoutRescattering);
-    gRatioKstarKaonEPOS_WithoutRescattering->SetLineColor(kBlue);
-    gRatioKstarKaonEPOS_WithoutRescattering->SetLineStyle(2);
-    gRatioKstarKaonEPOS_WithoutRescattering->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKaonEPOS_Rescattering);
-    gRatioKstarKaonEPOS_Rescattering->SetLineColor(kGreen + 2);
-    gRatioKstarKaonEPOS_Rescattering->SetLineStyle(4);
-    gRatioKstarKaonEPOS_Rescattering->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKaonEPOS_NoUrQMD);
-    gRatioKstarKaonEPOS_NoUrQMD->SetLineColor(kMagenta);
-    gRatioKstarKaonEPOS_NoUrQMD->SetLineStyle(5);
-    gRatioKstarKaonEPOS_NoUrQMD->Draw("l same");
-    TLegend *legendRatio = new TLegend(0.2, 0.72, 0.5, 0.92);
-    SetLegendStyle(legendRatio);
-    legendRatio->SetTextSize(0.027);
-    legendRatio->AddEntry(gRatioKstarKaon, "#frac{K^{*0} + #bar{K}^{*0}}{2K}", "p");
-    legendRatio->AddEntry(gRatioKstarKaonEPOS_UrQMDON, "EPOS UrQMD ON", "l");
-    legendRatio->AddEntry(gRatioKstarKaonEPOS_WithoutRescattering, "EPOS NoRescattering", "l");
-    legendRatio->AddEntry(gRatioKstarKaonEPOS_Rescattering, "EPOS Rescattering", "l");
-    legendRatio->AddEntry(gRatioKstarKaonEPOS_NoUrQMD, "EPOS UrQMD OFF", "l");
-    legendRatio->Draw();
-    cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
+    //     gMYieldKstarEPOS_IST7->GetPoint(i, xKstar, yKstar4);
+    //     double yRatio4 = (yKaon1 != 0) ? yKstar4 / (yKaon1) : 0;
+    //     gRatioKstarKaonEPOS_NoUrQMD->SetPoint(i, xKstar, yRatio4);
+    //     gRatioKstarKaonEPOS_NoUrQMD->SetPointError(i, 0, 0);
+    // }
+    // SetGraphErrorStyle(gRatioKstarKaonEPOS_UrQMDON);
+    // gRatioKstarKaonEPOS_UrQMDON->SetLineColor(kRed);
+    // gRatioKstarKaonEPOS_UrQMDON->SetLineStyle(2);
+    // gRatioKstarKaonEPOS_UrQMDON->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKaonEPOS_WithoutRescattering);
+    // gRatioKstarKaonEPOS_WithoutRescattering->SetLineColor(kBlue);
+    // gRatioKstarKaonEPOS_WithoutRescattering->SetLineStyle(2);
+    // gRatioKstarKaonEPOS_WithoutRescattering->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKaonEPOS_Rescattering);
+    // gRatioKstarKaonEPOS_Rescattering->SetLineColor(kGreen + 2);
+    // gRatioKstarKaonEPOS_Rescattering->SetLineStyle(4);
+    // gRatioKstarKaonEPOS_Rescattering->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKaonEPOS_NoUrQMD);
+    // gRatioKstarKaonEPOS_NoUrQMD->SetLineColor(kMagenta);
+    // gRatioKstarKaonEPOS_NoUrQMD->SetLineStyle(5);
+    // gRatioKstarKaonEPOS_NoUrQMD->Draw("l same");
+    // TLegend *legendRatio = new TLegend(0.2, 0.72, 0.5, 0.92);
+    // SetLegendStyle(legendRatio);
+    // legendRatio->SetTextSize(0.027);
+    // legendRatio->AddEntry(gRatioKstarKaon, "#frac{K^{*0} + #bar{K}^{*0}}{2K}", "p");
+    // legendRatio->AddEntry(gRatioKstarKaonEPOS_UrQMDON, "EPOS UrQMD ON", "l");
+    // legendRatio->AddEntry(gRatioKstarKaonEPOS_WithoutRescattering, "EPOS NoRescattering", "l");
+    // legendRatio->AddEntry(gRatioKstarKaonEPOS_Rescattering, "EPOS Rescattering", "l");
+    // legendRatio->AddEntry(gRatioKstarKaonEPOS_NoUrQMD, "EPOS UrQMD OFF", "l");
+    // legendRatio->Draw();
+    // cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
 
-    //====================================================
-    //   ================K*/Kshort Ratio===================
-    //====================================================
-    TCanvas *cRatioKstarKshort = new TCanvas("cRatioKstarKshort", "cRatioKstarKshort", 720, 720);
-    SetCanvasStyle(cRatioKstarKshort, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors *gRatioKstarKshort = new TGraphErrors(gMYieldKstar->GetN());
-    gRatioKstarKshort->SetTitle(0);
-    gRatioKstarKshort->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioKstarKshort->GetYaxis()->SetTitle("dN/dy");
-    gRatioKstarKshort->GetXaxis()->SetLimits(0, 27);
-    if (gRatioKstarKshort->GetN() != gMYieldKshort->GetN())
-    {
-        cout << "Error: Kstar and Kshort graphs have different number of points" << endl;
-        return;
-    }
-    for (int i = 0; i < gRatioKstarKshort->GetN(); ++i)
-    {
-        double xKshort, yKshort, xKstar, yKstar;
-        gMYieldKshort->GetPoint(i, xKshort, yKshort);
-        gMYieldKstar->GetPoint(i, xKstar, yKstar);
-        double yRatio = (yKshort != 0) ? yKstar / (yKshort) : 0;
-        gRatioKstarKshort->SetPoint(i, xKstar, yRatio);
-        double yKshortErr = gMYieldKshort->GetErrorY(i);
-        double yKstarErr = gMYieldKstar->GetErrorY(i);
-        double yRatioErr = (yKshort != 0) ? sqrt(pow(yKstarErr / yKshort, 2) + pow(yKstar * yKshortErr / (yKshort * yKshort), 2)) : 0;
-        gRatioKstarKshort->SetPointError(i, 0, yRatioErr);
-    }
-    SetGraphErrorStyle(gRatioKstarKshort);
-    gRatioKstarKshort->GetYaxis()->SetRangeUser(0.2, 0.52);
-    gRatioKstarKshort->GetXaxis()->SetLimits(0, 27);
-    gRatioKstarKshort->Draw("APE");
+    // //====================================================
+    // //   ================K*/Kshort Ratio===================
+    // //====================================================
+    // TCanvas *cRatioKstarKshort = new TCanvas("cRatioKstarKshort", "cRatioKstarKshort", 720, 720);
+    // SetCanvasStyle(cRatioKstarKshort, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioKstarKshort = new TGraphErrors(gMYieldKstar->GetN());
+    // gRatioKstarKshort->SetTitle(0);
+    // gRatioKstarKshort->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioKstarKshort->GetYaxis()->SetTitle("dN/dy");
+    // gRatioKstarKshort->GetXaxis()->SetLimits(0, 27);
+    // if (gRatioKstarKshort->GetN() != gMYieldKshort->GetN())
+    // {
+    //     cout << "Error: Kstar and Kshort graphs have different number of points" << endl;
+    //     return;
+    // }
+    // for (int i = 0; i < gRatioKstarKshort->GetN(); ++i)
+    // {
+    //     double xKshort, yKshort, xKstar, yKstar;
+    //     gMYieldKshort->GetPoint(i, xKshort, yKshort);
+    //     gMYieldKstar->GetPoint(i, xKstar, yKstar);
+    //     double yRatio = (yKshort != 0) ? yKstar / (yKshort) : 0;
+    //     gRatioKstarKshort->SetPoint(i, xKstar, yRatio);
+    //     double yKshortErr = gMYieldKshort->GetErrorY(i);
+    //     double yKstarErr = gMYieldKstar->GetErrorY(i);
+    //     double yRatioErr = (yKshort != 0) ? sqrt(pow(yKstarErr / yKshort, 2) + pow(yKstar * yKshortErr / (yKshort * yKshort), 2)) : 0;
+    //     gRatioKstarKshort->SetPointError(i, 0, yRatioErr);
+    // }
+    // SetGraphErrorStyle(gRatioKstarKshort);
+    // gRatioKstarKshort->GetYaxis()->SetRangeUser(0.2, 0.52);
+    // gRatioKstarKshort->GetXaxis()->SetLimits(0, 270);
+    // gRatioKstarKshort->Draw("APE");
 
-    TGraphErrors *gRatioKstarKshortEPOS_UrQMDON = new TGraphErrors(gMYieldKstarEPOS_IST9->GetN());
-    TGraphErrors *gRatioKstarKshortEPOS_WithoutRescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY80->GetN());
-    TGraphErrors *gRatioKstarKshortEPOS_Rescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY81->GetN());
-    TGraphErrors *gRatioKstarKshortEPOS_NoUrQMD = new TGraphErrors(gMYieldKstarEPOS_IST7->GetN());
-    if (gMYieldKstarEPOS_IST9->GetN() != gMYieldKshortEPOS_IST0->GetN())
-    {
-        cout << "Error: Kstar and Kshort EPOS graphs have different number of points" << endl;
-        return;
-    }
-    for (int i = 0; i < gRatioKstarKshortEPOS_UrQMDON->GetN(); ++i)
-    {
-        double xKshort, yKshort, xKstar, yKstar1, yKstar2, yKstar3, yKstar4;
-        gMYieldKshortEPOS_IST0->GetPoint(i, xKshort, yKshort);
-        gMYieldKstarEPOS_IST9->GetPoint(i, xKstar, yKstar1);
-        double yRatio = (yKshort != 0) ? yKstar1 / (yKshort) : 0;
-        gRatioKstarKshortEPOS_UrQMDON->SetPoint(i, xKstar, yRatio);
-        gRatioKstarKshortEPOS_UrQMDON->SetPointError(i, 0, 0);
+    // TGraphErrors *gRatioKstarKshortEPOS_UrQMDON = new TGraphErrors(gMYieldKstarEPOS_IST9->GetN());
+    // TGraphErrors *gRatioKstarKshortEPOS_WithoutRescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY80->GetN());
+    // TGraphErrors *gRatioKstarKshortEPOS_Rescattering = new TGraphErrors(gMYieldKstarEPOS_IST9_ITY81->GetN());
+    // TGraphErrors *gRatioKstarKshortEPOS_NoUrQMD = new TGraphErrors(gMYieldKstarEPOS_IST7->GetN());
+    // if (gMYieldKstarEPOS_IST9->GetN() != gMYieldKshortEPOS_IST0->GetN())
+    // {
+    //     cout << "Error: Kstar and Kshort EPOS graphs have different number of points" << endl;
+    //     return;
+    // }
+    // for (int i = 0; i < gRatioKstarKshortEPOS_UrQMDON->GetN(); ++i)
+    // {
+    //     double xKshort, yKshort, xKstar, yKstar1, yKstar2, yKstar3, yKstar4;
+    //     gMYieldKshortEPOS_IST0->GetPoint(i, xKshort, yKshort);
+    //     gMYieldKstarEPOS_IST9->GetPoint(i, xKstar, yKstar1);
+    //     double yRatio = (yKshort != 0) ? yKstar1 / (yKshort) : 0;
+    //     gRatioKstarKshortEPOS_UrQMDON->SetPoint(i, xKstar, yRatio);
+    //     gRatioKstarKshortEPOS_UrQMDON->SetPointError(i, 0, 0);
 
-        gMYieldKstarEPOS_IST9_ITY80->GetPoint(i, xKstar, yKstar2);
-        double yRatio2 = (yKshort != 0) ? yKstar2 / (yKshort) : 0;
-        gRatioKstarKshortEPOS_WithoutRescattering->SetPoint(i, xKstar, yRatio2);
-        gRatioKstarKshortEPOS_WithoutRescattering->SetPointError(i, 0, 0);
+    //     gMYieldKstarEPOS_IST9_ITY80->GetPoint(i, xKstar, yKstar2);
+    //     double yRatio2 = (yKshort != 0) ? yKstar2 / (yKshort) : 0;
+    //     gRatioKstarKshortEPOS_WithoutRescattering->SetPoint(i, xKstar, yRatio2);
+    //     gRatioKstarKshortEPOS_WithoutRescattering->SetPointError(i, 0, 0);
 
-        gMYieldKstarEPOS_IST9_ITY81->GetPoint(i, xKstar, yKstar3);
-        double yRatio3 = (yKshort != 0) ? yKstar3 / (yKshort) : 0;
-        gRatioKstarKshortEPOS_Rescattering->SetPoint(i, xKstar, yRatio3);
-        gRatioKstarKshortEPOS_Rescattering->SetPointError(i, 0, 0);
+    //     gMYieldKstarEPOS_IST9_ITY81->GetPoint(i, xKstar, yKstar3);
+    //     double yRatio3 = (yKshort != 0) ? yKstar3 / (yKshort) : 0;
+    //     gRatioKstarKshortEPOS_Rescattering->SetPoint(i, xKstar, yRatio3);
+    //     gRatioKstarKshortEPOS_Rescattering->SetPointError(i, 0, 0);
 
-        gMYieldKstarEPOS_IST7->GetPoint(i, xKstar, yKstar4);
-        double yRatio4 = (yKshort != 0) ? yKstar4 / (yKshort) : 0;
-        gRatioKstarKshortEPOS_NoUrQMD->SetPoint(i, xKstar, yRatio4);
-        gRatioKstarKshortEPOS_NoUrQMD->SetPointError(i, 0, 0);
-    }
-    SetGraphErrorStyle(gRatioKstarKshortEPOS_UrQMDON);
-    gRatioKstarKshortEPOS_UrQMDON->SetLineColor(kRed);
-    gRatioKstarKshortEPOS_UrQMDON->SetLineStyle(2);
-    gRatioKstarKshortEPOS_UrQMDON->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKshortEPOS_WithoutRescattering);
-    gRatioKstarKshortEPOS_WithoutRescattering->SetLineColor(kBlue);
-    gRatioKstarKshortEPOS_WithoutRescattering->SetLineStyle(2);
-    gRatioKstarKshortEPOS_WithoutRescattering->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKshortEPOS_Rescattering);
-    gRatioKstarKshortEPOS_Rescattering->SetLineColor(kGreen + 2);
-    gRatioKstarKshortEPOS_Rescattering->SetLineStyle(4);
-    gRatioKstarKshortEPOS_Rescattering->Draw("l same");
-    SetGraphErrorStyle(gRatioKstarKshortEPOS_NoUrQMD);
-    gRatioKstarKshortEPOS_NoUrQMD->SetLineColor(kMagenta);
-    gRatioKstarKshortEPOS_NoUrQMD->SetLineStyle(5);
-    gRatioKstarKshortEPOS_NoUrQMD->Draw("l same");
-    TLegend *legendRatioKshort = new TLegend(0.2, 0.72, 0.5, 0.92);
-    SetLegendStyle(legendRatioKshort);
-    legendRatioKshort->SetTextSize(0.027);
-    legendRatioKshort->AddEntry(gRatioKstarKshort, "#frac{K^{*0} + #bar{K}^{*0}}{K_{S}^{0}}", "p");
-    legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_UrQMDON, "EPOS UrQMD ON", "l");
-    legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_WithoutRescattering, "EPOS NoRescattering", "l");
-    legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_Rescattering, "EPOS Rescattering", "l");
-    legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_NoUrQMD, "EPOS UrQMD OFF", "l");
-    legendRatioKshort->Draw();
-    cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
+    //     gMYieldKstarEPOS_IST7->GetPoint(i, xKstar, yKstar4);
+    //     double yRatio4 = (yKshort != 0) ? yKstar4 / (yKshort) : 0;
+    //     gRatioKstarKshortEPOS_NoUrQMD->SetPoint(i, xKstar, yRatio4);
+    //     gRatioKstarKshortEPOS_NoUrQMD->SetPointError(i, 0, 0);
+    // }
+    // SetGraphErrorStyle(gRatioKstarKshortEPOS_UrQMDON);
+    // gRatioKstarKshortEPOS_UrQMDON->SetLineColor(kRed);
+    // gRatioKstarKshortEPOS_UrQMDON->SetLineStyle(2);
+    // gRatioKstarKshortEPOS_UrQMDON->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKshortEPOS_WithoutRescattering);
+    // gRatioKstarKshortEPOS_WithoutRescattering->SetLineColor(kBlue);
+    // gRatioKstarKshortEPOS_WithoutRescattering->SetLineStyle(2);
+    // gRatioKstarKshortEPOS_WithoutRescattering->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKshortEPOS_Rescattering);
+    // gRatioKstarKshortEPOS_Rescattering->SetLineColor(kGreen + 2);
+    // gRatioKstarKshortEPOS_Rescattering->SetLineStyle(4);
+    // gRatioKstarKshortEPOS_Rescattering->Draw("l same");
+    // SetGraphErrorStyle(gRatioKstarKshortEPOS_NoUrQMD);
+    // gRatioKstarKshortEPOS_NoUrQMD->SetLineColor(kMagenta);
+    // gRatioKstarKshortEPOS_NoUrQMD->SetLineStyle(5);
+    // gRatioKstarKshortEPOS_NoUrQMD->Draw("l same");
+    // TLegend *legendRatioKshort = new TLegend(0.2, 0.72, 0.5, 0.92);
+    // SetLegendStyle(legendRatioKshort);
+    // legendRatioKshort->SetTextSize(0.027);
+    // legendRatioKshort->AddEntry(gRatioKstarKshort, "#frac{K^{*0} + #bar{K}^{*0}}{K_{S}^{0}}", "p");
+    // legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_UrQMDON, "EPOS UrQMD ON", "l");
+    // legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_WithoutRescattering, "EPOS NoRescattering", "l");
+    // legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_Rescattering, "EPOS Rescattering", "l");
+    // legendRatioKshort->AddEntry(gRatioKstarKshortEPOS_NoUrQMD, "EPOS UrQMD OFF", "l");
+    // legendRatioKshort->Draw();
+    // cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
 
     // //====================================================
     // //   ================K*/Pi Ratio===================

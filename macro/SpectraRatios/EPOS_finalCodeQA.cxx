@@ -67,21 +67,17 @@ int findSpeciesIndex(const vector<Species> &species, int eposID)
     {
         for (int id : species[i].eposIDs)
         {
-            string s = to_string(eposID);
-            string p = to_string(id);
-            if (s.rfind(p, 0) == 0) // starts_with
+            if (eposID == id || eposID == id * 100)
                 return (int)i;
         }
     }
     return -1;
 }
 
-// check whether absolute epos id starts with prefix (e.g. 331 matches 33100)
+// match either the exact EPOS id or the same id with two trailing zeros
 static inline bool idHasPrefix(int eposID, int prefix)
 {
-    string s = to_string(eposID);
-    string p = to_string(prefix);
-    return s.rfind(p, 0) == 0;
+    return eposID == prefix || eposID == prefix * 100;
 }
 
 void EPOS_finalCodeQA()
@@ -89,12 +85,15 @@ void EPOS_finalCodeQA()
     TDatabasePDG *pdg = new TDatabasePDG();
 
     TChain chain("teposevent0");
-    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/merged.root");
     chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD.root");
+    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD2.root");
+    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/merged_EPOSV0.root");
+    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/OO.root");
+    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/pp.root");
 
     Long64_t nEv = chain.GetEntries();
     cout << "Total events = " << nEv << endl;
-    // nEv = 50000; // for testing
+    // nEv = 1000; // for quick test, comment out for full processing
 
     Int_t np;
     vector<Float_t> px(200000), py(200000), pz(200000), e(200000);
@@ -127,14 +126,14 @@ void EPOS_finalCodeQA()
         s.eposIDs = ids;
         s.BR = BR;
         string title = name + " p_{T};p_{T} (GeV/c);Counts";
+        string baseName = string("hPtMB_") + name;
         for (int istBin = 0; istBin < NIST; ++istBin)
         {
-            string baseNameIST = string("hPtMBIST") + to_string(istBin) + name;
-            s.hPtMBIST[istBin] = new TH1F(baseNameIST.c_str(), title.c_str(), 200, 0, 20);
+            s.hPtMBIST[istBin] = new TH1F(baseName.c_str(), title.c_str(), 200, 0, 20);
             s.hPtMBIST[istBin]->SetDirectory(nullptr);
         }
-        string baseNameIST9_ITY80 = string("hPtMBIST9_ITY80") + name;
-        string baseNameIST9_ITY81 = string("hPtMBIST9_ITY81") + name;
+        string baseNameIST9_ITY80 = baseName;
+        string baseNameIST9_ITY81 = baseName;
         s.hPtMBIST9_ITY80 = new TH1F(baseNameIST9_ITY80.c_str(), title.c_str(), 200, 0, 20);
         s.hPtMBIST9_ITY80->SetDirectory(nullptr);
         s.hPtMBIST9_ITY81 = new TH1F(baseNameIST9_ITY81.c_str(), title.c_str(), 200, 0, 20);
@@ -219,6 +218,10 @@ void EPOS_finalCodeQA()
             if (p == fabs(pz[i]))
                 continue;
 
+            double pt = sqrt(px[i] * px[i] + py[i] * py[i]);
+            if (pt < 0.1)
+                continue;
+
             double eta = 0.5 * log((p + pz[i]) / (p - pz[i]));
             int eposID = TMath::Abs(id[i]);
             if (idHasPrefix(eposID, 120) || idHasPrefix(eposID, 130) || idHasPrefix(eposID, 1120))
@@ -248,11 +251,16 @@ void EPOS_finalCodeQA()
             hRapvsIST->Fill(ist[i], y);
             hIdvsIST->Fill(ist[i], eposID);
 
+            // if (fabs(y) < 0.5)
             if (fabs(y) < 0.5 && atLeastOnePiKp_in_ModEta1 > 0)
             {
                 int sidx = findSpeciesIndex(species, eposID);
                 if (sidx >= 0)
                 {
+
+                    // if (ist[i] == 6)
+                    //     cout << "Event " << ev << " IST6 found for species " << species[sidx].name << " with EPOS ID " << eposID << endl;
+
                     Species &s = species[sidx];
                     if (ist[i] >= 0 && ist[i] < NIST)
                     {
@@ -397,17 +405,45 @@ void EPOS_finalCodeQA()
             dirIST[istBin]->cd();
             s.hPtMBIST[istBin]->Write();
             gIST->Write();
+            // also write mean-pT graph for this IST bin
+            double meanPtArr[NCENT];
+            for (int ii = 0; ii < NCENT; ++ii)
+                meanPtArr[ii] = s.sumPtIST[istBin][ii];
+            TGraph *gMeanPtIST = new TGraph(NCENT, x, meanPtArr);
+            string meanName = string("meanpt_") + s.name + string("_vs_mult");
+            gMeanPtIST->SetName(meanName.c_str());
+            gMeanPtIST->Write();
+            delete gMeanPtIST;
+            delete gIST;
         }
 
+        // IST9_ITY80: write MB histogram, yield graph and mean-pT graph
         fout->cd();
         dirIST9_ITY80->cd();
         s.hPtMBIST9_ITY80->Write();
         gNo->Write();
+        double meanNo[NCENT];
+        for (int ii = 0; ii < NCENT; ++ii)
+            meanNo[ii] = s.sumPtIST9_ITY80[ii];
+        TGraph *gMeanNo = new TGraph(NCENT, x, meanNo);
+        string meanNameNo = string("meanpt_") + s.name + string("_vs_mult");
+        gMeanNo->SetName(meanNameNo.c_str());
+        gMeanNo->Write();
+        delete gMeanNo;
 
+        // IST9_ITY81: write MB histogram, yield graph and mean-pT graph
         fout->cd();
         dirIST9_ITY81->cd();
         s.hPtMBIST9_ITY81->Write();
         gRes->Write();
+        double meanRes[NCENT];
+        for (int ii = 0; ii < NCENT; ++ii)
+            meanRes[ii] = s.sumPtIST9_ITY81[ii];
+        TGraph *gMeanRes = new TGraph(NCENT, x, meanRes);
+        string meanNameRes = string("meanpt_") + s.name + string("_vs_mult");
+        gMeanRes->SetName(meanNameRes.c_str());
+        gMeanRes->Write();
+        delete gMeanRes;
 
         fout->cd();
     }

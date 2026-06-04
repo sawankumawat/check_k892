@@ -1,6 +1,6 @@
 #include <iostream>
 #include <iomanip>
-#include "../src/style.h"
+#include "../../src/style.h"
 
 void plotResultsXiStar()
 {
@@ -37,9 +37,9 @@ void plotResultsXiStar()
     }
 
     TFile *fOutput = new TFile("../XiStar_Results/Sawan/ResultsXiStar.root", "recreate");
-    gMeanpTSys->Write("gMeanpTRun3");
-    gYieldSys->Write("gMeanYieldRun3");
-    gMeanpT->Write("gMeanpTRun3_stat");
-    gYield->Write("gMeanYieldRun3_stat");
+    gMeanpTSys->Write("gMeanpTRun3_sys");
+    gYieldSys->Write("gMeanYieldRun3_sys");
+    gMeanpT->Write("gMeanpTRun3");
+    gYield->Write("gMeanYieldRun3");
     fOutput->Close();
 }

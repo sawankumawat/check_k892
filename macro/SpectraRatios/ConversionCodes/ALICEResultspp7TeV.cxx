@@ -1,66 +1,139 @@
 #include <iostream>
-#include <iomanip>
+#include <vector>
 #include "../../src/style.h"
+
+using namespace std;
+
+struct DataSet
+{
+    int table = -1;
+    TString name;
+
+    TGraphErrors *g = nullptr;
+    TH1D *hStat = nullptr;
+    TH1D *hSys = nullptr;
+    TH1D *hSysUncorr = nullptr;
+
+    TGraphErrors *gStat = nullptr;
+    TGraphErrors *gSys = nullptr;
+    TGraphErrors *gSysUncorr = nullptr;
+};
+
+DataSet LoadTable(TFile *file, int table, const TString &name)
+{
+    DataSet d;
+
+    d.table = table;
+    d.name = name;
+
+    d.g = (TGraphErrors *)file->Get(Form("Table %d/Graph1D_y1", table));
+    d.hStat = (TH1D *)file->Get(Form("Table %d/Hist1D_y1_e1", table));
+    d.hSys = (TH1D *)file->Get(Form("Table %d/Hist1D_y1_e2", table));
+    d.hSysUncorr = (TH1D *)file->Get(Form("Table %d/Hist1D_y1_e3", table));
+
+    // Only these are mandatory
+    if (!d.g || !d.hStat || !d.hSys)
+    {
+        cout << "Error loading table " << table << " (" << name << ")" << endl;
+        return d;
+    }
+
+    d.gStat = new TGraphErrors(d.g->GetN());
+    d.gSys = new TGraphErrors(d.g->GetN());
+
+    // Create only if e3 exists
+    if (d.hSysUncorr)
+        d.gSysUncorr = new TGraphErrors(d.g->GetN());
+
+    return d;
+}
+
+void BuildErrorGraphs(DataSet &d)
+{
+    if (!d.g || !d.hStat || !d.hSys)
+        return;
+
+    for (int i = 0; i < d.g->GetN(); i++)
+    {
+        double x = 0.0;
+        double y = 0.0;
+
+        d.g->GetPoint(i, x, y);
+
+        int bin = d.hStat->FindBin(x);
+
+        double ex = d.g->GetErrorX(i);
+        double eyStat = d.hStat->GetBinContent(bin);
+        double eySys = d.hSys->GetBinContent(bin);
+
+        d.gStat->SetPoint(i, x, y);
+        d.gStat->SetPointError(i, ex, eyStat);
+
+        d.gSys->SetPoint(i, x, y);
+        d.gSys->SetPointError(i, ex, eySys);
+
+        // Optional e3
+        if (d.hSysUncorr && d.gSysUncorr)
+        {
+            double eySysUncorr = d.hSysUncorr->GetBinContent(bin);
+
+            d.gSysUncorr->SetPoint(i, x, y);
+            d.gSysUncorr->SetPointError(i, ex, eySysUncorr);
+        }
+    }
+}
+
+void WriteGraphs(TFile *outFile, const DataSet &d)
+{
+    if (!d.gStat || !d.gSys)
+        return;
+
+    outFile->cd();
+
+    d.gStat->Write(Form("g%s_stat", d.name.Data()));
+    d.gSys->Write(Form("g%s_sys", d.name.Data()));
+
+    // Write only if available
+    if (d.gSysUncorr)
+        d.gSysUncorr->Write(Form("g%s_sysuncorr", d.name.Data()));
+}
 
 void ALICEResultspp7TeV()
 {
     TFile *fALICE = new TFile("../HEP_data/HEPData_7TeV_KstarPhi_INELgt0.root", "read");
-    if (fALICE->IsZombie())
+
+    if (!fALICE || fALICE->IsZombie())
     {
         cout << "Error: ALICE file not found" << endl;
         return;
     }
 
-    // Phi has 10 multiplicity bins, while Kstar has 9 bins. So we need to read them separately
-    int TableKstar_PiRatio = 96;
-    int TablePhi_PiRatio = 97;
+    vector<pair<int, TString>> tables = {
+        {96, "Kstar_PiRatio"},
+        {97, "Phi_PiRatio"}};
 
-    TGraphErrors *gKstar_PiRatio = (TGraphErrors *)fALICE->Get(Form("Table %d/Graph1D_y1", TableKstar_PiRatio));
-    TH1D *hKstarPiRatio_stat = (TH1D *)fALICE->Get(Form("Table %d/Hist1D_y1_e1", TableKstar_PiRatio)); // stat error
-    TH1D *hKstarPiRatio_sys = (TH1D *)fALICE->Get(Form("Table %d/Hist1D_y1_e2", TableKstar_PiRatio));  // sys error
+    vector<DataSet> data;
+    data.reserve(tables.size());
 
-    TGraphErrors *gPhi_PiRatio = (TGraphErrors *)fALICE->Get(Form("Table %d/Graph1D_y1", TablePhi_PiRatio));
-    TH1D *hPhi_PiRatio_stat = (TH1D *)fALICE->Get(Form("Table %d/Hist1D_y1_e1", TablePhi_PiRatio)); // stat error
-    TH1D *hPhi_PiRatio_sys = (TH1D *)fALICE->Get(Form("Table %d/Hist1D_y1_e2", TablePhi_PiRatio));  // sys error
-
-    TGraphErrors *gKstar_PiRatio_stat = new TGraphErrors(gKstar_PiRatio->GetN());
-    TGraphErrors *gKstar_PiRatio_sys = new TGraphErrors(gKstar_PiRatio->GetN());
-
-    TGraphErrors *gPhi_PiRatio_stat = new TGraphErrors(gPhi_PiRatio->GetN());
-    TGraphErrors *gPhi_PiRatio_sys = new TGraphErrors(gPhi_PiRatio->GetN());
-
-    for (int i = 0; i < gKstar_PiRatio->GetN(); ++i)
+    for (const auto &[table, name] : tables)
     {
-        double x = 0.0, y = 0.0;
-        gKstar_PiRatio->GetPoint(i, x, y);
-        int bin = hKstarPiRatio_stat->FindBin(x);
-        double ex = gKstar_PiRatio->GetErrorX(i);
-        double ey_stat = hKstarPiRatio_stat->GetBinContent(bin);
-        double ey_sys = hKstarPiRatio_sys->GetBinContent(bin);
-        // double ey_sysUncorr = hKstarPiRatio_sysUncorr->GetBinContent(bin);
-
-        gKstar_PiRatio_stat->SetPoint(i, x, y);
-        gKstar_PiRatio_stat->SetPointError(i, ex, ey_stat);
-
-        gKstar_PiRatio_sys->SetPoint(i, x, y);
-        gKstar_PiRatio_sys->SetPointError(i, ex, ey_sys);
-
-        // Phi/Pi ratio
-        gPhi_PiRatio->GetPoint(i, x, y);
-        double phiPi_stat = hPhi_PiRatio_stat->GetBinContent(bin);
-        double phiPi_sys = hPhi_PiRatio_sys->GetBinContent(bin);
-        gPhi_PiRatio_stat->SetPoint(i, x, y);
-        gPhi_PiRatio_stat->SetPointError(i, ex, phiPi_stat);
-        gPhi_PiRatio_sys->SetPoint(i, x, y);
-        gPhi_PiRatio_sys->SetPointError(i, ex, phiPi_sys);
+        data.push_back(LoadTable(fALICE, table, name));
     }
 
-    TFile *fOutput = new TFile("pp7TeVALICE.root", "recreate");
-    gKstar_PiRatio_stat->Write("gKstar_PiRatio_stat");
-    gKstar_PiRatio_sys->Write("gKstar_PiRatio_sys");
+    for (auto &d : data)
+    {
+        BuildErrorGraphs(d);
+    }
 
-    gPhi_PiRatio_stat->Write("gPhi_PiRatio_stat");
-    gPhi_PiRatio_sys->Write("gPhi_PiRatio_sys");
+    TFile *fOutput = new TFile("pp7TeVALICE.root", "RECREATE");
+
+    for (const auto &d : data)
+    {
+        WriteGraphs(fOutput, d);
+    }
 
     fOutput->Close();
+    fALICE->Close();
+
+    cout << "Output written to pp7TeVALICE.root" << endl;
 }

@@ -251,6 +251,9 @@ void EPOS_finalCodeQA()
             hRapvsIST->Fill(ist[i], y);
             hIdvsIST->Fill(ist[i], eposID);
 
+            if (pt < 0.15)
+                continue;
+
             // if (fabs(y) < 0.5)
             if (fabs(y) < 0.5 && atLeastOnePiKp_in_ModEta1 > 0)
             {
@@ -360,7 +363,7 @@ void EPOS_finalCodeQA()
     }
 
     // prepare output file and write histograms/graphs
-    TFile *fout = new TFile("EPOS_finalQA.root", "RECREATE");
+    TFile *fout = new TFile("EPOS_finalQA_ptCut.root", "RECREATE");
     hFT0->Write();
     hIST->Write();
     hITY->Write();
@@ -449,5 +452,5 @@ void EPOS_finalCodeQA()
     }
 
     fout->Close();
-    cout << "\nSaved EPOS_finalQA.root.\n";
+    cout << "\nSaved EPOS_finalQA_ptCut.root.\n";
 }

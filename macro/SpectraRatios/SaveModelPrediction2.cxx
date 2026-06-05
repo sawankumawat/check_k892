@@ -13,20 +13,32 @@ using namespace std;
 
 void SaveModelPrediction2()
 {
-    const vector<string> modelNames = {"EPOS", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
+    const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
+    // const map<string, double> branchingRatios = {
+    //     {"Kstar", 0.666},
+    //     {"Phi", 0.492},
+    //     {"Pion", 1.0},
+    //     {"Kaon", 1.0},
+    //     {"Proton", 1.0},
+    //     {"PionMinus", 1.0},
+    //     {"KaonMinus", 1.0},
+    //     {"AntiProton", 1.0},
+    //     {"Xi1530", 0.666},
+    //     {"Kshort", 1.0},
+    //     {"KstarPM", 0.333}};
     const map<string, double> branchingRatios = {
-        {"Kstar", 0.666},
-        {"Phi", 0.492},
+        {"Kstar", 1.0},
+        {"Phi",1.0},
         {"Pion", 1.0},
         {"Kaon", 1.0},
         {"Proton", 1.0},
         {"PionMinus", 1.0},
         {"KaonMinus", 1.0},
         {"AntiProton", 1.0},
-        {"Xi1530", 0.666},
+        {"Xi1530", 1.0},
         {"Kshort", 1.0},
-        {"KstarPM", 0.333}};
+        {"KstarPM", 1.0}};
 
     float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
     const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);

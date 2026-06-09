@@ -10,7 +10,8 @@
 #include "TMath.h"
 using namespace std;
 
-static const int NCENT = 10;
+// static const int NCENT = 10;
+static const int NCENT = 21;
 static const int NIST = 10;
 
 struct Species
@@ -37,28 +38,74 @@ struct Species
 };
 
 // centrality bin from percentile
+// int GetCentralityBin(double cent)
+// {
+//     if (cent < 1)
+//         return 0;
+//     else if (cent < 5)
+//         return 1;
+//     else if (cent < 10)
+//         return 2;
+//     else if (cent < 15)
+//         return 3;
+//     else if (cent < 20)
+//         return 4;
+//     else if (cent < 30)
+//         return 5;
+//     else if (cent < 40)
+//         return 6;
+//     else if (cent < 50)
+//         return 7;
+//     else if (cent < 70)
+//         return 8;
+//     else
+//         return 9;
+// }
+
 int GetCentralityBin(double cent)
 {
-    if (cent < 1)
+    if (cent < 0.5)
         return 0;
-    else if (cent < 5)
+    else if (cent < 1)
         return 1;
-    else if (cent < 10)
+    else if (cent < 2)
         return 2;
-    else if (cent < 15)
+    else if (cent < 3)
         return 3;
-    else if (cent < 20)
+    else if (cent < 4)
         return 4;
-    else if (cent < 30)
+    else if (cent < 5)
         return 5;
-    else if (cent < 40)
+    else if (cent < 8)
         return 6;
-    else if (cent < 50)
+    else if (cent < 10)
         return 7;
-    else if (cent < 70)
+    else if (cent < 12)
         return 8;
-    else
+    else if (cent < 15)
         return 9;
+    else if (cent < 18)
+        return 10;
+    else if (cent < 20)
+        return 11;
+    else if (cent < 25)
+        return 12;
+    else if (cent < 30)
+        return 13;
+    else if (cent < 35)
+        return 14;
+    else if (cent < 40)
+        return 15;
+    else if (cent < 45)
+        return 16;
+    else if (cent < 50)
+        return 17;
+    else if (cent < 60)
+        return 18;
+    else if (cent < 70)
+        return 19;
+    else
+        return 20;
 }
 
 int findSpeciesIndex(const vector<Species> &species, int eposID)

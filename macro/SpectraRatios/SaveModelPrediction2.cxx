@@ -29,7 +29,7 @@ void SaveModelPrediction2()
     //     {"KstarPM", 0.333}};
     const map<string, double> branchingRatios = {
         {"Kstar", 1.0},
-        {"Phi",1.0},
+        {"Phi", 1.0},
         {"Pion", 1.0},
         {"Kaon", 1.0},
         {"Proton", 1.0},
@@ -40,13 +40,14 @@ void SaveModelPrediction2()
         {"Kshort", 1.0},
         {"KstarPM", 1.0}};
 
-    float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    // float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
     const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);
 
-    TFile *fOutput = new TFile("ModelResults.root", "recreate");
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults.root", "recreate");
     if (fOutput->IsZombie())
     {
-        cout << "Error: cannot create output file ModelResults2.root" << endl;
+        cout << "Error: cannot create output file ModelResults.root" << endl;
         return;
     }
 

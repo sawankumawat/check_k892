@@ -28,12 +28,11 @@ void SaveModelPrediction()
             return;
         }
         double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
-        double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06};
         int nBins = sizeof(dnch_detaRun3) / sizeof(dnch_detaRun3[0]);
         vector<double> ft0mBinCenter;
         vector<double> meanNchPerFt0mBin;
-        const int nXBins = hNch05VsFT0M->GetNbinsX();
-        // const int nXBins = 157; // After 157th bin, all entries are mostly 0.
+        // const int nXBins = hNch05VsFT0M->GetNbinsX();
+        const int nXBins = 157; // After 157th bin, all entries are mostly 0.
 
         // Build per-bin (not cumulative) mean Nch map
         for (int xbin = 1; xbin <= nXBins; ++xbin)

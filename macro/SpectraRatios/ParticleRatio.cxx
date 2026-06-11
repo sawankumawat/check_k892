@@ -22,6 +22,19 @@ void ScaleGraph(TGraphErrors *gr, double scale)
     }
 }
 
+void RestrictModelXaxis(TGraphErrors *gr, double xMin, double xMax)
+{
+    for (int i = gr->GetN() - 1; i >= 0; --i)
+    {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        if (x < xMin || x > xMax)
+        {
+            gr->RemovePoint(i);
+        }
+    }
+}
+
 void ParticleRatio()
 {
     string KstarPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
@@ -104,7 +117,8 @@ void ParticleRatio()
     //======================================================
     //    ===========EPOS local model files===========
     //======================================================
-    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut.root", "read");
+    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut.root", "read");
+    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root", "read");
     if (fEPOS->IsZombie())
     {
         cout << "Error: EPOS file not found" << endl;
@@ -118,6 +132,10 @@ void ParticleRatio()
     TGraphErrors *gMYieldProtonEPOS_IST0 = GetGraph(fEPOS, "IST0/proton_vs_mult");
     TGraphErrors *gMYieldPionEPOS_IST0 = GetGraph(fEPOS, "IST0/pion_vs_mult");
     TGraphErrors *gMYieldKaonEPOS_IST0 = GetGraph(fEPOS, "IST0/kaon_vs_mult");
+    RestrictModelXaxis(gMYieldKshortEPOS_IST0, 3.1, 23.5);
+    RestrictModelXaxis(gMYieldProtonEPOS_IST0, 3.1, 23.5);
+    RestrictModelXaxis(gMYieldPionEPOS_IST0, 3.1, 23.5);
+    RestrictModelXaxis(gMYieldKaonEPOS_IST0, 3.1, 23.5);
 
     enum Particle2
     {
@@ -157,46 +175,19 @@ void ParticleRatio()
                 {
                     gEPOS_Yield[ist][ity][ipart] = GetGraph(fEPOS, Form("IST%d/%s_vs_mult", ist, ParticleNames[ipart].c_str()));
                     gEPOS_MeanPt[ist][ity][ipart] = GetGraph(fEPOS, Form("IST%d/meanpt_%s_vs_mult", ist, ParticleNames[ipart].c_str()));
+                    RestrictModelXaxis(gEPOS_Yield[ist][ity][ipart], 3.1, 23.5);
+                    RestrictModelXaxis(gEPOS_MeanPt[ist][ity][ipart], 3.1, 23.5);
                 }
                 else if (ist == 9)
                 {
                     gEPOS_Yield[ist][ity][ipart] = GetGraph(fEPOS, Form("IST%d_ITY%d/%s_vs_mult", ist, ITYvaluesArray[ity], ParticleNames[ipart].c_str()));
                     gEPOS_MeanPt[ist][ity][ipart] = GetGraph(fEPOS, Form("IST%d_ITY%d/meanpt_%s_vs_mult", ist, ITYvaluesArray[ity], ParticleNames[ipart].c_str()));
+                    RestrictModelXaxis(gEPOS_Yield[ist][ity][ipart], 3.1, 23.5);
+                    RestrictModelXaxis(gEPOS_MeanPt[ist][ity][ipart], 3.1, 23.5);
                 }
             }
         }
     }
-
-    // //======================
-    // // Resonances (IST9)
-    // //======================
-    // TGraphErrors *gMYieldKstarEPOS_IST9 = GetGraph(fEPOS, "IST9/kstar_vs_mult");
-    // TGraphErrors *gMYieldPhiEPOS_IST9 = GetGraph(fEPOS, "IST9/phi_vs_mult");
-    // TGraphErrors *gMYieldXiStarEPOS_IST9 = GetGraph(fEPOS, "IST9/xistar_vs_mult");
-    // TGraphErrors *gMYieldChargedKstarEPOS_IST9 = GetGraph(fEPOS, "IST9/chargedkstar_vs_mult");
-
-    // TGraphErrors *gMYieldKstarEPOS_IST9_ITY80 = GetGraph(fEPOS, "IST9_ITY80/kstar_vs_mult");
-    // TGraphErrors *gMYieldKstarEPOS_IST9_ITY81 = GetGraph(fEPOS, "IST9_ITY81/kstar_vs_mult");
-    // TGraphErrors *gMYieldKstarEPOS_IST1 = GetGraph(fEPOS, "IST1/kstar_vs_mult"); // NoUrQMD
-    // TGraphErrors *gMYieldKstarEPOS_IST6_orig = GetGraph(fEPOS, "IST6/kstar_vs_mult");
-    // TGraphErrors *gMYieldKstarEPOS_IST6 = new TGraphErrors(gMYieldKstarEPOS_IST6_orig->GetN());
-
-    // for (int ibin = 0; ibin < gMYieldKstarEPOS_IST6_orig->GetN(); ibin++)
-    // {
-    //     double x, y1, y2;
-    //     gMYieldKstarEPOS_IST6_orig->GetPoint(ibin, x, y1);
-    //     gMYieldKstarEPOS_IST1->GetPoint(ibin, x, y2);
-    //     double y3 = y1 + y2;
-    //     y3 = y3 * 0.666; // BR correction in not needed for UrQMD Off case
-    //     // double y2 = y;
-    //     gMYieldKstarEPOS_IST6->SetPoint(ibin, x, y3);
-    //     gMYieldKstarEPOS_IST6->SetPointError(ibin, 0, 0);
-    // }
-
-    // TGraphErrors *gMeanPtKstarEPOS_IST9 = GetGraph(fEPOS, "IST9/meanpt_kstar_vs_mult");
-    // TGraphErrors *gMeanPtKstarEPOS_IST9_ITY80 = GetGraph(fEPOS, "IST9_ITY80/meanpt_kstar_vs_mult");
-    // TGraphErrors *gMeanPtKstarEPOS_IST9_ITY81 = GetGraph(fEPOS, "IST9_ITY81/meanpt_kstar_vs_mult");
-    // TGraphErrors *gMeanPtKstarEPOS_IST6 = GetGraph(fEPOS, "IST6/meanpt_kstar_vs_mult"); // NoUrQMD
 
     //================================================
     //==============Models from hyperloop outputs======
@@ -292,17 +283,8 @@ void ParticleRatio()
 
             int nPoints = gMYield[iModel][iParticle]->GetN();
 
-            for (int i = nPoints - 1; i >= 0; --i)
-            {
-                double x, y;
-                gMYield[iModel][iParticle]->GetPoint(i, x, y);
-
-                if (x < 3.3 || x > 22.5)
-                {
-                    gMYield[iModel][iParticle]->RemovePoint(i);
-                    gMeanPt[iModel][iParticle]->RemovePoint(i);
-                }
-            }
+            RestrictModelXaxis(gMYield[iModel][iParticle], 3.3, 22.5);
+            RestrictModelXaxis(gMeanPt[iModel][iParticle], 3.3, 22.5);
         }
 
         // Add pion with pionMinus, kaon with kaonMinus, proton with anti-proton
@@ -463,7 +445,7 @@ void ParticleRatio()
     gRatioKstarKaon->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarKaon->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarKaon);
-    gRatioKstarKaon->GetYaxis()->SetRangeUser(0.18, 0.46);
+    gRatioKstarKaon->GetYaxis()->SetRangeUser(0.18, 0.86);
     gRatioKstarKaon->GetXaxis()->SetLimits(0, 27);
     gRatioKstarKaon->SetMarkerColor(kRed);
     gRatioKstarKaon->SetLineColor(kRed);
@@ -479,9 +461,9 @@ void ParticleRatio()
     gKstarKaRatio_13TeV[1]->SetFillStyle(0);
     gKstarKaRatio_13TeV[1]->Draw("5 same");
 
-    // K* is (K* + anit_K*)/2 but K = (K^+ + K^-), so we need correctin by factor 2.
-    TGraphErrors *gRatioKstarKa_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gMYieldKaonEPOS_IST0, true);
-    TGraphErrors *gRatioKstarKa_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKstar_epos], gMYieldKaonEPOS_IST0, true);
+    // K* is (K* + anit_K*)/2 but K = (K^+ + K^-), so we need correction by factor 2.
+    TGraphErrors *gRatioKstarKa_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gMYieldKaonEPOS_IST0, true, 0.5);
+    TGraphErrors *gRatioKstarKa_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKstar_epos], gMYieldKaonEPOS_IST0, true, 0.5);
 
     gRatioKstarKa_IST9->SetLineStyle(2);
     gRatioKstarKa_IST9->Draw("l same");
@@ -558,7 +540,7 @@ void ParticleRatio()
     gRatioKstarPi_IST9_ITY80->SetLineStyle(2);
     gRatioKstarPi_IST9_ITY80->Draw("l same");
 
-    for(auto model : modelsToPlot)
+    for (auto model : modelsToPlot)
     {
         TGraphErrors *gRatioKstarPiModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kPion], true);
         setStyle(gRatioKstarPiModel, modelStyle[model].color, modelStyle[model].style);
@@ -583,7 +565,7 @@ void ParticleRatio()
     gRatioKstarKshort->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarKshort->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarKshort);
-    gRatioKstarKshort->GetYaxis()->SetRangeUser(0.0, 0.62);
+    gRatioKstarKshort->GetYaxis()->SetRangeUser(0.18, 0.46);
     gRatioKstarKshort->GetXaxis()->SetLimits(0, 27);
     gRatioKstarKshort->SetMarkerColor(kRed);
     gRatioKstarKshort->SetLineColor(kRed);
@@ -624,110 +606,110 @@ void ParticleRatio()
     legendRatio2->Draw();
     cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
 
-    //===================================================
-    // ======================Phi/ Pi Ratio===================
-    //====================================================
+    // //===================================================
+    // // ======================Phi/ Pi Ratio===================
+    // //====================================================
 
-    //******** There is mistake in either 7 TeV or 13 TeV, because one of them is exactly off by a factor of 2 *********
-    TCanvas *cRatioPhiPion = new TCanvas("cRatioPhiPion", "cRatioPhiPion", 720, 720);
-    SetCanvasStyle(cRatioPhiPion, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors *gRatioPhiPion = MakeRatio(gMYieldPhi[0], gMYieldPion[0], false);
-    TGraphErrors *gRatioPhiPion_sys = MakeRatio(gMYieldPhi[1], gMYieldPion[1], false);
-    gRatioPhiPion->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioPhiPion->GetYaxis()->SetTitle("dN/dy");
-    SetGraphErrorStyle(gRatioPhiPion);
-    gRatioPhiPion->GetYaxis()->SetRangeUser(0.002, 0.032);
-    gRatioPhiPion->GetXaxis()->SetLimits(0, 27);
-    gRatioPhiPion->SetMarkerColor(kRed);
-    gRatioPhiPion->SetLineColor(kRed);
-    gRatioPhiPion->Draw("APE");
-    gRatioPhiPion_sys->SetFillStyle(0);
-    gRatioPhiPion_sys->SetLineColor(kRed);
-    gRatioPhiPion_sys->Draw("5 same");
-    gPhiPiRatio_13TeV[0]->SetMarkerStyle(21);
-    gPhiPiRatio_13TeV[0]->SetMarkerColor(kBlue);
-    gPhiPiRatio_13TeV[0]->SetLineColor(kBlue);
-    gPhiPiRatio_13TeV[0]->Draw("P same");
-    gPhiPiRatio_13TeV[1]->SetLineColor(kBlue);
-    gPhiPiRatio_13TeV[1]->SetFillStyle(0);
-    gPhiPiRatio_13TeV[1]->Draw("5 same");
-    // ScaleGraph(gPhiPiRatio_7TeV[0], 0.5); // In 7 TeV it was just K*0 + K*0bar and not its average
-    // ScaleGraph(gPhiPiRatio_7TeV[1], 0.5);
-    gPhiPiRatio_7TeV[0]->SetMarkerStyle(22);
-    gPhiPiRatio_7TeV[0]->SetMarkerColor(kGreen + 2);
-    gPhiPiRatio_7TeV[0]->SetLineColor(kGreen + 2);
-    gPhiPiRatio_7TeV[0]->Draw("P same");
-    gPhiPiRatio_7TeV[1]->SetLineColor(kGreen + 2);
-    gPhiPiRatio_7TeV[1]->SetFillStyle(0);
-    gPhiPiRatio_7TeV[1]->Draw("5 same");
+    // //******** There is mistake in either 7 TeV or 13 TeV, because one of them is exactly off by a factor of 2 *********
+    // TCanvas *cRatioPhiPion = new TCanvas("cRatioPhiPion", "cRatioPhiPion", 720, 720);
+    // SetCanvasStyle(cRatioPhiPion, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioPhiPion = MakeRatio(gMYieldPhi[0], gMYieldPion[0], false);
+    // TGraphErrors *gRatioPhiPion_sys = MakeRatio(gMYieldPhi[1], gMYieldPion[1], false);
+    // gRatioPhiPion->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioPhiPion->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gRatioPhiPion);
+    // gRatioPhiPion->GetYaxis()->SetRangeUser(0.002, 0.032);
+    // gRatioPhiPion->GetXaxis()->SetLimits(0, 27);
+    // gRatioPhiPion->SetMarkerColor(kRed);
+    // gRatioPhiPion->SetLineColor(kRed);
+    // gRatioPhiPion->Draw("APE");
+    // gRatioPhiPion_sys->SetFillStyle(0);
+    // gRatioPhiPion_sys->SetLineColor(kRed);
+    // gRatioPhiPion_sys->Draw("5 same");
+    // gPhiPiRatio_13TeV[0]->SetMarkerStyle(21);
+    // gPhiPiRatio_13TeV[0]->SetMarkerColor(kBlue);
+    // gPhiPiRatio_13TeV[0]->SetLineColor(kBlue);
+    // gPhiPiRatio_13TeV[0]->Draw("P same");
+    // gPhiPiRatio_13TeV[1]->SetLineColor(kBlue);
+    // gPhiPiRatio_13TeV[1]->SetFillStyle(0);
+    // gPhiPiRatio_13TeV[1]->Draw("5 same");
+    // // ScaleGraph(gPhiPiRatio_7TeV[0], 0.5); // In 7 TeV it was just K*0 + K*0bar and not its average
+    // // ScaleGraph(gPhiPiRatio_7TeV[1], 0.5);
+    // gPhiPiRatio_7TeV[0]->SetMarkerStyle(22);
+    // gPhiPiRatio_7TeV[0]->SetMarkerColor(kGreen + 2);
+    // gPhiPiRatio_7TeV[0]->SetLineColor(kGreen + 2);
+    // gPhiPiRatio_7TeV[0]->Draw("P same");
+    // gPhiPiRatio_7TeV[1]->SetLineColor(kGreen + 2);
+    // gPhiPiRatio_7TeV[1]->SetFillStyle(0);
+    // gPhiPiRatio_7TeV[1]->Draw("5 same");
 
-    TGraphErrors *gRatioPhiPion_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldPionEPOS_IST0, true);
-    TGraphErrors *gRatioPhiPion_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldPionEPOS_IST0, true);
+    // TGraphErrors *gRatioPhiPion_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldPionEPOS_IST0, true);
+    // TGraphErrors *gRatioPhiPion_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldPionEPOS_IST0, true);
 
-    gRatioPhiPion_IST9->SetLineStyle(2);
-    gRatioPhiPion_IST9->Draw("l same");
-    gRatioPhiPion_IST9_ITY80->SetLineColor(kBlue);
-    gRatioPhiPion_IST9_ITY80->SetLineStyle(2);
-    gRatioPhiPion_IST9_ITY80->Draw("l same");
+    // gRatioPhiPion_IST9->SetLineStyle(2);
+    // gRatioPhiPion_IST9->Draw("l same");
+    // gRatioPhiPion_IST9_ITY80->SetLineColor(kBlue);
+    // gRatioPhiPion_IST9_ITY80->SetLineStyle(2);
+    // gRatioPhiPion_IST9_ITY80->Draw("l same");
 
-    for (auto model : modelsToPlot)
-    {
-        TGraphErrors *gRatioPhiPionModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kPion], true);
-        setStyle(gRatioPhiPionModel, modelStyle[model].color, modelStyle[model].style);
-        gRatioPhiPionModel->Draw("l same");
-    }
-    latex.DrawLatex(0.28, 0.88, "#frac{#phi}{#pi}");
-    legendRatio3->Draw();
-    legendRatio2->Draw();
-    cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.png");
+    // for (auto model : modelsToPlot)
+    // {
+    //     TGraphErrors *gRatioPhiPionModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kPion], true);
+    //     setStyle(gRatioPhiPionModel, modelStyle[model].color, modelStyle[model].style);
+    //     gRatioPhiPionModel->Draw("l same");
+    // }
+    // latex.DrawLatex(0.28, 0.88, "#frac{#phi}{#pi}");
+    // legendRatio3->Draw();
+    // legendRatio2->Draw();
+    // cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.png");
 
-    //====================================================
-    //   ================Phi/K Ratio===================
-    //====================================================
-    TCanvas *cRatioPhiKaon = new TCanvas("cRatioPhiKaon", "cRatioPhiKaon", 720, 720);
-    SetCanvasStyle(cRatioPhiKaon, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors *gRatioPhiKaon = MakeRatio(gMYieldPhi[0], gMYieldKaon[0], false);
-    TGraphErrors *gRatioPhiKaon_sys = MakeRatio(gMYieldPhi[1], gMYieldKaon[1], false);
-    gRatioPhiKaon->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioPhiKaon->GetYaxis()->SetTitle("dN/dy");
-    SetGraphErrorStyle(gRatioPhiKaon);
-    gRatioPhiKaon->GetYaxis()->SetRangeUser(0.0, 0.32);
-    gRatioPhiKaon->GetXaxis()->SetLimits(0, 27);
-    gRatioPhiKaon->SetMarkerColor(kRed);
-    gRatioPhiKaon->SetLineColor(kRed);
-    gRatioPhiKaon->Draw("APE");
-    gRatioPhiKaon_sys->SetFillStyle(0);
-    gRatioPhiKaon_sys->SetLineColor(kRed);
-    gRatioPhiKaon_sys->Draw("5 same");
-    gPhiKaRatio_13TeV[0]->SetMarkerStyle(21);
-    gPhiKaRatio_13TeV[0]->SetMarkerColor(kBlue);
-    gPhiKaRatio_13TeV[0]->SetLineColor(kBlue);
-    gPhiKaRatio_13TeV[0]->Draw("P same");
-    gPhiKaRatio_13TeV[1]->SetLineColor(kBlue);
-    gPhiKaRatio_13TeV[1]->SetFillStyle(0);
-    gPhiKaRatio_13TeV[1]->Draw("5 same");
+    // //====================================================
+    // //   ================Phi/K Ratio===================
+    // //====================================================
+    // TCanvas *cRatioPhiKaon = new TCanvas("cRatioPhiKaon", "cRatioPhiKaon", 720, 720);
+    // SetCanvasStyle(cRatioPhiKaon, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioPhiKaon = MakeRatio(gMYieldPhi[0], gMYieldKaon[0], false);
+    // TGraphErrors *gRatioPhiKaon_sys = MakeRatio(gMYieldPhi[1], gMYieldKaon[1], false);
+    // gRatioPhiKaon->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioPhiKaon->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gRatioPhiKaon);
+    // gRatioPhiKaon->GetYaxis()->SetRangeUser(0.0, 0.32);
+    // gRatioPhiKaon->GetXaxis()->SetLimits(0, 27);
+    // gRatioPhiKaon->SetMarkerColor(kRed);
+    // gRatioPhiKaon->SetLineColor(kRed);
+    // gRatioPhiKaon->Draw("APE");
+    // gRatioPhiKaon_sys->SetFillStyle(0);
+    // gRatioPhiKaon_sys->SetLineColor(kRed);
+    // gRatioPhiKaon_sys->Draw("5 same");
+    // gPhiKaRatio_13TeV[0]->SetMarkerStyle(21);
+    // gPhiKaRatio_13TeV[0]->SetMarkerColor(kBlue);
+    // gPhiKaRatio_13TeV[0]->SetLineColor(kBlue);
+    // gPhiKaRatio_13TeV[0]->Draw("P same");
+    // gPhiKaRatio_13TeV[1]->SetLineColor(kBlue);
+    // gPhiKaRatio_13TeV[1]->SetFillStyle(0);
+    // gPhiKaRatio_13TeV[1]->Draw("5 same");
 
-    ////K = (K^+ + K^-) /2, so no need for correction.
-    TGraphErrors *gRatioPhiKaon_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldKaonEPOS_IST0, true);
-    TGraphErrors *gRatioPhiKaon_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldKaonEPOS_IST0, true);
+    // ////K = (K^+ + K^-) /2, so no need for correction.
+    // TGraphErrors *gRatioPhiKaon_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldKaonEPOS_IST0, true);
+    // TGraphErrors *gRatioPhiKaon_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldKaonEPOS_IST0, true);
 
-    gRatioPhiKaon_IST9->SetLineStyle(2);
-    gRatioPhiKaon_IST9->Draw("l same");
-    gRatioPhiKaon_IST9_ITY80->SetLineColor(kBlue);
-    gRatioPhiKaon_IST9_ITY80->SetLineStyle(2);
-    gRatioPhiKaon_IST9_ITY80->Draw("l same");
+    // gRatioPhiKaon_IST9->SetLineStyle(2);
+    // gRatioPhiKaon_IST9->Draw("l same");
+    // gRatioPhiKaon_IST9_ITY80->SetLineColor(kBlue);
+    // gRatioPhiKaon_IST9_ITY80->SetLineStyle(2);
+    // gRatioPhiKaon_IST9_ITY80->Draw("l same");
 
-    for (auto model : modelsToPlot)
-    {
-        TGraphErrors *gRatioPhiKaonModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kKaon], true);
-        setStyle(gRatioPhiKaonModel, modelStyle[model].color, modelStyle[model].style);
-        gRatioPhiKaonModel->Draw("l same");
-    }
+    // for (auto model : modelsToPlot)
+    // {
+    //     TGraphErrors *gRatioPhiKaonModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kKaon], true);
+    //     setStyle(gRatioPhiKaonModel, modelStyle[model].color, modelStyle[model].style);
+    //     gRatioPhiKaonModel->Draw("l same");
+    // }
 
-    latex.DrawLatex(0.28, 0.88, "#frac{#phi}{K}");
-    legendRatio->Draw();
-    legendRatio2->Draw();
-    cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.png");
+    // latex.DrawLatex(0.28, 0.88, "#frac{#phi}{K}");
+    // legendRatio->Draw();
+    // legendRatio2->Draw();
+    // cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.png");
 
     //===================================================
     //   ================Phi/Kshort Ratio===================
@@ -756,8 +738,8 @@ void ParticleRatio()
     gPhiKshortRatio_13TeV[1]->SetFillStyle(0);
     gPhiKshortRatio_13TeV[1]->Draw("5 same");
 
-    TGraphErrors *gRatioPhiKshort_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldKshortEPOS_IST0, true);
-    TGraphErrors *gRatioPhiKshort_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldKshortEPOS_IST0, true);
+    TGraphErrors *gRatioPhiKshort_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldKshortEPOS_IST0, true, 0.5);
+    TGraphErrors *gRatioPhiKshort_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldKshortEPOS_IST0, true, 0.5);
 
     gRatioPhiKshort_IST9->SetLineStyle(2);
     gRatioPhiKshort_IST9->Draw("l same");
@@ -776,51 +758,51 @@ void ParticleRatio()
     legendRatio2->Draw();
     cRatioPhiKshort->SaveAs("Plots/Ratio_PhiKshort_Run3.png");
 
-    //===================================================
-    //  ==================Phi/ Proton Ratio===================
-    //====================================================
-    TCanvas *cRatioPhiProton = new TCanvas("cRatioPhiProton", "cRatioPhiProton", 720, 720);
-    SetCanvasStyle(cRatioPhiProton, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors *gRatioPhiProton = MakeRatio(gMYieldPhi[0], gMYieldProton[0], false, 2);
-    TGraphErrors *gRatioPhiProton_sys = MakeRatio(gMYieldPhi[1], gMYieldProton[1], false, 2);
-    gRatioPhiProton->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioPhiProton->GetYaxis()->SetTitle("dN/dy");
-    SetGraphErrorStyle(gRatioPhiProton);
-    gRatioPhiProton->GetYaxis()->SetRangeUser(0.0, 0.259);
-    gRatioPhiProton->GetXaxis()->SetLimits(0, 27);
-    gRatioPhiProton->SetMarkerColor(kRed);
-    gRatioPhiProton->SetLineColor(kRed);
-    gRatioPhiProton->Draw("APE");
-    gRatioPhiProton_sys->SetFillStyle(0);
-    gRatioPhiProton_sys->SetLineColor(kRed);
-    gRatioPhiProton_sys->Draw("5 same");
-    gPhiPrRatio_13TeV[0]->SetMarkerStyle(21);
-    gPhiPrRatio_13TeV[0]->SetMarkerColor(kBlue);
-    gPhiPrRatio_13TeV[0]->SetLineColor(kBlue);
-    gPhiPrRatio_13TeV[0]->Draw("P same");
-    gPhiPrRatio_13TeV[1]->SetLineColor(kBlue);
-    gPhiPrRatio_13TeV[1]->SetFillStyle(0);
-    gPhiPrRatio_13TeV[1]->Draw("5 same");
+    // //===================================================
+    // //  ==================Phi/ Proton Ratio===================
+    // //====================================================
+    // TCanvas *cRatioPhiProton = new TCanvas("cRatioPhiProton", "cRatioPhiProton", 720, 720);
+    // SetCanvasStyle(cRatioPhiProton, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioPhiProton = MakeRatio(gMYieldPhi[0], gMYieldProton[0], false, 2);
+    // TGraphErrors *gRatioPhiProton_sys = MakeRatio(gMYieldPhi[1], gMYieldProton[1], false, 2);
+    // gRatioPhiProton->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioPhiProton->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gRatioPhiProton);
+    // gRatioPhiProton->GetYaxis()->SetRangeUser(0.0, 0.259);
+    // gRatioPhiProton->GetXaxis()->SetLimits(0, 27);
+    // gRatioPhiProton->SetMarkerColor(kRed);
+    // gRatioPhiProton->SetLineColor(kRed);
+    // gRatioPhiProton->Draw("APE");
+    // gRatioPhiProton_sys->SetFillStyle(0);
+    // gRatioPhiProton_sys->SetLineColor(kRed);
+    // gRatioPhiProton_sys->Draw("5 same");
+    // gPhiPrRatio_13TeV[0]->SetMarkerStyle(21);
+    // gPhiPrRatio_13TeV[0]->SetMarkerColor(kBlue);
+    // gPhiPrRatio_13TeV[0]->SetLineColor(kBlue);
+    // gPhiPrRatio_13TeV[0]->Draw("P same");
+    // gPhiPrRatio_13TeV[1]->SetLineColor(kBlue);
+    // gPhiPrRatio_13TeV[1]->SetFillStyle(0);
+    // gPhiPrRatio_13TeV[1]->Draw("5 same");
 
-    TGraphErrors *gRatioPhiProton_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldProtonEPOS_IST0, true);
-    TGraphErrors *gRatioPhiProton_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldProtonEPOS_IST0, true);
+    // TGraphErrors *gRatioPhiProton_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kPhi_epos], gMYieldProtonEPOS_IST0, true);
+    // TGraphErrors *gRatioPhiProton_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kPhi_epos], gMYieldProtonEPOS_IST0, true);
 
-    gRatioPhiProton_IST9->SetLineStyle(2);
-    gRatioPhiProton_IST9->Draw("l same");
-    gRatioPhiProton_IST9_ITY80->SetLineColor(kBlue);
-    gRatioPhiProton_IST9_ITY80->SetLineStyle(2);
-    gRatioPhiProton_IST9_ITY80->Draw("l same");
+    // gRatioPhiProton_IST9->SetLineStyle(2);
+    // gRatioPhiProton_IST9->Draw("l same");
+    // gRatioPhiProton_IST9_ITY80->SetLineColor(kBlue);
+    // gRatioPhiProton_IST9_ITY80->SetLineStyle(2);
+    // gRatioPhiProton_IST9_ITY80->Draw("l same");
 
-    for (auto model : modelsToPlot)
-    {
-        TGraphErrors *gRatioPhiProtonModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kProton], true);
-        setStyle(gRatioPhiProtonModel, modelStyle[model].color, modelStyle[model].style);
-        gRatioPhiProtonModel->Draw("l same");
-    }
-    latex.DrawLatex(0.28, 0.88, "#frac{#phi}{p}");
-    legendRatio->Draw();
-    legendRatio2->Draw();
-    cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.png");
+    // for (auto model : modelsToPlot)
+    // {
+    //     TGraphErrors *gRatioPhiProtonModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kProton], true);
+    //     setStyle(gRatioPhiProtonModel, modelStyle[model].color, modelStyle[model].style);
+    //     gRatioPhiProtonModel->Draw("l same");
+    // }
+    // latex.DrawLatex(0.28, 0.88, "#frac{#phi}{p}");
+    // legendRatio->Draw();
+    // legendRatio2->Draw();
+    // cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.png");
 
     //====================================================
     // ====================Kstar/Phi Ratio ===================
@@ -833,7 +815,7 @@ void ParticleRatio()
     gRatioKstarPhi->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarPhi->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarPhi);
-    gRatioKstarPhi->GetYaxis()->SetRangeUser(0.9, 9.7);
+    gRatioKstarPhi->GetYaxis()->SetRangeUser(1.2, 6.7);
     gRatioKstarPhi->GetXaxis()->SetLimits(0, 27);
     gRatioKstarPhi->Draw("APE");
     gRatioKstarPhi_sys->SetFillStyle(0);
@@ -849,7 +831,7 @@ void ParticleRatio()
     gRatioKstarPhi_IST9_ITY80->SetLineStyle(2);
     gRatioKstarPhi_IST9_ITY80->Draw("l same");
 
-    //Here K*0 is not averaged.
+    // Here K*0 is not averaged.
     for (auto model : modelsToPlot)
     {
         TGraphErrors *gRatioKstarPhiModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kPhi], true, 2.0);
@@ -872,7 +854,7 @@ void ParticleRatio()
     gRatioKstarChargedKstar->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarChargedKstar->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarChargedKstar);
-    gRatioKstarChargedKstar->GetYaxis()->SetRangeUser(0.3, 1.8);
+    gRatioKstarChargedKstar->GetYaxis()->SetRangeUser(0.5, 1.4);
     gRatioKstarChargedKstar->GetXaxis()->SetLimits(0, 27);
     gRatioKstarChargedKstar->Draw("APE");
     gRatioKstarChargedKstar_sys->SetFillStyle(0);
@@ -888,60 +870,60 @@ void ParticleRatio()
     gRatioKstarChargedKstar_IST9_ITY80->SetLineStyle(2);
     gRatioKstarChargedKstar_IST9_ITY80->Draw("l same");
 
+    // Some issue in K*+- simulation. It has very less yield than K*0 somehow (a facotr of 700 difference.)
     for (auto model : modelsToPlot)
     {
         TGraphErrors *gRatioKstarChargedKstarModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kKstarPM], true);
         setStyle(gRatioKstarChargedKstarModel, modelStyle[model].color, modelStyle[model].style);
         gRatioKstarChargedKstarModel->Draw("l same");
     }
-    latex.DrawLatex(0.28, 0.88, "#frac{K^{*0} + #bar{K}^{*0}}{K^{*+} + K^{*-}}");
+    latex.DrawLatex(0.28, 0.88, "#frac{K^{*0}}{K^{* #pm}}");
     legendRatio->Draw();
     legendRatio2->Draw();
     cRatioKstarChargedKstar->SaveAs("Plots/Ratio_KstarChargedKstar_Run3.png");
 
-    // //================================================
-    // // ==================Kstar/ Xi* Ratio===================
-    // //====================================================
-    // TCanvas *cRatioKstarXiStar = new TCanvas("cRatioKstarXiStar", "cRatioKstarXiStar", 720, 720);
-    // SetCanvasStyle(cRatioKstarXiStar, 0.15, 0.03, 0.03, 0.15);
-    // TGraphErrors *gRatioKstarXiStar = MakeRatio(gMYieldKstar[0], gMYieldXiStar[0], false);
-    // TGraphErrors *gRatioKstarXiStar_sys = MakeRatio(gMYieldKstar[1], gMYieldXiStar[1], false);
-    // gRatioKstarXiStar->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    // gRatioKstarXiStar->GetYaxis()->SetTitle("dN/dy");
-    // SetGraphErrorStyle(gRatioKstarXiStar);
-    // gRatioKstarXiStar->GetYaxis()->SetRangeUser(0.0, 209);
-    // gRatioKstarXiStar->GetXaxis()->SetLimits(0, 27);
-    // gRatioKstarXiStar->Draw("APE");
-    // gRatioKstarXiStar_sys->SetFillStyle(0);
-    // gRatioKstarXiStar_sys->Draw("5 same");
+    //================================================
+    // ==================Kstar/ Xi* Ratio===================
+    //====================================================
+    TCanvas *cRatioKstarXiStar = new TCanvas("cRatioKstarXiStar", "cRatioKstarXiStar", 720, 720);
+    SetCanvasStyle(cRatioKstarXiStar, 0.15, 0.03, 0.03, 0.15);
+    TGraphErrors *gRatioKstarXiStar = MakeRatio(gMYieldKstar[0], gMYieldXiStar[0], false);
+    TGraphErrors *gRatioKstarXiStar_sys = MakeRatio(gMYieldKstar[1], gMYieldXiStar[1], false);
+    gRatioKstarXiStar->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gRatioKstarXiStar->GetYaxis()->SetTitle("dN/dy");
+    SetGraphErrorStyle(gRatioKstarXiStar);
+    gRatioKstarXiStar->GetYaxis()->SetRangeUser(0.0, 179);
+    gRatioKstarXiStar->GetXaxis()->SetLimits(0, 27);
+    gRatioKstarXiStar->Draw("APE");
+    gRatioKstarXiStar_sys->SetFillStyle(0);
+    gRatioKstarXiStar_sys->Draw("5 same");
 
-    // TGraphErrors *gRatioKstarXiStar_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gEPOS_Yield[9][kITY0][kXi1530_epos], true);
-    // TGraphErrors *gRatioKstarXiStar_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKstar_epos], gEPOS_Yield[9][kITY80][kXi1530_epos], true);
-    // TGraphErrors *gRatioKstarXiStar_IST9_ITY81 = MakeRatio(gEPOS_Yield[9][kITY81][kKstar_epos], gEPOS_Yield[9][kITY81][kXi1530_epos], true);
-    // TGraphErrors *gRatioKstarXiStar_IST6 = MakeRatio(gEPOS_Yield[6][kITY0][kKstar_epos], gEPOS_Yield[6][kITY0][kXi1530_epos], true);
+    TGraphErrors *gRatioKstarXiStar_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gEPOS_Yield[9][kITY0][kXi1530_epos], true);
+    TGraphErrors *gRatioKstarXiStar_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKstar_epos], gEPOS_Yield[9][kITY80][kXi1530_epos], true);
+    TGraphErrors *gRatioKstarXiStar_IST9_ITY81 = MakeRatio(gEPOS_Yield[9][kITY81][kKstar_epos], gEPOS_Yield[9][kITY81][kXi1530_epos], true);
+    TGraphErrors *gRatioKstarXiStar_IST6 = MakeRatio(gEPOS_Yield[6][kITY0][kKstar_epos], gEPOS_Yield[6][kITY0][kXi1530_epos], true);
 
-    // gRatioKstarXiStar_IST9->SetLineStyle(2);
-    // gRatioKstarXiStar_IST9->Draw("l same");
-    // gRatioKstarXiStar_IST9_ITY80->SetLineColor(kBlue);
-    // gRatioKstarXiStar_IST9_ITY80->SetLineStyle(2);
-    // gRatioKstarXiStar_IST9_ITY80->Draw("l same");
-    // gRatioKstarXiStar_IST9_ITY81->SetLineColor(kGreen + 2);
-    // gRatioKstarXiStar_IST9_ITY81->SetLineStyle(2);
-    // gRatioKstarXiStar_IST9_ITY81->Draw("l same");
-    // gRatioKstarXiStar_IST6->SetLineColor(kMagenta);
-    // gRatioKstarXiStar_IST6->SetLineStyle(5);
-    // // gRatioKstarXiStar_IST6->Draw("l same");
+    gRatioKstarXiStar_IST9->SetLineStyle(2);
+    gRatioKstarXiStar_IST9->Draw("l same");
+    gRatioKstarXiStar_IST9_ITY80->SetLineColor(kBlue);
+    gRatioKstarXiStar_IST9_ITY80->SetLineStyle(2);
+    gRatioKstarXiStar_IST9_ITY80->Draw("l same");
+    gRatioKstarXiStar_IST9_ITY81->SetLineColor(kGreen + 2);
+    gRatioKstarXiStar_IST9_ITY81->SetLineStyle(2);
 
-    // for (auto model : modelsToPlot)
-    // {
-    //     TGraphErrors *gRatioKstarXiStarModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kXi1530], true);
-    //     setStyle(gRatioKstarXiStarModel, modelStyle[model].color, modelStyle[model].style);
-    //     gRatioKstarXiStarModel->Draw("l same");
-    // }
-    // latex.DrawLatex(0.28, 0.88, "#frac{K^{*0} + #bar{K}^{*0}}{2#Xi^{*0}}");
-    // legendRatio->Draw();
-    // legendRatio2->Draw();
-    // cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.png");
+    // In this model, the Kstar is not divided by 2
+    for (auto model : modelsToPlot)
+    {
+        TGraphErrors *gRatioKstarXiStarModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kXi1530], true, 2);
+        setStyle(gRatioKstarXiStarModel, modelStyle[model].color, modelStyle[model].style);
+        gRatioKstarXiStarModel->Draw("l same");
+    }
+    latex.DrawLatex(0.28, 0.88, "#frac{K^{*0}}{#Xi(1530)^{0}}");
+    legendRatio->Clear();
+    legendRatio->AddEntry(gRatioKstarXiStar, "pp, #sqrt{s} = 13.6 TeV", "p");
+    legendRatio->Draw();
+    legendRatio2->Draw();
+    cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.png");
 
     // //================================================
     // // ==================Phi/ Xi* Ratio===================
@@ -989,6 +971,84 @@ void ParticleRatio()
     // cRatioPhiXiStar->SaveAs("Plots/Ratio_PhiXiStar_Run3.png");
 
     // */
+
+    // //====================================================
+    // // =================Kaon / Pion Ratio ==================
+    // //====================================================
+    // TCanvas *cRatioKaonPion = new TCanvas("cRatioKaonPion", "cRatioKaonPion", 720, 720);
+    // SetCanvasStyle(cRatioKaonPion, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors *gRatioKaonPion = MakeRatio(gMYieldKaon[0], gMYieldPion[0], false);
+    // TGraphErrors *gRatioKaonPion_sys = MakeRatio(gMYieldKaon[1], gMYieldPion[1], false);
+    // gRatioKaonPion->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gRatioKaonPion->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gRatioKaonPion);
+    // gRatioKaonPion->GetYaxis()->SetRangeUser(0.05, 0.25);
+    // gRatioKaonPion->GetXaxis()->SetLimits(0, 27);
+    // gRatioKaonPion->SetMarkerColor(kRed);
+    // gRatioKaonPion->SetLineColor(kRed);
+    // gRatioKaonPion->Draw("APE");
+    // gRatioKaonPion_sys->SetFillStyle(0);
+    // gRatioKaonPion_sys->SetLineColor(kRed);
+    // gRatioKaonPion_sys->Draw("5 same");
+
+    // TGraphErrors *gRatioKaonPion_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKaon_epos], gEPOS_Yield[9][kITY0][kPion_epos], true);
+    // TGraphErrors *gRatioKaonPion_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKaon_epos], gEPOS_Yield[9][kITY80][kPion_epos], true);
+
+    // gRatioKaonPion_IST9->SetLineStyle(2);
+    // gRatioKaonPion_IST9->Draw("l same");
+    // gRatioKaonPion_IST9_ITY80->SetLineColor(kBlue);
+    // gRatioKaonPion_IST9_ITY80->SetLineStyle(2);
+    // gRatioKaonPion_IST9_ITY80->Draw("l same");
+
+    // for (auto model : modelsToPlot)
+    // {
+    //     TGraphErrors *gRatioKaonPionModel = MakeRatio(gMYield[model][kKaon], gMYield[model][kPion], true);
+    //     setStyle(gRatioKaonPionModel, modelStyle[model].color, modelStyle[model].style);
+    //     gRatioKaonPionModel->Draw("l same");
+    // }
+    // latex.DrawLatex(0.28, 0.88, "#frac{K}{#pi}");
+    // legendRatio->Draw();
+    // legendRatio2->Draw();
+    // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.png");
+
+    //    //=================================================
+    //     // ====================Proton / Pion Ratio ==================
+    //     //=================================================
+    //     TCanvas *cRatioProtonPion = new TCanvas("cRatioProtonPion", "cRatioProtonPion", 720, 720);
+    //     SetCanvasStyle(cRatioProtonPion, 0.15, 0.03, 0.03, 0.15);
+    //     TGraphErrors *gRatioProtonPion = MakeRatio(gMYieldProton[0], gMYieldPion[0], false);
+    //     TGraphErrors *gRatioProtonPion_sys = MakeRatio(gMYieldProton[1], gMYieldPion[1], false);
+    //     gRatioProtonPion->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    //     gRatioProtonPion->GetYaxis()->SetTitle("dN/dy");
+    //     SetGraphErrorStyle(gRatioProtonPion);
+    //     gRatioProtonPion->GetYaxis()->SetRangeUser(0.02, 0.12);
+    //     gRatioProtonPion->GetXaxis()->SetLimits(0, 27);
+    //     gRatioProtonPion->SetMarkerColor(kRed);
+    //     gRatioProtonPion->SetLineColor(kRed);
+    //     gRatioProtonPion->Draw("APE");
+    //     gRatioProtonPion_sys->SetFillStyle(0);
+    //     gRatioProtonPion_sys->SetLineColor(kRed);
+    //     gRatioProtonPion_sys->Draw("5 same");
+
+    //     TGraphErrors *gRatioProtonPion_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kProton_epos], gEPOS_Yield[9][kITY0][kPion_epos], true);
+    //     TGraphErrors *gRatioProtonPion_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kProton_epos], gEPOS_Yield[9][kITY80][kPion_epos], true);
+
+    //     gRatioProtonPion_IST9->SetLineStyle(2);
+    //     gRatioProtonPion_IST9->Draw("l same");
+    //     gRatioProtonPion_IST9_ITY80->SetLineColor(kBlue);
+    //     gRatioProtonPion_IST9_ITY80->SetLineStyle(2);
+    //     gRatioProtonPion_IST9_ITY80->Draw("l same");
+
+    //     for (auto model : modelsToPlot)
+    //     {
+    //         TGraphErrors *gRatioProtonPionModel = MakeRatio(gMYield[model][kProton], gMYield[model][kPion], true);
+    //         setStyle(gRatioProtonPionModel, modelStyle[model].color, modelStyle[model].style);
+    //         gRatioProtonPionModel->Draw("l same");
+    //     }
+    //     latex.DrawLatex(0.28, 0.88, "#frac{p}{#pi}");
+    //     legendRatio->Draw();
+    //     legendRatio2->Draw();
+    //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.png");
 }
 
 TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denominator, bool isModel = false, float CorrFactorDen = 1)

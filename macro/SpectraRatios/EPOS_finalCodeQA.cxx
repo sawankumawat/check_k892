@@ -132,8 +132,8 @@ void EPOS_finalCodeQA()
     TDatabasePDG *pdg = new TDatabasePDG();
 
     TChain chain("teposevent0");
-    chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD.root");
-    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD2.root");
+    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD.root");
+    chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD2.root");
     // chain.Add("/home/sawan/Storage/EPOS_localOutputs/merged_EPOSV0.root");
     // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/OO.root");
     // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/pp.root");

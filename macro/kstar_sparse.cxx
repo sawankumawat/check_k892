@@ -21,8 +21,8 @@ void kstar_sparse()
     TStopwatch timer;
     timer.Start();
     //*************************** change here ***************************************
-    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
-    // TString sysVars[] = {""};
+    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
+    TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -31,10 +31,10 @@ void kstar_sparse()
     string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
-    bool makeQAplots = false;
+    bool makeQAplots = true;
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
-    bool isINEL = false;
+    bool isINEL = true;
 
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
@@ -155,8 +155,8 @@ void kstar_sparse()
         std::cout << "Folder " << output_QA_folder << " created successfully." << std::endl;
     }
 
-    // for (int ivar = 0; ivar < nSysVars; ivar++)
-    for (int ivar = 1; ivar < 2; ivar++)
+    for (int ivar = 0; ivar < nSysVars; ivar++)
+    // for (int ivar = 1; ivar < 2; ivar++)
     {
         if (nSysVars > 1 && (kResBkg != "MIX" || kbkg != "pol3"))
         {
@@ -187,8 +187,8 @@ void kstar_sparse()
             // }
         }
 
-        // for (int imult = 0; imult < nmultbins + 1; imult++)
-        for (int imult = 4; imult < nmultbins + 1; imult++)
+        for (int imult = 0; imult < nmultbins + 1; imult++)
+        // for (int imult = 4; imult < nmultbins + 1; imult++)
         {
             if (isINEL && imult != 0)
                 break;

@@ -49,7 +49,7 @@ void ChargedParticleMult_run3()
     double totalEvents = hmultpp136->Integral(1, hmultpp136->GetNbinsX());
 
     // ALICE-style percentiles
-    double percentiles[10] = {0.01, 0.05, 0.10, 0.15, 0.20, 0.30, 0.40, 0.50, 0.70, 1.00};
+    double percentiles[10] = {1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
     // double percentiles[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 
     vector<int> regionEdges;
@@ -61,7 +61,7 @@ void ChargedParticleMult_run3()
     {
         cumulative += hmultpp136->GetBinContent(i);
 
-        while (idx < 10 && cumulative >= percentiles[idx] * totalEvents)
+        while (idx < 10 && cumulative >= (percentiles[idx] / 100) * totalEvents)
         {
             regionEdges.push_back(i);
             idx++;

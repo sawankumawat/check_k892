@@ -81,9 +81,9 @@ void compare_efficiency()
     hEffDefault->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     hEffDefault->GetXaxis()->SetLabelSize(0.04 / pad1Size);
     hEffDefault->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    hEffDefault->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
     hEffDefault->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hEffDefault->GetYaxis()->SetTitle("Efficiency");
-    hEffDefault->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
     hEffDefault->SetMaximum(hEffDefault->GetMaximum() * 1.4);
     hEffDefault->Draw("ep");
     hEffVar1->SetMarkerStyle(21);

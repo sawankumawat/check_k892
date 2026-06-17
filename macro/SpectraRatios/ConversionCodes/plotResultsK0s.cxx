@@ -20,6 +20,14 @@ void plotResultsK0s()
         return;
     }
 
+    cout << "Total points in graphs: " << hMeanpT->GetN() << endl;
+    for (int i = 0; i < hMeanpT->GetN(); i++)
+    {
+        double x, y;
+        hMeanpT->GetPoint(i, x, y);
+        cout << "Point " << i << ": x = " << x << ", y = " << y << endl;
+    }
+
     TFile *fOutput = new TFile("../K0s_Run3_Results/Sawan/ResultsK0s.root", "recreate");
     hCorrectedMinBiasSpectra->Write("hCorrectedMinBiasSpectra");
     hMeanpT->Write("gMeanpTRun3");

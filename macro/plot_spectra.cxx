@@ -231,11 +231,13 @@ void plot_spectra()
 
         c->cd(2);
         gPad->SetLogy(1);
-        hratios[1]->SetMinimum(0.1);
-        hratios[1]->SetMaximum(13);
+        hratios[1]->SetMinimum(0.32);
+        hratios[1]->GetYaxis()->SetMoreLogLabels();
+        hratios[1]->GetYaxis()->SetNoExponent();
+        hratios[1]->SetMaximum(8);
         hratios[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         hratios[1]->GetYaxis()->SetTitle("Ratio to INEL>0");
-        hratios[1]->GetYaxis()->SetNdivisions(505);
+        hratios[1]->GetYaxis()->SetNdivisions(535);
         // hratios[0]->GetXaxis()->SetRangeUser(0, 25);
 
         for (int i = 1; i < numofmultbins; i++)

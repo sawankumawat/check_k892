@@ -10,6 +10,11 @@
 #include "TMath.h"
 using namespace std;
 
+// Changes in the code
+// 1. Modified the pT cut from 0.15 to 0.1 GeV
+// 2. For Pi,K,p and K0s, instead of checking first 3 EPOS digit, we check full epos ID only
+// 3. For Pi,K,p, we choose the rapidity region of |y|<0.3 and |eta|<0.8 just like data and then later correct for it during dN/dy calculation. For other particles, we keep the same rapidity cut of |y|<0.5
+
 // static const int NCENT = 10;
 static const int NCENT = 21;
 static const int NIST = 10;
@@ -32,35 +37,20 @@ struct Species
     double countPtIST9_ITY80[NCENT] = {0};
     double countPtIST9_ITY81[NCENT] = {0};
 
+    double yieldNoIST[NCENT] = {0};
+    double sumPtNoIST[NCENT] = {0};
+    double countPtNoIST[NCENT] = {0};
+
+    double yieldIST0or8[NCENT] = {0};
+    double sumPtIST0or8[NCENT] = {0};
+    double countPtIST0or8[NCENT] = {0};
+
     TH1F *hPtMBIST[NIST] = {nullptr};
     TH1F *hPtMBIST9_ITY80 = nullptr;
     TH1F *hPtMBIST9_ITY81 = nullptr;
+    TH1F *hPtMBNoIST = nullptr;
+    TH1F *hPtMBIST0or8 = nullptr;
 };
-
-// centrality bin from percentile
-// int GetCentralityBin(double cent)
-// {
-//     if (cent < 1)
-//         return 0;
-//     else if (cent < 5)
-//         return 1;
-//     else if (cent < 10)
-//         return 2;
-//     else if (cent < 15)
-//         return 3;
-//     else if (cent < 20)
-//         return 4;
-//     else if (cent < 30)
-//         return 5;
-//     else if (cent < 40)
-//         return 6;
-//     else if (cent < 50)
-//         return 7;
-//     else if (cent < 70)
-//         return 8;
-//     else
-//         return 9;
-// }
 
 int GetCentralityBin(double cent)
 {
@@ -112,10 +102,19 @@ int findSpeciesIndex(const vector<Species> &species, int eposID)
 {
     for (size_t i = 0; i < species.size(); ++i)
     {
-        for (int id : species[i].eposIDs)
+        // If the species if pion,kaon, proton and Kshort, then do not multiply by 100
+        if (eposID == 120 || eposID == 130 || eposID == 1120 || eposID == 20)
         {
-            if (eposID == id || eposID == id * 100)
+            if (eposID == species[i].eposIDs[0])
                 return (int)i;
+        }
+        else
+        {
+            for (int id : species[i].eposIDs)
+            {
+                if (eposID == id || eposID == id * 100)
+                    return (int)i;
+            }
         }
     }
     return -1;
@@ -135,8 +134,6 @@ void EPOS_finalCodeQA()
     // chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD.root");
     chain.Add("/home/sawan/Storage/EPOS_localOutputs/mergedEPOS_UrQMD2.root");
     // chain.Add("/home/sawan/Storage/EPOS_localOutputs/merged_EPOSV0.root");
-    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/OO.root");
-    // chain.Add("/home/sawan/Storage/EPOS_localOutputs/Sarjeeta/pp.root");
 
     Long64_t nEv = chain.GetEntries();
     cout << "Total events = " << nEv << endl;
@@ -185,6 +182,13 @@ void EPOS_finalCodeQA()
         s.hPtMBIST9_ITY80->SetDirectory(nullptr);
         s.hPtMBIST9_ITY81 = new TH1F(baseNameIST9_ITY81.c_str(), title.c_str(), 200, 0, 20);
         s.hPtMBIST9_ITY81->SetDirectory(nullptr);
+
+        s.hPtMBNoIST = new TH1F((baseName + "_NoIST").c_str(), title.c_str(), 200, 0, 20);
+        s.hPtMBIST0or8 = new TH1F((baseName + "_IST0or8").c_str(), title.c_str(), 200, 0, 20);
+
+        s.hPtMBNoIST->SetDirectory(nullptr);
+        s.hPtMBIST0or8->SetDirectory(nullptr);
+
         species.push_back(s);
     };
 
@@ -209,7 +213,7 @@ void EPOS_finalCodeQA()
         for (int i = 0; i < np; i++)
         {
             int eposID = TMath::Abs(id[i]);
-            if (!idHasPrefix(eposID, 120) && !idHasPrefix(eposID, 130) && !idHasPrefix(eposID, 1120))
+            if (eposID != 120 && eposID != 130 && eposID != 1120) // checking Pi,K,P
                 continue;
 
             double p = sqrt(px[i] * px[i] + py[i] * py[i] + pz[i] * pz[i]);
@@ -217,8 +221,8 @@ void EPOS_finalCodeQA()
                 continue;
 
             double pt = sqrt(px[i] * px[i] + py[i] * py[i]);
-            if (pt < 0.1)
-                continue;
+            // if (pt < 0.1)
+            //     continue;
 
             double eta = 0.5 * log((p + pz[i]) / (p - pz[i]));
 
@@ -266,12 +270,12 @@ void EPOS_finalCodeQA()
                 continue;
 
             double pt = sqrt(px[i] * px[i] + py[i] * py[i]);
-            if (pt < 0.1)
-                continue;
+            // if (pt < 0.1)
+            //     continue;
 
             double eta = 0.5 * log((p + pz[i]) / (p - pz[i]));
             int eposID = TMath::Abs(id[i]);
-            if (idHasPrefix(eposID, 120) || idHasPrefix(eposID, 130) || idHasPrefix(eposID, 1120))
+            if (eposID == 120 || eposID == 130 || eposID == 1120)
             {
                 if (fabs(eta) < 1.0 && ist[i] == 0)
                     atLeastOnePiKp_in_ModEta1++;
@@ -290,7 +294,8 @@ void EPOS_finalCodeQA()
             int eposID = TMath::Abs(id[i]);
 
             // charged multiplicity
-            if ((idHasPrefix(eposID, 120) || idHasPrefix(eposID, 130) || idHasPrefix(eposID, 1120)) && fabs(eta) < 0.5 && ist[i] == 0 && pt >= 0.1)
+            // if ((eposID == 120 || eposID == 130 || eposID == 1120) && fabs(eta) < 0.5 && ist[i] == 0 && pt >= 0.1)
+            if ((eposID == 120 || eposID == 130 || eposID == 1120) && fabs(eta) < 0.5 && ist[i] == 0)
                 nchMid++;
 
             hIST->Fill(ist[i]);
@@ -298,20 +303,45 @@ void EPOS_finalCodeQA()
             hRapvsIST->Fill(ist[i], y);
             hIdvsIST->Fill(ist[i], eposID);
 
-            if (pt < 0.15)
-                continue;
+            // if (pt < 0.1)
+            //     continue;
 
-            // if (fabs(y) < 0.5)
-            if (fabs(y) < 0.5 && atLeastOnePiKp_in_ModEta1 > 0)
+            bool isPiKp = (eposID == 120 || eposID == 130 || eposID == 1120);
+
+            bool acceptParticle = false;
+
+            if (isPiKp)
+            {
+                if (fabs(y) < 0.3 && fabs(eta) < 0.8)
+                    acceptParticle = true;
+            }
+            else
+            {
+                if (fabs(y) < 0.5)
+                    acceptParticle = true;
+            }
+
+            // if (fabs(y) < 0.5 && atLeastOnePiKp_in_ModEta1 > 0)
+            if (acceptParticle && atLeastOnePiKp_in_ModEta1 > 0)
             {
                 int sidx = findSpeciesIndex(species, eposID);
                 if (sidx >= 0)
                 {
 
-                    // if (ist[i] == 6)
-                    //     cout << "Event " << ev << " IST6 found for species " << species[sidx].name << " with EPOS ID " << eposID << endl;
-
                     Species &s = species[sidx];
+                    s.yieldNoIST[cbin] += 1;
+                    s.sumPtNoIST[cbin] += pt;
+                    s.countPtNoIST[cbin] += 1;
+                    s.hPtMBNoIST->Fill(pt);
+
+                    if (ist[i] == 0 || ist[i] == 8)
+                    {
+                        s.yieldIST0or8[cbin] += 1;
+                        s.sumPtIST0or8[cbin] += pt;
+                        s.countPtIST0or8[cbin] += 1;
+                        s.hPtMBIST0or8->Fill(pt);
+                    }
+
                     if (ist[i] >= 0 && ist[i] < NIST)
                     {
                         s.yieldIST[ist[i]][cbin] += 1;
@@ -355,58 +385,57 @@ void EPOS_finalCodeQA()
     // finalize species yields (apply BR and event counts)
     for (auto &s : species)
     {
+        // divide by deltay = 0.6 for Pi,K,p, for other divide by deltay = 1.0
+        double deltay = 1.0;
+        if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
+            deltay = 0.6;
+
         for (int i = 0; i < NCENT; ++i)
         {
             if (nEventsCent[i] > 0)
             {
-                // special-case: kstar in original code divides by extra factor 2
-                double kstarFactor = (s.name == "kstar") ? 2.0 : 1.0;
                 for (int istBin = 0; istBin < NIST; ++istBin)
-                    s.yieldIST[istBin][i] = s.yieldIST[istBin][i] / (nEventsCent[i] * s.BR * kstarFactor);
-                s.yieldIST9_ITY80[i] = s.yieldIST9_ITY80[i] / (nEventsCent[i] * s.BR * kstarFactor);
-                s.yieldIST9_ITY81[i] = s.yieldIST9_ITY81[i] / (nEventsCent[i] * s.BR * kstarFactor);
+                {
+                    s.yieldIST[istBin][i] = s.yieldIST[istBin][i] / (nEventsCent[i] * s.BR * deltay);
+                }
+                s.yieldIST9_ITY80[i] = s.yieldIST9_ITY80[i] / (nEventsCent[i] * s.BR * deltay);
+                s.yieldIST9_ITY81[i] = s.yieldIST9_ITY81[i] / (nEventsCent[i] * s.BR * deltay);
+                s.yieldNoIST[i] /= (nEventsCent[i] * s.BR * deltay);
+                s.yieldIST0or8[i] /= (nEventsCent[i] * s.BR * deltay);
             }
+
             for (int istBin = 0; istBin < NIST; ++istBin)
+            {
                 if (s.countPtIST[istBin][i] > 0)
                     s.sumPtIST[istBin][i] = s.sumPtIST[istBin][i] / s.countPtIST[istBin][i];
+            }
             if (s.countPtIST9_ITY80[i] > 0)
                 s.sumPtIST9_ITY80[i] = s.sumPtIST9_ITY80[i] / s.countPtIST9_ITY80[i];
             if (s.countPtIST9_ITY81[i] > 0)
                 s.sumPtIST9_ITY81[i] = s.sumPtIST9_ITY81[i] / s.countPtIST9_ITY81[i];
-        }
-    }
 
-    // Print summary (similar to original)
-    cout << "\n===== IST9 RESULTS =====\n";
-    for (int i = 0; i < NCENT; ++i)
-    {
-        cout << "bin " << i << "  <dNch/deta>=" << meanDNdEta[i];
-        // print phi and kstar specifically to match original output
-        for (auto &s : species)
-        {
-            if (s.name == "phi")
-                cout << "  phi=" << s.yieldIST[9][i];
-            if (s.name == "kstar")
-                cout << "  kstar=" << s.yieldIST[9][i];
+            if (s.countPtNoIST[i] > 0)
+                s.sumPtNoIST[i] /= s.countPtNoIST[i];
+            if (s.countPtIST0or8[i] > 0)
+                s.sumPtIST0or8[i] /= s.countPtIST0or8[i];
         }
-        cout << endl;
     }
 
     // normalize minimum-bias pT spectra for each species histogram
     for (auto &s : species)
     {
+        double deltay = 1.0;
+        if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
+            deltay = 0.6;
+
         for (int istBin = 0; istBin < NIST; ++istBin)
         {
-            s.hPtMBIST[istBin]->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST[istBin]->GetBinWidth(1)));
-            if (s.name == "kstar")
-                s.hPtMBIST[istBin]->Scale(1.0 / 2.0);
+            s.hPtMBIST[istBin]->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST[istBin]->GetBinWidth(1) * deltay));
         }
-        s.hPtMBIST9_ITY80->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY80->GetBinWidth(1)));
-        if (s.name == "kstar")
-            s.hPtMBIST9_ITY80->Scale(1.0 / 2.0);
-        s.hPtMBIST9_ITY81->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY81->GetBinWidth(1)));
-        if (s.name == "kstar")
-            s.hPtMBIST9_ITY81->Scale(1.0 / 2.0);
+        s.hPtMBIST9_ITY80->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY80->GetBinWidth(1) * deltay));
+        s.hPtMBIST9_ITY81->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY81->GetBinWidth(1) * deltay));
+        s.hPtMBNoIST->Scale(1.0 / (totalEvents * s.BR * s.hPtMBNoIST->GetBinWidth(1) * deltay));
+        s.hPtMBIST0or8->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST0or8->GetBinWidth(1) * deltay));
     }
 
     // prepare output file and write histograms/graphs
@@ -420,9 +449,13 @@ void EPOS_finalCodeQA()
     // create graphs per species and write them into directories named by IST/ITY
     TDirectory *dirIST[NIST];
     for (int istBin = 0; istBin < NIST; ++istBin)
+    {
         dirIST[istBin] = (TDirectory *)fout->mkdir((string("IST") + to_string(istBin)).c_str());
+    }
     TDirectory *dirIST9_ITY80 = (TDirectory *)fout->mkdir("IST9_ITY80");
     TDirectory *dirIST9_ITY81 = (TDirectory *)fout->mkdir("IST9_ITY81");
+    TDirectory *dirNoIST = (TDirectory *)fout->mkdir("NoIST");
+    TDirectory *dirIST0or8 = (TDirectory *)fout->mkdir("IST0or8");
 
     for (auto &s : species)
     {
@@ -430,6 +463,10 @@ void EPOS_finalCodeQA()
         double yIST[NIST][NCENT];
         double y_no[NCENT];
         double y_res[NCENT];
+        double yieldNoIST[NCENT];
+        double meanNoIST[NCENT];
+        double yieldIST0or8[NCENT];
+        double meanIST0or8[NCENT];
         for (int i = 0; i < NCENT; i++)
         {
             x[i] = meanDNdEta[i];
@@ -437,6 +474,10 @@ void EPOS_finalCodeQA()
                 yIST[istBin][i] = s.yieldIST[istBin][i];
             y_no[i] = s.yieldIST9_ITY80[i];
             y_res[i] = s.yieldIST9_ITY81[i];
+            yieldNoIST[i] = s.yieldNoIST[i];
+            meanNoIST[i] = s.sumPtNoIST[i];
+            yieldIST0or8[i] = s.yieldIST0or8[i];
+            meanIST0or8[i] = s.sumPtIST0or8[i];
         }
 
         // graphs (use same base name; will be written into separate directories)
@@ -458,7 +499,9 @@ void EPOS_finalCodeQA()
             // also write mean-pT graph for this IST bin
             double meanPtArr[NCENT];
             for (int ii = 0; ii < NCENT; ++ii)
+            {
                 meanPtArr[ii] = s.sumPtIST[istBin][ii];
+            }
             TGraph *gMeanPtIST = new TGraph(NCENT, x, meanPtArr);
             string meanName = string("meanpt_") + s.name + string("_vs_mult");
             gMeanPtIST->SetName(meanName.c_str());
@@ -474,7 +517,9 @@ void EPOS_finalCodeQA()
         gNo->Write();
         double meanNo[NCENT];
         for (int ii = 0; ii < NCENT; ++ii)
+        {
             meanNo[ii] = s.sumPtIST9_ITY80[ii];
+        }
         TGraph *gMeanNo = new TGraph(NCENT, x, meanNo);
         string meanNameNo = string("meanpt_") + s.name + string("_vs_mult");
         gMeanNo->SetName(meanNameNo.c_str());
@@ -488,12 +533,44 @@ void EPOS_finalCodeQA()
         gRes->Write();
         double meanRes[NCENT];
         for (int ii = 0; ii < NCENT; ++ii)
+        {
             meanRes[ii] = s.sumPtIST9_ITY81[ii];
+        }
         TGraph *gMeanRes = new TGraph(NCENT, x, meanRes);
         string meanNameRes = string("meanpt_") + s.name + string("_vs_mult");
         gMeanRes->SetName(meanNameRes.c_str());
         gMeanRes->Write();
         delete gMeanRes;
+
+        dirNoIST->cd();
+
+        TGraph *gYieldNoIST = new TGraph(NCENT, x, yieldNoIST);
+        gYieldNoIST->SetName((s.name + "_vs_mult").c_str());
+        gYieldNoIST->Write();
+
+        TGraph *gMeanPtNoIST = new TGraph(NCENT, x, meanNoIST);
+        gMeanPtNoIST->SetName((string("meanpt_") + s.name + "_vs_mult").c_str());
+        gMeanPtNoIST->Write();
+
+        s.hPtMBNoIST->Write();
+
+        delete gYieldNoIST;
+        delete gMeanPtNoIST;
+
+        dirIST0or8->cd();
+
+        TGraph *gYieldIST0or8 = new TGraph(NCENT, x, yieldIST0or8);
+        gYieldIST0or8->SetName((s.name + "_vs_mult").c_str());
+        gYieldIST0or8->Write();
+
+        TGraph *gMeanPtIST0or8 = new TGraph(NCENT, x, meanIST0or8);
+        gMeanPtIST0or8->SetName((string("meanpt_") + s.name + "_vs_mult").c_str());
+        gMeanPtIST0or8->Write();
+
+        s.hPtMBIST0or8->Write();
+
+        delete gYieldIST0or8;
+        delete gMeanPtIST0or8;
 
         fout->cd();
     }

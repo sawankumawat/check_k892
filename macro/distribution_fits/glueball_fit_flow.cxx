@@ -1,5 +1,5 @@
-#include "../src/common_glue.h"
-#include "../src/fitting_range_glue.h"
+// #include "../src/common_glue.h"
+// #include "../src/fitting_range_glue.h"
 #include "../src/style.h"
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
@@ -42,17 +42,36 @@ void glueball_fit_flow()
         std::cout << "Folder " << outputFolder << " created successfully." << std::endl;
     }
 
+    TH1F *hMultiplicity = (TH1F *)fInputFile->Get("Multiplicity");
+    if (hMultiplicity == nullptr)
+    {
+        cout << "Multiplicity histogram not found" << endl;
+        return;
+    }
+    int totalEvents = hMultiplicity->Integral(hMultiplicity->GetXaxis()->FindBin(0.0 + 1e-6), hMultiplicity->GetXaxis()->FindBin(30.0 - 1e-6));
+    cout << "Total events in multiplicity range 0-30%: " << totalEvents << endl;
+
     int totalFlowBins = 6;
     TH1F *hSignal[totalFlowBins];
     TH1F *hRaw[totalFlowBins];
 
-    int RebinFactors[] = {3, 4, 4, 4, 4, 4};
-    float fitRangeLow[] = {1.25, 1.25, 1.25, 1.25, 1.25, 1.25};
-    float fitRangeHigh[] = {2.2, 2.2, 2.2, 2.2, 2.2, 2.2};
+    double f1525_3SigmaP = f1525Mass + 3 * f1525Width;
+    double f1525_3SigmaM = f1525Mass - 3 * f1525Width;
+
+    int RebinFactors[] = {3, 4, 5, 4, 4, 4};
+    // float fitRangeLow[] = {1.25, 1.25, 1.25, 1.25, 1.25, 1.25};
+    // float fitRangeHigh[] = {2.2, 2.2, 2.2, 2.2, 2.2, 2.2};
+
+    double fitRangeLow[] = {f1525_3SigmaM, f1525_3SigmaM, f1525_3SigmaM, f1525_3SigmaM, f1525_3SigmaM, f1525_3SigmaM};
+    double fitRangeHigh[] = {f1525_3SigmaP, f1525_3SigmaP, f1525_3SigmaP, f1525_3SigmaP, f1525_3SigmaP, f1525_3SigmaP};
+
     TLatex lat;
     lat.SetNDC();
-    lat.SetTextSize(0.04);
+    lat.SetTextSize(0.03);
     lat.SetTextFont(42);
+
+    TH1F *hYield1525 = new TH1F("hYield1525", "Yield of f'_{2}(1525) vs Event Plane Bins", totalFlowBins, 0, totalFlowBins);
+    double binwidthfile = 0.0;
 
     for (int ibins = 0; ibins < totalFlowBins; ibins++)
     {
@@ -75,9 +94,11 @@ void glueball_fit_flow()
         hSignal[ibins]->GetXaxis()->SetTitle("#it{M}_{K^{0}_{s}K^{0}_{s}} (GeV/#it{c}^{2})");
         hSignal[ibins]->GetXaxis()->SetRangeUser(1.0, 2.5);
         hSignal[ibins]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidthfile * 1000));
-        hSignal[ibins]->SetMaximum(hSignal[ibins]->GetMaximum() * 1.2);
+        hSignal[ibins]->SetMaximum(hSignal[ibins]->GetMaximum() * 1.4);
         hSignal[ibins]->Draw("E");
-        lat.DrawLatex(0.4, 0.9, Form("EP bin %d", ibins + 1));
+        lat.DrawLatex(0.35, 0.9, Form("EP bin %d", ibins + 1));
+        lat.DrawLatex(0.35, 0.86, Form("Multiplicity: %d-%d%%", 0, 30));
+        lat.DrawLatex(0.35, 0.83, Form("p_{T} range: %d-%d GeV/c", 2, 30));
 
         float fitlow = fitRangeLow[ibins];
         float fithigh = fitRangeHigh[ibins];
@@ -91,7 +112,7 @@ void glueball_fit_flow()
             BEexpol->SetParName(i, parnames[i].c_str());
         }
 
-        double parameters[] = {0, f1270Mass, f1270Width, 0, a1320Mass, a1320Width, 450, f1525Mass, f1525Width, 150, f1710Mass, f1710Width};
+        double parameters[] = {0, f1270Mass, f1270Width, 0, a1320Mass, a1320Width, 450, f1525Mass, f1525Width, 0, f1710Mass, f1710Width};
 
         int size_fitparams = sizeof(parameters) / sizeof(parameters[0]);
 
@@ -128,8 +149,12 @@ void glueball_fit_flow()
         BEexpol->SetParameter(7, f1525Mass);
         BEexpol->SetParameter(8, f1525Width);
 
-        BEexpol->SetParameter(10, f1710Mass);
-        BEexpol->SetParameter(11, f1710Width);
+        // BEexpol->SetParameter(10, f1710Mass);
+        // BEexpol->SetParameter(11, f1710Width);
+
+        BEexpol->FixParameter(9, 0); // Ignoring the f0(1710) contribution for now.
+        BEexpol->FixParameter(10, f1710Mass);
+        BEexpol->FixParameter(11, f1710Width);
 
         TFitResultPtr fitResultptr;
         fitResultptr = hSignal[ibins]->Fit("BEexpol", "REBMS");
@@ -171,8 +196,8 @@ void glueball_fit_flow()
 
         // onlyBW_clone->SetParLimits(0, 0.0, 1e6); // norm1270
         // onlyBW_clone->SetParLimits(3, 0.0, 1e6); // norm1320
-        onlyBW_clone->SetParLimits(6, 0.0, 1e6);   // norm1525
-        onlyBW_clone->SetParLimits(9, 0.0, 1e6);   // norm1710
+        onlyBW_clone->SetParLimits(6, 0.0, 1e6); // norm1525
+        onlyBW_clone->SetParLimits(9, 0.0, 1e6); // norm1710
 
         onlyBW_clone->FixParameter(0, 0); // Ignoring the f2(1270) and a2(1320) contribution for now.
         onlyBW_clone->FixParameter(3, 0);
@@ -181,7 +206,7 @@ void glueball_fit_flow()
         onlyBW_clone->FixParameter(2, f1270Width);
         onlyBW_clone->FixParameter(4, a1320Mass);
         onlyBW_clone->FixParameter(5, a1320Width);
-        
+
         onlyBW_clone->SetParameter(7, f1525Mass);
         onlyBW_clone->SetParameter(8, f1525Width);
 
@@ -194,7 +219,7 @@ void glueball_fit_flow()
 
         // // Now plot the indivial resonances
         TF1 *singlefits[4];
-        for (int i = 0; i < 4; i++)
+        for (int i = 2; i < 3; i++)
         {
             singlefits[i] = (i < 3) ? new TF1(Form("singlef%d", i), single_BW_mass_dep_spin2, 1.00, 3.0, 3) : new TF1(Form("singlef%d", i), single_BW_mass_dep_spin0, 1.00, 3.0, 3); // Default
             singlefits[i]->SetParameter(0, obtained_parameters[3 * i]);
@@ -202,28 +227,28 @@ void glueball_fit_flow()
             singlefits[i]->SetParameter(2, obtained_parameters[3 * i + 2]);
             singlefits[i]->SetLineColor(colors[i]);
             singlefits[i]->SetLineStyle(2);
-            if (i == 3)
-                singlefits[i]->SetLineWidth(3);
+            // if (i == 3)
+            //     singlefits[i]->SetLineWidth(3);
             singlefits[i]->Draw("same");
         }
 
-        TLegend *ltemp = new TLegend(0.35, 0.7, 0.55, 0.9);
+        TLegend *ltemp = new TLegend(0.3, 0.65, 0.55, 0.9);
         ltemp->SetFillStyle(0);
         ltemp->SetBorderSize(0);
         ltemp->SetTextFont(42);
-        ltemp->SetTextSize(0.025);
+        ltemp->SetTextSize(0.028);
         ltemp->AddEntry((TObject *)0, "", "");
         ltemp->AddEntry((TObject *)0, "", "");
         ltemp->AddEntry(hSignal[ibins], "Data (stat. uncert.)", "lpe");
         ltemp->AddEntry(BEexpol, "4rBW + Residual BG", "l");
         ltemp->AddEntry(expol, "Residual BG", "l");
-        ltemp->AddEntry(singlefits[0], "f_{2}(1270)", "l");
-        ltemp->AddEntry(singlefits[1], "a_{2}(1320)^{0}", "l");
+        // ltemp->AddEntry(singlefits[0], "f_{2}(1270)", "l");
+        // ltemp->AddEntry(singlefits[1], "a_{2}(1320)^{0}", "l");
         ltemp->AddEntry(singlefits[2], "f'_{2}(1525)", "l");
-        ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
+        // ltemp->AddEntry(singlefits[3], "f_{0}(1710)", "l");
         ltemp->Draw("same");
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 2; i < 3; i++)
         {
             auto lowLimit = (masses[i] - 2 * widths[i] > 1.0) ? masses[i] - 2 * widths[i] : 1.0;
             auto highLimit = (masses[i] + 2 * widths[i] < 3.0) ? masses[i] + 2 * widths[i] : 3.0;
@@ -241,14 +266,43 @@ void glueball_fit_flow()
             double amplitude_err = BEexpol->GetParError(3 * i);
             double statSignificance = amplitude / amplitude_err;
             cout << "Statistical significance of " << resonance_names[i] << " is " << statSignificance << endl;
-            // hSignificance[i]->SetBinContent(ipt + 1, significance);
-            // hSignificance[i]->SetBinError(ipt + 1, 0);
-            // hStatSignificance[i]->SetBinContent(ipt + 1, statSignificance);
-            // hStatSignificance[i]->SetBinError(ipt + 1, 0);
         }
         // BEexpol->Draw("same");
         cFit->SaveAs((outputFolder + Form("cFit_%d.png", ibins)).Data());
+
+        //=====Yield from function integration method=========
+        double nsigma_yield = 3.0;
+        double fitRegion1525_low = f1525Mass - nsigma_yield * f1525Width;
+        double fitRegion1525_high = f1525Mass + nsigma_yield * f1525Width;
+        double yield1525 = singlefits[2]->Integral(fitRegion1525_low, fitRegion1525_high) / (binwidthfile * totalEvents);
+
+        // Create covariance matrices
+        TMatrixDSym cov = fitResultptr->GetCovarianceMatrix();
+        TMatrixDSym cov1270(3), cov1320(3), cov1525(3), cov1710(3);
+        // cov.GetSub(0, 2, 0, 2, cov1270);   // f1270: parameters 0-2
+        // cov.GetSub(3, 5, 3, 5, cov1320);   // a1320: parameters 3-5
+        cov.GetSub(6, 8, 6, 8, cov1525); // f1525: parameters 6-8
+        // cov.GetSub(9, 11, 9, 11, cov1710); // f1710: parameters 9-11
+
+        // Covariance matrices for combined fits
+        Double_t *cov1525_array = cov1525.GetMatrixArray();
+        Double_t *para1525 = singlefits[2]->GetParameters();
+
+        // Errors propagation for yields using the covariance matrix
+        double yield1525_err = singlefits[2]->IntegralError(fitRegion1525_low, fitRegion1525_high, para1525, cov1525_array) / (binwidthfile * totalEvents);
+
+        hYield1525->SetBinContent(ibins + 1, yield1525);
+        hYield1525->SetBinError(ibins + 1, yield1525_err);
+        cout << "Yield of f'_{2}(1525) in EP bin " << ibins + 1 << " is " << yield1525 << " ± " << yield1525_err << endl;
     }
+
+    TCanvas *cYield = new TCanvas("cYield", "", 720, 720);
+    SetCanvasStyle(cYield, 0.15, 0.03, 0.05, 0.15);
+    SetHistoQA(hYield1525);
+    hYield1525->GetXaxis()->SetTitle("Event Plane Bins");
+    hYield1525->GetYaxis()->SetTitle("(1/N) dN/dy");
+    hYield1525->Draw("E");
+    cYield->SaveAs((outputFolder + "cYield.png").Data());
 }
 
 // end of main program

@@ -9,7 +9,7 @@
 void glueball_flow()
 {
     gStyle->SetOptStat(1110);
-    bool makeQAplots = false;
+    bool makeQAplots = true;
     TString dataPath = "../data/glueball/LHC22o_pass7_small";
     TString fileName = "699196";
     TString outputfolder = "../output/glueball/Flow/" + fileName;
@@ -86,6 +86,14 @@ void glueball_flow()
     lat.SetTextSize(0.035);
     lat.SetTextFont(42);
 
+    TCanvas *cSignal = new TCanvas("cSignal", "", 1440, 720);
+    SetCanvasStyle(cSignal, 0.15, 0.03, 0.05, 0.15);
+    cSignal->Divide(3, 2);
+
+    TCanvas *cShowNormRange = new TCanvas("cShowNormRange", "", 1440, 720);
+    SetCanvasStyle(cShowNormRange, 0.15, 0.03, 0.05, 0.15);
+    cShowNormRange->Divide(3, 2);
+
     //======Projection of invariant mass for different v2 bins========
     for (int ibins = 0; ibins < TotalAngBins; ibins++)
     {
@@ -119,8 +127,14 @@ void glueball_flow()
         hInvMassSubtracted[ibins]->SetMarkerSize(0.5);
         hInvMassSubtracted[ibins]->Write();
 
-        TCanvas *cShowNormRange = new TCanvas(Form("cShowNormRange_%d", ibins), "", 720, 720);
-        SetCanvasStyle(cShowNormRange, 0.15, 0.03, 0.05, 0.15);
+        // TCanvas *cShowNormRange = new TCanvas(Form("cShowNormRange_%d", ibins), "", 720, 720);
+        // SetCanvasStyle(cShowNormRange, 0.15, 0.03, 0.05, 0.15);
+        cShowNormRange->cd(ibins + 1);
+        gPad->SetLeftMargin(0.15);
+        gPad->SetRightMargin(0.03);
+        gPad->SetBottomMargin(0.15);
+        gPad->SetTopMargin(0.05);
+
         TH1F *hbkg_nopeak = (TH1F *)hRotScaled->Clone(Form("hbkg_nopeak_%d", ibins));
         hbkg_nopeak->SetLineColor(kBlue - 7);
         hbkg_nopeak->SetMarkerColor(kBlue - 7);
@@ -163,11 +177,17 @@ void glueball_flow()
         leg->Draw();
         lat.DrawLatex(0.4, 0.9, Form("EP bin %d", ibins + 1));
         lat.DrawLatex(0.4, 0.85, Form("Multiplicity: %d-%d%%", multLow, multHigh));
-        cShowNormRange->Write(Form("cShowNormRange_%d", ibins));
-        cShowNormRange->SaveAs((outputfolder + Form("/cShowNormRange_%d.png", ibins)).Data());
+        // cShowNormRange->Write(Form("cShowNormRange_%d", ibins));
+        // cShowNormRange->SaveAs((outputfolder + Form("/cShowNormRange_%d.png", ibins)).Data());
 
-        TCanvas *cSignal = new TCanvas(Form("cSignal_%d", ibins), "", 720, 720);
-        SetCanvasStyle(cSignal, 0.15, 0.03, 0.05, 0.15);
+        // TCanvas *cSignal = new TCanvas(Form("cSignal_%d", ibins), "", 720, 720);
+        // SetCanvasStyle(cSignal, 0.15, 0.03, 0.05, 0.15);
+        cSignal->cd(ibins + 1);
+        gPad->SetLeftMargin(0.15);
+        gPad->SetRightMargin(0.03);
+        gPad->SetBottomMargin(0.15);
+        gPad->SetTopMargin(0.05);
+
         TH1F *hSignal = (TH1F *)hInvMassSubtracted[ibins]->Clone(Form("hSignal_%d", ibins));
         int rebinForSignal = 4;
         SetHistoQA(hSignal);
@@ -181,9 +201,12 @@ void glueball_flow()
         lat.DrawLatex(0.4, 0.9, Form("EP bin %d", ibins + 1));
         lat.DrawLatex(0.4, 0.85, Form("Multiplicity: %d-%d%%", multLow, multHigh));
         lat.DrawLatex(0.4, 0.8, Form("p_{T} range: %d-%d GeV/c", ptLow, ptHigh));
-        cSignal->Write(Form("cSignal_%d", ibins));
-        cSignal->SaveAs((outputfolder + Form("/cSignal_%d.png", ibins)).Data());
+        // cSignal->Write(Form("cSignal_%d", ibins));
+        // cSignal->SaveAs((outputfolder + Form("/cSignal_%d.png", ibins)).Data());
     }
+    cSignal->SaveAs((outputfolder + "/cSignal_AllBins.png").Data());
+    cShowNormRange->SaveAs((outputfolder + "/cShowNormRange_AllBins.png").Data());
+    hMult->Write("Multiplicity");
 
     //==========Some QA plots==========================
     if (makeQAplots)

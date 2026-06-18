@@ -99,8 +99,8 @@ void glueball_fit_4rBW_simple()
             cout << "Error opening file" << endl;
             return;
         }
-// #define b_massdepWidth_modifiedBoltzmann
-#define coherentSum
+#define b_massdepWidth_modifiedBoltzmann
+// #define coherentSum
 #define residual_subtracted
 // #define doublepanelplot
 #define multiPanelPlots

@@ -15,6 +15,8 @@ using namespace std;
 // 2. For Pi,K,p and K0s, instead of checking first 3 EPOS digit, we check full epos ID only
 // 3. For Pi,K,p, we choose the rapidity region of |y|<0.3 and |eta|<0.8 just like data and then later correct for it during dN/dy calculation. For other particles, we keep the same rapidity cut of |y|<0.5
 
+// In charged-particle pseudorapidity analysis, no pT cut is used.
+
 // static const int NCENT = 10;
 static const int NCENT = 21;
 static const int NIST = 10;
@@ -118,12 +120,6 @@ int findSpeciesIndex(const vector<Species> &species, int eposID)
         }
     }
     return -1;
-}
-
-// match either the exact EPOS id or the same id with two trailing zeros
-static inline bool idHasPrefix(int eposID, int prefix)
-{
-    return eposID == prefix || eposID == prefix * 100;
 }
 
 void EPOS_finalCodeQA()
@@ -258,7 +254,7 @@ void EPOS_finalCodeQA()
         int bin = hFT0->FindBin(multFT0);
         double cent = multToCent[bin];
         int cbin = GetCentralityBin(cent);
-        nEventsCent[cbin]++;
+        // nEventsCent[cbin]++;
 
         int nchMid = 0;
         int atLeastOnePiKp_in_ModEta1 = 0;
@@ -280,6 +276,11 @@ void EPOS_finalCodeQA()
                 if (fabs(eta) < 1.0 && ist[i] == 0)
                     atLeastOnePiKp_in_ModEta1++;
             }
+        }
+
+        if (atLeastOnePiKp_in_ModEta1 > 0)
+        {
+            nEventsCent[cbin]++;
         }
 
         for (int i = 0; i < np; i++)
@@ -312,7 +313,8 @@ void EPOS_finalCodeQA()
 
             if (isPiKp)
             {
-                if (fabs(y) < 0.3 && fabs(eta) < 0.8)
+                // if (fabs(y) < 0.3 && fabs(eta) < 0.8)
+                if (fabs(y) < 0.5 && fabs(eta) < 0.8)
                     acceptParticle = true;
             }
             else
@@ -368,7 +370,10 @@ void EPOS_finalCodeQA()
                 }
             }
         }
-        sumDNdEta[cbin] += nchMid;
+        if (atLeastOnePiKp_in_ModEta1 > 0)
+        {
+            sumDNdEta[cbin] += nchMid;
+        }
     }
 
     // Normalize and compute meanPt
@@ -387,8 +392,8 @@ void EPOS_finalCodeQA()
     {
         // divide by deltay = 0.6 for Pi,K,p, for other divide by deltay = 1.0
         double deltay = 1.0;
-        if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
-            deltay = 0.6;
+        // if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
+        //     deltay = 0.6;
 
         for (int i = 0; i < NCENT; ++i)
         {
@@ -425,8 +430,8 @@ void EPOS_finalCodeQA()
     for (auto &s : species)
     {
         double deltay = 1.0;
-        if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
-            deltay = 0.6;
+        // if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
+        //     deltay = 0.6;
 
         for (int istBin = 0; istBin < NIST; ++istBin)
         {

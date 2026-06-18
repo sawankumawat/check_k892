@@ -14,7 +14,7 @@ using namespace std;
 // void printDirectoryContents(TDirectory *dir, int indent = 0);
 float parameter0(float mass, float width);
 
-void glueball_KsKs_channel()
+void glueball_normRangeVar()
 {
     // change here ***********************************************************
     const string kResBkg = "MIX";

@@ -19,8 +19,10 @@ void plotResultsPiKp()
     int nBinsMult = sizeof(dnch_detaRun3) / sizeof(dnch_detaRun3[0]);
     TGraphErrors *gMeanpTRun3Data = new TGraphErrors(nBinsMult);
     TGraphErrors *gMeanpTRun3Data_sys = new TGraphErrors(nBinsMult);
+    TGraphErrors *gMeanpTRun3Data_sysUncorr = new TGraphErrors(nBinsMult);
     TGraphErrors *gMeanYieldRun3Data = new TGraphErrors(nBinsMult);
     TGraphErrors *gMeanYieldRun3Data_sys = new TGraphErrors(nBinsMult);
+    TGraphErrors *gMeanYieldRun3Data_sysUncorr = new TGraphErrors(nBinsMult);
 
     for (int ibins = 1; ibins <= nBinsMult; ++ibins)
     {
@@ -29,19 +31,25 @@ void plotResultsPiKp()
         double yield = (hResultsPos->GetBinContent(1) + hResultsNeg->GetBinContent(1)) / 2.0;
         double yieldErr = sqrt((pow(hResultsPos->GetBinContent(2), 2) + pow(hResultsNeg->GetBinContent(2), 2)) / 2.0);
         double yieldSysErr = sqrt((pow(hResultsPos->GetBinContent(3), 2) + pow(hResultsNeg->GetBinContent(3), 2)) / 2.0);
+        double yieldSysUncorr = sqrt((pow(hResultsPos->GetBinContent(4), 2) + pow(hResultsNeg->GetBinContent(4), 2)) / 2.0);
         double meanpT = (hResultsPos->GetBinContent(5) + hResultsNeg->GetBinContent(5)) / 2.0;
         double meanpTErr = sqrt((pow(hResultsPos->GetBinContent(6), 2) + pow(hResultsNeg->GetBinContent(6), 2)) / 2.0);
         double meanpTSysErr = sqrt((pow(hResultsPos->GetBinContent(7), 2) + pow(hResultsNeg->GetBinContent(7), 2)) / 2.0);
+        double meanpTSysUncorr = sqrt((pow(hResultsPos->GetBinContent(8), 2) + pow(hResultsNeg->GetBinContent(8), 2)) / 2.0);
 
         gMeanYieldRun3Data->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], yield);
         gMeanYieldRun3Data->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], yieldErr);
         gMeanYieldRun3Data_sys->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], yield);
         gMeanYieldRun3Data_sys->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], yieldSysErr);
+        gMeanYieldRun3Data_sysUncorr->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], yield);
+        gMeanYieldRun3Data_sysUncorr->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], yieldSysUncorr);
 
         gMeanpTRun3Data->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], meanpT);
         gMeanpTRun3Data->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], meanpTErr);
         gMeanpTRun3Data_sys->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], meanpT);
         gMeanpTRun3Data_sys->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], meanpTSysErr);
+        gMeanpTRun3Data_sysUncorr->SetPoint(ibins - 1, dnch_detaRun3[ibins - 1], meanpT);
+        gMeanpTRun3Data_sysUncorr->SetPointError(ibins - 1, dnch_detaRun3_err[ibins - 1], meanpTSysUncorr);
     }
 
     TCanvas *cMeanpTvsNch = new TCanvas("cMeanpTvsNch", "cMeanpTvsNch", 720, 720);
@@ -59,10 +67,12 @@ void plotResultsPiKp()
     gMeanYieldRun3Data->Draw("AP");
 
     TFile *fOutput = new TFile(Form("../PiKp_Run3_Results/Sawan/%s_results.root", particleType[selectParticle].c_str()), "recreate");
-    gMeanpTRun3Data->Write("gMeanpTRun3");
-    gMeanYieldRun3Data->Write("gMeanYieldRun3");
+    gMeanpTRun3Data->Write("gMeanpTRun3_stat");
+    gMeanYieldRun3Data->Write("gMeanYieldRun3_stat");
     gMeanpTRun3Data_sys->Write("gMeanpTRun3_sys");
     gMeanYieldRun3Data_sys->Write("gMeanYieldRun3_sys");
+    gMeanpTRun3Data_sysUncorr->Write("gMeanpTRun3_sysuncorr");
+    gMeanYieldRun3Data_sysUncorr->Write("gMeanYieldRun3_sysuncorr");
 
     TH1D *hSpectraPos[nBinsMult + 1];
     TH1D *hSpectraNeg[nBinsMult + 1];

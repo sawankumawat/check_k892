@@ -109,7 +109,7 @@ Double_t BGBlastWave_Func(const Double_t *x, const Double_t *p)
     fBGBlastWave_Integrand = new TF1("fBGBlastWave_Integrand", BGBlastWave_Integrand, 0.0, 5.0, 5);
   fBGBlastWave_Integrand->SetParameters(mt, pt, beta_max, temp, n);
   // Double_t integral = fBGBlastWave_Integrand->Integral(0.0, 5.0, (Double_t *)0, 1.e4);
-  Double_t integral = fBGBlastWave_Integrand->Integral(0.0, 5.0, 1.e4);
+  Double_t integral = fBGBlastWave_Integrand->Integral(0.0, 1.0, 1.e4);
   return norm * pt * integral;
 }
 
@@ -177,7 +177,7 @@ void meanpT_dNdy_BW()
   // fitFcn->SetParameter(1,0.78);//Beta max
   fitFcn->SetParLimits(1, 0.1, 1);    // Beta max   //0-3.5 arb par
   fitFcn->SetParameter(2, 0.15);      // T
-  fitFcn->SetParLimits(2, 0.08, 0.9); // T
+  fitFcn->SetParLimits(2, 0.05, 0.25); // T
   fitFcn->FixParameter(3, 0.95);      // n
   fitFcn->SetParLimits(3, 0.1, 5);    // n
   fitFcn->SetParameter(4, 1.e6);      // norm

@@ -30,8 +30,8 @@ void plotResultsRho()
     }
 
     TFile *fOutput = new TFile("../Rho_Run3_Results/Sawan/ResultsRho.root", "recreate");
-    hMeanpTStat->Write("gMeanpTRun3");
-    hYieldStat->Write("gMeanYieldRun3");
+    hMeanpTStat->Write("gMeanpTRun3_stat");
+    hYieldStat->Write("gMeanYieldRun3_stat");
     hMeanpTSys->Write("gMeanpTRun3_sys");
     hYieldSys->Write("gMeanYieldRun3_sys");
     fOutput->Close();

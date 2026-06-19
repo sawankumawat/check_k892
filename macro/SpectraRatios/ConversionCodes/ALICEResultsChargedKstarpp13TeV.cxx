@@ -24,9 +24,9 @@ DataSet LoadTable(TFile *file, const TString &table, const TString &name, int Gr
 void BuildErrorGraphs(DataSet &d);
 void WriteGraphs(TFile *outFile, const DataSet &d);
 
-void ALICEResultsMultStrange13TeV()
+void ALICEResultsChargedKstarpp13TeV()
 {
-    TFile *fALICE = new TFile("../HEP_data/pp13TeV_MultStrangeHadron.root", "READ");
+    TFile *fALICE = new TFile("../HEP_data/pp13TeV_ChargedKstar.root", "READ");
     if (!fALICE || fALICE->IsZombie())
     {
         cout << "Error: ALICE file not found" << endl;
@@ -34,15 +34,8 @@ void ALICEResultsMultStrange13TeV()
     }
 
     vector<tuple<TString, int, TString>> tables = {
-        {"5c", 1, "Kshort_MeanpT"},
-        {"5c", 2, "Lambda_MeanpT"},
-        {"5c", 3, "Xi_MeanpT"},
-        {"5cO", 1, "Omega_MeanpT"},
-
-        {"8c", 1, "Kshort_MeanYield"},
-        {"8c", 2, "Lambda_MeanYield"},
-        {"8c", 3, "Xi_MeanYield"},
-        {"8cO", 1, "Omega_MeanYield"}};
+        {"19", 1, "ChKstar_MeanYield"},
+        {"20", 1, "ChKstar_MeanpT"}};
 
     vector<DataSet> data;
     data.reserve(tables.size());
@@ -57,7 +50,7 @@ void ALICEResultsMultStrange13TeV()
         BuildErrorGraphs(d);
     }
 
-    TFile *fOutput = new TFile("pp13TeV_MultStrange.root", "RECREATE");
+    TFile *fOutput = new TFile("pp13TeV_ChKstar.root", "RECREATE");
 
     for (const auto &d : data)
     {
@@ -81,6 +74,15 @@ DataSet LoadTable(TFile *file, const TString &table, const TString &name, int Gr
     d.hStat = (TH1D *)file->Get(Form("Table %s/Hist1D_y%d_e1", table.Data(), GraphNumber));
     d.hSys = (TH1D *)file->Get(Form("Table %s/Hist1D_y%d_e2", table.Data(), GraphNumber));
     d.hSysUncorr = (TH1D *)file->Get(Form("Table %s/Hist1D_y%d_e3", table.Data(), GraphNumber));
+
+    if (d.hSys == nullptr)
+    {
+        TH1D *hPlus = (TH1D *)file->Get(Form("Table %s/Hist1D_y%d_e2plus", table.Data(), GraphNumber));
+        TH1D *hMinus = (TH1D *)file->Get(Form("Table %s/Hist1D_y%d_e2minus", table.Data(), GraphNumber));
+        hPlus->Add(hMinus, -1.0);
+        hPlus->Scale(0.5);
+        d.hSys = hPlus;
+    }
 
     // Only these are mandatory
     if (!d.g || !d.hStat || !d.hSys)

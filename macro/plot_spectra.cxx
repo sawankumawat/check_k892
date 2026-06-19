@@ -459,7 +459,7 @@ void plot_spectra()
             gMeanYieldRun3_sys->SetLineWidth(2);
             gMeanYieldRun3_sys->Draw("5 same");
             gMeanYieldRun3_sys->Write("gMeanYieldRun3_sys");
-            gMeanYieldRun3->Write("gMeanYieldRun3");
+            gMeanYieldRun3->Write("gMeanYieldRun3_stat");
 
             gMeanYieldRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanYieldRun2_5020MeV->SetMarkerColor(kGreen + 2);
@@ -516,7 +516,7 @@ void plot_spectra()
             gMeanpTRun2_5020MeV->SetMarkerStyle(22);
             // gMeanpTRun2_5020MeV->Draw("P same");
             legMeanYield->Draw();
-            gMeanpTRun3->Write("gMeanpTRun3");
+            gMeanpTRun3->Write("gMeanpTRun3_stat");
             TString ptPath = outputfolder + "/mean_pT." + outputType;
             cMeanpT->SaveAs(ptPath.Data());
         }

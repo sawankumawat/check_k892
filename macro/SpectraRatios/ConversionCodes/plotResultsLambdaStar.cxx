@@ -29,8 +29,8 @@ void plotResultsLambdaStar()
     }
 
     TFile *fOutput = new TFile("../LambdaRun3/Sawan/ResultsLambda1520.root", "recreate");
-    gYield->Write("gMeanYieldRun3");
-    gMeanPt->Write("gMeanpTRun3");
+    gYield->Write("gMeanYieldRun3_stat");
+    gMeanPt->Write("gMeanpTRun3_stat");
     gYieldSys->Write("gMeanYieldRun3_sys");
     gMeanPtSys->Write("gMeanpTRun3_sys");
     fOutput->Close();

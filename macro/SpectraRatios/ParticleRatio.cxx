@@ -61,28 +61,28 @@ void ParticleRatio()
 
     for (int i = 0; i < 2; i++)
     {
-        gMPtKstar[i] = GetGraph(fKstar, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
+        gMPtKstar[i] = GetGraph(fKstar, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
 
         gMPtPhi[i] = GetGraph(fPhi, Form("gPhi_MeanpT%s", (i == 0 ? "_stat" : "_sys")));
-        gMPtPion[i] = GetGraph(fPion, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtProton[i] = GetGraph(fProton, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtKaon[i] = GetGraph(fKaon, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtChKstar[i] = GetGraph(fChKstar, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtXiStar[i] = GetGraph(fXiStar, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtKshort[i] = GetGraph(fKshort, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtLambda1520[i] = GetGraph(fLambda1520, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
-        gMPtRho[i] = GetGraph(fRho, Form("gMeanpTRun3%s", (i == 0 ? "" : "_sys")));
+        gMPtPion[i] = GetGraph(fPion, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtProton[i] = GetGraph(fProton, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtKaon[i] = GetGraph(fKaon, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtChKstar[i] = GetGraph(fChKstar, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtXiStar[i] = GetGraph(fXiStar, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtKshort[i] = GetGraph(fKshort, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtLambda1520[i] = GetGraph(fLambda1520, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMPtRho[i] = GetGraph(fRho, Form("gMeanpTRun3%s", (i == 0 ? "_stat" : "_sys")));
 
         gMYieldPhi[i] = GetGraph(fPhi, Form("gPhi_MeanYield%s", (i == 0 ? "_stat" : "_sys")));
-        gMYieldPion[i] = GetGraph(fPion, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldProton[i] = GetGraph(fProton, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldKaon[i] = GetGraph(fKaon, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldChKstar[i] = GetGraph(fChKstar, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldXiStar[i] = GetGraph(fXiStar, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldKshort[i] = GetGraph(fKshort, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldLambda1520[i] = GetGraph(fLambda1520, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
-        gMYieldRho[i] = GetGraph(fRho, Form("gMeanYieldRun3%s", (i == 0 ? "" : "_sys")));
+        gMYieldPion[i] = GetGraph(fPion, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldProton[i] = GetGraph(fProton, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldKaon[i] = GetGraph(fKaon, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldChKstar[i] = GetGraph(fChKstar, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldXiStar[i] = GetGraph(fXiStar, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldKshort[i] = GetGraph(fKshort, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldLambda1520[i] = GetGraph(fLambda1520, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
+        gMYieldRho[i] = GetGraph(fRho, Form("gMeanYieldRun3%s", (i == 0 ? "_stat" : "_sys")));
     }
     // ALICE Run2 results
     TFile *fpp13TeV = new TFile("ConversionCodes/pp13TeVALICE.root", "read");

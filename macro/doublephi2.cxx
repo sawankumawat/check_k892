@@ -8,18 +8,34 @@ Double_t BW_pol3(double *x, double *par);
 Double_t BW_pol2(double *x, double *par);
 Double_t relBW(double *x, double *par);
 
+TH1D *GetHisto(TFile *f, const string &name)
+{
+    TH1D *histo = (TH1D *)f->Get(name.c_str());
+
+    if (!histo || histo == nullptr)
+    {
+        cout << "Error: histo " << name
+             << " not found in file " << f->GetName() << endl;
+        return nullptr;
+    }
+
+    SetHistoQA(histo);
+    histo->SetTitle(0);
+    return histo;
+}
+
 // In hyperloop train output for ac+ah+ai we have less stats than locally ran ac+ah train. However PID selection in local train is PID4, while in hyperloop it is 0,1,2.
 // FIXME: Write a nested loop function in which we vary all the cuts and save the invariant histograms for all.
 
-void doublephi()
+void doublephi2()
 {
-    gStyle->SetOptStat(0);
+    gStyle->SetOptStat(1110);
     gStyle->SetOptFit(1111);
     bool MixedEventExist = false;
     bool isQA = false;
     bool isSavePlots = true;
     bool isPhiQA = false;
-    bool isCorrPlots = false;
+    bool isCorrPlots = true;
     TString dataFilePath = "../data/doublePhi/";
     // TString dataFilePath = "/home/sawan/alice/practice/DoublePhiAnalyzedFiles/";
     TLatex lat;
@@ -39,11 +55,14 @@ void doublephi()
     // TString fileName = "AnalysisResults_675200"; // LHC26ac_pass1_skimmed_small
     // TString fileName = "AnalysisResults_679143"; // LHC26ac_pass1_skimmed_small
     // TString fileName = "680311"; // LHC25_pass1_skimmed
-    TString fileName = "703374"; // LHC25_pass1_skimmed
+    // TString fileName = "703374"; // LHC25_pass1_skimmed
+    TString fileName = "Triggered"; // LHC25_pass1_skimmed + LHC26_pass1_skimmed
+    // TString fileName = "703612"; // LHC24_pass1_minBias skimmed manually
+    // TString fileName = "703618"; // LHC23_pass4_thin skimmed manually
 
     // TString subWagon = "";
-    TString subWagon = "_pid1004_opti5";
-    // TString subWagon = "_pid2_opti5";
+    // TString subWagon = "_pid1000_opti5";
+    TString subWagon = "_pid4_opti5";
     // TString subWagon = "_LoosePID";
     // TString subWagon = "_DeepAngle";
     // TString subWagon = "_StrategyPID1";
@@ -59,15 +78,15 @@ void doublephi()
     gSystem->Exec("mkdir -p " + outputPhiFits);
 
     TFile *file = new TFile(dataFilePath + fileName + ".root");
-    TFile *file2 = new TFile("../output/doublePhi/Analysis541300PID6/PhiPhi.root"); // Very loose cut, for efficiency calculation
-    if (file->IsZombie() || file2->IsZombie())
+    // TFile *file2 = new TFile("../output/doublePhi/Analysis541300PID6/PhiPhi.root"); // Very loose cut, for efficiency calculation
+    if (file->IsZombie())
     {
         std::cerr << "Error: Could not open file " << "\n";
         return;
     }
     TFile *outputFile = new TFile(outputPath + "PhiPhi" + subWagon + ".root", "recreate");
 
-    THnSparseF *hunlike = (THnSparseF *)file->Get("doublephimeson" + subWagon + "/SEMassUnlike"); // The axes are invariant mass, deltaRKaons(minimum), pT, deltaRPhi , MassDifference, PtCorrelation
+    THnSparseF *hunlike = (THnSparseF *)file->Get("doublephimeson" + subWagon + "/SEMassUnlike_AllVars"); // The axes are invariant mass, deltaRKaons(minimum), pT, deltaRPhi , MassDifference, PtCorrelation
     THnSparseF *hmixed;
     if (MixedEventExist)
         hmixed = (THnSparseF *)file->Get("doublephimeson" + subWagon + "/MEMassUnlike");
@@ -77,19 +96,48 @@ void doublephi()
         std::cerr << "Error: Could not find histogram 'doublephimeson" + subWagon + "/SEMassUnlike' in file\n";
         return;
     }
-    TH1D *hDeltaRKaon = hunlike->Projection(1, "E");
-    TH1D *hDeltaRPhiPhi = hunlike->Projection(3, "E");
-    TH1D *hDeltaMassDifference = hunlike->Projection(4, "E");
-    TH1D *hPtCorrelation = hunlike->Projection(5, "E");
+
+    //// New axes: 1. Mass, pT, deltaR(Phi), MinDeltaR(kaon), Inv Mass Phi1, Inv Mass Phi2, DeltaM, DeltaM_normalized, pT_correlation, PhiPhi vector size
+    TH1D *hpTPhiPhi = hunlike->Projection(1, "E");
+    TH1D *hDeltaRPhiPhi = hunlike->Projection(2, "E");
+    TH1D *hDeltaRKaon = hunlike->Projection(3, "E");
+    TH1D *hInvMassPhi1 = hunlike->Projection(4, "E");
+    TH1D *hInvMassPhi2 = hunlike->Projection(5, "E");
+    TH1D *hDeltaMassDifference = hunlike->Projection(6, "E");
+    TH1D *hDeltaMassDifferenceNormalized = hunlike->Projection(7, "E");
+    TH1D *hPtCorrelation = hunlike->Projection(8, "E");
+    TH1D *hPhiPhiVectorSize = hunlike->Projection(9, "E");
+
+    if (hpTPhiPhi == nullptr || hDeltaRKaon == nullptr || hDeltaRPhiPhi == nullptr || hDeltaMassDifference == nullptr || hDeltaMassDifferenceNormalized == nullptr || hPtCorrelation == nullptr || hPhiPhiVectorSize == nullptr || hInvMassPhi1 == nullptr || hInvMassPhi2 == nullptr)
+    {
+        std::cerr << "Error: Could not project histograms from 'doublephimeson" + subWagon + "/SEMassUnlike' in file\n";
+        return;
+    }
+
     hDeltaRPhiPhi->Write("hDeltaRPhiPhi");
     hDeltaMassDifference->Write("hDeltaMassDifference");
     cout << "Stats from DeltaRPhiPhi projection: " << hDeltaRPhiPhi->GetEntries() << endl;
 
     if (isCorrPlots)
     {
+        TCanvas *cpTPhiPhi = new TCanvas("cpTPhiPhi", "#it{p}_{T} of #Phi#Phi pairs", 720, 720);
+        SetCanvasStyle(cpTPhiPhi, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hpTPhiPhi);
+        gPad->SetLogy();
+        hpTPhiPhi->GetXaxis()->SetRangeUser(0.0, 100.0);
+        hpTPhiPhi->GetXaxis()->SetTitle("#it{p}_{T} of #Phi#Phi pairs (GeV/#it{c})");
+        hpTPhiPhi->SetMarkerStyle(20);
+        hpTPhiPhi->GetYaxis()->SetMaxDigits(3);
+        hpTPhiPhi->SetMarkerSize(1.0);
+        hpTPhiPhi->Draw("HIST");
+        if (isSavePlots)
+            cpTPhiPhi->SaveAs(outputPath + "pt_PhiPhi.png");
+
         TCanvas *cDeltaRKaon = new TCanvas("cDeltaRKaon", "#DeltaR Kaon vs p_{T}", 720, 720);
         SetCanvasStyle(cDeltaRKaon, 0.15, 0.03, 0.05, 0.15);
         SetHistoQA(hDeltaRKaon);
+        gPad->SetLogy();
+        hDeltaRKaon->GetXaxis()->SetRangeUser(0.0, 0.5);
         hDeltaRKaon->GetXaxis()->SetTitle("#DeltaR Kaon (cm)");
         hDeltaRKaon->SetMarkerStyle(20);
         hDeltaRKaon->GetYaxis()->SetMaxDigits(3);
@@ -101,7 +149,9 @@ void doublephi()
         TCanvas *cDeltaRPhi = new TCanvas("cDeltaRPhi", "#DeltaR #phi vs p_{T}", 720, 720);
         SetCanvasStyle(cDeltaRPhi, 0.15, 0.03, 0.05, 0.15);
         SetHistoQA(hDeltaRPhiPhi);
+        gPad->SetLogy();
         hDeltaRPhiPhi->SetTitle(0);
+        hDeltaRPhiPhi->GetXaxis()->SetRangeUser(0.0, 1.5);
         hDeltaRPhiPhi->GetXaxis()->SetTitle("#DeltaR_{#phi#phi}");
         hDeltaRPhiPhi->GetYaxis()->SetTitle("Counts");
         hDeltaRPhiPhi->SetMarkerStyle(20);
@@ -122,6 +172,39 @@ void doublephi()
         if (isSavePlots)
             cDeltaMassDifference->SaveAs(outputPath + "deltaM.png");
 
+        TCanvas *cPhiInvMass1 = new TCanvas("cPhiInvMass1", "#phi_{1} invariant mass vs p_{T}", 720, 720);
+        SetCanvasStyle(cPhiInvMass1, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hInvMassPhi1);
+        hInvMassPhi1->GetXaxis()->SetTitle("#phi_{1} invariant mass (GeV/#it{c}^{2})");
+        hInvMassPhi1->SetMarkerStyle(20);
+        hInvMassPhi1->GetYaxis()->SetMaxDigits(3);
+        hInvMassPhi1->SetMarkerSize(1.0);
+        hInvMassPhi1->Draw("HIST");
+        if (isSavePlots)
+            cPhiInvMass1->SaveAs(outputPath + "phi1_invariant_mass.png");
+
+        TCanvas *cPhiInvMass2 = new TCanvas("cPhiInvMass2", "#phi_{2} invariant mass vs p_{T}", 720, 720);
+        SetCanvasStyle(cPhiInvMass2, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hInvMassPhi2);
+        hInvMassPhi2->GetXaxis()->SetTitle("#phi_{2} invariant mass (GeV/#it{c}^{2})");
+        hInvMassPhi2->SetMarkerStyle(20);
+        hInvMassPhi2->GetYaxis()->SetMaxDigits(3);
+        hInvMassPhi2->SetMarkerSize(1.0);
+        hInvMassPhi2->Draw("HIST");
+        if (isSavePlots)
+            cPhiInvMass2->SaveAs(outputPath + "phi2_invariant_mass.png");
+
+        TCanvas *cDeltaMassDifferenceNormalized = new TCanvas("cDeltaMassDifferenceNormalized", "#DeltaM normalized vs p_{T}", 720, 720);
+        SetCanvasStyle(cDeltaMassDifferenceNormalized, 0.15, 0.03, 0.05, 0.15);
+        SetHistoQA(hDeltaMassDifferenceNormalized);
+        hDeltaMassDifferenceNormalized->GetXaxis()->SetTitle("#DeltaM normalized");
+        hDeltaMassDifferenceNormalized->SetMarkerStyle(20);
+        hDeltaMassDifferenceNormalized->GetYaxis()->SetMaxDigits(3);
+        hDeltaMassDifferenceNormalized->SetMarkerSize(1.0);
+        hDeltaMassDifferenceNormalized->Draw("HIST");
+        if (isSavePlots)
+            cDeltaMassDifferenceNormalized->SaveAs(outputPath + "deltaM_normalized.png");
+
         TCanvas *cPtCorrelation = new TCanvas("cPtCorrelation", "Pt Correlation", 720, 720);
         SetCanvasStyle(cPtCorrelation, 0.15, 0.03, 0.05, 0.15);
         SetHistoQA(hPtCorrelation);
@@ -137,37 +220,72 @@ void doublephi()
         lat.DrawLatex(0.7, 0.75, Form("Mean %.1f", hPtCorrelation->GetMean()));
         if (isSavePlots)
             cPtCorrelation->SaveAs(outputPath + "pt_correlation.png");
+
+        TCanvas *cPhiPhiVectorSize = new TCanvas("cPhiPhiVectorSize", "#Phi#Phi vector size", 720, 720);
+        SetCanvasStyle(cPhiPhiVectorSize, 0.15, 0.03, 0.05, 0.15);
+        gPad->SetLogy();
+        SetHistoQA(hPhiPhiVectorSize);
+        hPhiPhiVectorSize->GetXaxis()->SetTitle("No. of #Phi per event");
+        hPhiPhiVectorSize->GetXaxis()->SetRangeUser(0.0, 11.0);
+        hPhiPhiVectorSize->SetMarkerStyle(20);
+        hPhiPhiVectorSize->GetYaxis()->SetMaxDigits(3);
+        hPhiPhiVectorSize->SetMarkerSize(1.0);
+        hPhiPhiVectorSize->Draw("HIST");
+        if (isSavePlots)
+            cPhiPhiVectorSize->SaveAs(outputPath + "phi_phi_vector_size.png");
     }
 
     // FIXME: Write a nested loop function in which we vary all the cuts and save the invariant histograms for all.
-    int deltaRKaonLow = hunlike->GetAxis(1)->FindBin(0.0 + 0.0001);
-    int deltaRKaonHigh = hunlike->GetAxis(1)->FindBin(20.0 - 0.0001);
+    // New axes: 1. Mass, pT, deltaR(Phi), MinDeltaR(kaon), Inv Mass Phi1, Inv Mass Phi2, DeltaM, DeltaM_normalized, pT_correlation, PhiPhi vector size
 
-    int lowbinpT = hunlike->GetAxis(2)->FindBin(4.0 + 0.001);
-    int highbinpT = hunlike->GetAxis(2)->FindBin(100.0 - 0.001);
+    int lowbinpT = hunlike->GetAxis(1)->FindBin(6.0 + 0.001);
+    int highbinpT = hunlike->GetAxis(1)->FindBin(500.0 - 0.001);
 
-    int deltaRPhiLow = hunlike->GetAxis(3)->FindBin(0.0 + 0.0001);
-    int deltaRPhiHigh = hunlike->GetAxis(3)->FindBin(2.0 - 0.0001);
+    int deltaRPhiLow = hunlike->GetAxis(2)->FindBin(0.0 + 0.0001);
+    int deltaRPhiHigh = hunlike->GetAxis(2)->FindBin(0.55 - 0.0001);
 
-    int deltaMLow = hunlike->GetAxis(4)->FindBin(0.0 + 0.00001);
-    int deltaMHigh = hunlike->GetAxis(4)->FindBin(0.01 - 0.00001); // 0.01 is good cut, but losing 60% statistics
+    int deltaRKaonLow = hunlike->GetAxis(3)->FindBin(0.00 + 0.0001);
+    int deltaRKaonHigh = hunlike->GetAxis(3)->FindBin(0.15 - 0.0001);
 
-    int ptCorrelationLow = hunlike->GetAxis(5)->FindBin(0.0 + 0.0001);
-    int ptCorrelationHigh = hunlike->GetAxis(5)->FindBin(6 - 0.0001);
+    int invMassPhi1Low = hunlike->GetAxis(4)->FindBin(1.005 + 0.0001);
+    int invMassPhi1High = hunlike->GetAxis(4)->FindBin(1.035 - 0.0001);
 
-    // hunlike->GetAxis(1)->SetRange(deltaRKaonLow, deltaRKaonHigh);
-    hunlike->GetAxis(2)->SetRange(lowbinpT, highbinpT);
-    hunlike->GetAxis(3)->SetRange(deltaRPhiLow, deltaRPhiHigh);
-    hunlike->GetAxis(4)->SetRange(deltaMLow, deltaMHigh);
-    // hunlike->GetAxis(5)->SetRange(ptCorrelationLow, ptCorrelationHigh);
+    int invMassPhi2Low = hunlike->GetAxis(5)->FindBin(1.005 + 0.0001);
+    int invMassPhi2High = hunlike->GetAxis(5)->FindBin(1.035 - 0.0001);
+
+    int deltaMLow = hunlike->GetAxis(6)->FindBin(0.0 + 0.00001); // this is different deltaM based on difference from mass of fitted phi meson (which changes with pT) rather than fixed pdg mass.
+    int deltaMHigh = hunlike->GetAxis(6)->FindBin(0.025 - 0.00001);
+
+    int deltaMNormalizedLow = hunlike->GetAxis(7)->FindBin(0.0 + 0.00001);
+    int deltaMNormalizedHigh = hunlike->GetAxis(7)->FindBin(2.5 - 0.00001); // In this it is normalized by width.
+
+    int ptCorrelationLow = hunlike->GetAxis(8)->FindBin(0.5 + 0.0001);
+    int ptCorrelationHigh = hunlike->GetAxis(8)->FindBin(4.5 - 0.0001);
+
+    int phiPhiVectorSizeLow = hunlike->GetAxis(9)->FindBin(1.0 + 0.0001);
+    int phiPhiVectorSizeHigh = hunlike->GetAxis(9)->FindBin(3.0 - 0.0001);
+
+    hunlike->GetAxis(1)->SetRange(lowbinpT, highbinpT);
+    hunlike->GetAxis(2)->SetRange(deltaRPhiLow, deltaRPhiHigh);
+    hunlike->GetAxis(3)->SetRange(deltaRKaonLow, deltaRKaonHigh);
+    hunlike->GetAxis(4)->SetRange(invMassPhi1Low, invMassPhi1High);
+    hunlike->GetAxis(5)->SetRange(invMassPhi2Low, invMassPhi2High);
+    hunlike->GetAxis(6)->SetRange(deltaMLow, deltaMHigh);
+    hunlike->GetAxis(7)->SetRange(deltaMNormalizedLow, deltaMNormalizedHigh);
+    hunlike->GetAxis(8)->SetRange(ptCorrelationLow, ptCorrelationHigh);
+    // hunlike->GetAxis(9)->SetRange(phiPhiVectorSizeLow, phiPhiVectorSizeHigh);
 
     if (MixedEventExist)
     {
-        hmixed->GetAxis(1)->SetRange(deltaRKaonLow, deltaRKaonHigh);
-        hmixed->GetAxis(2)->SetRange(lowbinpT, highbinpT);
-        hmixed->GetAxis(3)->SetRange(deltaRPhiLow, deltaRPhiHigh);
-        hmixed->GetAxis(4)->SetRange(deltaMLow, deltaMHigh);
-        hmixed->GetAxis(5)->SetRange(ptCorrelationLow, ptCorrelationHigh);
+        hmixed->GetAxis(1)->SetRange(lowbinpT, highbinpT);
+        hmixed->GetAxis(2)->SetRange(deltaRPhiLow, deltaRPhiHigh);
+        hmixed->GetAxis(3)->SetRange(deltaRKaonLow, deltaRKaonHigh);
+        hmixed->GetAxis(4)->SetRange(invMassPhi1Low, invMassPhi1High);
+        hmixed->GetAxis(5)->SetRange(invMassPhi2Low, invMassPhi2High);
+        hmixed->GetAxis(6)->SetRange(deltaMLow, deltaMHigh);
+        hmixed->GetAxis(7)->SetRange(deltaMNormalizedLow, deltaMNormalizedHigh);
+        hmixed->GetAxis(8)->SetRange(ptCorrelationLow, ptCorrelationHigh);
+        hmixed->GetAxis(9)->SetRange(phiPhiVectorSizeLow, phiPhiVectorSizeHigh);
     }
 
     TH1D *hmass = hunlike->Projection(0, "E");
@@ -191,123 +309,124 @@ void doublephi()
     hmass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hmass->GetBinWidth(1) * 1000));
     hmass->Write("rawInvMass_PhiPhi");
     // hmass->GetXaxis()->SetRangeUser(2.5, 2.9);
+    // hmass->GetXaxis()->SetRangeUser(2.654, 2.85);
     hmass->GetXaxis()->SetRangeUser(2.654, 2.774);
     hmass->Draw();
     if (isSavePlots)
         c1->SaveAs(outputPath + "rawInvMass_PhiPhi.png");
 
-    // //======================Fit function (BW)=========================
-    // // TF1 *BWpol = new TF1("BWpol", BW_pol2, 2.68, 2.73, 6);
+    //======================Fit function (BW)=========================
+    // TF1 *BWpol = new TF1("BWpol", BW_pol2, 2.68, 2.73, 6);
     // TF1 *BWpol = new TF1("BWpol", BW_pol2, 2.66, 2.76, 6);
-    // // TF1 *BWpol = new TF1("BWpol", BW_pol3, 2.68, 2.735, 7); // 2.685 - 2.727 (fitting is fine)
+    // TF1 *BWpol = new TF1("BWpol", BW_pol3, 2.68, 2.735, 7); // 2.685 - 2.727 (fitting is fine)
+    TF1 *BWpol = new TF1("BWpol", BW_pol3, 2.73, 2.85, 7); // testing
+    if (BWpol->GetNpar() == 7)
+        BWpol->SetParNames("Yield", "Mass", "Width", "p0", "p1", "p2", "p3");
+    else
+        BWpol->SetParNames("Yield", "Mass", "Width", "p0", "p1", "p2");
+
+    BWpol->SetParameter(0, 10);
+    BWpol->SetParameter(1, 2.79);
+    BWpol->SetParameter(2, 0.016);
+    BWpol->SetParameter(3, 1);
+    BWpol->SetParameter(4, 0);
+    BWpol->SetParameter(5, 0);
+    BWpol->SetParameter(6, 0);
+    BWpol->SetParLimits(0, 0, 1e2);
+    BWpol->SetParLimits(1, 2.7, 2.81);
+    BWpol->SetParLimits(2, 0.002, 0.03);
+    // Bkg parameters
+    // BWpol->SetParameter(3, 1.87330e+04);
+    // BWpol->SetParameter(4, 7.50253e+05);
+    // BWpol->SetParameter(5, -5.52942e+05);
     // if (BWpol->GetNpar() == 7)
-    //     BWpol->SetParNames("Yield", "Mass", "Width", "p0", "p1", "p2", "p3");
-    // else
-    //     BWpol->SetParNames("Yield", "Mass", "Width", "p0", "p1", "p2");
+    // BWpol->SetParameter(6, 1.01426e+05);
+    hmass->Fit(BWpol, "REMS");
+    TF1 *BWfunc = new TF1("BWfunc", BW, BWpol->GetXmin(), BWpol->GetXmax(), 3);
+    BWfunc->SetParameter(0, BWpol->GetParameter(0));
+    BWfunc->SetParameter(1, BWpol->GetParameter(1));
+    BWfunc->SetParameter(2, BWpol->GetParameter(2));
+    BWfunc->SetLineColor(kRed);
+    BWfunc->SetLineStyle(2);
+    BWfunc->Draw("same");
+    TF1 *bkgfunc = new TF1("bkgfunc", pol2, BWpol->GetXmin(), BWpol->GetXmax(), 3);
+    // TF1 *bkgfunc = new TF1("bkgfunc", pol3, BWpol->GetXmin(), BWpol->GetXmax(), 4);
+    bkgfunc->SetParameter(0, BWpol->GetParameter(3));
+    bkgfunc->SetParameter(1, BWpol->GetParameter(4));
+    bkgfunc->SetParameter(2, BWpol->GetParameter(5));
+    if (bkgfunc->GetNpar() == 4)
+        bkgfunc->SetParameter(3, BWpol->GetParameter(6));
+    bkgfunc->SetLineColor(kGreen + 3);
+    bkgfunc->SetLineStyle(2);
+    bkgfunc->Draw("same");
 
-    // BWpol->SetParameter(0, 10);
-    // BWpol->SetParameter(1, 2.71);
-    // BWpol->SetParameter(2, 0.016);
-    // BWpol->SetParameter(3, 1);
-    // BWpol->SetParameter(4, 0);
-    // BWpol->SetParameter(5, 0);
-    // BWpol->SetParameter(6, 0);
-    // BWpol->SetParLimits(0, 0, 1e2);
-    // BWpol->SetParLimits(1, 2.7, 2.72);
-    // BWpol->SetParLimits(2, 0.002, 0.03);
-    // // Bkg parameters
-    // // BWpol->SetParameter(3, 1.87330e+04);
-    // // BWpol->SetParameter(4, 7.50253e+05);
-    // // BWpol->SetParameter(5, -5.52942e+05);
-    // // if (BWpol->GetNpar() == 7)
-    // // BWpol->SetParameter(6, 1.01426e+05);
-    // hmass->Fit(BWpol, "REMS");
-    // TF1 *BWfunc = new TF1("BWfunc", BW, BWpol->GetXmin(), BWpol->GetXmax(), 3);
-    // BWfunc->SetParameter(0, BWpol->GetParameter(0));
-    // BWfunc->SetParameter(1, BWpol->GetParameter(1));
-    // BWfunc->SetParameter(2, BWpol->GetParameter(2));
-    // BWfunc->SetLineColor(kRed);
-    // BWfunc->SetLineStyle(2);
-    // BWfunc->Draw("same");
-    // TF1 *bkgfunc = new TF1("bkgfunc", pol2, BWpol->GetXmin(), BWpol->GetXmax(), 3);
-    // // TF1 *bkgfunc = new TF1("bkgfunc", pol3, BWpol->GetXmin(), BWpol->GetXmax(), 4);
-    // bkgfunc->SetParameter(0, BWpol->GetParameter(3));
-    // bkgfunc->SetParameter(1, BWpol->GetParameter(4));
-    // bkgfunc->SetParameter(2, BWpol->GetParameter(5));
-    // if (bkgfunc->GetNpar() == 4)
-    //     bkgfunc->SetParameter(3, BWpol->GetParameter(6));
-    // bkgfunc->SetLineColor(kGreen + 3);
-    // bkgfunc->SetLineStyle(2);
-    // bkgfunc->Draw("same");
+    double signalCounts = (BWfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
+                                            BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
+                          hmass->GetBinWidth(1);
+    double signalBkgCount = hmass->Integral(hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2)), hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2)));
+    double bkgCounts = (bkgfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
+                                          BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
+                       hmass->GetBinWidth(1);
+    double singalBinCount = signalBkgCount - bkgCounts;
+    cout << "Signal counts: " << signalCounts << endl;
+    cout << "Signal counts (bin): " << singalBinCount << endl;
+    cout << "Background counts: " << bkgCounts << endl;
+    cout << "Signal to Background ratio: " << singalBinCount / bkgCounts << endl;
+    cout << "Significance: " << singalBinCount / sqrt(singalBinCount + bkgCounts) << endl;
+    cout << "Purity : " << singalBinCount / (singalBinCount + bkgCounts) << endl;
 
-    // double signalCounts = (BWfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
-    //                                         BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
-    //                       hmass->GetBinWidth(1);
-    // double signalBkgCount = hmass->Integral(hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2)),
-    //                                         hmass->GetXaxis()->FindBin(BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2)));
-    // double bkgCounts = (bkgfunc->Integral(BWpol->GetParameter(1) - 2 * BWpol->GetParameter(2),
-    //                                       BWpol->GetParameter(1) + 2 * BWpol->GetParameter(2))) /
-    //                    hmass->GetBinWidth(1);
-    // double singalBinCount = signalBkgCount - bkgCounts;
-    // cout << "Signal counts: " << signalCounts << endl;
-    // cout << "Signal counts (bin): " << singalBinCount << endl;
-    // cout << "Background counts: " << bkgCounts << endl;
-    // cout << "Signal to Background ratio: " << singalBinCount / bkgCounts << endl;
-    // cout << "Significance: " << singalBinCount / sqrt(singalBinCount + bkgCounts) << endl;
-    // cout << "Purity : " << singalBinCount / (singalBinCount + bkgCounts) << endl;
+    // // //======================Fit function (Voigt)=========================
+    // // TF1 *voigtPol2 = new TF1("fitfunc", voigtpol2, 2.685, 2.73, 7); // fit is converged/successful here
+    // TF1 *voigtPol2 = new TF1("fitfunc", voigtpol2, 2.67, 2.75, 7);
+    // voigtPol2->SetParNames("Yield", "Mass", "Gaussian width", "Lorentzian width", "p0", "p1", "p2");
+    // TF1 *fitPhiPhibkg = new TF1("fitfunc1", polynomial2, voigtPol2->GetXmin(), voigtPol2->GetXmax(), 3);
+    // TF1 *fitPhiPhiSig = new TF1("fitFcnSig", voigt, voigtPol2->GetXmin(), voigtPol2->GetXmax(), 4);
 
-    // //======================Fit function (Voigt)=========================
-    // TF1 *voigtPol2 = new TF1("fitfunc", voigtpol2, 2.685, 2.73, 7); // fit is converged/successful here
-    TF1 *voigtPol2 = new TF1("fitfunc", voigtpol2, 2.67, 2.75, 7);
-    voigtPol2->SetParNames("Yield", "Mass", "Gaussian width", "Lorentzian width", "p0", "p1", "p2");
-    TF1 *fitPhiPhibkg = new TF1("fitfunc1", polynomial2, voigtPol2->GetXmin(), voigtPol2->GetXmax(), 3);
-    TF1 *fitPhiPhiSig = new TF1("fitFcnSig", voigt, voigtPol2->GetXmin(), voigtPol2->GetXmax(), 4);
+    // // for voigtian distribution
+    // voigtPol2->SetParameter(0, 10);           // yield
+    // voigtPol2->SetParLimits(0, 0, 100);       // yield
+    // voigtPol2->SetParameter(1, 2.71);         // mass peak
+    // voigtPol2->SetParLimits(1, 2.7, 2.72);    // mass peak
+    // voigtPol2->SetParameter(2, 0.005);        //  Gaussian width (Detector resolution)
+    // voigtPol2->SetParLimits(2, 0.001, 0.009); // Gaussian width.
+    // voigtPol2->SetParameter(3, 0.012);        // lorentzian width (Resonance width)
+    // voigtPol2->SetParLimits(3, 0.005, 0.02);  // lorentzian width (Resonance width)
 
-    // for voigtian distribution
-    voigtPol2->SetParameter(0, 10);           // yield
-    voigtPol2->SetParLimits(0, 0, 100);       // yield
-    voigtPol2->SetParameter(1, 2.71);         // mass peak
-    voigtPol2->SetParLimits(1, 2.7, 2.72);    // mass peak
-    voigtPol2->SetParameter(2, 0.005);        //  Gaussian width (Detector resolution)
-    voigtPol2->SetParLimits(2, 0.001, 0.009); // Gaussian width.
-    voigtPol2->SetParameter(3, 0.012);        // lorentzian width (Resonance width)
-    voigtPol2->SetParLimits(3, 0.005, 0.02);  // lorentzian width (Resonance width)
+    // // // // Bkg parameters
+    // // voigtPol2->SetParameter(4, 1);
+    // // voigtPol2->SetParameter(5, 1);
+    // // voigtPol2->SetParameter(6, 1);
+    // voigtPol2->FixParameter(4, 3.42404e+05);
+    // voigtPol2->SetParameter(5, -2.31214e+05);
+    // voigtPol2->SetParameter(6, 4.02764e+04);
+    // hmass->Fit(voigtPol2, "REMS");
 
-    // // // Bkg parameters
-    // voigtPol2->SetParameter(4, 1);
-    // voigtPol2->SetParameter(5, 1);
-    // voigtPol2->SetParameter(6, 1);
-    voigtPol2->FixParameter(4, 3.42404e+05);
-    voigtPol2->SetParameter(5, -2.31214e+05);
-    voigtPol2->SetParameter(6, 4.02764e+04);
-    hmass->Fit(voigtPol2, "REMS");
+    // fitPhiPhiSig->SetParameter(0, voigtPol2->GetParameter(0));
+    // fitPhiPhiSig->SetParameter(1, voigtPol2->GetParameter(1));
+    // fitPhiPhiSig->SetParameter(2, voigtPol2->GetParameter(2));
+    // fitPhiPhiSig->SetParameter(3, voigtPol2->GetParameter(3));
+    // fitPhiPhiSig->SetLineColor(kRed);
+    // fitPhiPhiSig->SetLineStyle(2);
+    // fitPhiPhiSig->Draw("same");
 
-    fitPhiPhiSig->SetParameter(0, voigtPol2->GetParameter(0));
-    fitPhiPhiSig->SetParameter(1, voigtPol2->GetParameter(1));
-    fitPhiPhiSig->SetParameter(2, voigtPol2->GetParameter(2));
-    fitPhiPhiSig->SetParameter(3, voigtPol2->GetParameter(3));
-    fitPhiPhiSig->SetLineColor(kRed);
-    fitPhiPhiSig->SetLineStyle(2);
-    fitPhiPhiSig->Draw("same");
+    // fitPhiPhibkg->SetParameter(0, voigtPol2->GetParameter(4));
+    // fitPhiPhibkg->SetParameter(1, voigtPol2->GetParameter(5));
+    // fitPhiPhibkg->SetParameter(2, voigtPol2->GetParameter(6));
+    // fitPhiPhibkg->SetLineColor(kGreen + 3);
+    // fitPhiPhibkg->SetLineStyle(2);
+    // fitPhiPhibkg->Draw("same");
 
-    fitPhiPhibkg->SetParameter(0, voigtPol2->GetParameter(4));
-    fitPhiPhibkg->SetParameter(1, voigtPol2->GetParameter(5));
-    fitPhiPhibkg->SetParameter(2, voigtPol2->GetParameter(6));
-    fitPhiPhibkg->SetLineColor(kGreen + 3);
-    fitPhiPhibkg->SetLineStyle(2);
-    fitPhiPhibkg->Draw("same");
+    // double signalCountsVoigt = (fitPhiPhiSig->Integral(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3), voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3))) / hmass->GetBinWidth(1);
+    // double signalBkgCountVoigt = hmass->Integral(hmass->GetXaxis()->FindBin(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3)), hmass->GetXaxis()->FindBin(voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3)));
+    // double bkgCountsVoigt = (fitPhiPhibkg->Integral(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3), voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3))) / hmass->GetBinWidth(1);
+    // double singalBinCountVoigt = signalBkgCountVoigt - bkgCountsVoigt;
 
-    double signalCountsVoigt = (fitPhiPhiSig->Integral(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3), voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3))) / hmass->GetBinWidth(1);
-    double signalBkgCountVoigt = hmass->Integral(hmass->GetXaxis()->FindBin(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3)), hmass->GetXaxis()->FindBin(voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3)));
-    double bkgCountsVoigt = (fitPhiPhibkg->Integral(voigtPol2->GetParameter(1) - 2 * voigtPol2->GetParameter(3), voigtPol2->GetParameter(1) + 2 * voigtPol2->GetParameter(3))) / hmass->GetBinWidth(1);
-    double singalBinCountVoigt = signalBkgCountVoigt - bkgCountsVoigt;
-
-    cout << "Signal counts (Voigt): " << signalCountsVoigt << endl;
-    cout << "Signal counts (bin) (Voigt): " << singalBinCountVoigt << endl;
-    cout << "Background counts (Voigt): " << bkgCountsVoigt << endl;
-    cout << "Signal to Background ratio (Voigt): " << singalBinCountVoigt / bkgCountsVoigt << endl;
-    cout << "Significance (Voigt): " << singalBinCountVoigt / sqrt(singalBinCountVoigt + bkgCountsVoigt) << endl;
-    cout << "Purity (Voigt): " << singalBinCountVoigt / (singalBinCountVoigt + bkgCountsVoigt) << endl;
+    // cout << "Signal counts (Voigt): " << signalCountsVoigt << endl;
+    // cout << "Signal counts (bin) (Voigt): " << singalBinCountVoigt << endl;
+    // cout << "Background counts (Voigt): " << bkgCountsVoigt << endl;
+    // cout << "Signal to Background ratio (Voigt): " << singalBinCountVoigt / bkgCountsVoigt << endl;
+    // cout << "Significance (Voigt): " << singalBinCountVoigt / sqrt(singalBinCountVoigt + bkgCountsVoigt) << endl;
+    // cout << "Purity (Voigt): " << singalBinCountVoigt / (singalBinCountVoigt + bkgCountsVoigt) << endl;
 
     //// Save the plot and add the legend to other plots
 
@@ -437,12 +556,12 @@ void doublephi()
             cDeltaRKaonMinus->SaveAs(outputPath + "deltaR_kaon_minus.png");
 
         TH1F *hPhiYieldFit = new TH1F("hPhiYieldFit", "hPhiYieldFit", nPtBinsPhi, pTbinsPhi);
-        TH1F *hPhiYieldFitLoosePID = (TH1F *)file2->Get("FittedPhiYield");
-        if (hPhiYieldFitLoosePID == nullptr)
-        {
-            std::cerr << "Error: Could not find the FittedPhiYield histogram in file2 (loose PID cuts)\n";
-            return;
-        }
+        // TH1F *hPhiYieldFitLoosePID = (TH1F *)file2->Get("FittedPhiYield");
+        // if (hPhiYieldFitLoosePID == nullptr)
+        // {
+        //     std::cerr << "Error: Could not find the FittedPhiYield histogram in file2 (loose PID cuts)\n";
+        //     return;
+        // }
         TH1F *hEfficiency = new TH1F("hEfficiency", "hEfficiency", nPtBinsPhi, pTbinsPhi);
         TH1F *hChi2byNDF = new TH1F("hChi2byNDF", "hChi2byNDF", nPtBinsPhi, pTbinsPhi);
         TH1F *hPurity = new TH1F("hPurity", "hPurity", nPtBinsPhi, pTbinsPhi);
@@ -596,15 +715,15 @@ void doublephi()
 
             hPhiYieldFit->SetBinContent(ibinsPhi + 1, yieldIntegral);
             hPhiYieldFit->SetBinError(ibinsPhi + 1, yieldIntegralError);
-            if (hPhiYieldFitLoosePID->GetNbinsX() == nPtBinsPhi)
-            {
-                double yieldIntegral2 = hPhiYieldFitLoosePID->GetBinContent(ibinsPhi + 1);
-                double yieldIntegralError2 = hPhiYieldFitLoosePID->GetBinError(ibinsPhi + 1);
-                double ratio = yieldIntegral / yieldIntegral2;
-                double ratioError = ratio * sqrt(pow(yieldIntegralError / yieldIntegral2, 2) + pow(yieldIntegralError2 * yieldIntegral / (yieldIntegral2 * yieldIntegral2), 2));
-                hEfficiency->SetBinContent(ibinsPhi + 1, ratio * 100);
-                hEfficiency->SetBinError(ibinsPhi + 1, ratioError * 100);
-            }
+            // if (hPhiYieldFitLoosePID->GetNbinsX() == nPtBinsPhi)
+            // {
+            //     double yieldIntegral2 = hPhiYieldFitLoosePID->GetBinContent(ibinsPhi + 1);
+            //     double yieldIntegralError2 = hPhiYieldFitLoosePID->GetBinError(ibinsPhi + 1);
+            //     double ratio = yieldIntegral / yieldIntegral2;
+            //     double ratioError = ratio * sqrt(pow(yieldIntegralError / yieldIntegral2, 2) + pow(yieldIntegralError2 * yieldIntegral / (yieldIntegral2 * yieldIntegral2), 2));
+            //     hEfficiency->SetBinContent(ibinsPhi + 1, ratio * 100);
+            //     hEfficiency->SetBinError(ibinsPhi + 1, ratioError * 100);
+            // }
 
             hPhiMassResolutionFit->SetBinContent(ibinsPhi + 1, fitFcn->GetParameter(2));
             hPhiMassResolutionFit->SetBinError(ibinsPhi + 1, fitFcn->GetParError(2));

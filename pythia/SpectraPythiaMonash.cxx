@@ -21,8 +21,8 @@ void SpectraPythiaMonash()
     gStyle->SetOptFit(1111);
 
     int colors[] = {kRed, kOrange, kYellow, kGreen, kCyan, kBlue, kViolet, kMagenta, kPink - 1, kGray};
-    string modelNames[] = {"MonashLocal", "MonashWoCRLocal", "ShovingLocal", "MonashRescatteringLocal", "MonashLocal2"};
-    int chooseModel = 4; // 0: Monash with CR, 1: Monash without CR, 2: Shoving, 3: Monash with hadronic rescattering
+    string modelNames[] = {"MonashLocal", "MonashWoCRLocal", "ShovingLocal", "MonashRescatteringLocal", "MonashLocal2", "RopesLocal"};
+    int chooseModel = 5; // 0: Monash with CR, 1: Monash without CR, 2: Shoving, 3: Monash with hadronic rescattering
 
     TFile *fpp13p6TeV = new TFile(Form("NewSimPythia8p3/%s.root", modelNames[chooseModel].c_str()), "READ");
     if (fpp13p6TeV->IsZombie())

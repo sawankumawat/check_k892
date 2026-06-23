@@ -37,7 +37,9 @@ void ALICEResultsXiStarSigma()
         {"yield_sigma1385", 1, "Sigma1385_MeanYield"},
         {"meanpT_sigma1385", 1, "Sigma1385_MeanpT"},
         {"yield_Xi1530", 1, "Xi1530_MeanYield"},
-        {"meanpT_Xi1530", 1, "Xi1530_MeanpT"}};
+        {"meanpT_Xi1530", 1, "Xi1530_MeanpT"},
+        {"Ratio_yield_to_xi_xi1530", 1, "Xi1530_to_XiRatio"},
+        {"Ratio_yield_to_lambda_sigma1385", 1, "Sigma1385_to_LambdaRatio"}};
 
     vector<DataSet> data;
     data.reserve(tables.size());

@@ -35,7 +35,8 @@ void ALICEResultsChargedKstarpp13TeV()
 
     vector<tuple<TString, int, TString>> tables = {
         {"19", 1, "ChKstar_MeanYield"},
-        {"20", 1, "ChKstar_MeanpT"}};
+        {"20", 1, "ChKstar_MeanpT"},
+        {"21", 1, "ChKstarKaRatio"}};
 
     vector<DataSet> data;
     data.reserve(tables.size());

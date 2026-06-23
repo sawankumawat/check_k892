@@ -5,7 +5,7 @@
 void plotResultsPiKp()
 {
     vector<string> particleType = {"Pi", "Ka", "Pr"};
-    int selectParticle = 2;
+    int selectParticle = 0;
     TFile *fresultsPos = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Pos_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
     TFile *fresultsNeg = new TFile(Form("../PiKp_Run3_Results/Yeild_meanpT/Yields_Neg_%s_AllMult.root", particleType[selectParticle].c_str()), "read");
     if (fresultsPos->IsZombie() || fresultsNeg->IsZombie())
@@ -74,9 +74,12 @@ void plotResultsPiKp()
     gMeanpTRun3Data_sysUncorr->Write("gMeanpTRun3_sysuncorr");
     gMeanYieldRun3Data_sysUncorr->Write("gMeanYieldRun3_sysuncorr");
 
-    TH1D *hSpectraPos[nBinsMult + 1];
-    TH1D *hSpectraNeg[nBinsMult + 1];
-    TH1D *hSpectraSum[nBinsMult + 1];
+    TH1D *hSpectraPosStat[nBinsMult + 1];
+    TH1D *hSpectraNegStat[nBinsMult + 1];
+    TH1D *hSpectraSumStat[nBinsMult + 1];
+    TH1D *hSpectraPosSys[nBinsMult + 1];
+    TH1D *hSpectraNegSys[nBinsMult + 1];
+    TH1D *hSpectraSumSys[nBinsMult + 1];
     for (int imult = 0; imult < nBinsMult + 1; ++imult)
     {
         int multlow, multhigh;
@@ -98,13 +101,22 @@ void plotResultsPiKp()
             return;
         }
 
-        hSpectraPos[imult] = (TH1D *)fSpectraPos->Get("cor_sys");
-        hSpectraNeg[imult] = (TH1D *)fSpectraNeg->Get("cor_sys");
-        hSpectraSum[imult] = (TH1D *)hSpectraPos[imult]->Clone(Form("hSpectraSum%d", imult));
-        hSpectraSum[imult]->SetDirectory(nullptr);
-        hSpectraSum[imult]->Add(hSpectraNeg[imult]);
+        hSpectraPosStat[imult] = (TH1D *)fSpectraPos->Get("cor");
+        hSpectraNegStat[imult] = (TH1D *)fSpectraNeg->Get("cor");
+        hSpectraPosSys[imult] = (TH1D *)fSpectraPos->Get("cor_sys");
+        hSpectraNegSys[imult] = (TH1D *)fSpectraNeg->Get("cor_sys");
+
+        hSpectraSumStat[imult] = (TH1D *)hSpectraPosStat[imult]->Clone(Form("hSpectraSumStat%d", imult));
+        hSpectraSumStat[imult]->SetDirectory(nullptr);
+        hSpectraSumStat[imult]->Add(hSpectraNegStat[imult]);
+
+        hSpectraSumSys[imult] = (TH1D *)hSpectraPosSys[imult]->Clone(Form("hSpectraSumSys%d", imult));
+        hSpectraSumSys[imult]->SetDirectory(nullptr);
+        hSpectraSumSys[imult]->Add(hSpectraNegSys[imult]);
+
         fOutput->cd();
-        hSpectraSum[imult]->Write(Form("hCorrectedSpectra_%d_%d", multlow, multhigh));
+        hSpectraSumStat[imult]->Write(Form("hCorrectedSpectraStat_%d_%d", multlow, multhigh));
+        hSpectraSumSys[imult]->Write(Form("hCorrectedSpectraSys_%d_%d", multlow, multhigh));
     }
 
     fOutput->Close();

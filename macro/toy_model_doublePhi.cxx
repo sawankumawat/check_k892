@@ -26,7 +26,7 @@ void toy_model_doublePhi()
     double m_daughter2 = 1.0194; // daughter 2 (Phi mass)
     double m_kaon = 0.49367;     // charged kaon mass
     double mother_width = 0.012; // GeV (12 MeV)
-    double phi_width = 0.0045;    // GeV (4.5 MeV)
+    double phi_width = 0.0045;   // GeV (4.5 MeV)
 
     TFile *fout = new TFile("toy_model_plots/doublePhi/toyModel_doublePhi.root", "recreate");
 
@@ -62,7 +62,8 @@ void toy_model_doublePhi()
 
         // sample mother mass with a Breit-Wigner (small width)
         double m_mother_sample = randGen.BreitWigner(m_mother, mother_width * 0.5);
-        if (m_mother_sample <= 0) m_mother_sample = m_mother;
+        if (m_mother_sample <= 0)
+            m_mother_sample = m_mother;
         lvmother.SetPtEtaPhiM(pT, eta, phi, m_mother_sample);
         // lvmother.SetPxPyPzE(px, py, pz, E);
 
@@ -72,8 +73,10 @@ void toy_model_doublePhi()
         double m_phi2 = randGen.BreitWigner(m_daughter2, phi_width * 0.5);
         // ensure physical masses and above KK threshold for subsequent decays
         const double kkThreshold = 2.0 * m_kaon + 1e-6;
-        if (m_phi1 < kkThreshold) m_phi1 = kkThreshold;
-        if (m_phi2 < kkThreshold) m_phi2 = kkThreshold;
+        if (m_phi1 < kkThreshold)
+            m_phi1 = kkThreshold;
+        if (m_phi2 < kkThreshold)
+            m_phi2 = kkThreshold;
         double masses[2] = {m_phi1, m_phi2};
 
         if (event.SetDecay(lvmother, 2, masses))

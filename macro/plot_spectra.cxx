@@ -49,7 +49,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    TString outputType = "pdf"; // pdf, png
+    TString outputType = "png"; // pdf, png
     double fitRangeMax = 20.0;
 
     int colors[12];
@@ -162,6 +162,16 @@ void plot_spectra()
         hmult[0]->SetMarkerStyle(markers[numofmultbins]);
         hmult[0]->SetMarkerSize(1.2);
 
+        // TLegend *leg = new TLegend(0.37, 0.75, 0.95, 0.97); // for 4 columns legend
+        TLegend *leg = new TLegend(0.47, 0.7, 0.98, 0.97);
+        SetLegendStyle(leg);
+        leg->SetNColumns(3);
+        // leg->AddEntry(hmult[0], "0-100%", "lpe");
+        for (int i = 1; i < numofmultbins + 1; i++)
+        {
+            leg->AddEntry(hmult[i], Form("%.0f-%.0f%%(#times2^{%d})", mult_classes[i - 1], mult_classes[i], numofmultbins - i), "lpe");
+        }
+
         if (!plotOnlyRaw)
         {
             for (int imult = 0; imult < numofmultbins + 1; imult++)
@@ -213,19 +223,13 @@ void plot_spectra()
                 h2->SetMarkerSize(0);
                 if (imult != 0)
                     h2->Draw("e2 same");
+
+                if (imult == 0)
+                    leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
             }
         }
         c->cd(1);
 
-        // TLegend *leg = new TLegend(0.37, 0.75, 0.95, 0.97); // for 4 columns legend
-        TLegend *leg = new TLegend(0.47, 0.7, 0.98, 0.97);
-        SetLegendStyle(leg);
-        leg->SetNColumns(3);
-        // leg->AddEntry(hmult[0], "0-100%", "lpe");
-        for (int i = 1; i < numofmultbins + 1; i++)
-        {
-            leg->AddEntry(hmult[i], Form("%.0f-%.0f%%(#times2^{%d})", mult_classes[i - 1], mult_classes[i], numofmultbins - i), "lpe");
-        }
         leg->SetTextSize(0.03);
         leg->Draw();
 
@@ -272,6 +276,8 @@ void plot_spectra()
             double meanpT[numofmultbins], yield[numofmultbins];
             double meanpT_errStat[numofmultbins], yield_errStat[numofmultbins];
             double meanpT_errSys[numofmultbins], yield_errSys[numofmultbins];
+            double nLevy[numofmultbins], nLevy_errStat[numofmultbins], nLevy_errSys[numofmultbins];
+            double TLevy[numofmultbins], TLevy_errStat[numofmultbins], TLevy_errSys[numofmultbins];
 
             // Now lets calculate the mean pT and yield as a function of dN_charge/deta
             for (int imult = 1; imult < numofmultbins + 1; imult++)
@@ -315,6 +321,10 @@ void plot_spectra()
                 yield[imult - 1] = hout->GetBinContent(1);
                 yield_errStat[imult - 1] = hout->GetBinContent(2);
                 yield_errSys[imult - 1] = hout->GetBinContent(3);
+                nLevy[imult - 1] = fitFcn->GetParameter(0);
+                nLevy_errStat[imult - 1] = fitFcn->GetParError(0);
+                TLevy[imult - 1] = fitFcn->GetParameter(3);
+                TLevy_errStat[imult - 1] = fitFcn->GetParError(3);
 
                 // //// Taking from histogram directly
                 // meanpT[imult - 1] = hmultClone[imult]->GetMean();
@@ -365,6 +375,8 @@ void plot_spectra()
             TGraphAsymmErrors *gMeanYieldRun3_sys = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, dnch_detaRun3_err, yield_errSys, yield_errSys);
             TGraphErrors *gMeanpTRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, meanpT_errStat);
             TGraphAsymmErrors *gMeanpTRun3_sys = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, dnch_detaRun3_err, meanpT_errSys, meanpT_errSys);
+            TGraphErrors *gNLevyRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, nLevy, dnch_detaRun3_err, nLevy_errStat);
+            TGraphErrors *gTLevyRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, TLevy, dnch_detaRun3_err, TLevy_errStat);
 
             TFile *fRun2 = new TFile("spectra/pp13TeV_INELgt0.root", "read");
             TFile *fpp5020MeV = new TFile("spectra/pp5.02TeV_INELgt0.root", "read");
@@ -388,7 +400,7 @@ void plot_spectra()
             TGraphErrors *gMeanYieldRun2_sys = new TGraphErrors(gMeanYieldRun2->GetN());
             TGraphErrors *gMeanpTRun2_sys = new TGraphErrors(gMeanpTRun2->GetN());
 
-            for(int i = 0; i < gMeanYieldRun2->GetN(); ++i)
+            for (int i = 0; i < gMeanYieldRun2->GetN(); ++i)
             {
                 double x = 0.0, y = 0.0;
                 gMeanYieldRun2->GetPoint(i, x, y);
@@ -434,7 +446,7 @@ void plot_spectra()
             gMeanYieldRun2_stat->SetMarkerSize(1.2);
             gMeanYieldRun2_stat->SetMarkerColor(kRed);
             gMeanYieldRun2_stat->SetLineColor(kRed);
-            gMeanYieldRun2_stat->GetXaxis()->SetTitle("dN_{ch}/d#eta");
+            gMeanYieldRun2_stat->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
             gMeanYieldRun2_stat->GetYaxis()->SetTitle("dN/dy");
             gMeanYieldRun2_stat->GetYaxis()->SetRangeUser(0.0, 0.89);
             gMeanYieldRun2_stat->SetTitle(0);
@@ -486,7 +498,7 @@ void plot_spectra()
             gMeanpTRun2_stat->SetMarkerSize(1.2);
             gMeanpTRun2_stat->SetMarkerColor(kRed);
             gMeanpTRun2_stat->SetLineColor(kRed);
-            gMeanpTRun2_stat->GetXaxis()->SetTitle("dN_{ch}/d#eta");
+            gMeanpTRun2_stat->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
             gMeanpTRun2_stat->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
             gMeanpTRun2_stat->GetYaxis()->SetRangeUser(0.25, 2.09);
             gMeanpTRun2_stat->SetTitle("");
@@ -519,6 +531,38 @@ void plot_spectra()
             gMeanpTRun3->Write("gMeanpTRun3_stat");
             TString ptPath = outputfolder + "/mean_pT." + outputType;
             cMeanpT->SaveAs(ptPath.Data());
+
+            TCanvas *cNLevy = new TCanvas("cNLevy", "cNLevy", 720, 720);
+            SetCanvasStyle(cNLevy, 0.15, 0.03, 0.03, 0.15);
+            SetGraphErrorStyle(gNLevyRun3);
+            gNLevyRun3->SetMarkerStyle(21);
+            gNLevyRun3->SetMarkerSize(1.2);
+            gNLevyRun3->SetMarkerColor(kBlue);
+            gNLevyRun3->SetLineColor(kBlue);
+            gNLevyRun3->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
+            gNLevyRun3->GetYaxis()->SetTitle("n");
+            gNLevyRun3->GetYaxis()->SetRangeUser(6.2, 9.5);
+            gNLevyRun3->SetTitle("");
+            gNLevyRun3->Draw("ape");
+            gNLevyRun3->Write("gNLevyRun3_stat");
+            TString nLevyPath = outputfolder + "/nLevy." + outputType;
+            cNLevy->SaveAs(nLevyPath.Data());
+
+            TCanvas *cTLevy = new TCanvas("cTLevy", "cTLevy", 720, 720);
+            SetCanvasStyle(cTLevy, 0.15, 0.03, 0.03, 0.15);
+            SetGraphErrorStyle(gTLevyRun3);
+            gTLevyRun3->SetMarkerStyle(21);
+            gTLevyRun3->SetMarkerSize(1.2);
+            gTLevyRun3->SetMarkerColor(kBlue);
+            gTLevyRun3->SetLineColor(kBlue);
+            gTLevyRun3->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
+            gTLevyRun3->GetYaxis()->SetTitle("T (GeV)");
+            gTLevyRun3->GetYaxis()->SetRangeUser(0.13, 0.48);
+            gTLevyRun3->SetTitle("");
+            gTLevyRun3->Draw("ape");
+            gTLevyRun3->Write("gTLevyRun3_stat");
+            TString TLevyPath = outputfolder + "/TLevy." + outputType;
+            cTLevy->SaveAs(TLevyPath.Data());
         }
     }
 } // End of the code

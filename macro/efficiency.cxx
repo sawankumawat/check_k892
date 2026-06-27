@@ -66,7 +66,9 @@ void efficiency()
         // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
         // string data_path = "664559/kstarqa/hInvMass"; // 2024 (Base, INEL, TOFshift, TOFshiftMID)
         // string data_path = "679906/kstarqa/hInvMass"; // 2024 (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
-        string data_path = "697595/kstarqa/hInvMass"; // INEL only
+        // string data_path = "697595/kstarqa/hInvMass"; // INEL only
+        // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
+        string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
 
         TString outputfolder;
         if (ivar == 0)
@@ -119,7 +121,9 @@ void efficiency()
         // string MCpath = "665524.root"; // 2024 MC (ToF shift with PID also shifted (base), INEL)
         // string MCpath = "667875.root"; // 2024 MC (higher TOF shift for pions, Base, MID, MIDptDep, MIDptDep2)
         // string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
-        string MCpath = "697699.root"; // Only INEL
+        // string MCpath = "697699.root"; // Only INEL
+        // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
+        string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -136,8 +140,8 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa_Vz_sel8/hInvMass";
-        const string recpath = "kstarqa_Vz_sel8/hInvMass";
+        const string genpath = "kstarqa/hInvMass";
+        const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins

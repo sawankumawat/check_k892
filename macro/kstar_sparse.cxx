@@ -28,7 +28,7 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeQAplots = true;
@@ -731,7 +731,8 @@ void kstar_sparse()
                     fitFcn2->SetLineWidth(2);
                     hfsig->GetXaxis()->SetRangeUser(0.7, 1.11);
                     hfsig->SetMarkerSize(1.0);
-                    if (ip != 0 && ip != 1 && ip != 2)
+                    // if (ip != 0 && ip != 1 && ip != 2)
+                    if (ip > 15)
                         hfsig->SetMinimum(0);
                     hfsig->Draw("e");
                     fitFcn->Draw("same");
@@ -747,7 +748,7 @@ void kstar_sparse()
                     pag->AddEntry((TObject *)0, "pp, #sqrt{s} = 13.6 TeV", "");
                     pag->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
                     pag->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
-                    pag->AddEntry((TObject *)0, Form("#it{p}_{T} = %.1f-%.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
+                    pag->AddEntry((TObject *)0, Form("#it{p}_{T} = %.2f-%.2f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
                     if (!multipanel_plots)
                         pag->Draw();
 
@@ -762,7 +763,7 @@ void kstar_sparse()
                     pag2->AddEntry(fitFcn2, "pol3", "l");
                     pag2->Draw();
                     if (multipanel_plots)
-                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
 
                     double fitprob = fitFcn->GetProb();
                     // pag->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f", Mass[ip], ErrorMass[ip]), "");
@@ -772,7 +773,7 @@ void kstar_sparse()
                     // pag->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f ", chibyndf), "");
                     // pag->Draw();
                     // t2->DrawLatex(0.26, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-                    // t2->DrawLatex(0.27, 0.95, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+                    // t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
                     if (multipanel_plots == 0 && save_plots == 1)
                         cinv[ip]->SaveAs(Form(outputfolder_mult + ("/hfitsig_pt%d." + outputtype).c_str(), ip + 1));
                     if (multipanel_plots == 1)
@@ -830,7 +831,7 @@ void kstar_sparse()
                     pag3->Draw();
 
                     if (multipanel_plots)
-                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.1f < #it{p}_{T} < %.1f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
 
                     if (multipanel_plots == 0 && save_plots == 1 && save_bkg_plots == 1)
                         cSigbkg[ip]->SaveAs(Form(outputfolder_mult + ("/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));

@@ -244,7 +244,8 @@ void ParticleRatioWithRun2()
     TFile *fPythiaShoving = new TFile("../../pythia/Pythia_ShovingLocal.root", "read");
     TFile *fPythiaMonashRescattering = new TFile("../../pythia/Pythia_MonashRescatteringLocal.root", "read");
     TFile *fPythiaRopes = new TFile("../../pythia/Pythia_RopesLocal.root", "read");
-    if (fPythiaMonash->IsZombie() || fPythiaMonashNoCR->IsZombie() || fPythiaShoving->IsZombie() || fPythiaMonashRescattering->IsZombie() || fPythiaRopes->IsZombie())
+    TFile *fPythiaRescattering = new TFile("../../pythia/Pythia_RescatteringLocal.root", "read");
+    if (fPythiaMonash->IsZombie() || fPythiaMonashNoCR->IsZombie() || fPythiaShoving->IsZombie() || fPythiaMonashRescattering->IsZombie() || fPythiaRopes->IsZombie() || fPythiaRescattering->IsZombie())
     {
         cout << "Error: Pythia local files not found" << endl;
         return;
@@ -255,6 +256,8 @@ void ParticleRatioWithRun2()
         kPythiaMonashNoCRLocal,
         kPythiaShovingLocal,
         kPythiaRopesLocal,
+        kPythiaMonashRescatteringLocal,
+        kPythiaRescatteringLocal,
         kNPythiaModels
     };
 
@@ -262,13 +265,15 @@ void ParticleRatioWithRun2()
         "Pythia Monash",
         "Pythia Monash No CR",
         "Pythia Shoving",
-        "Pythia Ropes"};
-    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes};
-    int lineStylesPythia[kNPythiaModels] = {1, 1, 2, 2};
+        "Pythia Ropes",
+        "Pythia Monash Rescattering",
+        "Pythia Rescattering"};
+    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes, fPythiaMonashRescattering, fPythiaRescattering};
+    int lineStylesPythia[kNPythiaModels] = {1, 1, 2, 2, 2, 2};
     TGraphErrors *gPythiaYieldLocal[kNPythiaModels][kNParticles_epos];
     TGraphErrors *gPythiaMeanPtLocal[kNPythiaModels][kNParticles_epos];
 
-    int colorsPythia[kNPythiaModels] = {kCyan + 1, kYellow + 1, kMagenta, kGreen + 2};
+    int colorsPythia[kNPythiaModels] = {kCyan + 1, kYellow + 1, kMagenta, kGreen + 2, kBlue + 1, kRed + 1};
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
@@ -444,46 +449,46 @@ void ParticleRatioWithRun2()
     gKstar_Yield_13TeV[1]->SetLineWidth(3);
     gKstar_Yield_13TeV[1]->Draw("5 same");
 
-    cout << "\n==============================================================\n";
-    cout << " Mult      Run3 syst(%)      Run2 syst(%)\n";
-    cout << "==============================================================\n";
+    // cout << "\n==============================================================\n";
+    // cout << " Mult      Run3 syst(%)      Run2 syst(%)\n";
+    // cout << "==============================================================\n";
 
-    double maxRun3 = -1;
-    double maxRun2 = -1;
+    // double maxRun3 = -1;
+    // double maxRun2 = -1;
 
-    int nRun3 = gMYieldKstar[1]->GetN();
-    int nRun2 = gKstar_Yield_13TeV[1]->GetN();
+    // int nRun3 = gMYieldKstar[1]->GetN();
+    // int nRun2 = gKstar_Yield_13TeV[1]->GetN();
 
-    int nPoints = TMath::Min(nRun3, nRun2);
+    // int nPoints = TMath::Min(nRun3, nRun2);
 
-    for (int i = 0; i < nPoints; i++)
-    {
-        double x3, y3;
-        double x2, y2;
+    // for (int i = 0; i < nPoints; i++)
+    // {
+    //     double x3, y3;
+    //     double x2, y2;
 
-        gMYieldKstar[1]->GetPoint(i, x3, y3);
-        gKstar_Yield_13TeV[1]->GetPoint(i, x2, y2);
+    //     gMYieldKstar[1]->GetPoint(i, x3, y3);
+    //     gKstar_Yield_13TeV[1]->GetPoint(i, x2, y2);
 
-        double err3 = gMYieldKstar[1]->GetErrorY(i);
-        double err2 = gKstar_Yield_13TeV[1]->GetErrorY(i);
+    //     double err3 = gMYieldKstar[1]->GetErrorY(i);
+    //     double err2 = gKstar_Yield_13TeV[1]->GetErrorY(i);
 
-        double perc3 = 100.0 * err3 / y3;
-        double perc2 = 100.0 * err2 / y2;
+    //     double perc3 = 100.0 * err3 / y3;
+    //     double perc2 = 100.0 * err2 / y2;
 
-        if (perc3 > maxRun3)
-            maxRun3 = perc3;
+    //     if (perc3 > maxRun3)
+    //         maxRun3 = perc3;
 
-        if (perc2 > maxRun2)
-            maxRun2 = perc2;
+    //     if (perc2 > maxRun2)
+    //         maxRun2 = perc2;
 
-        printf("%8.2f    %8.2f%%      %8.2f%%\n",
-               x3, perc3, perc2);
-    }
+    //     printf("%8.2f    %8.2f%%      %8.2f%%\n",
+    //            x3, perc3, perc2);
+    // }
 
-    cout << "==============================================================\n";
-    cout << Form("Maximum Run3 systematic uncertainty = %.2f %%\n", maxRun3);
-    cout << Form("Maximum Run2 systematic uncertainty = %.2f %%\n", maxRun2);
-    cout << "==============================================================\n";
+    // cout << "==============================================================\n";
+    // cout << Form("Maximum Run3 systematic uncertainty = %.2f %%\n", maxRun3);
+    // cout << Form("Maximum Run2 systematic uncertainty = %.2f %%\n", maxRun2);
+    // cout << "==============================================================\n";
 
     ScaleGraph(gEPOS_Yield[9][kITY0][kKstar_epos], 0.5); // In EPOS it is sum not average for all particles in latest root file.
     gEPOS_Yield[9][kITY0][kKstar_epos]->SetLineStyle(9);
@@ -510,10 +515,14 @@ void ParticleRatioWithRun2()
     ScaleGraph(gPythiaYieldLocal[kPythiaMonashNoCRLocal][kKstar_epos], 0.5);
     ScaleGraph(gPythiaYieldLocal[kPythiaShovingLocal][kKstar_epos], 0.5);
     ScaleGraph(gPythiaYieldLocal[kPythiaRopesLocal][kKstar_epos], 0.5);
+    ScaleGraph(gPythiaYieldLocal[kPythiaMonashRescattering][kKstar_epos], 0.5);
+    ScaleGraph(gPythiaYieldLocal[kPythiaRescatteringLocal][kKstar_epos], 0.5);
     gPythiaYieldLocal[kPythiaMonashLocal][kKstar_epos]->Draw("l same");
     gPythiaYieldLocal[kPythiaMonashNoCRLocal][kKstar_epos]->Draw("l same");
     gPythiaYieldLocal[kPythiaShovingLocal][kKstar_epos]->Draw("l same");
     gPythiaYieldLocal[kPythiaRopesLocal][kKstar_epos]->Draw("l same");
+    gPythiaYieldLocal[kPythiaMonashRescattering][kKstar_epos]->Draw("l same");
+    gPythiaYieldLocal[kPythiaRescatteringLocal][kKstar_epos]->Draw("l same");
 
     TLegend *legend = new TLegend(0.18, 0.75, 0.48, 0.9);
     SetLegendStyle(legend);
@@ -596,6 +605,9 @@ void ParticleRatioWithRun2()
     gPythiaMeanPtLocal[kPythiaMonashLocal][kKstar_epos]->Draw("l same");
     gPythiaMeanPtLocal[kPythiaMonashNoCRLocal][kKstar_epos]->Draw("l same");
     gPythiaMeanPtLocal[kPythiaShovingLocal][kKstar_epos]->Draw("l same");
+    gPythiaMeanPtLocal[kPythiaRopesLocal][kKstar_epos]->Draw("l same");
+    gPythiaMeanPtLocal[kPythiaMonashRescattering][kKstar_epos]->Draw("l same");
+    gPythiaMeanPtLocal[kPythiaRescatteringLocal][kKstar_epos]->Draw("l same");
 
     for (auto model : modelsToPlot)
     {
@@ -1917,7 +1929,7 @@ void ParticleRatioWithRun2()
     //     cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.png");
     // }
 
-    /*
+    // /*
     // //====================================================
     // // =================Kaon / Pion Ratio ==================
     // //====================================================
@@ -1955,7 +1967,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "#frac{K}{#pi}");
     // legendRatio->Draw();
     // legendRatio2->Draw();
-    //if (isSavePlots)
+    // if (isSavePlots)
     //{
     // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.png");
     // }
@@ -1997,8 +2009,8 @@ void ParticleRatioWithRun2()
     //     latex.DrawLatex(0.28, 0.88, "#frac{p}{#pi}");
     //     legendRatio->Draw();
     //     legendRatio2->Draw();
-    //if (isSavePlots)
-   // {
+    // if (isSavePlots)
+    // {
     //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.png");
     //}
     //
@@ -2009,7 +2021,7 @@ void ParticleRatioWithRun2()
     TCanvas *cPionYield = new TCanvas("cPionYield", "cPionYield", 720, 720);
     SetCanvasStyle(cPionYield, 0.15, 0.03, 0.03, 0.15);
     gMYieldPion[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldPion[0]->GetYaxis()->SetTitle("dN/dy");
+    gMYieldPion[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     SetGraphErrorStyle(gMYieldPion[0]);
     gMYieldPion[0]->GetYaxis()->SetRangeUser(0.0, 13);
     gMYieldPion[0]->GetXaxis()->SetLimits(0, 27);
@@ -2053,7 +2065,7 @@ void ParticleRatioWithRun2()
     TCanvas *cKaonYield = new TCanvas("cKaonYield", "cKaonYield", 720, 720);
     SetCanvasStyle(cKaonYield, 0.15, 0.03, 0.03, 0.15);
     gMYieldKaon[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldKaon[0]->GetYaxis()->SetTitle("dN/dy");
+    gMYieldKaon[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     SetGraphErrorStyle(gMYieldKaon[0]);
     gMYieldKaon[0]->GetYaxis()->SetRangeUser(0.0, 2.2);
     gMYieldKaon[0]->GetXaxis()->SetLimits(0, 27);
@@ -2087,7 +2099,7 @@ void ParticleRatioWithRun2()
     TCanvas *cProtonYield = new TCanvas("cProtonYield", "cProtonYield", 720, 720);
     SetCanvasStyle(cProtonYield, 0.15, 0.03, 0.03, 0.15);
     gMYieldProton[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldProton[0]->GetYaxis()->SetTitle("dN/dy");
+    gMYieldProton[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     SetGraphErrorStyle(gMYieldProton[0]);
     gMYieldProton[0]->GetYaxis()->SetRangeUser(0.0, 1.05);
     gMYieldProton[0]->GetXaxis()->SetLimits(0, 27);
@@ -2109,49 +2121,49 @@ void ParticleRatioWithRun2()
     //     gPythiaYieldLocal[imodel][kProton_epos]->Draw("l same");
     // }
     legTemp->Draw();
-    latex.DrawLatex(0.28, 0.88, "(p + #bar{p})/2");
+    latex.DrawLatex(0.28, 0.88, "p");
     // if (isSavePlots)
     {
         cProtonYield->SaveAs("Plots/ProtonYield_Run3.png");
     }
 
-    //====================================================
-    // ==================Phi yeild======================
-    //====================================================
-    TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
-    SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldPhi[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldPhi[0]->GetYaxis()->SetTitle("dN/dy");
-    SetGraphErrorStyle(gMYieldPhi[0]);
-    gMYieldPhi[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
-    gMYieldPhi[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldPhi[0]->SetMarkerColor(kRed);
-    gMYieldPhi[0]->SetLineColor(kRed);
-    gMYieldPhi[0]->Draw("APE");
-    gMYieldPhi[1]->SetFillStyle(0);
-    gMYieldPhi[1]->SetLineColor(kRed);
-    gMYieldPhi[1]->Draw("5 same");
+    // //====================================================
+    // // ==================Phi yeild======================
+    // //====================================================
+    // TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
+    // SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldPhi[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldPhi[0]->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gMYieldPhi[0]);
+    // gMYieldPhi[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
+    // gMYieldPhi[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldPhi[0]->SetMarkerColor(kRed);
+    // gMYieldPhi[0]->SetLineColor(kRed);
+    // gMYieldPhi[0]->Draw("APE");
+    // gMYieldPhi[1]->SetFillStyle(0);
+    // gMYieldPhi[1]->SetLineColor(kRed);
+    // gMYieldPhi[1]->Draw("5 same");
 
-    gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
-    gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
-    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
-    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
-    gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
+    // gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
+    // gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
 
-    TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
-    SetLegendStyle(legTempPhi);
-    legTempPhi->SetTextSize(0.03);
-    legTempPhi->AddEntry(gMYieldPhi[0], "Data", "p");
-    legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
-    legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
-    legTempPhi->Draw();
-    latex.DrawLatex(0.28, 0.88, "#phi");
-    // if (isSavePlots)
-    {
-        cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
-    }
+    // TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
+    // SetLegendStyle(legTempPhi);
+    // legTempPhi->SetTextSize(0.03);
+    // legTempPhi->AddEntry(gMYieldPhi[0], "Data", "p");
+    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
+    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
+    // legTempPhi->Draw();
+    // latex.DrawLatex(0.28, 0.88, "#phi");
+    // // if (isSavePlots)
+    // {
+    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
+    // }
 
-    */
+    // */
 }
 
 TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denominator, bool isModel = false, float CorrFactorDen = 1)

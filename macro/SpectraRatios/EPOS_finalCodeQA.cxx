@@ -47,11 +47,11 @@ struct Species
     double sumPtIST0or8[NCENT] = {0};
     double countPtIST0or8[NCENT] = {0};
 
-    TH1F *hPtMBIST[NIST] = {nullptr};
-    TH1F *hPtMBIST9_ITY80 = nullptr;
-    TH1F *hPtMBIST9_ITY81 = nullptr;
-    TH1F *hPtMBNoIST = nullptr;
-    TH1F *hPtMBIST0or8 = nullptr;
+    TH1F *hPtCentIST[NIST][NCENT] = {{nullptr}};
+    TH1F *hPtCentIST9_ITY80[NCENT] = {nullptr};
+    TH1F *hPtCentIST9_ITY81[NCENT] = {nullptr};
+    TH1F *hPtCentNoIST[NCENT] = {nullptr};
+    TH1F *hPtCentIST0or8[NCENT] = {nullptr};
 };
 
 int GetCentralityBin(double cent)
@@ -133,7 +133,7 @@ void EPOS_finalCodeQA()
 
     Long64_t nEv = chain.GetEntries();
     cout << "Total events = " << nEv << endl;
-    // nEv = 1000; // for quick test, comment out for full processing
+    nEv = 1000; // for quick test, comment out for full processing
 
     Int_t np;
     vector<Float_t> px(200000), py(200000), pz(200000), e(200000);
@@ -169,21 +169,29 @@ void EPOS_finalCodeQA()
         string baseName = string("hPtMB_") + name;
         for (int istBin = 0; istBin < NIST; ++istBin)
         {
-            s.hPtMBIST[istBin] = new TH1F(baseName.c_str(), title.c_str(), 200, 0, 20);
-            s.hPtMBIST[istBin]->SetDirectory(nullptr);
+            for (int icent = 0; icent < NCENT; ++icent)
+            {
+                s.hPtCentIST[istBin][icent] = new TH1F(Form("%s_IST%d_Cent%d", baseName.c_str(), istBin, icent), title.c_str(), 200, 0, 20);
+
+                s.hPtCentIST[istBin][icent]->SetDirectory(nullptr);
+            }
         }
-        string baseNameIST9_ITY80 = baseName;
-        string baseNameIST9_ITY81 = baseName;
-        s.hPtMBIST9_ITY80 = new TH1F(baseNameIST9_ITY80.c_str(), title.c_str(), 200, 0, 20);
-        s.hPtMBIST9_ITY80->SetDirectory(nullptr);
-        s.hPtMBIST9_ITY81 = new TH1F(baseNameIST9_ITY81.c_str(), title.c_str(), 200, 0, 20);
-        s.hPtMBIST9_ITY81->SetDirectory(nullptr);
 
-        s.hPtMBNoIST = new TH1F((baseName + "_NoIST").c_str(), title.c_str(), 200, 0, 20);
-        s.hPtMBIST0or8 = new TH1F((baseName + "_IST0or8").c_str(), title.c_str(), 200, 0, 20);
+        for (int icent = 0; icent < NCENT; ++icent)
+        {
+            s.hPtCentIST9_ITY80[icent] = new TH1F(Form("%s_IST9_ITY80_Cent%d", baseName.c_str(), icent), title.c_str(), 200, 0, 20);
 
-        s.hPtMBNoIST->SetDirectory(nullptr);
-        s.hPtMBIST0or8->SetDirectory(nullptr);
+            s.hPtCentIST9_ITY81[icent] = new TH1F(Form("%s_IST9_ITY81_Cent%d", baseName.c_str(), icent), title.c_str(), 200, 0, 20);
+
+            s.hPtCentNoIST[icent] = new TH1F(Form("%s_NoIST_Cent%d", baseName.c_str(), icent), title.c_str(), 200, 0, 20);
+
+            s.hPtCentIST0or8[icent] = new TH1F(Form("%s_IST0or8_Cent%d", baseName.c_str(), icent), title.c_str(), 200, 0, 20);
+
+            s.hPtCentIST9_ITY80[icent]->SetDirectory(nullptr);
+            s.hPtCentIST9_ITY81[icent]->SetDirectory(nullptr);
+            s.hPtCentNoIST[icent]->SetDirectory(nullptr);
+            s.hPtCentIST0or8[icent]->SetDirectory(nullptr);
+        }
 
         species.push_back(s);
     };
@@ -314,7 +322,8 @@ void EPOS_finalCodeQA()
             if (isPiKp)
             {
                 // if (fabs(y) < 0.3 && fabs(eta) < 0.8)
-                if (fabs(y) < 0.5 && fabs(eta) < 0.8)
+                // if (fabs(y) < 0.5 && fabs(eta) < 0.8)
+                if (fabs(y) < 0.5)
                     acceptParticle = true;
             }
             else
@@ -334,14 +343,15 @@ void EPOS_finalCodeQA()
                     s.yieldNoIST[cbin] += 1;
                     s.sumPtNoIST[cbin] += pt;
                     s.countPtNoIST[cbin] += 1;
-                    s.hPtMBNoIST->Fill(pt);
+
+                    s.hPtCentNoIST[cbin]->Fill(pt);
 
                     if (ist[i] == 0 || ist[i] == 8)
                     {
                         s.yieldIST0or8[cbin] += 1;
                         s.sumPtIST0or8[cbin] += pt;
                         s.countPtIST0or8[cbin] += 1;
-                        s.hPtMBIST0or8->Fill(pt);
+                        s.hPtCentIST0or8[cbin]->Fill(pt);
                     }
 
                     if (ist[i] >= 0 && ist[i] < NIST)
@@ -349,7 +359,7 @@ void EPOS_finalCodeQA()
                         s.yieldIST[ist[i]][cbin] += 1;
                         s.sumPtIST[ist[i]][cbin] += pt;
                         s.countPtIST[ist[i]][cbin] += 1;
-                        s.hPtMBIST[ist[i]]->Fill(pt);
+                        s.hPtCentIST[ist[i]][cbin]->Fill(pt);
                     }
                     // ist==9 and ity==80 -> IST9_ITY80
                     if (ist[i] == 9 && ity[i] == 80)
@@ -357,7 +367,7 @@ void EPOS_finalCodeQA()
                         s.yieldIST9_ITY80[cbin] += 1;
                         s.sumPtIST9_ITY80[cbin] += pt;
                         s.countPtIST9_ITY80[cbin] += 1;
-                        s.hPtMBIST9_ITY80->Fill(pt);
+                        s.hPtCentIST9_ITY80[cbin]->Fill(pt);
                     }
                     // ist==9 and ity==81 -> IST9_ITY81
                     if (ist[i] == 9 && ity[i] == 81)
@@ -365,7 +375,7 @@ void EPOS_finalCodeQA()
                         s.yieldIST9_ITY81[cbin] += 1;
                         s.sumPtIST9_ITY81[cbin] += pt;
                         s.countPtIST9_ITY81[cbin] += 1;
-                        s.hPtMBIST9_ITY81->Fill(pt);
+                        s.hPtCentIST9_ITY81[cbin]->Fill(pt);
                     }
                 }
             }
@@ -377,8 +387,9 @@ void EPOS_finalCodeQA()
     }
 
     // Normalize and compute meanPt
-    const double totalEvents = static_cast<double>(nEv);
     // branching ratios were set per species
+
+    // Normalize and compute meanPt
 
     vector<double> meanDNdEta(NCENT, 0.0);
     for (int i = 0; i < NCENT; ++i)
@@ -387,60 +398,86 @@ void EPOS_finalCodeQA()
             meanDNdEta[i] = sumDNdEta[i] / nEventsCent[i];
     }
 
-    // finalize species yields (apply BR and event counts)
+    //==========================================================
+    // Normalize yields and calculate <pT>
+    //==========================================================
+
     for (auto &s : species)
     {
-        // divide by deltay = 0.6 for Pi,K,p, for other divide by deltay = 1.0
         double deltay = 1.0;
         // if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
         //     deltay = 0.6;
 
-        for (int i = 0; i < NCENT; ++i)
+        for (int i = 0; i < NCENT; i++)
         {
-            if (nEventsCent[i] > 0)
-            {
-                for (int istBin = 0; istBin < NIST; ++istBin)
-                {
-                    s.yieldIST[istBin][i] = s.yieldIST[istBin][i] / (nEventsCent[i] * s.BR * deltay);
-                }
-                s.yieldIST9_ITY80[i] = s.yieldIST9_ITY80[i] / (nEventsCent[i] * s.BR * deltay);
-                s.yieldIST9_ITY81[i] = s.yieldIST9_ITY81[i] / (nEventsCent[i] * s.BR * deltay);
-                s.yieldNoIST[i] /= (nEventsCent[i] * s.BR * deltay);
-                s.yieldIST0or8[i] /= (nEventsCent[i] * s.BR * deltay);
-            }
+            if (nEventsCent[i] == 0)
+                continue;
 
-            for (int istBin = 0; istBin < NIST; ++istBin)
+            // ---------- normalize dN/dy ----------
+            for (int istBin = 0; istBin < NIST; istBin++)
+                s.yieldIST[istBin][i] /= (nEventsCent[i] * s.BR * deltay);
+
+            s.yieldIST9_ITY80[i] /= (nEventsCent[i] * s.BR * deltay);
+            s.yieldIST9_ITY81[i] /= (nEventsCent[i] * s.BR * deltay);
+            s.yieldNoIST[i] /= (nEventsCent[i] * s.BR * deltay);
+            s.yieldIST0or8[i] /= (nEventsCent[i] * s.BR * deltay);
+
+            // ---------- calculate <pT> ----------
+            for (int istBin = 0; istBin < NIST; istBin++)
             {
                 if (s.countPtIST[istBin][i] > 0)
-                    s.sumPtIST[istBin][i] = s.sumPtIST[istBin][i] / s.countPtIST[istBin][i];
+                    s.sumPtIST[istBin][i] /= s.countPtIST[istBin][i];
             }
+
             if (s.countPtIST9_ITY80[i] > 0)
-                s.sumPtIST9_ITY80[i] = s.sumPtIST9_ITY80[i] / s.countPtIST9_ITY80[i];
+                s.sumPtIST9_ITY80[i] /= s.countPtIST9_ITY80[i];
+
             if (s.countPtIST9_ITY81[i] > 0)
-                s.sumPtIST9_ITY81[i] = s.sumPtIST9_ITY81[i] / s.countPtIST9_ITY81[i];
+                s.sumPtIST9_ITY81[i] /= s.countPtIST9_ITY81[i];
 
             if (s.countPtNoIST[i] > 0)
                 s.sumPtNoIST[i] /= s.countPtNoIST[i];
+
             if (s.countPtIST0or8[i] > 0)
                 s.sumPtIST0or8[i] /= s.countPtIST0or8[i];
         }
     }
 
-    // normalize minimum-bias pT spectra for each species histogram
+    //==========================================================
+    // Normalize pT histograms
+    //==========================================================
+
     for (auto &s : species)
     {
         double deltay = 1.0;
-        // if (s.name == "pion" || s.name == "kaon" || s.name == "proton")
+        // if (s.name=="pion" || s.name=="kaon" || s.name=="proton")
         //     deltay = 0.6;
 
-        for (int istBin = 0; istBin < NIST; ++istBin)
+        for (int icent = 0; icent < NCENT; ++icent)
         {
-            s.hPtMBIST[istBin]->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST[istBin]->GetBinWidth(1) * deltay));
+            if (nEventsCent[icent] == 0)
+                continue;
+
+            double norm = nEventsCent[icent] * s.BR * deltay;
+
+            for (int istBin = 0; istBin < NIST; ++istBin)
+            {
+                s.hPtCentIST[istBin][icent]->Scale(
+                    1.0 / (norm * s.hPtCentIST[istBin][icent]->GetBinWidth(1)));
+            }
+
+            s.hPtCentIST9_ITY80[icent]->Scale(
+                1.0 / (norm * s.hPtCentIST9_ITY80[icent]->GetBinWidth(1)));
+
+            s.hPtCentIST9_ITY81[icent]->Scale(
+                1.0 / (norm * s.hPtCentIST9_ITY81[icent]->GetBinWidth(1)));
+
+            s.hPtCentNoIST[icent]->Scale(
+                1.0 / (norm * s.hPtCentNoIST[icent]->GetBinWidth(1)));
+
+            s.hPtCentIST0or8[icent]->Scale(
+                1.0 / (norm * s.hPtCentIST0or8[icent]->GetBinWidth(1)));
         }
-        s.hPtMBIST9_ITY80->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY80->GetBinWidth(1) * deltay));
-        s.hPtMBIST9_ITY81->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST9_ITY81->GetBinWidth(1) * deltay));
-        s.hPtMBNoIST->Scale(1.0 / (totalEvents * s.BR * s.hPtMBNoIST->GetBinWidth(1) * deltay));
-        s.hPtMBIST0or8->Scale(1.0 / (totalEvents * s.BR * s.hPtMBIST0or8->GetBinWidth(1) * deltay));
     }
 
     // prepare output file and write histograms/graphs
@@ -499,7 +536,10 @@ void EPOS_finalCodeQA()
             gIST->SetName(gbase.c_str());
             fout->cd();
             dirIST[istBin]->cd();
-            s.hPtMBIST[istBin]->Write();
+            for (int icent = 0; icent < NCENT; ++icent)
+            {
+                s.hPtCentIST[istBin][icent]->Write();
+            }
             gIST->Write();
             // also write mean-pT graph for this IST bin
             double meanPtArr[NCENT];
@@ -518,7 +558,10 @@ void EPOS_finalCodeQA()
         // IST9_ITY80: write MB histogram, yield graph and mean-pT graph
         fout->cd();
         dirIST9_ITY80->cd();
-        s.hPtMBIST9_ITY80->Write();
+        for (int icent = 0; icent < NCENT; ++icent)
+        {
+            s.hPtCentIST9_ITY80[icent]->Write();
+        }
         gNo->Write();
         double meanNo[NCENT];
         for (int ii = 0; ii < NCENT; ++ii)
@@ -534,7 +577,10 @@ void EPOS_finalCodeQA()
         // IST9_ITY81: write MB histogram, yield graph and mean-pT graph
         fout->cd();
         dirIST9_ITY81->cd();
-        s.hPtMBIST9_ITY81->Write();
+        for (int icent = 0; icent < NCENT; ++icent)
+        {
+            s.hPtCentIST9_ITY81[icent]->Write();
+        }
         gRes->Write();
         double meanRes[NCENT];
         for (int ii = 0; ii < NCENT; ++ii)
@@ -557,7 +603,10 @@ void EPOS_finalCodeQA()
         gMeanPtNoIST->SetName((string("meanpt_") + s.name + "_vs_mult").c_str());
         gMeanPtNoIST->Write();
 
-        s.hPtMBNoIST->Write();
+        for (int icent = 0; icent < NCENT; ++icent)
+        {
+            s.hPtCentNoIST[icent]->Write();
+        }
 
         delete gYieldNoIST;
         delete gMeanPtNoIST;
@@ -572,7 +621,10 @@ void EPOS_finalCodeQA()
         gMeanPtIST0or8->SetName((string("meanpt_") + s.name + "_vs_mult").c_str());
         gMeanPtIST0or8->Write();
 
-        s.hPtMBIST0or8->Write();
+        for (int icent = 0; icent < NCENT; ++icent)
+        {
+            s.hPtCentIST0or8[icent]->Write();
+        }
 
         delete gYieldIST0or8;
         delete gMeanPtIST0or8;

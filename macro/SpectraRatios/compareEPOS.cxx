@@ -148,18 +148,18 @@ void compareEPOS()
     gdNdyKstarEPOS_ITY80->Draw("L same");
 
     makeGraphXaxisCube(gdNdyKstarHyunji_NoUrQMD);
-    // ScaleGraph(gdNdyKstarHyunji_NoUrQMD, 0.5);
+    ScaleGraph(gdNdyKstarHyunji_NoUrQMD, 0.5);
     gdNdyKstarHyunji_NoUrQMD->SetLineColor(kGreen + 1);
     gdNdyKstarHyunji_NoUrQMD->SetLineWidth(2);
     gdNdyKstarHyunji_NoUrQMD->Draw("L same");
     makeGraphXaxisCube(gdNdyKstarHyunji_ITY80);
-    // ScaleGraph(gdNdyKstarHyunji_ITY80, 0.5);
+    ScaleGraph(gdNdyKstarHyunji_ITY80, 0.5);
     gdNdyKstarHyunji_ITY80->SetLineColor(kGreen + 1);
     gdNdyKstarHyunji_ITY80->SetLineWidth(2);
     gdNdyKstarHyunji_ITY80->SetLineStyle(2);
     gdNdyKstarHyunji_ITY80->Draw("L same");
     makeGraphXaxisCube(gdNdyKstarHyunji_ITY81);
-    // ScaleGraph(gdNdyKstarHyunji_ITY81, 0.5);
+    ScaleGraph(gdNdyKstarHyunji_ITY81, 0.5);
     gdNdyKstarHyunji_ITY81->SetLineColor(kRed - 5);
     gdNdyKstarHyunji_ITY81->SetLineWidth(3);
     gdNdyKstarHyunji_ITY81->SetLineStyle(6);

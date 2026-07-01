@@ -17,7 +17,7 @@ struct ClosestMultiplicity
     double value = 0.0; // selected multiplicity (or average)
 };
 ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target);
-TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt");
+TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_");
 TH1D *BuildRatioHistogram(TH1D *hNumerator, TH1D *hDenominator, const TString &name);
 
 void compareSpectra()
@@ -56,19 +56,20 @@ void compareSpectra()
     }
 
     //===============================================
+    // ============EPOS tested locally================
+    //===============================================
+    TFile *fEPOS = OpenFile("EPOS_finalQA_CorrectpTCutPiKp.root");
+
+    //===============================================
     // ===========Pythia tested locally================
     //===============================================
-    TFile *fPythiaMonash = new TFile("../../pythia/Pythia_MonashLocal.root", "read");
-    TFile *fPythiaMonashNoCR = new TFile("../../pythia/Pythia_MonashWoCRLocal.root", "read");
-    TFile *fPythiaShoving = new TFile("../../pythia/Pythia_ShovingLocal.root", "read");
-    TFile *fPythiaMonashRescattering = new TFile("../../pythia/Pythia_MonashRescatteringLocal.root", "read");
-    TFile *fPythiaRopes = new TFile("../../pythia/Pythia_RopesLocal.root", "read");
-    TFile *fPythiaRescattering = new TFile("../../pythia/Pythia_RescatteringLocal.root", "read");
-    if (fPythiaMonash->IsZombie() || fPythiaMonashNoCR->IsZombie() || fPythiaShoving->IsZombie() || fPythiaMonashRescattering->IsZombie() || fPythiaRopes->IsZombie() || fPythiaRescattering->IsZombie())
-    {
-        cout << "Error: Pythia local files not found" << endl;
-        return;
-    }
+    TFile *fPythiaMonash = OpenFile("../../pythia/Pythia_MonashLocal.root");
+    TFile *fPythiaMonashNoCR = OpenFile("../../pythia/Pythia_MonashWoCRLocal.root");
+    TFile *fPythiaShoving = OpenFile("../../pythia/Pythia_ShovingLocal.root");
+    TFile *fPythiaMonashRescattering = OpenFile("../../pythia/Pythia_MonashRescatteringLocal.root");
+    TFile *fPythiaRopes = OpenFile("../../pythia/Pythia_RopesLocal.root");
+    TFile *fPythiaRescattering = OpenFile("../../pythia/Pythia_RescatteringLocal.root");
+
     enum PythiaModel
     {
         kPythiaMonash,
@@ -95,12 +96,16 @@ void compareSpectra()
 
     TH1D *hSpectraHighestMult[kNPythiaModels];
     TH1D *hSpectraMult20to30[kNPythiaModels];
-    double targetMult = 21.78;
+    vector<vector<double>> dNdEtaPythia(kNPythiaModels, vector<double>(11, 0.0));
 
     int colorsPythia[kNPythiaModels + 100] = {kMagenta, kBrown, kGreen + 2, kGray + 2, kBlue + 1, kAzure + 7, kOrange + 2};
 
     TH1D *hSpectraModel[10][kNPythiaModels];
     TH1D *hSpecRebinned[10][kNPythiaModels];
+    TH1D *hSpectraModelEPOS[10];
+    TH1D *hSpecRebinnedEPOS[10];
+    vector<double> dNdEtaEPOS(10, 0.0);
+    TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9_ITY80/kstar_vs_mult");
 
     for (int ialice = 0; ialice < 10; ialice++)
     {
@@ -119,6 +124,7 @@ void compareSpectra()
             }
             cout << endl;
             ClosestMultiplicity match = FindClosestMultiplicity(gPythiaYieldLocal[imodel], dnch_detaRun3[ialice]);
+            dNdEtaPythia[imodel][ialice] = match.value;
 
             if (match.useAverage)
             {
@@ -148,25 +154,64 @@ void compareSpectra()
             hSpecRebinned[ialice][imodel]->SetLineStyle(2);
             hSpecRebinned[ialice][imodel]->SetLineWidth(3);
         }
+
+        // Same for EPOS
+        int totalPointsEPOS = gEPOSYield->GetN();
+        cout << "EPOS: Total points: " << totalPointsEPOS << endl;
+        for (int ipoint = 0; ipoint < totalPointsEPOS; ipoint++)
+        {
+            double x, y;
+            gEPOSYield->GetPoint(ipoint, x, y);
+            cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+        }
+        cout << endl;
+        ClosestMultiplicity matchEPOS = FindClosestMultiplicity(gEPOSYield, dnch_detaRun3[ialice]);
+
+        if (matchEPOS.useAverage)
+        {
+            cout << "EPOS : Average of points "
+                 << matchEPOS.idx1 << " and "
+                 << matchEPOS.idx2
+                 << " (value = " << matchEPOS.value << ")"
+                 << endl;
+        }
+        else
+        {
+            cout << "EPOS : Closest point "
+                 << matchEPOS.idx1
+                 << " (value = " << matchEPOS.value << ")"
+                 << endl;
+        }
+        cout << endl;
+        dNdEtaEPOS[ialice] = matchEPOS.value;
+
+        hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9_ITY80/hPtMB_kstar_IST9_ITY80_Cent");
+        hSpecRebinnedEPOS[ialice] = RebinToMatch(hSpectraModelEPOS[ialice], hSpectra[ialice], Form("hSpecEPOS_%d", ialice));
+
+        // Average K*892 and anti-K*892
+        hSpecRebinnedEPOS[ialice]->Scale(0.5);
+        hSpecRebinnedEPOS[ialice]->SetLineColor(kGreen - 2);
+        hSpecRebinnedEPOS[ialice]->SetLineStyle(2);
+        hSpecRebinnedEPOS[ialice]->SetLineWidth(3);
     }
 
-    //======================================================
-    //    ===========EPOS local model (min Bias only)===========
-    //======================================================
-    TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root");
-    TH1D *hEPOS_Yield = GetHisto(fEPOS, "IST9_ITY80/hPtMB_kstar");
-    TCanvas *cEPOS = new TCanvas("cEPOS", "cEPOS", 720, 720);
-    SetCanvasStyle(cEPOS, 0.15, 0.03, 0.05, 0.15);
-    gPad->SetLogy();
-    hSpectra[0]->Draw("PE");
+    // //======================================================
+    // //    ===========EPOS local model (min Bias only)===========
+    // //======================================================
+    // TFile *fEPOS2 = OpenFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root");
+    // TH1D *hEPOS_Yield = GetHisto(fEPOS2, "IST9_ITY80/hPtMB_kstar");
+    // TCanvas *cEPOS = new TCanvas("cEPOS", "cEPOS", 720, 720);
+    // SetCanvasStyle(cEPOS, 0.15, 0.03, 0.05, 0.15);
+    // gPad->SetLogy();
+    // hSpectra[0]->Draw("PE");
 
-    hEPOS_Yield->Scale(1.0 / hEPOS_Yield->Integral());
-    hEPOS_Yield->Scale(0.2); // Average of K* and K*bar
+    // hEPOS_Yield->Scale(1.0 / hEPOS_Yield->Integral());
+    // hEPOS_Yield->Scale(0.2); // Average of K* and K*bar
 
-    TH1D *hEPOS_rebinned = RebinToMatch(hEPOS_Yield, hSpectra[0], "hEPOS_rebinned");
-    hEPOS_rebinned->SetLineColor(kRed + 1);
-    hEPOS_rebinned->SetLineStyle(2);
-    hEPOS_rebinned->Draw("HIST SAME");
+    // TH1D *hEPOS_rebinned = RebinToMatch(hEPOS_Yield, hSpectra[0], "hEPOS_rebinned");
+    // hEPOS_rebinned->SetLineColor(kRed + 1);
+    // hEPOS_rebinned->SetLineStyle(2);
+    // hEPOS_rebinned->Draw("HIST SAME");
 
     // //Check from hyperloop epos file
     // TFile *fEPOS_hyperloop = OpenFile("ModelRootFiles/EPOS_Hydro.root");
@@ -237,7 +282,7 @@ void compareSpectra()
         cPythiaCentral->cd(1);
 
         gPad->SetLogy();
-        hSpectra[WhichCent]->SetMaximum(hSpectra[WhichCent]->GetMaximum() * 5);
+        hSpectra[WhichCent]->SetMaximum(hSpectra[WhichCent]->GetMaximum() * 15);
         hSpectra[WhichCent]->SetMinimum(hSpectra[WhichCent]->GetMinimum() * 0.2);
         hSpectra[WhichCent]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
         hSpectra[WhichCent]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
@@ -257,6 +302,7 @@ void compareSpectra()
         hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("HIST SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("HIST SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("HIST SAME");
+        hSpecRebinnedEPOS[WhichCent - 1]->Draw("HIST SAME");
 
         TLegend *legend = new TLegend(0.48, 0.68, 0.93, 0.92);
         SetLegendStyle(legend);
@@ -268,6 +314,7 @@ void compareSpectra()
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabelLocal[kPythiaRopes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabelLocal[kPythiaMonashRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabelLocal[kPythiaRes], "l");
+        legend->AddEntry(hSpecRebinnedEPOS[WhichCent - 1], "EPOS", "l");
         legend->Draw();
 
         //============================================
@@ -283,6 +330,8 @@ void compareSpectra()
         TH1D *hRatioShoving = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaShoving], Form("hRatioShoving_%.0f_%.0f", multlow, multhigh));
 
         TH1D *hRatioRopes = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaRopes], Form("hRatioRopes_%.0f_%.0f", multlow, multhigh));
+
+        TH1D *hRatioEPOS = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinnedEPOS[WhichCent - 1], Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh));
 
         hRatioGen->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hRatioGen->GetYaxis()->SetTitleSize(0.036 / pad2Size);
@@ -313,12 +362,25 @@ void compareSpectra()
         // hRatioShoving->Draw("HIST SAME");
         // hRatioMonashRes->Draw("HIST SAME");
         hRatioRopes->Draw("HIST SAME");
+        hRatioEPOS->Draw("HIST SAME");
         hRatioGen->Draw("HIST SAME"); // Draw last to ensure it's on top
 
         cPythiaCentral->SaveAs(Form("Plots/SpectraCompare/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
 
         hGenSparse->GetAxis(1)->SetRange(0, -1);
     }
+
+    // // Lets write in table form the dNdEta values from data, EPOS and Pythia models
+    // cout << "Multiplicity Class\tData dNch/dEta\tEPOS dNch/dEta\tPythia Monash dNch/dEta\tPythia Monash No CR dNch/dEta\tPythia Shoving dNch/dEta\tPythia Ropes dNch/dEta\tPythia Monash Rescattering dNch/dEta\tPythia Rescattering dNch/dEta" << endl;
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     cout << Form("%d-%d\t", centrality[i], centrality[i + 1]) << Form("%.2f\t", dnch_detaRun3[i]) << Form("%.2f\t", dNdEtaEPOS[i]);
+    //     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    //     {
+    //         cout << Form("%.2f\t", dNdEtaPythia[imodel][i]);
+    //     }
+    //     cout << endl;
+    // }
 }
 
 TFile *OpenFile(const string &path)
@@ -458,7 +520,7 @@ ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target)
 
 TH1D *BuildSpectrum(TFile *file,
                     const ClosestMultiplicity &match,
-                    const char *histPrefix = "hkstarPt")
+                    const char *histPrefix = "hkstarPt_")
 {
     if (!file)
         return nullptr;
@@ -466,15 +528,15 @@ TH1D *BuildSpectrum(TFile *file,
     // ---------- Single multiplicity ----------
     if (!match.useAverage)
     {
-        TH1D *h = GetHisto(file, Form("%s_%d", histPrefix, match.idx1));
+        TH1D *h = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
         h = (TH1D *)h->Clone(Form("%s_clone_%d", histPrefix, match.idx1));
         // h->Scale(1.0 / h->Integral());
         return h;
     }
 
     // ---------- Average of two multiplicities ----------
-    TH1D *h1 = GetHisto(file, Form("%s_%d", histPrefix, match.idx1));
-    TH1D *h2 = GetHisto(file, Form("%s_%d", histPrefix, match.idx2));
+    TH1D *h1 = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
+    TH1D *h2 = GetHisto(file, Form("%s%d", histPrefix, match.idx2));
 
     h1 = (TH1D *)h1->Clone(Form("%s_avg_%d_%d",
                                 histPrefix,

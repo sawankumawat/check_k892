@@ -35,6 +35,7 @@ void setStyle(TGraphErrors *gr, int color, int style)
 
 void ScaleGraph(TGraph *gr, double scale);
 void AddGraph(TGraph *gr1, TGraph *gr2);
+TGraphErrors **AddConstantToGraph(TGraphErrors **gr, double constant, int noOfGraphs = 2);
 TGraphErrors **DivideByMult(TGraphErrors **gr, double WhichMultPoint, double tolerance = 0.5, int noOfGraphs = 3);
 TGraphErrors *DivideByMultModel(TGraphErrors *gr, double WhichMultPoint, double tolerance = 0.5);
 int FindGraphXPoint(TGraphErrors *gr, double xValue);
@@ -55,26 +56,23 @@ void ParticleRatioWithRun2()
     TFile *fProton = OpenFile("PiKp_Run3_Results/Sawan/Pr_results.root");
     TFile *fKaon = OpenFile("PiKp_Run3_Results/Sawan/Ka_results.root");
 
+    TFile *fPiKp = OpenFile("ConversionCodes/ppRun3_PiKpHEP.root");
+
     TFile *fKstarRun2 = OpenFile("ConversionCodes/pp13TeVALICE.root");
     TFile *fPhi = OpenFile("ConversionCodes/pp13TeVALICE.root");
     TFile *fChKstar = OpenFile("ConversionCodes/pp13TeV_ChKstar.root");
     TFile *fMultStrange = OpenFile("ConversionCodes/pp13TeV_MultStrange.root");
     TFile *fXiStarSigma = OpenFile("ConversionCodes/pp13TeV_XiStarSigma.root");
+    TFile *fLambda1520Run2 = OpenFile("ConversionCodes/pp13TeV_LambdaStar.root");
 
     // Only available in run3
     TFile *fLambda1520 = OpenFile("LambdaRun3/Sawan/ResultsLambda1520.root");
     TFile *fRho = OpenFile("Rho_Run3_Results/Sawan/ResultsRho.root");
 
-    if (fPion->IsZombie() || fProton->IsZombie() || fKaon->IsZombie() || fPhi->IsZombie() || fChKstar->IsZombie() || fMultStrange->IsZombie() || fXiStarSigma->IsZombie() || fLambda1520->IsZombie() || fRho->IsZombie())
-    {
-        cout << "Error: Particle files not found" << endl;
-        return;
-    }
-
     TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3];
     TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3];
 
-    TGraphErrors *gYieldPhiKaRatio[3], *gYieldChKstarKshortRatio[3], *gYieldSigmaLambdaRatio[3], *gYieldXiStarXiRatio[3];
+    TGraphErrors *gYieldPhiKaRatio[3], *gYieldChKstarKshortRatio[3], *gYieldSigmaLambdaRatio[3], *gYieldXiStarXiRatio[3], *gYieldLambda1520LambdaRatio[3];
 
     for (int i = 0; i < 3; i++)
     {
@@ -90,8 +88,13 @@ void ParticleRatioWithRun2()
         gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", suffix.c_str()));
 
         gMPtPion[i] = GetGraph(fPion, Form("gMeanpTRun3%s", suffix.c_str()));
-        gMPtProton[i] = GetGraph(fProton, Form("gMeanpTRun3%s", suffix.c_str()));
         gMPtKaon[i] = GetGraph(fKaon, Form("gMeanpTRun3%s", suffix.c_str()));
+        gMPtProton[i] = GetGraph(fProton, Form("gMeanpTRun3%s", suffix.c_str()));
+
+        // gMPtPion[i] = GetGraph(fPiKp, Form("gPion_MeanpT%s", suffix.c_str()));
+        // gMPtKaon[i] = GetGraph(fPiKp, Form("gKaon_MeanpT%s", suffix.c_str()));
+        // gMPtProton[i] = GetGraph(fPiKp, Form("gProton_MeanpT%s", suffix.c_str()));
+
         gMPtKstarRun2[i] = GetGraph(fKstarRun2, Form("gKstar_MeanpT%s", suffix.c_str()));
         gMPtPhiRun2[i] = GetGraph(fPhi, Form("gPhi_MeanpT%s", suffix.c_str()));
         gMPtChKstarRun2[i] = GetGraph(fChKstar, Form("gChKstar_MeanpT%s", suffix.c_str()));
@@ -101,10 +104,16 @@ void ParticleRatioWithRun2()
         gMPtOmegaRun2[i] = GetGraph(fMultStrange, Form("gOmega_MeanpT%s", suffix.c_str()));
         gMPtXiStarRun2[i] = GetGraph(fXiStarSigma, Form("gXi1530_MeanpT%s", suffix.c_str()));
         gMPtSigmaRun2[i] = GetGraph(fXiStarSigma, Form("gSigma1385_MeanpT%s", suffix.c_str()));
+        gMPtLambda1520[i] = GetGraph(fLambda1520Run2, Form("gLambda_MeanpT%s", suffix.c_str()));
 
         gMYieldPion[i] = GetGraph(fPion, Form("gMeanYieldRun3%s", suffix.c_str()));
-        gMYieldProton[i] = GetGraph(fProton, Form("gMeanYieldRun3%s", suffix.c_str()));
         gMYieldKaon[i] = GetGraph(fKaon, Form("gMeanYieldRun3%s", suffix.c_str()));
+        gMYieldProton[i] = GetGraph(fProton, Form("gMeanYieldRun3%s", suffix.c_str()));
+
+        // gMYieldPion[i] = GetGraph(fPiKp, Form("gPion_MeanYield%s", suffix.c_str()));
+        // gMYieldKaon[i] = GetGraph(fPiKp, Form("gKaon_MeanYield%s", suffix.c_str()));
+        // gMYieldProton[i] = GetGraph(fPiKp, Form("gProton_MeanYield%s", suffix.c_str()));
+
         gMYieldKstarRun2[i] = GetGraph(fKstarRun2, Form("gKstar_MeanYield%s", suffix.c_str()));
         gMYieldPhiRun2[i] = GetGraph(fPhi, Form("gPhi_MeanYield%s", suffix.c_str()));
         gMYieldChKstarRun2[i] = GetGraph(fChKstar, Form("gChKstar_MeanYield%s", suffix.c_str()));
@@ -114,16 +123,18 @@ void ParticleRatioWithRun2()
         gMYieldOmegaRun2[i] = GetGraph(fMultStrange, Form("gOmega_MeanYield%s", suffix.c_str()));
         gMYieldXiStarRun2[i] = GetGraph(fXiStarSigma, Form("gXi1530_MeanYield%s", suffix.c_str()));
         gMYieldSigmaRun2[i] = GetGraph(fXiStarSigma, Form("gSigma1385_MeanYield%s", suffix.c_str()));
+        gMYieldLambda1520[i] = GetGraph(fLambda1520Run2, Form("gLambda_MeanYield%s", suffix.c_str()));
 
         // Particle ratios in run2
         gYieldPhiKaRatio[i] = GetGraph(fPhi, Form("gPhi_KaRatio%s", suffix.c_str()));
         gYieldChKstarKshortRatio[i] = GetGraph(fChKstar, Form("gChKstarKaRatio%s", suffix.c_str()));
         gYieldSigmaLambdaRatio[i] = GetGraph(fXiStarSigma, Form("gSigma1385_to_LambdaRatio%s", suffix.c_str()));
         gYieldXiStarXiRatio[i] = GetGraph(fXiStarSigma, Form("gXi1530_to_XiRatio%s", suffix.c_str()));
+        gYieldLambda1520LambdaRatio[i] = GetGraph(fLambda1520Run2, Form("gLambdaStar_LambdaRatio%s", suffix.c_str()));
 
         // Only present for run3 (In run2 the Lambda paper is in IRC review)
-        gMPtLambda1520[i] = GetGraph(fLambda1520, Form("gMeanpTRun3%s", suffix.c_str()));
-        gMYieldLambda1520[i] = GetGraph(fLambda1520, Form("gMeanYieldRun3%s", suffix.c_str()));
+        // gMPtLambda1520[i] = GetGraph(fLambda1520, Form("gMeanpTRun3%s", suffix.c_str()));
+        // gMYieldLambda1520[i] = GetGraph(fLambda1520, Form("gMeanYieldRun3%s", suffix.c_str()));
         gMPtRho[i] = GetGraph(fRho, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldRho[i] = GetGraph(fRho, Form("gMeanYieldRun3%s", suffix.c_str()));
     }
@@ -164,8 +175,9 @@ void ParticleRatioWithRun2()
     // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA.root", "read");
     // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut2.root", "read");
     // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_NopTCut.root", "read");
-    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_INELgt0Correct.root", "read");
+    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_INELgt0Correct.root", "read"); // latest one
     // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root", "read"); //Used for results
+    // TFile *fEPOS = new TFile("EPOS_finalQA_CorrectpTCutPiKp.root", "read"); // temporary for checks
     if (fEPOS->IsZombie())
     {
         cout << "Error: EPOS file not found" << endl;
@@ -250,30 +262,40 @@ void ParticleRatioWithRun2()
         cout << "Error: Pythia local files not found" << endl;
         return;
     }
+    // enum PythiaModel
+    // {
+    //     kPythiaMonashLocal,
+    //     kPythiaMonashNoCRLocal,
+    //     kPythiaShovingLocal,
+    //     kPythiaRopesLocal,
+    //     kPythiaMonashRescatteringLocal,
+    //     kPythiaRescatteringLocal,
+    //     kNPythiaModels
+    // };
     enum PythiaModel
     {
         kPythiaMonashLocal,
-        kPythiaMonashNoCRLocal,
         kPythiaShovingLocal,
-        kPythiaRopesLocal,
-        kPythiaMonashRescatteringLocal,
-        kPythiaRescatteringLocal,
         kNPythiaModels
     };
 
+    // const char *modelLabelLocal[kNPythiaModels] = {
+    //     "Pythia Monash",
+    //     "Pythia Monash No CR",
+    //     "Pythia Shoving",
+    //     "Pythia Ropes",
+    //     "Pythia Monash Rescattering",
+    //     "Pythia Rescattering"};
     const char *modelLabelLocal[kNPythiaModels] = {
         "Pythia Monash",
-        "Pythia Monash No CR",
-        "Pythia Shoving",
-        "Pythia Ropes",
-        "Pythia Monash Rescattering",
-        "Pythia Rescattering"};
-    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes, fPythiaMonashRescattering, fPythiaRescattering};
-    int lineStylesPythia[kNPythiaModels] = {1, 1, 2, 2, 2, 2};
+        "Pythia Shoving"};
+    // vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes, fPythiaMonashRescattering, fPythiaRescattering};
+    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaShoving};
+    int lineStylesPythia[kNPythiaModels + 10] = {1, 1, 2, 2, 2, 2};
     TGraphErrors *gPythiaYieldLocal[kNPythiaModels][kNParticles_epos];
     TGraphErrors *gPythiaMeanPtLocal[kNPythiaModels][kNParticles_epos];
 
-    int colorsPythia[kNPythiaModels] = {kCyan + 1, kYellow + 1, kMagenta, kGreen + 2, kBlue + 1, kRed + 1};
+    int colorsPythia[kNPythiaModels + 10] = {kCyan + 1, kYellow + 1, kMagenta, kGreen + 2, kBlue + 1, kRed + 1};
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
@@ -452,7 +474,6 @@ void ParticleRatioWithRun2()
     // cout << "\n==============================================================\n";
     // cout << " Mult      Run3 syst(%)      Run2 syst(%)\n";
     // cout << "==============================================================\n";
-
     // double maxRun3 = -1;
     // double maxRun2 = -1;
 
@@ -511,18 +532,11 @@ void ParticleRatioWithRun2()
         gMYield[model][kKstar]->Draw("l same");
     }
 
-    ScaleGraph(gPythiaYieldLocal[kPythiaMonashLocal][kKstar_epos], 0.5); // In pythia nothing is averaged. So we have to divide by 2 here.
-    ScaleGraph(gPythiaYieldLocal[kPythiaMonashNoCRLocal][kKstar_epos], 0.5);
-    ScaleGraph(gPythiaYieldLocal[kPythiaShovingLocal][kKstar_epos], 0.5);
-    ScaleGraph(gPythiaYieldLocal[kPythiaRopesLocal][kKstar_epos], 0.5);
-    ScaleGraph(gPythiaYieldLocal[kPythiaMonashRescattering][kKstar_epos], 0.5);
-    ScaleGraph(gPythiaYieldLocal[kPythiaRescatteringLocal][kKstar_epos], 0.5);
-    gPythiaYieldLocal[kPythiaMonashLocal][kKstar_epos]->Draw("l same");
-    gPythiaYieldLocal[kPythiaMonashNoCRLocal][kKstar_epos]->Draw("l same");
-    gPythiaYieldLocal[kPythiaShovingLocal][kKstar_epos]->Draw("l same");
-    gPythiaYieldLocal[kPythiaRopesLocal][kKstar_epos]->Draw("l same");
-    gPythiaYieldLocal[kPythiaMonashRescattering][kKstar_epos]->Draw("l same");
-    gPythiaYieldLocal[kPythiaRescatteringLocal][kKstar_epos]->Draw("l same");
+    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    {
+        ScaleGraph(gPythiaYieldLocal[imodel][kKstar_epos], 0.5);
+        gPythiaYieldLocal[imodel][kKstar_epos]->Draw("l same");
+    }
 
     TLegend *legend = new TLegend(0.18, 0.75, 0.48, 0.9);
     SetLegendStyle(legend);
@@ -602,13 +616,6 @@ void ParticleRatioWithRun2()
     // gEPOS_MeanPt[6][kITY0][kKstar_epos]->SetLineStyle(2);
     // gEPOS_MeanPt[6][kITY0][kKstar_epos]->Draw("l same");
 
-    gPythiaMeanPtLocal[kPythiaMonashLocal][kKstar_epos]->Draw("l same");
-    gPythiaMeanPtLocal[kPythiaMonashNoCRLocal][kKstar_epos]->Draw("l same");
-    gPythiaMeanPtLocal[kPythiaShovingLocal][kKstar_epos]->Draw("l same");
-    gPythiaMeanPtLocal[kPythiaRopesLocal][kKstar_epos]->Draw("l same");
-    gPythiaMeanPtLocal[kPythiaMonashRescattering][kKstar_epos]->Draw("l same");
-    gPythiaMeanPtLocal[kPythiaRescatteringLocal][kKstar_epos]->Draw("l same");
-
     for (auto model : modelsToPlot)
     {
         gMeanPt[model][kKstar]->Draw("l same");
@@ -621,7 +628,7 @@ void ParticleRatioWithRun2()
     legend2->Draw();
     // latex.DrawLatex(0.7, 0.85, "#frac{K* (892)^{0} + #bar{K}* (892)^{0}}{2}");
     latex.DrawLatex(0.28, 0.9, "K* (892)^{0}");
-    if (isSavePlots)
+    // if (isSavePlots)
     {
         cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar_EPOS_UrQMDON.png");
     }
@@ -631,7 +638,7 @@ void ParticleRatioWithRun2()
     //===================================================
     TCanvas *cMeanPtAll = new TCanvas("cMeanPtAll", "cMeanPtAll", 720, 720);
     SetCanvasStyle(cMeanPtAll, 0.15, 0.03, 0.03, 0.15);
-    gMPtKstar[0]->SetMaximum(2.04);
+    gMPtKstar[0]->SetMaximum(2.08);
     gMPtKstar[0]->SetMinimum(0.27);
     gMPtKstar[0]->Draw("APE");
     gMPtKstar[1]->Draw("5 same");
@@ -701,14 +708,14 @@ void ParticleRatioWithRun2()
     gMPtSigmaRun2[1]->SetLineColor(kAzure + 7);
     gMPtSigmaRun2[1]->SetFillStyle(0);
     gMPtSigmaRun2[1]->Draw("5 same");
+    gMPtLambda1520[0]->SetMarkerColor(43);
+    gMPtLambda1520[0]->SetLineColor(43);
+    gMPtLambda1520[0]->Draw("PE same");
+    gMPtLambda1520[1]->SetLineColor(43);
+    gMPtLambda1520[1]->SetFillStyle(0);
+    gMPtLambda1520[1]->Draw("5 same");
 
     // // Run3 particles
-    // gMPtLambda1520[0]->SetMarkerColor(kBrown);
-    // gMPtLambda1520[0]->SetLineColor(kBrown);
-    // gMPtLambda1520[0]->Draw("PE same");
-    // gMPtLambda1520[1]->SetLineColor(kBrown);
-    // gMPtLambda1520[1]->SetFillStyle(0);
-    // gMPtLambda1520[1]->Draw("5 same");
     // gMPtRho[0]->SetMarkerColor(kGray + 2);
     // gMPtRho[0]->SetLineColor(kGray + 2);
     // gMPtRho[0]->Draw("PE same");
@@ -716,7 +723,7 @@ void ParticleRatioWithRun2()
     // gMPtRho[1]->SetFillStyle(0);
     // gMPtRho[1]->Draw("5 same");
 
-    TLegend *legendMeanPt = new TLegend(0.2, 0.82, 0.7, 0.95);
+    TLegend *legendMeanPt = new TLegend(0.2, 0.78, 0.7, 0.95);
     SetLegendStyle(legendMeanPt);
     legendMeanPt->SetTextSize(0.027);
     legendMeanPt->SetNColumns(4);
@@ -730,10 +737,10 @@ void ParticleRatioWithRun2()
     legendMeanPt->AddEntry(gMPtSigmaRun2[0], "#Sigma", "P");
     legendMeanPt->AddEntry(gMPtLambdaRun2[0], "#Lambda", "P");
     legendMeanPt->AddEntry(gMPtXiRun2[0], "#Xi", "P");
+    legendMeanPt->AddEntry(gMPtLambda1520[0], "#Lambda(1520)", "P");
     legendMeanPt->AddEntry(gMPtXiStarRun2[0], "#Xi(1530)", "P");
     legendMeanPt->AddEntry(gMPtOmegaRun2[0], "#Omega", "P");
 
-    // legendMeanPt->AddEntry(gMPtLambda1520[0], "#Lambda(1520)", "P");
     // legendMeanPt->AddEntry(gMPtRho[0], "#rho (770)", "P");
     legendMeanPt->Draw();
     if (isSavePlots)
@@ -811,8 +818,10 @@ void ParticleRatioWithRun2()
     gMPtOmegaRun2[1]->Draw("5 same");
     gMPtSigmaRun2[0]->Draw("PE same");
     gMPtSigmaRun2[1]->Draw("5 same");
+    gMPtLambda1520[0]->Draw("PE same");
+    gMPtLambda1520[1]->Draw("5 same");
 
-    TLegend *legendMeanPtBaryons = new TLegend(0.17, 0.79, 0.55, 0.94);
+    TLegend *legendMeanPtBaryons = new TLegend(0.17, 0.76, 0.55, 0.96);
     SetLegendStyle(legendMeanPtBaryons);
     legendMeanPtBaryons->SetNColumns(3);
     legendMeanPtBaryons->SetTextSize(0.027 / pad2Size);
@@ -820,11 +829,13 @@ void ParticleRatioWithRun2()
     legendMeanPtBaryons->AddEntry(gMPtLambdaRun2[0], "#Lambda", "P");
     legendMeanPtBaryons->AddEntry(gMPtSigmaRun2[0], "#Sigma(1385)^{#pm}", "P");
     legendMeanPtBaryons->AddEntry(gMPtXiRun2[0], "#Xi^{0}", "P");
+    legendMeanPtBaryons->AddEntry(gMPtLambda1520[0], "#Lambda(1520)", "P");
     legendMeanPtBaryons->AddEntry(gMPtXiStarRun2[0], "#Xi*(1530)^{0}", "P");
     legendMeanPtBaryons->AddEntry(gMPtOmegaRun2[0], "#Omega", "P");
     legendMeanPtBaryons->Draw();
     latexMesons.DrawLatex(0.82, 0.3, "Baryons");
-    cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.png");
+    if (isSavePlots)
+        cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.png");
 
     //===================================================
     //  ========= <pT>/particle mass ======================
@@ -846,74 +857,346 @@ void ParticleRatioWithRun2()
         1.115683 // 13. Lambda (ground state)
     };
     double PDGMassesErrors[] = {0.0002, 0.000016, 0.00000018, 0.000015, 29e-9, 0.000013, 0.0002, 0.00034, 0.00019, 0.0002, 0.0002, 0.00034, 0.00032, 0.000006};
+    int nq[] = {2, 2, 2, 2, 3, 2, 2, 3, 3, 2, 3, 3, 3, 3};
+    string ParticleNames2[] = {"K*0", "phi", "pion", "Kaon", "proton", "Kshort", "charged K*", "Xi(1530)", "Lambda(1520)", "Rho(770)", "Xi(Ground state)", "Sigma(1385)", "Omega", "Lambda (ground state)"};
+
+    vector<TGraphErrors **>
+        gMeanPtAll = {gMPtKstar, gMPtPhiRun2, gMPtPion, gMPtKaon, gMPtProton, gMPtKshortRun2, gMPtChKstarRun2, gMPtXiStarRun2, gMPtLambda1520, gMPtRho, gMPtXiRun2, gMPtSigmaRun2, gMPtOmegaRun2, gMPtLambdaRun2};
 
     TCanvas *cMeanPtMass = new TCanvas("cMeanPtMass", "cMeanPtMass", 720, 720);
     SetCanvasStyle(cMeanPtMass, 0.15, 0.03, 0.03, 0.15);
+    TGraphErrors **gMPtKstarClone2 = new TGraphErrors *[2];
+    TGraphErrors **gMPtPionClone = new TGraphErrors *[2];
+    TGraphErrors **gMPtKaonClone = new TGraphErrors *[2];
+    TGraphErrors **gMPtProtonClone = new TGraphErrors *[2];
+    TGraphErrors **gMPtKshortRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtChKstarRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtPhiRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtLambdaRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtXiRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtXiStarRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtSigmaRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtOmegaRun2Clone = new TGraphErrors *[2];
+    TGraphErrors **gMPtLambda1520Clone = new TGraphErrors *[2];
     for (int i = 0; i < 2; i++)
     {
-        ScaleGraph(gMPtKstar[i], 1.0 / PDGMasses[0]);
-        ScaleGraph(gMPtPion[i], 0.55 / PDGMasses[2]);
-        ScaleGraph(gMPtKaon[i], 1.0 / PDGMasses[3]);
-        ScaleGraph(gMPtProton[i], 1.0 / PDGMasses[4]);
-        ScaleGraph(gMPtKshortRun2[i], 1.0 / PDGMasses[5]);
-        ScaleGraph(gMPtChKstarRun2[i], 1.0 / PDGMasses[6]);
-        ScaleGraph(gMPtPhiRun2[i], 1.0 / PDGMasses[1]);
-        ScaleGraph(gMPtLambdaRun2[i], 1.0 / PDGMasses[13]);
-        ScaleGraph(gMPtXiRun2[i], 1.0 / PDGMasses[10]);
-        ScaleGraph(gMPtXiStarRun2[i], 1.0 / PDGMasses[7]);
-        ScaleGraph(gMPtSigmaRun2[i], 1.0 / PDGMasses[11]);
-        ScaleGraph(gMPtOmegaRun2[i], 1.0 / PDGMasses[12]);
-    }
-    gMPtKstar[0]->SetMaximum(2.69);
-    gMPtKstar[0]->SetMinimum(0.52);
-    gMPtKstar[0]->GetYaxis()->SetTitle("<#it{p}_{T}>/m (GeV/#it{c}^{2})");
-    gMPtKstar[0]->Draw("APE");
-    gMPtPion[0]->Draw("PE same");
-    gMPtKaon[0]->Draw("PE same");
-    gMPtProton[0]->Draw("PE same");
-    gMPtKshortRun2[0]->Draw("PE same");
-    gMPtChKstarRun2[0]->Draw("PE same");
-    gMPtPhiRun2[0]->Draw("PE same");
-    gMPtLambdaRun2[0]->Draw("PE same");
-    gMPtXiRun2[0]->Draw("PE same");
-    gMPtXiStarRun2[0]->Draw("PE same");
-    gMPtSigmaRun2[0]->Draw("PE same");
-    gMPtOmegaRun2[0]->Draw("PE same");
 
-    gMPtKstar[1]->Draw("5 same");
-    gMPtPion[1]->Draw("5 same");
-    gMPtKaon[1]->Draw("5 same");
-    gMPtProton[1]->Draw("5 same");
-    gMPtKshortRun2[1]->Draw("5 same");
-    gMPtChKstarRun2[1]->Draw("5 same");
-    gMPtPhiRun2[1]->Draw("5 same");
-    gMPtLambdaRun2[1]->Draw("5 same");
-    gMPtXiRun2[1]->Draw("5 same");
-    gMPtXiStarRun2[1]->Draw("5 same");
-    gMPtSigmaRun2[1]->Draw("5 same");
-    gMPtOmegaRun2[1]->Draw("5 same");
+        gMPtKstarClone2[i] = (TGraphErrors *)gMPtKstar[i]->Clone(Form("gMPtKstarClone_%d", i));
+        gMPtPionClone[i] = (TGraphErrors *)gMPtPion[i]->Clone(Form("gMPtPionClone_%d", i));
+        gMPtKaonClone[i] = (TGraphErrors *)gMPtKaon[i]->Clone(Form("gMPtKaonClone_%d", i));
+        gMPtProtonClone[i] = (TGraphErrors *)gMPtProton[i]->Clone(Form("gMPtProtonClone_%d", i));
+        gMPtKshortRun2Clone[i] = (TGraphErrors *)gMPtKshortRun2[i]->Clone(Form("gMPtKshortRun2Clone_%d", i));
+        gMPtChKstarRun2Clone[i] = (TGraphErrors *)gMPtChKstarRun2[i]->Clone(Form("gMPtChKstarRun2Clone_%d", i));
+        gMPtPhiRun2Clone[i] = (TGraphErrors *)gMPtPhiRun2[i]->Clone(Form("gMPtPhiRun2Clone_%d", i));
+        gMPtLambdaRun2Clone[i] = (TGraphErrors *)gMPtLambdaRun2[i]->Clone(Form("gMPtLambdaRun2Clone_%d", i));
+        gMPtXiRun2Clone[i] = (TGraphErrors *)gMPtXiRun2[i]->Clone(Form("gMPtXiRun2Clone_%d", i));
+        gMPtXiStarRun2Clone[i] = (TGraphErrors *)gMPtXiStarRun2[i]->Clone(Form("gMPtXiStarRun2Clone_%d", i));
+        gMPtSigmaRun2Clone[i] = (TGraphErrors *)gMPtSigmaRun2[i]->Clone(Form("gMPtSigmaRun2Clone_%d", i));
+        gMPtOmegaRun2Clone[i] = (TGraphErrors *)gMPtOmegaRun2[i]->Clone(Form("gMPtOmegaRun2Clone_%d", i));
+        gMPtLambda1520Clone[i] = (TGraphErrors *)gMPtLambda1520[i]->Clone(Form("gMPtLambda1520Clone_%d", i));
+
+        ScaleGraph(gMPtKstarClone2[i], 1.0 / PDGMasses[0]);
+        ScaleGraph(gMPtPionClone[i], 0.55 / PDGMasses[2]);
+        ScaleGraph(gMPtKaonClone[i], 1.0 / PDGMasses[3]);
+        ScaleGraph(gMPtProtonClone[i], 1.0 / PDGMasses[4]);
+        ScaleGraph(gMPtKshortRun2Clone[i], 1.0 / PDGMasses[5]);
+        ScaleGraph(gMPtChKstarRun2Clone[i], 1.0 / PDGMasses[6]);
+        ScaleGraph(gMPtPhiRun2Clone[i], 1.0 / PDGMasses[1]);
+        ScaleGraph(gMPtLambdaRun2Clone[i], 1.0 / PDGMasses[13]);
+        ScaleGraph(gMPtXiRun2Clone[i], 1.0 / PDGMasses[10]);
+        ScaleGraph(gMPtXiStarRun2Clone[i], 1.0 / PDGMasses[7]);
+        ScaleGraph(gMPtSigmaRun2Clone[i], 1.0 / PDGMasses[11]);
+        ScaleGraph(gMPtOmegaRun2Clone[i], 1.0 / PDGMasses[12]);
+        ScaleGraph(gMPtLambda1520Clone[i], 1.0 / PDGMasses[8]);
+    }
+    gMPtKstarClone2[0]->SetMaximum(2.69);
+    gMPtKstarClone2[0]->SetMinimum(0.52);
+    gMPtKstarClone2[0]->GetYaxis()->SetTitle("<#it{p}_{T}>/m (GeV/#it{c}^{2})");
+    gMPtKstarClone2[0]->Draw("APE");
+    gMPtPionClone[0]->Draw("PE same");
+    gMPtKaonClone[0]->Draw("PE same");
+    gMPtProtonClone[0]->Draw("PE same");
+    gMPtKshortRun2Clone[0]->Draw("PE same");
+    gMPtChKstarRun2Clone[0]->Draw("PE same");
+    gMPtPhiRun2Clone[0]->Draw("PE same");
+    gMPtLambdaRun2Clone[0]->Draw("PE same");
+    gMPtXiRun2Clone[0]->Draw("PE same");
+    gMPtLambda1520Clone[0]->Draw("PE same");
+    gMPtXiStarRun2Clone[0]->Draw("PE same");
+    gMPtSigmaRun2Clone[0]->Draw("PE same");
+    gMPtOmegaRun2Clone[0]->Draw("PE same");
+
+    gMPtKstarClone2[1]->Draw("5 same");
+    gMPtPionClone[1]->Draw("5 same");
+    gMPtKaonClone[1]->Draw("5 same");
+    gMPtProtonClone[1]->Draw("5 same");
+    gMPtKshortRun2Clone[1]->Draw("5 same");
+    gMPtChKstarRun2Clone[1]->Draw("5 same");
+    gMPtPhiRun2Clone[1]->Draw("5 same");
+    gMPtLambdaRun2Clone[1]->Draw("5 same");
+    gMPtXiRun2Clone[1]->Draw("5 same");
+    gMPtLambda1520Clone[1]->Draw("5 same");
+    gMPtXiStarRun2Clone[1]->Draw("5 same");
+    gMPtSigmaRun2Clone[1]->Draw("5 same");
+    gMPtOmegaRun2Clone[1]->Draw("5 same");
 
     TLegend *legendMeanPtMass = new TLegend(0.18, 0.8, 0.69, 0.94);
     SetLegendStyle(legendMeanPtMass);
     legendMeanPtMass->SetNColumns(4);
     legendMeanPtMass->SetTextSize(0.027);
-    legendMeanPtMass->AddEntry(gMPtPion[0], "Pion #times 0.55", "P");
-    legendMeanPtMass->AddEntry(gMPtKaon[0], "Kaon", "P");
-    legendMeanPtMass->AddEntry(gMPtKshortRun2[0], "K_{S}^{0}", "P");
-    legendMeanPtMass->AddEntry(gMPtChKstarRun2[0], "K*^{#pm}", "P");
-    legendMeanPtMass->AddEntry(gMPtKstar[0], "K* (892)^{0}", "P");
-    legendMeanPtMass->AddEntry(gMPtPhiRun2[0], "#phi(1020)", "P");
-    legendMeanPtMass->AddEntry(gMPtProton[0], "Proton", "P");
-    legendMeanPtMass->AddEntry(gMPtSigmaRun2[0], "#Sigma", "P");
-    legendMeanPtMass->AddEntry(gMPtLambdaRun2[0], "#Lambda", "P");
-    legendMeanPtMass->AddEntry(gMPtXiRun2[0], "#Xi", "P");
-    legendMeanPtMass->AddEntry(gMPtXiStarRun2[0], "#Xi(1530)", "P");
-    legendMeanPtMass->AddEntry(gMPtOmegaRun2[0], "#Omega", "P");
+    legendMeanPtMass->AddEntry(gMPtPionClone[0], "Pion #times 0.55", "P");
+    legendMeanPtMass->AddEntry(gMPtKaonClone[0], "Kaon", "P");
+    legendMeanPtMass->AddEntry(gMPtKshortRun2Clone[0], "K_{S}^{0}", "P");
+    legendMeanPtMass->AddEntry(gMPtChKstarRun2Clone[0], "K*^{#pm}", "P");
+    legendMeanPtMass->AddEntry(gMPtKstarClone2[0], "K* (892)^{0}", "P");
+    legendMeanPtMass->AddEntry(gMPtPhiRun2Clone[0], "#phi(1020)", "P");
+    legendMeanPtMass->AddEntry(gMPtProtonClone[0], "Proton", "P");
+    legendMeanPtMass->AddEntry(gMPtSigmaRun2Clone[0], "#Sigma", "P");
+    legendMeanPtMass->AddEntry(gMPtLambdaRun2Clone[0], "#Lambda", "P");
+    legendMeanPtMass->AddEntry(gMPtXiRun2Clone[0], "#Xi", "P");
+    legendMeanPtMass->AddEntry(gMPtLambda1520Clone[0], "#Lambda(1520)", "P");
+    legendMeanPtMass->AddEntry(gMPtXiStarRun2Clone[0], "#Xi(1530)", "P");
+    legendMeanPtMass->AddEntry(gMPtOmegaRun2Clone[0], "#Omega", "P");
     legendMeanPtMass->Draw();
 
     if (isSavePlots)
     {
         cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.png");
+    }
+
+    // //=====================================================================
+    // //  ====== <pT> vs mass/n_q for for different mult classes ===========
+    // //=====================================================================
+    TCanvas *cMeanPtMassNq = new TCanvas("cMeanPtMassNq", "cMeanPtMassNq", 1440, 720);
+    SetCanvasStyle(cMeanPtMassNq, 0.15, 0.03, 0.03, 0.15);
+    cMeanPtMassNq->Divide(4, 3);
+    TGraphErrors *gMPtMultClasses[10][2]; // 10 multiplicity classes, 2 for statistical and systematic errors
+    int multClasses[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    TLatex latexMPtMassNq;
+    latexMPtMassNq.SetNDC();
+    latexMPtMassNq.SetTextFont(42);
+    latexMPtMassNq.SetTextSize(0.04);
+    int sizePDGMasses = sizeof(PDGMasses) / sizeof(PDGMasses[0]);
+
+    // Print the dNch/deta values for Xi(1530) and Charged K* for each multiplicity class
+    int totalPointsKstar = gMeanPtAll[0][0]->GetN();
+    int totalPointsXiStar = gMeanPtAll[7][0]->GetN();
+    int totalPointsChKstar = gMeanPtAll[6][0]->GetN();
+    int totalPointsPhi = gMeanPtAll[1][0]->GetN();
+
+    for (int iKstar = 0; iKstar < totalPointsKstar; iKstar++)
+    {
+        double xKstar, yKstar;
+        gMeanPtAll[0][0]->GetPoint(iKstar, xKstar, yKstar);
+        cout << "Multiplicity class " << iKstar << ": dNch/deta for K*0 = " << xKstar << endl;
+    }
+    cout << endl;
+    for (int iXi = 0; iXi < totalPointsXiStar; iXi++)
+    {
+        double xXi, yXi;
+        gMeanPtAll[7][0]->GetPoint(iXi, xXi, yXi);
+        cout << "Multiplicity class " << iXi << ": dNch/deta for Xi(1530) = " << xXi << endl;
+    }
+    cout << endl;
+    for (int iChKstar = 0; iChKstar < totalPointsChKstar; iChKstar++)
+    {
+        double xChKstar, yChKstar;
+        gMeanPtAll[6][0]->GetPoint(iChKstar, xChKstar, yChKstar);
+        cout << "Multiplicity class " << iChKstar << ": dNch/deta for Charged K* = " << xChKstar << endl;
+    }
+    cout << endl;
+    for (int iPhi = 0; iPhi < totalPointsPhi; iPhi++)
+    {
+        double xPhi, yPhi;
+        gMeanPtAll[1][0]->GetPoint(iPhi, xPhi, yPhi);
+        cout << "Multiplicity class " << iPhi << ": dNch/deta for Phi = " << xPhi << endl;
+    }
+
+
+    for (int iMult = 0; iMult < 10; iMult++)
+    {
+        gMPtMultClasses[iMult][0] = new TGraphErrors();
+        gMPtMultClasses[iMult][1] = new TGraphErrors();
+        gMPtMultClasses[iMult][0]->SetName(Form("gMPtMultClass_%d_stat", iMult));
+        gMPtMultClasses[iMult][1]->SetName(Form("gMPtMultClass_%d_sys", iMult));
+
+        for (int iMasses = 0; iMasses < sizePDGMasses; iMasses++)
+        {
+            if (iMult == 0)
+                cout << "Particle " << ParticleNames2[iMasses] << ", No. of Mult Classes " << gMeanPtAll[iMasses][0]->GetN() << endl;
+
+            double x, y;
+            gMeanPtAll[iMasses][0]->GetPoint(iMult, x, y);
+            double xerr = gMeanPtAll[iMasses][0]->GetErrorX(iMult);
+            double yerr = gMeanPtAll[iMasses][0]->GetErrorY(iMult);
+            double yerr_sys = gMeanPtAll[iMasses][1]->GetErrorY(iMult);
+
+            gMPtMultClasses[iMult][0]->SetPoint(iMasses, PDGMasses[iMasses] / nq[iMasses], y);
+            gMPtMultClasses[iMult][1]->SetPoint(iMasses, PDGMasses[iMasses] / nq[iMasses], y);
+            gMPtMultClasses[iMult][0]->SetPointError(iMasses, 0, yerr);
+            gMPtMultClasses[iMult][1]->SetPointError(iMasses, 0, yerr_sys);
+        }
+        cMeanPtMassNq->cd(iMult + 1);
+        gMPtMultClasses[iMult][0]->SetMarkerStyle(20);
+        gMPtMultClasses[iMult][0]->SetMarkerColor(kBlue);
+        gMPtMultClasses[iMult][0]->SetLineColor(kBlue);
+        gMPtMultClasses[iMult][0]->GetXaxis()->SetTitle("Mass/n_{q} (GeV/#it{c}^{2})");
+        gMPtMultClasses[iMult][0]->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
+        gMPtMultClasses[iMult][0]->SetMaximum(2.5);
+        gMPtMultClasses[iMult][0]->SetMinimum(0.0);
+        gMPtMultClasses[iMult][0]->Draw("APE");
+        gMPtMultClasses[iMult][1]->SetLineColor(kBlue);
+        gMPtMultClasses[iMult][1]->SetFillStyle(0);
+        gMPtMultClasses[iMult][1]->Draw("5 same");
+        latexMPtMassNq.DrawLatex(0.6, 0.8, Form("Multiplicity: %d-%d", multClasses[iMult], multClasses[iMult + 1]));
+    }
+    // cout << "Total size of graph is " << gMPtMultClasses[0][0]->GetN() << endl;
+    // for (int iMult = 0; iMult < 10; iMult++)
+    // {
+    //     cout << "Multiplicity: " << multClasses[iMult] << "-" << multClasses[iMult + 1] << endl;
+    //     for (int iMasses = 0; iMasses < sizePDGMasses; iMasses++)
+    //     {
+    //         double x, y;
+    //         gMPtMultClasses[iMult][0]->GetPoint(iMasses, x, y);
+    //         cout << "Mass/n_q: " << x << ", <pT>: " << y << endl;
+    //     }
+    // }
+    cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_Run3.png");
+
+    //=================================================================================
+    // =====================(<pT> - m) vs <dNch/deta> (hadrons) =========================
+    //=================================================================================
+    TCanvas *cMeanPtMassScaled = new TCanvas("cMeanPtMassScaled", "cMeanPtMassScaled", 720, 720);
+    SetCanvasStyle(cMeanPtMassScaled, 0.15, 0.03, 0.03, 0.15);
+
+    TGraphErrors **gMPtKstarScaled = AddConstantToGraph(gMPtKstar, -PDGMasses[0]);
+    TGraphErrors **gMPtPionScaled = AddConstantToGraph(gMPtPion, -PDGMasses[2]);
+    TGraphErrors **gMPtKaonScaled = AddConstantToGraph(gMPtKaon, -PDGMasses[3]);
+    TGraphErrors **gMPtProtonScaled = AddConstantToGraph(gMPtProton, -PDGMasses[4]);
+    TGraphErrors **gMPtKshortRun2Scaled = AddConstantToGraph(gMPtKshortRun2, -PDGMasses[5]);
+    TGraphErrors **gMPtChKstarRun2Scaled = AddConstantToGraph(gMPtChKstarRun2, -PDGMasses[6]);
+    TGraphErrors **gMPtPhiRun2Scaled = AddConstantToGraph(gMPtPhiRun2, -PDGMasses[1]);
+    TGraphErrors **gMPtLambdaRun2Scaled = AddConstantToGraph(gMPtLambdaRun2, -PDGMasses[13]);
+    TGraphErrors **gMPtXiRun2Scaled = AddConstantToGraph(gMPtXiRun2, -PDGMasses[10]);
+    TGraphErrors **gMPtLambda1520Scaled = AddConstantToGraph(gMPtLambda1520, -PDGMasses[8]);
+    TGraphErrors **gMPtXiStarRun2Scaled = AddConstantToGraph(gMPtXiStarRun2, -PDGMasses[7]);
+    TGraphErrors **gMPtSigmaRun2Scaled = AddConstantToGraph(gMPtSigmaRun2, -PDGMasses[11]);
+    TGraphErrors **gMPtOmegaRun2Scaled = AddConstantToGraph(gMPtOmegaRun2, -PDGMasses[12]);
+
+    gMPtKstarScaled[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gMPtKstarScaled[0]->GetYaxis()->SetTitle("(<#it{p}_{T}> - m) (GeV/#it{c})");
+    gMPtKstarScaled[0]->SetMaximum(0.78);
+    gMPtKstarScaled[0]->SetMinimum(-0.65);
+    gMPtKstarScaled[0]->Draw("APE");
+    gMPtPionScaled[0]->Draw("PE same");
+    gMPtKaonScaled[0]->Draw("PE same");
+    gMPtProtonScaled[0]->Draw("PE same");
+    gMPtKshortRun2Scaled[0]->Draw("PE same");
+    gMPtChKstarRun2Scaled[0]->Draw("PE same");
+    gMPtPhiRun2Scaled[0]->Draw("PE same");
+    gMPtLambdaRun2Scaled[0]->Draw("PE same");
+    gMPtXiRun2Scaled[0]->Draw("PE same");
+    gMPtLambda1520Scaled[0]->Draw("PE same");
+    gMPtXiStarRun2Scaled[0]->Draw("PE same");
+    gMPtSigmaRun2Scaled[0]->Draw("PE same");
+    gMPtOmegaRun2Scaled[0]->Draw("PE same");
+
+    gMPtKstarScaled[1]->Draw("5 same");
+    gMPtPionScaled[1]->Draw("5 same");
+    gMPtKaonScaled[1]->Draw("5 same");
+    gMPtProtonScaled[1]->Draw("5 same");
+    gMPtKshortRun2Scaled[1]->Draw("5 same");
+    gMPtChKstarRun2Scaled[1]->Draw("5 same");
+    gMPtPhiRun2Scaled[1]->Draw("5 same");
+    gMPtLambdaRun2Scaled[1]->Draw("5 same");
+    gMPtXiRun2Scaled[1]->Draw("5 same");
+    gMPtLambda1520Scaled[1]->Draw("5 same");
+    gMPtXiStarRun2Scaled[1]->Draw("5 same");
+    gMPtSigmaRun2Scaled[1]->Draw("5 same");
+    gMPtOmegaRun2Scaled[1]->Draw("5 same");
+
+    TLegend *legendMeanPtMassScaled = new TLegend(0.18, 0.77, 0.72, 0.95);
+    SetLegendStyle(legendMeanPtMassScaled);
+    legendMeanPtMassScaled->SetNColumns(4);
+    legendMeanPtMassScaled->SetTextSize(0.027);
+    legendMeanPtMassScaled->AddEntry(gMPtPionScaled[0], "Pion", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtKaonScaled[0], "Kaon", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtKshortRun2Scaled[0], "K_{S}^{0}", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtChKstarRun2Scaled[0], "K*^{#pm}", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtKstarScaled[0], "K* (892)^{0}", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtPhiRun2Scaled[0], "#phi(1020)", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtProtonScaled[0], "Proton", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtSigmaRun2Scaled[0], "#Sigma", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtLambdaRun2Scaled[0], "#Lambda", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtXiRun2Scaled[0], "#Xi", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtLambda1520Scaled[0], "#Lambda(1520)", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtXiStarRun2Scaled[0], "#Xi(1530)", "P");
+    legendMeanPtMassScaled->AddEntry(gMPtOmegaRun2Scaled[0], "#Omega", "P");
+    legendMeanPtMassScaled->Draw();
+    // if (isSavePlots)
+    {
+        cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.png");
+    }
+
+    //=================================================================================
+    // =====================(<pT> - m)/n_q vs <dNch/deta> (hadrons) =========================
+    //=================================================================================
+    TCanvas *cMeanPtMassnqScaled = new TCanvas("cMeanPtMassnqScaled", "cMeanPtMassnqScaled", 720, 720);
+    SetCanvasStyle(cMeanPtMassnqScaled, 0.15, 0.03, 0.03, 0.15);
+
+    for (int i = 0; i < 2; i++)
+    {
+        ScaleGraph(gMPtKstarScaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtPionScaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtKaonScaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtProtonScaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtKshortRun2Scaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtChKstarRun2Scaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtPhiRun2Scaled[i], 1.0 / 2.0);
+        ScaleGraph(gMPtLambdaRun2Scaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtXiRun2Scaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtLambda1520Scaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtXiStarRun2Scaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtSigmaRun2Scaled[i], 1.0 / 3.0);
+        ScaleGraph(gMPtOmegaRun2Scaled[i], 1.0 / 3.0);
+    }
+
+    gMPtKstarScaled[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gMPtKstarScaled[0]->GetYaxis()->SetTitle("(<#it{p}_{T}> - m)/n_{q} (GeV/#it{c})");
+    gMPtKstarScaled[0]->SetMaximum(0.37);
+    gMPtKstarScaled[0]->SetMinimum(-0.23);
+    gMPtKstarScaled[0]->Draw("APE");
+    gMPtPionScaled[0]->Draw("PE same");
+    gMPtKaonScaled[0]->Draw("PE same");
+    gMPtProtonScaled[0]->Draw("PE same");
+    gMPtKshortRun2Scaled[0]->Draw("PE same");
+    gMPtChKstarRun2Scaled[0]->Draw("PE same");
+    gMPtPhiRun2Scaled[0]->Draw("PE same");
+    gMPtLambdaRun2Scaled[0]->Draw("PE same");
+    gMPtXiRun2Scaled[0]->Draw("PE same");
+    gMPtLambda1520Scaled[0]->Draw("PE same");
+    gMPtXiStarRun2Scaled[0]->Draw("PE same");
+    gMPtSigmaRun2Scaled[0]->Draw("PE same");
+    gMPtOmegaRun2Scaled[0]->Draw("PE same");
+
+    gMPtKstarScaled[1]->Draw("5 same");
+    gMPtPionScaled[1]->Draw("5 same");
+    gMPtKaonScaled[1]->Draw("5 same");
+    gMPtProtonScaled[1]->Draw("5 same");
+    gMPtKshortRun2Scaled[1]->Draw("5 same");
+    gMPtChKstarRun2Scaled[1]->Draw("5 same");
+    gMPtPhiRun2Scaled[1]->Draw("5 same");
+    gMPtLambdaRun2Scaled[1]->Draw("5 same");
+    gMPtXiRun2Scaled[1]->Draw("5 same");
+    gMPtLambda1520Scaled[1]->Draw("5 same");
+    gMPtXiStarRun2Scaled[1]->Draw("5 same");
+    gMPtSigmaRun2Scaled[1]->Draw("5 same");
+    gMPtOmegaRun2Scaled[1]->Draw("5 same");
+
+    legendMeanPtMassScaled->Draw();
+    // if (isSavePlots)
+    {
+        cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.png");
     }
 
     //==================================================================================
@@ -934,6 +1217,7 @@ void ParticleRatioWithRun2()
     TGraphErrors **gMPtPhiLMRatio = DivideByMult(gMPtPhiRun2, -1.0, 0.5, 3);
     TGraphErrors **gMPtLambdaLMRatio = DivideByMult(gMPtLambdaRun2, -1.0, 0.5, 3);
     TGraphErrors **gMPtXiLMRatio = DivideByMult(gMPtXiRun2, -1.0, 0.5, 3);
+    TGraphErrors **gMPtLambda1520LMRatio = DivideByMult(gMPtLambda1520, -1.0, 0.5, 3);
     TGraphErrors **gMPtXiStarLMRatio = DivideByMult(gMPtXiStarRun2, -1.0, 0.5, 3);
     TGraphErrors **gMPtSigmaLMRatio = DivideByMult(gMPtSigmaRun2, -1.0, 0.5, 3);
     TGraphErrors **gMPtOmegaLMRatio = DivideByMult(gMPtOmegaRun2, -1.0, 0.5, 3);
@@ -988,6 +1272,7 @@ void ParticleRatioWithRun2()
     gMPtXiStarLMRatio[0]->Draw("PE same");
     gMPtLambdaLMRatio[0]->Draw("PE same");
     gMPtXiLMRatio[0]->Draw("PE same");
+    gMPtLambda1520LMRatio[0]->Draw("PE same");
     gMPtOmegaLMRatio[0]->Draw("PE same");
     gMPtSigmaLMRatio[0]->Draw("PE same");
 
@@ -995,16 +1280,18 @@ void ParticleRatioWithRun2()
     gMPtXiStarLMRatio[1]->Draw("5 same");
     gMPtLambdaLMRatio[1]->Draw("5 same");
     gMPtXiLMRatio[1]->Draw("5 same");
+    gMPtLambda1520LMRatio[1]->Draw("5 same");
     gMPtOmegaLMRatio[1]->Draw("5 same");
     gMPtSigmaLMRatio[1]->Draw("5 same");
 
-    TLegend *legendMeanPtRatioBaryons = new TLegend(0.18, 0.8, 0.69, 0.94);
+    TLegend *legendMeanPtRatioBaryons = new TLegend(0.18, 0.76, 0.69, 0.95);
     SetLegendStyle(legendMeanPtRatioBaryons);
     legendMeanPtRatioBaryons->SetNColumns(3);
     legendMeanPtRatioBaryons->SetTextSize(0.027 / pad2Size);
     legendMeanPtRatioBaryons->AddEntry(gMPtProtonLMRatio[0], "Proton", "P");
     legendMeanPtRatioBaryons->AddEntry(gMPtLambdaLMRatio[0], "#Lambda(1520)", "P");
     legendMeanPtRatioBaryons->AddEntry(gMPtXiLMRatio[0], "#Xi", "P");
+    legendMeanPtRatioBaryons->AddEntry(gMPtLambda1520LMRatio[0], "#Lambda(1520)", "P");
     legendMeanPtRatioBaryons->AddEntry(gMPtXiStarLMRatio[0], "#Xi(1530)", "P");
     legendMeanPtRatioBaryons->AddEntry(gMPtOmegaLMRatio[0], "#Omega", "P");
     legendMeanPtRatioBaryons->AddEntry(gMPtSigmaLMRatio[0], "#Sigma(1385)", "P");
@@ -1343,9 +1630,10 @@ void ParticleRatioWithRun2()
     TGraphErrors **gYieldXiStarLMRatio = DivideByMult(gMYieldXiStarRun2, -1.0, 0.5, 3);
     TGraphErrors **gYieldPhiLMRatio = DivideByMult(gMYieldPhiRun2, -1.0, 0.5, 3);
     TGraphErrors **gYieldSigmaLMRatio = DivideByMult(gMYieldSigmaRun2, -1.0, 0.5, 3);
+    TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 3); // Run2
 
     // These are from run3
-    TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 2);
+    // TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 2);
     TGraphErrors **gYieldRhoLMRatio = DivideByMult(gMYieldRho, -1.0, 0.5, 2);
 
     gYieldKstarLMRatio[0]->SetMaximum(21.5);
@@ -1373,20 +1661,20 @@ void ParticleRatioWithRun2()
     gYieldChKstarLMRatio[1]->SetLineColor(kBlue);
     gYieldChKstarLMRatio[1]->SetFillStyle(0);
     gYieldChKstarLMRatio[1]->Draw("5 same");
-    gYieldXiStarLMRatio[0]->SetMarkerColor(kOrange - 2);
-    gYieldXiStarLMRatio[0]->SetLineColor(kOrange - 2);
+    gYieldXiStarLMRatio[0]->SetMarkerColor(kBrown);
+    gYieldXiStarLMRatio[0]->SetLineColor(kBrown);
     gYieldXiStarLMRatio[0]->SetMarkerStyle(22);
     gYieldXiStarLMRatio[0]->Draw("PE same");
-    gYieldXiStarLMRatio[1]->SetLineColor(kOrange - 2);
+    gYieldXiStarLMRatio[1]->SetLineColor(kBrown);
     gYieldXiStarLMRatio[1]->SetFillStyle(0);
     gYieldXiStarLMRatio[1]->Draw("5 same");
-    // gYieldLambda1520LMRatio[0]->SetMarkerColor(kGreen + 2);
-    // gYieldLambda1520LMRatio[0]->SetLineColor(kGreen + 2);
-    // gYieldLambda1520LMRatio[0]->SetMarkerStyle(22);
-    // gYieldLambda1520LMRatio[0]->Draw("PE same");
-    // gYieldLambda1520LMRatio[1]->SetLineColor(kGreen + 2);
-    // gYieldLambda1520LMRatio[1]->SetFillStyle(0);
-    // gYieldLambda1520LMRatio[1]->Draw("5 same");
+    gYieldLambda1520LMRatio[0]->SetMarkerColor(kGreen + 2);
+    gYieldLambda1520LMRatio[0]->SetLineColor(kGreen + 2);
+    gYieldLambda1520LMRatio[0]->SetMarkerStyle(22);
+    gYieldLambda1520LMRatio[0]->Draw("PE same");
+    gYieldLambda1520LMRatio[1]->SetLineColor(kGreen + 2);
+    gYieldLambda1520LMRatio[1]->SetFillStyle(0);
+    gYieldLambda1520LMRatio[1]->Draw("5 same");
     gYieldPhiLMRatio[0]->SetMarkerColor(kMagenta);
     gYieldPhiLMRatio[0]->SetLineColor(kMagenta);
     gYieldPhiLMRatio[0]->SetMarkerStyle(47);
@@ -1418,7 +1706,7 @@ void ParticleRatioWithRun2()
     legendYieldLMRatio3->AddEntry(gYieldKstarLMRatio[0], "K*^{0}", "P");
     legendYieldLMRatio3->AddEntry(gYieldChKstarLMRatio[0], "K*^{#pm}", "P");
     legendYieldLMRatio3->AddEntry(gYieldSigmaLMRatio[0], "#Sigma(1385)", "P");
-    // legendYieldLMRatio3->AddEntry(gYieldLambda1520LMRatio[0], "#Lambda(1520)", "P");
+    legendYieldLMRatio3->AddEntry(gYieldLambda1520LMRatio[0], "#Lambda(1520)", "P");
     legendYieldLMRatio3->AddEntry(gYieldXiStarLMRatio[0], "#Xi(1530)", "P");
     legendYieldLMRatio3->AddEntry(gYieldPhiLMRatio[0], "#phi", "P");
     legendYieldLMRatio3->Draw();
@@ -1495,13 +1783,13 @@ void ParticleRatioWithRun2()
     TCanvas *cYieldLifetime = new TCanvas("cYieldLifetime", "cYieldLifetime", 720, 720);
     SetCanvasStyle(cYieldLifetime, 0.15, 0.03, 0.03, 0.15);
 
-    // K*+-, K*0, Sigma(1385), XiStar, Phi
-    float lifetime[5] = {3.9, 4.2, 5.25, 22.0, 46.2};
+    // K*+-, K*0, Sigma(1385), Lambda(1520), XiStar, Phi
+    float lifetime[6] = {3.9, 4.2, 5.25, 12.6, 22.0, 46.2};
 
     TGraphErrors *gYieldVsLifetime[2];
     for (int i = 0; i < 2; i++)
     {
-        gYieldVsLifetime[i] = new TGraphErrors(5);
+        gYieldVsLifetime[i] = new TGraphErrors(6);
     }
 
     //------------------------------------------------------------------
@@ -1509,8 +1797,8 @@ void ParticleRatioWithRun2()
     //------------------------------------------------------------------
     for (int j = 0; j < 2; j++)
     {
-        gYieldVsLifetime[j]->SetPoint(0, lifetime[0], gYieldChKstarLMRatio[j]->GetY()[gYieldChKstarLMRatio[j]->GetN() - 2]);
-        gYieldVsLifetime[j]->SetPointError(0, 0.3, gYieldChKstarLMRatio[j]->GetErrorY(gYieldChKstarLMRatio[j]->GetN() - 2));
+        gYieldVsLifetime[j]->SetPoint(0, lifetime[0], gYieldChKstarLMRatio[j]->GetY()[gYieldChKstarLMRatio[j]->GetN() - 1]);
+        gYieldVsLifetime[j]->SetPointError(0, 0.3, gYieldChKstarLMRatio[j]->GetErrorY(gYieldChKstarLMRatio[j]->GetN() - 1));
 
         gYieldVsLifetime[j]->SetPoint(1, lifetime[1], gYieldKstarLMRatio[j]->GetY()[0]);
         gYieldVsLifetime[j]->SetPointError(1, 0.3, gYieldKstarLMRatio[j]->GetErrorY(0));
@@ -1518,11 +1806,14 @@ void ParticleRatioWithRun2()
         gYieldVsLifetime[j]->SetPoint(2, lifetime[2], gYieldSigmaLMRatio[j]->GetY()[0]);
         gYieldVsLifetime[j]->SetPointError(2, 0.3, gYieldSigmaLMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(3, lifetime[3], gYieldXiStarLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(3, 0.3, gYieldXiStarLMRatio[j]->GetErrorY(0));
+        gYieldVsLifetime[j]->SetPoint(3, lifetime[3], gYieldLambda1520LMRatio[j]->GetY()[0]);
+        gYieldVsLifetime[j]->SetPointError(3, 0.3, gYieldLambda1520LMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(4, lifetime[4], gYieldPhiLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(4, 0.3, gYieldPhiLMRatio[j]->GetErrorY(0));
+        gYieldVsLifetime[j]->SetPoint(4, lifetime[4], gYieldXiStarLMRatio[j]->GetY()[0]);
+        gYieldVsLifetime[j]->SetPointError(4, 0.3, gYieldXiStarLMRatio[j]->GetErrorY(0));
+
+        gYieldVsLifetime[j]->SetPoint(5, lifetime[5], gYieldPhiLMRatio[j]->GetY()[0]);
+        gYieldVsLifetime[j]->SetPointError(5, 0.3, gYieldPhiLMRatio[j]->GetErrorY(0));
     }
 
     //------------------------------------------------------------------
@@ -1544,35 +1835,38 @@ void ParticleRatioWithRun2()
     //------------------------------------------------------------------
     // Particle styles
     //------------------------------------------------------------------
-    Color_t colors[5] = {
+    Color_t colors[6] = {
         kRed + 1,
         kBlue + 1,
+        kAzure + 7,
         kGreen + 2,
-        kMagenta + 1,
-        kOrange + 7};
+        kBrown,
+        kMagenta};
 
-    Style_t markers[5] = {
+    Style_t markers[6] = {
         20, // K*±
         21, // K*0
         22, // Sigma
+        25, // Lambda1520
         23, // Xi*
         33  // Phi
     };
 
-    const char *names[5] = {
+    const char *names[6] = {
         "K^{*#pm}",
         "K^{*0}",
         "#Sigma(1385)",
+        "#Lambda(1520)",
         "#Xi^{*}",
         "#phi"};
 
     //------------------------------------------------------------------
     // Create one graph per particle
     //------------------------------------------------------------------
-    TGraphErrors *gParticleStat[5];
-    TGraphErrors *gParticleSyst[5];
+    TGraphErrors *gParticleStat[6];
+    TGraphErrors *gParticleSyst[6];
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
         double xStat, yStat;
         double xSyst, ySyst;
@@ -1585,17 +1879,11 @@ void ParticleRatioWithRun2()
 
         // Statistical
         gParticleStat[i]->SetPoint(0, xStat, yStat);
-        gParticleStat[i]->SetPointError(
-            0,
-            gYieldVsLifetime[0]->GetErrorX(i),
-            gYieldVsLifetime[0]->GetErrorY(i));
+        gParticleStat[i]->SetPointError(0, gYieldVsLifetime[0]->GetErrorX(i), gYieldVsLifetime[0]->GetErrorY(i));
 
         // Systematic
         gParticleSyst[i]->SetPoint(0, xSyst, ySyst);
-        gParticleSyst[i]->SetPointError(
-            0,
-            gYieldVsLifetime[1]->GetErrorX(i),
-            gYieldVsLifetime[1]->GetErrorY(i));
+        gParticleSyst[i]->SetPointError(0, gYieldVsLifetime[1]->GetErrorX(i), gYieldVsLifetime[1]->GetErrorY(i));
 
         //-----------------------------
         // Systematic band
@@ -1618,7 +1906,7 @@ void ParticleRatioWithRun2()
     //------------------------------------------------------------------
     // Draw systematic uncertainties first
     //------------------------------------------------------------------
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
         gParticleSyst[i]->Draw("2 SAME");
     }
@@ -1626,7 +1914,7 @@ void ParticleRatioWithRun2()
     //------------------------------------------------------------------
     // Draw statistical uncertainties + markers
     //------------------------------------------------------------------
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
         gParticleStat[i]->Draw("PZ SAME");
     }
@@ -1638,7 +1926,7 @@ void ParticleRatioWithRun2()
     latex2.SetTextSize(0.03);
     latex2.SetTextAlign(23);
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
         double x, y;
         gParticleStat[i]->GetPoint(0, x, y);
@@ -1655,9 +1943,12 @@ void ParticleRatioWithRun2()
             latex2.DrawLatex(x, y - 2.2, names[i]);
 
         else if (i == 3)
-            latex2.DrawLatex(x, y - 2.2, names[i]);
+            latex2.DrawLatex(x, y - 1.0, names[i]);
 
         else if (i == 4)
+            latex2.DrawLatex(x, y - 2.2, names[i]);
+
+        else if (i == 5)
             latex2.DrawLatex(x, y - 1.0, names[i]);
     }
     if (isSavePlots)
@@ -1674,8 +1965,10 @@ void ParticleRatioWithRun2()
     TGraphErrors **gYieldSigmaLambdaLMRatio = DivideByMult(gYieldSigmaLambdaRatio, -1, 0.5, 3);
     TGraphErrors **gYieldXiStarXiLMRatio = DivideByMult(gYieldXiStarXiRatio, -1, 0.5, 3);
     TGraphErrors **gYieldPhiKaLMRatio = DivideByMult(gYieldPhiKaRatio, -1, 0.5, 3);
+    TGraphErrors **gYieldLambda1520LambdaLMRatio = DivideByMult(gYieldLambda1520LambdaRatio, -1, 0.5, 2);
 
     gYieldKstarKaLMRatio[0]->SetMaximum(1.89);
+    gYieldKstarKaLMRatio[0]->SetMinimum(0.48);
     gYieldKstarKaLMRatio[0]->SetLineColor(kRed);
     gYieldKstarKaLMRatio[0]->SetMarkerColor(kRed);
     gYieldKstarKaLMRatio[0]->Draw("APE");
@@ -1695,11 +1988,18 @@ void ParticleRatioWithRun2()
     gYieldSigmaLambdaLMRatio[1]->SetLineColor(kAzure + 7);
     gYieldSigmaLambdaLMRatio[1]->SetFillStyle(0);
     gYieldSigmaLambdaLMRatio[1]->Draw("5 same");
-    gYieldXiStarXiLMRatio[0]->SetMarkerColor(kGreen + 2);
-    gYieldXiStarXiLMRatio[0]->SetLineColor(kGreen + 2);
+    gYieldLambda1520LambdaLMRatio[0]->SetMarkerColor(kGreen + 2);
+    gYieldLambda1520LambdaLMRatio[0]->SetLineColor(kGreen + 2);
+    gYieldLambda1520LambdaLMRatio[0]->SetMarkerStyle(22);
+    gYieldLambda1520LambdaLMRatio[0]->Draw("PE same");
+    gYieldLambda1520LambdaLMRatio[1]->SetLineColor(kGreen + 2);
+    gYieldLambda1520LambdaLMRatio[1]->SetFillStyle(0);
+    gYieldLambda1520LambdaLMRatio[1]->Draw("5 same");
+    gYieldXiStarXiLMRatio[0]->SetMarkerColor(kBrown);
+    gYieldXiStarXiLMRatio[0]->SetLineColor(kBrown);
     gYieldXiStarXiLMRatio[0]->SetMarkerStyle(23);
     gYieldXiStarXiLMRatio[0]->Draw("PE same");
-    gYieldXiStarXiLMRatio[1]->SetLineColor(kGreen + 2);
+    gYieldXiStarXiLMRatio[1]->SetLineColor(kBrown);
     gYieldXiStarXiLMRatio[1]->SetFillStyle(0);
     gYieldXiStarXiLMRatio[1]->Draw("5 same");
     gYieldPhiKaLMRatio[0]->SetMarkerColor(kMagenta);
@@ -1717,6 +2017,7 @@ void ParticleRatioWithRun2()
     legendYieldLMRatio4->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0}/K", "P");
     legendYieldLMRatio4->AddEntry(gYieldChKstarK0sLMRatio[0], "K*^{#pm}/K_{S}^{0}", "P");
     legendYieldLMRatio4->AddEntry(gYieldSigmaLambdaLMRatio[0], "#Sigma(1385)/#Lambda", "P");
+    legendYieldLMRatio4->AddEntry(gYieldLambda1520LambdaLMRatio[0], "#Lambda(1520)/#Lambda", "P");
     legendYieldLMRatio4->AddEntry(gYieldXiStarXiLMRatio[0], "#Xi(1530)/#Xi", "P");
     legendYieldLMRatio4->AddEntry(gYieldPhiKaLMRatio[0], "#phi/K", "P");
     legendYieldLMRatio4->Draw();
@@ -2033,24 +2334,26 @@ void ParticleRatioWithRun2()
     gMYieldPion[1]->Draw("5 same");
 
     gMYieldPionEPOS_IST0->SetLineStyle(2);
-    // ScaleGraph(gMYieldPionEPOS_IST0, 2.0);
+    gMYieldPionEPOS_IST0->SetLineWidth(3);
+    ScaleGraph(gMYieldPionEPOS_IST0, 0.5); // In model, Pi,K,p are not averaged.
+    gMYieldPionEPOS_IST0->SetLineColor(kRed + 1);
     gMYieldPionEPOS_IST0->Draw("l same");
 
-    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    // {
-    //     setStyle(gPythiaYieldLocal[imodel][kPion_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-    //     ScaleGraph(gPythiaYieldLocal[imodel][kPion_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-    //     gPythiaYieldLocal[imodel][kPion_epos]->Draw("l same");
-    // }
+    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    {
+        setStyle(gPythiaYieldLocal[imodel][kPion_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+        ScaleGraph(gPythiaYieldLocal[imodel][kPion_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldLocal[imodel][kPion_epos]->Draw("l same");
+    }
     TLegend *legTemp = new TLegend(0.2, 0.65, 0.55, 0.85);
     SetLegendStyle(legTemp);
     legTemp->SetTextSize(0.03);
     legTemp->AddEntry(gMYieldPion[0], "Data", "p");
     legTemp->AddEntry(gMYieldPionEPOS_IST0, "EPOS", "l");
-    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    // {
-    //     legTemp->AddEntry(gPythiaYieldLocal[imodel][kPion_epos], modelLabelLocal[imodel], "l");
-    // }
+    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    {
+        legTemp->AddEntry(gPythiaYieldLocal[imodel][kPion_epos], modelLabelLocal[imodel], "l");
+    }
     legTemp->Draw();
     latex.SetTextSize(0.04);
     latex.DrawLatex(0.28, 0.88, "#pi^{#pm}");
@@ -2077,15 +2380,17 @@ void ParticleRatioWithRun2()
     gMYieldKaon[1]->Draw("5 same");
 
     gMYieldKaonEPOS_IST0->SetLineStyle(2);
-    // ScaleGraph(gMYieldKaonEPOS_IST0, 0.5);
+    gMYieldKaonEPOS_IST0->SetLineWidth(3);
+    ScaleGraph(gMYieldKaonEPOS_IST0, 0.5);
+    gMYieldKaonEPOS_IST0->SetLineColor(kRed + 1);
     gMYieldKaonEPOS_IST0->Draw("l same");
 
-    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    // {
-    //     setStyle(gPythiaYieldLocal[imodel][kKaon_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-    //     ScaleGraph(gPythiaYieldLocal[imodel][kKaon_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-    //     gPythiaYieldLocal[imodel][kKaon_epos]->Draw("l same");
-    // }
+    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    {
+        setStyle(gPythiaYieldLocal[imodel][kKaon_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+        ScaleGraph(gPythiaYieldLocal[imodel][kKaon_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldLocal[imodel][kKaon_epos]->Draw("l same");
+    }
     legTemp->Draw();
     latex.DrawLatex(0.28, 0.88, "K^{#pm}");
     // if (isSavePlots)
@@ -2111,15 +2416,17 @@ void ParticleRatioWithRun2()
     gMYieldProton[1]->Draw("5 same");
 
     gMYieldProtonEPOS_IST0->SetLineStyle(2);
-    // ScaleGraph(gMYieldProtonEPOS_IST0, 0.5);
+    gMYieldProtonEPOS_IST0->SetLineWidth(3);
+    ScaleGraph(gMYieldProtonEPOS_IST0, 0.5);
+    gMYieldProtonEPOS_IST0->SetLineColor(kRed + 1);
     gMYieldProtonEPOS_IST0->Draw("l same");
 
-    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    // {
-    //     setStyle(gPythiaYieldLocal[imodel][kProton_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-    //     ScaleGraph(gPythiaYieldLocal[imodel][kProton_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-    //     gPythiaYieldLocal[imodel][kProton_epos]->Draw("l same");
-    // }
+    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    {
+        setStyle(gPythiaYieldLocal[imodel][kProton_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+        ScaleGraph(gPythiaYieldLocal[imodel][kProton_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldLocal[imodel][kProton_epos]->Draw("l same");
+    }
     legTemp->Draw();
     latex.DrawLatex(0.28, 0.88, "p");
     // if (isSavePlots)
@@ -2127,41 +2434,41 @@ void ParticleRatioWithRun2()
         cProtonYield->SaveAs("Plots/ProtonYield_Run3.png");
     }
 
-    // //====================================================
-    // // ==================Phi yeild======================
-    // //====================================================
-    // TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
-    // SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
-    // gMYieldPhi[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    // gMYieldPhi[0]->GetYaxis()->SetTitle("dN/dy");
-    // SetGraphErrorStyle(gMYieldPhi[0]);
-    // gMYieldPhi[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
-    // gMYieldPhi[0]->GetXaxis()->SetLimits(0, 27);
-    // gMYieldPhi[0]->SetMarkerColor(kRed);
-    // gMYieldPhi[0]->SetLineColor(kRed);
-    // gMYieldPhi[0]->Draw("APE");
-    // gMYieldPhi[1]->SetFillStyle(0);
-    // gMYieldPhi[1]->SetLineColor(kRed);
-    // gMYieldPhi[1]->Draw("5 same");
+    //====================================================
+    // ==================Phi yeild======================
+    //====================================================
+    TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
+    SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
+    gMYieldPhiRun2[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gMYieldPhiRun2[0]->GetYaxis()->SetTitle("dN/dy");
+    SetGraphErrorStyle(gMYieldPhiRun2[0]);
+    gMYieldPhiRun2[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
+    gMYieldPhiRun2[0]->GetXaxis()->SetLimits(0, 27);
+    gMYieldPhiRun2[0]->SetMarkerColor(kRed);
+    gMYieldPhiRun2[0]->SetLineColor(kRed);
+    gMYieldPhiRun2[0]->Draw("APE");
+    gMYieldPhiRun2[1]->SetFillStyle(0);
+    gMYieldPhiRun2[1]->SetLineColor(kRed);
+    gMYieldPhiRun2[1]->Draw("5 same");
 
-    // gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
-    // gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
-    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
-    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
-    // gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
+    gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
+    gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
+    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
+    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
+    gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
 
-    // TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
-    // SetLegendStyle(legTempPhi);
-    // legTempPhi->SetTextSize(0.03);
-    // legTempPhi->AddEntry(gMYieldPhi[0], "Data", "p");
-    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
-    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
-    // legTempPhi->Draw();
-    // latex.DrawLatex(0.28, 0.88, "#phi");
-    // // if (isSavePlots)
-    // {
-    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
-    // }
+    TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
+    SetLegendStyle(legTempPhi);
+    legTempPhi->SetTextSize(0.03);
+    legTempPhi->AddEntry(gMYieldPhiRun2[0], "Data", "p");
+    legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
+    legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
+    legTempPhi->Draw();
+    latex.DrawLatex(0.28, 0.88, "#phi");
+    // if (isSavePlots)
+    {
+        cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
+    }
 
     // */
 }
@@ -2485,6 +2792,37 @@ void RestrictModelXaxis(TGraphErrors *gr, double xMin, double xMax)
             gr->RemovePoint(i);
         }
     }
+}
+
+TGraphErrors **AddConstantToGraph(TGraphErrors **gr, double constant, int noOfGraphs = 2)
+{
+    TGraphErrors **grCopy = new TGraphErrors *[noOfGraphs];
+
+    for (int ig = 0; ig < noOfGraphs; ig++)
+    {
+        if (gr[ig] == nullptr)
+        {
+            cout << "Error: null graph" << endl;
+            return nullptr;
+        }
+        grCopy[ig] = (TGraphErrors *)gr[ig]->Clone();
+
+        for (int i = 0; i < gr[ig]->GetN(); i++)
+        {
+            double x, y;
+            gr[ig]->GetPoint(i, x, y);
+
+            double yerr = gr[ig]->GetErrorY(i);
+            double xerr = gr[ig]->GetErrorX(i);
+
+            double newY = y + constant;
+
+            grCopy[ig]->SetPoint(i, x, newY);
+            grCopy[ig]->SetPointError(i, xerr, yerr);
+        }
+    }
+
+    return grCopy;
 }
 
 TGraphErrors *DivideByMultModel(TGraphErrors *gr, double WhichMultPoint, double tolerance = 0.5)

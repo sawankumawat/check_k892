@@ -133,11 +133,14 @@ void EPOS_finalCodeQA()
 
     Long64_t nEv = chain.GetEntries();
     cout << "Total events = " << nEv << endl;
-    nEv = 1000; // for quick test, comment out for full processing
+    // nEv = 1000; // for quick test, comment out for full processing
+    // nEv = nEv / 4; // for quick test, comment out for full processing
+
+    // chain.GetListOfBranches()->Print();
 
     Int_t np;
-    vector<Float_t> px(200000), py(200000), pz(200000), e(200000);
-    vector<Int_t> id(200000), ist(200000), ity(200000);
+    vector<Float_t> px(7974900), py(7974900), pz(7974900), e(7974900);
+    vector<Int_t> id(7974900), ist(7974900), ity(7974900), ior(7974900), jor(7974900);
 
     chain.SetBranchAddress("np", &np);
     chain.SetBranchAddress("px", &px[0]);
@@ -147,6 +150,8 @@ void EPOS_finalCodeQA()
     chain.SetBranchAddress("id", &id[0]);
     chain.SetBranchAddress("ist", &ist[0]);
     chain.SetBranchAddress("ity", &ity[0]);
+    chain.SetBranchAddress("ior", &ior[0]);
+    chain.SetBranchAddress("jor", &jor[0]);
 
     TH1F *hFT0 = new TH1F("hFT0", "FT0 multiplicity", 500, 0, 500);
     vector<int> eventMult(nEv);
@@ -315,14 +320,18 @@ void EPOS_finalCodeQA()
             // if (pt < 0.1)
             //     continue;
 
-            bool isPiKp = (eposID == 120 || eposID == 130 || eposID == 1120);
+            bool isPi = (eposID == 120);
+            bool isKp = (eposID == 130 || eposID == 1120);
 
             bool acceptParticle = false;
 
-            if (isPiKp)
+            if (isPi) // No effect of removing the eta cut, still for all three it is low.
             {
-                // if (fabs(y) < 0.3 && fabs(eta) < 0.8)
-                // if (fabs(y) < 0.5 && fabs(eta) < 0.8)
+                if (fabs(y) < 0.5)
+                    acceptParticle = true;
+            }
+            else if (isKp)
+            {
                 if (fabs(y) < 0.5)
                     acceptParticle = true;
             }
@@ -330,6 +339,41 @@ void EPOS_finalCodeQA()
             {
                 if (fabs(y) < 0.5)
                     acceptParticle = true;
+            }
+
+            auto StartsWith = [](int id, int prefix)
+            {
+                while (id >= prefix * 10)
+                    id /= 10;
+                return id == prefix;
+            };
+
+            // if (StartsWith(eposID, 120) ||
+            //     StartsWith(eposID, 130) ||
+            //     StartsWith(eposID, 1120))
+            if (eposID == 231)
+            {
+                if (fabs(y) < 0.5)
+                {
+                    // if (ior[i] >= 0)
+                    // {
+                    //     int p = ior[i];
+
+                    //     std::cout
+                    //         << "Child: id=" << id[i]
+                    //         << " ist=" << ist[i]
+                    //         << " ity=" << ity[i]
+                    //         << "\n";
+
+                    //     std::cout
+                    //         << "Parent: index=" << p
+                    //         << " id=" << id[p]
+                    //         << " ist=" << ist[p]
+                    //         << " ity=" << ity[p]
+                    //         << "\n\n";
+                    // }
+                    // cout << "Event " << ev << ": eposID=" << eposID << ", pt=" << pt << ", y=" << y << ", ist=" << ist[i] << ", ity=" << ity[i] << " ior=" << ior[i] << ", jor=" << jor[i] << endl;
+                }
             }
 
             // if (fabs(y) < 0.5 && atLeastOnePiKp_in_ModEta1 > 0)

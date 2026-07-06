@@ -15,12 +15,13 @@ void doublephi()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1111);
-    bool MixedEventExist = false;
-    bool isQA = false;
+    bool MixedEventExist = true;
+    bool isQA = true;
     bool isSavePlots = true;
-    bool isPhiQA = false;
-    bool isCorrPlots = false;
-    TString dataFilePath = "../data/doublePhi/";
+    bool isPhiQA = true;
+    bool isCorrPlots = true;
+    TString dataFilePath = "/home/sawan/Downloads/";
+    // TString dataFilePath = "../data/doublePhi/";
     // TString dataFilePath = "/home/sawan/alice/practice/DoublePhiAnalyzedFiles/";
     TLatex lat;
     lat.SetNDC();
@@ -39,10 +40,11 @@ void doublephi()
     // TString fileName = "AnalysisResults_675200"; // LHC26ac_pass1_skimmed_small
     // TString fileName = "AnalysisResults_679143"; // LHC26ac_pass1_skimmed_small
     // TString fileName = "680311"; // LHC25_pass1_skimmed
-    TString fileName = "703374"; // LHC25_pass1_skimmed
+    // TString fileName = "703374"; // LHC25_pass1_skimmed
+    TString fileName = "707853"; // LHC25_pass1_skimmed
 
     // TString subWagon = "";
-    TString subWagon = "_pid1004_opti5";
+    TString subWagon = "_pid4_opti5";
     // TString subWagon = "_pid2_opti5";
     // TString subWagon = "_LoosePID";
     // TString subWagon = "_DeepAngle";
@@ -59,8 +61,8 @@ void doublephi()
     gSystem->Exec("mkdir -p " + outputPhiFits);
 
     TFile *file = new TFile(dataFilePath + fileName + ".root");
-    TFile *file2 = new TFile("../output/doublePhi/Analysis541300PID6/PhiPhi.root"); // Very loose cut, for efficiency calculation
-    if (file->IsZombie() || file2->IsZombie())
+    // TFile *file2 = new TFile("../output/doublePhi/Analysis541300PID6/PhiPhi.root"); // Very loose cut, for efficiency calculation
+    if (file->IsZombie())
     {
         std::cerr << "Error: Could not open file " << "\n";
         return;
@@ -405,8 +407,6 @@ void doublephi()
         TH1F *hPhiMassFit = new TH1F("hPhiMassFit", "hPhiMassFit", nPtBinsPhi, pTbinsPhi);
         TH1F *hPhiMassResolutionFit = new TH1F("hPhiMassResolutionFit", "hPhiMassResolutionFit", nPtBinsPhi, pTbinsPhi);
         TH3F *hPhiPhiMassCorrelation = (TH3F *)file->Get("doublephimeson" + subWagon + "/hPhiMass"); // In old root file it was hPhiMass3
-        // TH2F *hDeltaRKaonPvspt = (TH2F *)file->Get("doublephimeson" + subWagon + "/hDeltaRkaonplusvspt");
-        // TH2F *hDeltaRKaonMvspt = (TH2F *)file->Get("doublephimeson" + subWagon + "/hDeltaRkaonminusvspt");
         TH1F *hDeltaRKaonPlus = (TH1F *)file->Get("doublephimeson" + subWagon + "/hDeltaRkaonplus");
         TH1F *hDeltaRKaonMinus = (TH1F *)file->Get("doublephimeson" + subWagon + "/hDeltaRkaonminus");
         if (hPhiPhiMassCorrelation == nullptr || hDeltaRKaonPlus == nullptr || hDeltaRKaonMinus == nullptr)
@@ -437,27 +437,24 @@ void doublephi()
             cDeltaRKaonMinus->SaveAs(outputPath + "deltaR_kaon_minus.png");
 
         TH1F *hPhiYieldFit = new TH1F("hPhiYieldFit", "hPhiYieldFit", nPtBinsPhi, pTbinsPhi);
-        TH1F *hPhiYieldFitLoosePID = (TH1F *)file2->Get("FittedPhiYield");
-        if (hPhiYieldFitLoosePID == nullptr)
-        {
-            std::cerr << "Error: Could not find the FittedPhiYield histogram in file2 (loose PID cuts)\n";
-            return;
-        }
         TH1F *hEfficiency = new TH1F("hEfficiency", "hEfficiency", nPtBinsPhi, pTbinsPhi);
         TH1F *hChi2byNDF = new TH1F("hChi2byNDF", "hChi2byNDF", nPtBinsPhi, pTbinsPhi);
         TH1F *hPurity = new TH1F("hPurity", "hPurity", nPtBinsPhi, pTbinsPhi);
         TCanvas *cPhiSignal = new TCanvas("", "", 1440, 720);
         SetCanvasStyle(cPhiSignal, 0.13, 0.06, 0.05, 0.13);
         cPhiSignal->Divide(4, 3);
-        TCanvas *cPhiMassCorrelation = new TCanvas("", "cPhiMassCorrelation", 1440, 720);
-        SetCanvasStyle(cPhiMassCorrelation, 0.13, 0.06, 0.05, 0.13);
-        cPhiMassCorrelation->Divide(4, 3);
+        TCanvas *cDeltaM = new TCanvas("", "cDeltaM", 1440, 720);
+        SetCanvasStyle(cDeltaM, 0.13, 0.06, 0.05, 0.13);
+        cDeltaM->Divide(4, 3);
         TCanvas *cDeltaRKaonP = new TCanvas("", "cDeltaRKaonP", 1440, 720);
         SetCanvasStyle(cDeltaRKaonP, 0.13, 0.06, 0.05, 0.13);
         cDeltaRKaonP->Divide(4, 3);
         TCanvas *cDeltaRPhi = new TCanvas("", "cDeltaRPhi", 1440, 720);
         SetCanvasStyle(cDeltaRPhi, 0.13, 0.06, 0.05, 0.13);
         cDeltaRPhi->Divide(4, 3);
+        TCanvas *cpTcorrvspT = new TCanvas("", "cpTcorrvspT", 1440, 720);
+        SetCanvasStyle(cpTcorrvspT, 0.13, 0.06, 0.05, 0.13);
+        cpTcorrvspT->Divide(4, 3);
 
         for (int ibinsPhi = 0; ibinsPhi < nPtBinsPhi; ibinsPhi++)
         {
@@ -473,13 +470,10 @@ void doublephi()
             TH1D *hDeltaRPhivsPt = hunlike->Projection(3, "E");
 
             TH1D *hphiMassProj = hPhiMassvsPt->ProjectionX(Form("hphiMassProj_%.1f_%.1f", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]), -1, -1, pTbinLow, pTbinHigh);
-            // hPhiPhiMassCorrelation->GetZaxis()->SetRange(pTbinLow, pTbinHigh);
-            // TH2F *hPhiPhiMassCorrProj = (TH2F *)hPhiPhiMassCorrelation->Project3D("xy");
-            // SetHistoQA2D(hPhiPhiMassCorrProj);
-            // TH1D *hDeltaRKaonPvsptProj = hDeltaRKaonPvspt->ProjectionX(Form("hDeltaRKaonPvsptProj_%.1f_%.1f", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]), pTbinLow, pTbinHigh);
-            // TH1D *hDeltaRKaonMvsptProj = hDeltaRKaonMvspt->ProjectionX(Form("hDeltaRKaonMvsptProj_%.1f_%.1f", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]), pTbinLow, pTbinHigh);
-            // SetHistoQA(hDeltaRKaonPvsptProj);
-            // SetHistoQA(hDeltaRKaonMvsptProj);
+
+            TH1D *hDeltaRKaonPvsptProj = hunlike->Projection(1, "E");
+            TH1D *hDeltaM = hunlike->Projection(4, "E");
+            TH1D *hPtCorrvspT = hunlike->Projection(5, "E");
 
             SetHistoQA(hphiMassProj);
             hphiMassProj->GetYaxis()->SetTitleOffset(1.3);
@@ -537,41 +531,11 @@ void doublephi()
             fitFcnBkg->Draw("same");
             fitFcnSig->Draw("same");
 
-            // TCanvas *cIndividualPlots = new TCanvas("", "", 720, 720);
-            // SetCanvasStyle(cIndividualPlots, 0.14, 0.03, 0.05, 0.14);
-            // SetHistoQA(hphiMassProj);
-            // hphiMassProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-            // hphiMassProj->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", (hphiMassProj->GetXaxis()->GetBinWidth(1) * 1000)));
-            // hphiMassProj->SetMaximum(1.2 * hphiMassProj->GetMaximum());
-            // hphiMassProj->SetMinimum(0);
-            // hphiMassProj->GetXaxis()->SetRangeUser(0.99, 1.05);
-            // hphiMassProj->Draw("pe");
-            // fitFcn->Draw("same");
-            // fitFcnBkg->Draw("same");
-            // fitFcnSig->Draw("same");
-
-            // TLegend *lp = DrawLegend(0.18, 0.75, 0.6, 0.92);
-            // lp->SetTextSize(0.03);
-            // lp->SetTextFont(42);
-            // lp->SetFillStyle(0);
-            // lp->AddEntry(hphiMassProj, "K^{+}K^{-} invariant mass", "pe");
-            // lp->AddEntry(fitFcn, "Combined fit", "l");
-            // lp->AddEntry(fitFcnSig, "Signal (Voigt)", "l");
-            // lp->AddEntry(fitFcnBkg, "Residual Background (Pol2)", "l");
-            // lp->Draw("same");
-            // lat.SetTextSize(0.08);
-            // lat.DrawLatex(0.20, 0.71, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
-            // if (isSavePlots)
-            //     cIndividualPlots->SaveAs(outputPhiFits + Form("phi_mass_fit_%.1f_%.1f.png", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
-
             double mean = fitFcn->GetParameter(1);
-            // double mean = 1.019; // PDG value
             double widthPDG = 0.0042;
             float nSigmaForPurity = 2.0;
             double areabkg = fitFcnBkg->Integral(mean - nSigmaForPurity * widthPDG, mean + nSigmaForPurity * widthPDG) / (hphiMassProj->GetXaxis()->GetBinWidth(1));
-            // double areabkg = fitFcnBkg->Integral(1.001, 1.039) / (hphiMassProj->GetXaxis()->GetBinWidth(1));
             double areasigbkg = hphiMassProj->Integral(hphiMassProj->FindBin(mean - nSigmaForPurity * widthPDG), hphiMassProj->FindBin(mean + nSigmaForPurity * widthPDG));
-            // double areasigbkg = hphiMassProj->Integral(hphiMassProj->FindBin(1.001), hphiMassProj->FindBin(1.039));
             double areasig = areasigbkg - areabkg;
             double purity = areasig * 100 / areasigbkg;
             hPurity->SetBinContent(ibinsPhi + 1, purity);
@@ -591,56 +555,34 @@ void doublephi()
             float ptBinWidth = pTbinsPhi[ibinsPhi + 1] - pTbinsPhi[ibinsPhi];
             double yieldIntegral = fitFcnSig->Integral(mean - 3 * widthPDG, mean + 3 * widthPDG) / ptBinWidth;
             double yieldIntegralError = fitFcnSig->IntegralError(mean - 3 * widthPDG, mean + 3 * widthPDG, &para[0], b) / ptBinWidth;
-
             cout << "pT bin " << ibinsPhi << ", yield " << yieldIntegral << ", error " << yieldIntegralError << endl;
 
             hPhiYieldFit->SetBinContent(ibinsPhi + 1, yieldIntegral);
             hPhiYieldFit->SetBinError(ibinsPhi + 1, yieldIntegralError);
-            if (hPhiYieldFitLoosePID->GetNbinsX() == nPtBinsPhi)
-            {
-                double yieldIntegral2 = hPhiYieldFitLoosePID->GetBinContent(ibinsPhi + 1);
-                double yieldIntegralError2 = hPhiYieldFitLoosePID->GetBinError(ibinsPhi + 1);
-                double ratio = yieldIntegral / yieldIntegral2;
-                double ratioError = ratio * sqrt(pow(yieldIntegralError / yieldIntegral2, 2) + pow(yieldIntegralError2 * yieldIntegral / (yieldIntegral2 * yieldIntegral2), 2));
-                hEfficiency->SetBinContent(ibinsPhi + 1, ratio * 100);
-                hEfficiency->SetBinError(ibinsPhi + 1, ratioError * 100);
-            }
-
             hPhiMassResolutionFit->SetBinContent(ibinsPhi + 1, fitFcn->GetParameter(2));
             hPhiMassResolutionFit->SetBinError(ibinsPhi + 1, fitFcn->GetParError(2));
-
             hChi2byNDF->SetBinContent(ibinsPhi + 1, fitFcn->GetChisquare() / fitFcn->GetNDF());
-
             hphiMassProj->Write();
 
-            // cPhiMassCorrelation->cd(ibinsPhi + 1);
-            // gPad->SetLeftMargin(0.15);
-            // gPad->SetBottomMargin(0.15);
-            // gPad->SetRightMargin(0.05);
-            // gPad->SetTopMargin(0.05);
-            // hPhiPhiMassCorrProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-            // hPhiPhiMassCorrProj->GetYaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-            // hPhiPhiMassCorrProj->Draw("COLZ");
-            // TLine *lineHorizontalPDG = new TLine(1.019461, 1.0, 1.019461, 1.04);
-            // lineHorizontalPDG->SetLineColor(kRed);
-            // lineHorizontalPDG->SetLineStyle(2);
-            // TLine *lineVerticalPDG = new TLine(1.0, 1.019461, 1.04, 1.019461);
-            // lineVerticalPDG->SetLineColor(kRed);
-            // lineVerticalPDG->SetLineStyle(2);
-            // lineHorizontalPDG->Draw("same");
-            // lineVerticalPDG->Draw("same");
-            // lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
+            cDeltaM->cd(ibinsPhi + 1);
+            gPad->SetLeftMargin(0.15);
+            gPad->SetBottomMargin(0.15);
+            gPad->SetRightMargin(0.05);
+            gPad->SetTopMargin(0.05);
+            hDeltaM->GetXaxis()->SetTitle("#DeltaM (GeV/#it{c}^{2})");
+            hDeltaM->Draw("COLZ");
+            lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
 
-            // cDeltaRKaonP->cd(ibinsPhi + 1);
-            // gPad->SetLogy();
-            // gPad->SetLeftMargin(0.15);
-            // gPad->SetBottomMargin(0.15);
-            // gPad->SetRightMargin(0.05);
-            // gPad->SetTopMargin(0.05);
-            // hDeltaRKaonPvsptProj->GetXaxis()->SetRangeUser(0, 2);
-            // hDeltaRKaonPvsptProj->GetXaxis()->SetTitle("#DeltaR K^{+} (cm)");
-            // hDeltaRKaonPvsptProj->Draw("HIST");
-            // lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
+            cDeltaRKaonP->cd(ibinsPhi + 1);
+            gPad->SetLogy();
+            gPad->SetLeftMargin(0.15);
+            gPad->SetBottomMargin(0.15);
+            gPad->SetRightMargin(0.05);
+            gPad->SetTopMargin(0.05);
+            hDeltaRKaonPvsptProj->GetXaxis()->SetRangeUser(0, 2);
+            hDeltaRKaonPvsptProj->GetXaxis()->SetTitle("#DeltaR K^{+} (cm)");
+            hDeltaRKaonPvsptProj->Draw("HIST");
+            lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
 
             cDeltaRPhi->cd(ibinsPhi + 1);
             gPad->SetLogy();
@@ -653,42 +595,27 @@ void doublephi()
             hDeltaRPhivsPt->Draw("HIST");
             lat.SetTextFont(22);
             lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
+
+            cpTcorrvspT->cd(ibinsPhi + 1);
+            gPad->SetLogy();
+            gPad->SetLeftMargin(0.15);
+            gPad->SetBottomMargin(0.15);
+            gPad->SetRightMargin(0.05);
+            gPad->SetTopMargin(0.05);
+            hPtCorrvspT->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+            hPtCorrvspT->Draw("HIST");
+            lat.SetTextFont(22);
+            lat.DrawLatex(0.6, 0.8, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", pTbinsPhi[ibinsPhi], pTbinsPhi[ibinsPhi + 1]));
         }
         cPhiSignal->Write("AllPhiMassFits");
         if (isSavePlots)
         {
             cPhiSignal->SaveAs(outputPath + "/phi_mass_allPtBins.png");
             cDeltaRKaonP->SaveAs(outputPath + "/deltaR_kaon_plus_vs_pt.png");
-            // cPhiMassCorrelation->SaveAs(outputPath + "/phi_phi_mass_correlation.png");
+            cDeltaM->SaveAs(outputPath + "/DeltaMvspT.png");
             cDeltaRPhi->SaveAs(outputPath + "/deltaR_phi_vs_pt.png");
+            cpTcorrvspT->SaveAs(outputPath + "/pTcorr_vs_pt.png");
         }
-
-        TCanvas *cPhiPhiMassCorrelation = new TCanvas("cPhiPhiMassCorrelation", "cPhiPhiMassCorrelation", 720, 720);
-        SetCanvasStyle(cPhiPhiMassCorrelation, 0.19, 0.15, 0.05, 0.13);
-        double deltaMLow = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.0);
-        double deltaMHigh = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.015); // 0.01 is good cut (60% statistics are lost)
-        cout << "Entries before the cut " << hPhiPhiMassCorrelation->Integral() << endl;
-
-        hPhiPhiMassCorrelation->GetZaxis()->SetRange(deltaMLow, deltaMHigh);
-        cout << "Entries after the cut " << hPhiPhiMassCorrelation->Integral() << endl;
-
-        TH2F *hPhiPhiMassCorrProj = (TH2F *)hPhiPhiMassCorrelation->Project3D("xy");
-        SetHistoQA2D(hPhiPhiMassCorrProj);
-        hPhiPhiMassCorrProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-        hPhiPhiMassCorrProj->GetYaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-        hPhiPhiMassCorrProj->GetYaxis()->SetTitleOffset(1.9);
-        hPhiPhiMassCorrProj->GetXaxis()->SetNdivisions(505);
-        hPhiPhiMassCorrProj->Draw("COLZ");
-        TLine *lineHorizontalPDG = new TLine(1.019461, 1.0, 1.019461, 1.04);
-        lineHorizontalPDG->SetLineColor(kRed);
-        lineHorizontalPDG->SetLineStyle(2);
-        TLine *lineVerticalPDG = new TLine(1.0, 1.019461, 1.04, 1.019461);
-        lineVerticalPDG->SetLineColor(kRed);
-        lineVerticalPDG->SetLineStyle(2);
-        lineHorizontalPDG->Draw("same");
-        lineVerticalPDG->Draw("same");
-        if (isSavePlots)
-            cPhiPhiMassCorrelation->SaveAs(outputPath + "/phi_phi_mass_correlation.png");
 
         TCanvas *cPurity = new TCanvas("cPurity", "Phi Purity", 720, 720);
         SetCanvasStyle(cPurity, 0.17, 0.03, 0.05, 0.15);
@@ -703,59 +630,6 @@ void doublephi()
         hPurity->Write("PhiPurity");
         if (isSavePlots)
             cPurity->SaveAs(outputPath + "/phi_purity.png");
-
-        TCanvas *cEfficiency = new TCanvas("cEfficiency", "Phi Efficiency", 720, 720);
-        SetCanvasStyle(cEfficiency, 0.17, 0.03, 0.05, 0.15);
-        SetHistoQA(hEfficiency);
-        hEfficiency->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        hEfficiency->GetYaxis()->SetTitle("Efficiency (PID selection / PID loose) (%)");
-        hEfficiency->SetMarkerStyle(20);
-        hEfficiency->SetMarkerSize(1);
-        hEfficiency->SetLineWidth(2);
-        hEfficiency->GetYaxis()->SetRangeUser(0, 100);
-        hEfficiency->Draw("HIST");
-        hEfficiency->Write("PhiEfficiency");
-        if (isSavePlots)
-            cEfficiency->SaveAs(outputPath + "/phi_efficiency.png");
-
-        // TCanvas *cFitMass = new TCanvas("cFitMass", "Phi Mass Fit Parameters", 720, 720);
-        // SetCanvasStyle(cFitMass, 0.17, 0.03, 0.05, 0.15);
-        // SetHistoQA(hPhiMassFit);
-        // hPhiMassFit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        // hPhiMassFit->GetYaxis()->SetTitle("#it{M}_{#phi} (GeV/#it{c}^{2})");
-        // hPhiMassFit->SetMarkerStyle(20);
-        // hPhiMassFit->SetMarkerSize(1);
-        // hPhiMassFit->SetLineWidth(2);
-        // hPhiMassFit->Write("FittedPhiMass");
-        // hPhiMassFit->Draw("pe");
-        // TLine *linePDG = new TLine(pTbinsPhi[0], 1.019461, pTbinsPhi[nPtBinsPhi], 1.019461);
-        // linePDG->SetLineColor(kRed);
-        // linePDG->SetLineStyle(2);
-        // linePDG->SetLineWidth(2);
-        // linePDG->Draw("same");
-        // TLegend *legMass = new TLegend(0.25, 0.18, 0.5, 0.3);
-        // legMass->SetFillStyle(0);
-        // legMass->SetBorderSize(0);
-        // legMass->SetTextFont(42);
-        // legMass->SetTextSize(0.035);
-        // legMass->AddEntry(hPhiMassFit, "Fitted #phi mass", "lpe");
-        // legMass->AddEntry(linePDG, "#phi PDG mass", "l");
-        // legMass->Draw();
-        // if (isSavePlots)
-        //     cFitMass->SaveAs(outputPath + "/phi_mass_fit.png");
-
-        // TCanvas *cFitMassResolution = new TCanvas("cFitMassResolution", "Phi Mass Resolution Fit Parameters", 720, 720);
-        // SetCanvasStyle(cFitMassResolution, 0.17, 0.03, 0.05, 0.15);
-        // SetHistoQA(hPhiMassResolutionFit);
-        // hPhiMassResolutionFit->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        // hPhiMassResolutionFit->GetYaxis()->SetTitle("#sigma_{#phi} (GeV/#it{c}^{2})");
-        // hPhiMassResolutionFit->SetMarkerStyle(20);
-        // hPhiMassResolutionFit->SetMarkerSize(1);
-        // hPhiMassResolutionFit->SetLineWidth(2);
-        // hPhiMassResolutionFit->Draw("pe");
-        // hPhiMassResolutionFit->Write("FittedPhiMassResolution");
-        // if (isSavePlots)
-        //     cFitMassResolution->SaveAs(outputPath + "/phi_mass_resolution_fit.png");
 
         TCanvas *cFitYield = new TCanvas("cFitYield", "Phi Yield Fit Parameters", 720, 720);
         SetCanvasStyle(cFitYield, 0.15, 0.03, 0.05, 0.15);

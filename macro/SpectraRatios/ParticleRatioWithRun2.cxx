@@ -12,9 +12,12 @@ using namespace std;
 //===== In Pythia (Local):
 // 1. Nothing is averaged. All as summed.
 
+// Important: Do not scale any graph without cloning it first, otherwise the original graph will be scaled and it will affect other plots.
+
 TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denominator, bool isModel = false, float CorrFactorDen = 1);
 TGraphErrors **MakeRatioUncorr(TGraphErrors **numerator, TGraphErrors **denominator, float CorrFactorDen = 1, int nGraphs = 3);
 TGraphErrors *GetGraph(TFile *f, const string &name);
+void makeGraphXaxisCube(TGraph *gr);
 TFile *OpenFile(const string &path)
 {
     TFile *f = new TFile(path.c_str(), "read");
@@ -26,6 +29,9 @@ TFile *OpenFile(const string &path)
     return f;
 }
 void canvas_style(TCanvas *c, double pad1Size = 0.7, double pad2Size = 0.3, double leftMargin = 0.16, double rightMargin = 0.06, double topMargin = 0.02, double bottomMargin = 0.35);
+void CanvasPartition(TCanvas *C, const Int_t Nx = 2, const Int_t Ny = 2, Float_t lMargin = 0.15, Float_t rMargin = 0.05, Float_t bMargin = 0.15, Float_t tMargin = 0.05);
+double XtoPad(double x);
+double YtoPad(double x);
 
 void setStyle(TGraphErrors *gr, int color, int style)
 {
@@ -172,29 +178,34 @@ void ParticleRatioWithRun2()
     //======================================================
     //    ===========EPOS local model files===========
     //======================================================
-    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA.root", "read");
-    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut2.root", "read");
-    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_NopTCut.root", "read");
-    TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_INELgt0Correct.root", "read"); // latest one
-    // TFile *fEPOS = new TFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root", "read"); //Used for results
-    // TFile *fEPOS = new TFile("EPOS_finalQA_CorrectpTCutPiKp.root", "read"); // temporary for checks
-    if (fEPOS->IsZombie())
-    {
-        cout << "Error: EPOS file not found" << endl;
-        return;
-    }
+    // TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA.root");
+    // TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_ptCut2.root");
+    // TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_NopTCut.root");
+    TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_INELgt0Correct.root"); // latest one
+    // TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root"); // Used for results
+    // TFile *fEPOS = OpenFile("EPOS_finalQA_CorrectpTCutPiKp.root"); // temporary for checks
+
+    // TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_pp13TeV_rhoKstar_Hyunji2.root");
 
     //======================
     // Long lived particles
     //======================
-    TGraphErrors *gMYieldKshortEPOS_IST0 = GetGraph(fEPOS, "IST0/kshort_vs_mult");
+    // TGraphErrors *gMYieldKshortEPOS_IST0 = GetGraph(fEPOS, "IST0/kshort_vs_mult");
     TGraphErrors *gMYieldProtonEPOS_IST0 = GetGraph(fEPOS, "IST0/proton_vs_mult");
     TGraphErrors *gMYieldPionEPOS_IST0 = GetGraph(fEPOS, "IST0/pion_vs_mult");
     TGraphErrors *gMYieldKaonEPOS_IST0 = GetGraph(fEPOS, "IST0/kaon_vs_mult");
-    RestrictModelXaxis(gMYieldKshortEPOS_IST0, 3.1, 23.5);
+    // RestrictModelXaxis(gMYieldKshortEPOS_IST0, 3.1, 23.5);
     RestrictModelXaxis(gMYieldProtonEPOS_IST0, 3.1, 23.5);
     RestrictModelXaxis(gMYieldPionEPOS_IST0, 3.1, 23.5);
     RestrictModelXaxis(gMYieldKaonEPOS_IST0, 3.1, 23.5);
+
+    // // Temporary using Hyunji's EPOS file
+    // TGraphErrors *gMYieldProtonEPOS_IST0 = GetGraph(fEPOS, "c1_dNdy/proton/UrQMD_OFF");
+    // TGraphErrors *gMYieldPionEPOS_IST0 = GetGraph(fEPOS, "c1_dNdy/pion/UrQMD_OFF");
+    // TGraphErrors *gMYieldKaonEPOS_IST0 = GetGraph(fEPOS, "c1_dNdy/kaon/UrQMD_OFF");
+    // makeGraphXaxisCube(gMYieldProtonEPOS_IST0);
+    // makeGraphXaxisCube(gMYieldPionEPOS_IST0);
+    // makeGraphXaxisCube(gMYieldKaonEPOS_IST0);
 
     enum Particle2
     {
@@ -248,6 +259,16 @@ void ParticleRatioWithRun2()
         }
     }
 
+    // // Temporarily using from Hyunji's EPOS file
+    // gEPOS_Yield[9][kITY0][kKstar_epos] = GetGraph(fEPOS, "c1_dNdy/Kstar892/UrQMD_OFF");
+    // gEPOS_Yield[9][kITY80][kKstar_epos] = GetGraph(fEPOS, "c1_dNdy/Kstar892/UrQMD_reg");
+    // gEPOS_MeanPt[9][kITY0][kKstar_epos] = GetGraph(fEPOS, "c2_meanpT/Kstar892/UrQMD_OFF");
+    // gEPOS_MeanPt[9][kITY80][kKstar_epos] = GetGraph(fEPOS, "c2_meanpT/Kstar892/UrQMD_reg");
+    // makeGraphXaxisCube(gEPOS_Yield[9][kITY0][kKstar_epos]);
+    // makeGraphXaxisCube(gEPOS_Yield[9][kITY80][kKstar_epos]);
+    // makeGraphXaxisCube(gEPOS_MeanPt[9][kITY0][kKstar_epos]);
+    // makeGraphXaxisCube(gEPOS_MeanPt[9][kITY80][kKstar_epos]);
+
     //===============================================
     // ===========Pythia tested locally================
     //===============================================
@@ -276,6 +297,8 @@ void ParticleRatioWithRun2()
     {
         kPythiaMonashLocal,
         kPythiaShovingLocal,
+        kPythiaMonashNoCRLocal,
+        kPythiaRopesLocal,
         kNPythiaModels
     };
 
@@ -288,9 +311,11 @@ void ParticleRatioWithRun2()
     //     "Pythia Rescattering"};
     const char *modelLabelLocal[kNPythiaModels] = {
         "Pythia Monash",
-        "Pythia Shoving"};
+        "Pythia Shoving",
+        "Pythia Monash No CR",
+        "Pythia Ropes"};
     // vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes, fPythiaMonashRescattering, fPythiaRescattering};
-    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaShoving};
+    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaShoving, fPythiaMonashNoCR, fPythiaRopes};
     int lineStylesPythia[kNPythiaModels + 10] = {1, 1, 2, 2, 2, 2};
     TGraphErrors *gPythiaYieldLocal[kNPythiaModels][kNParticles_epos];
     TGraphErrors *gPythiaMeanPtLocal[kNPythiaModels][kNParticles_epos];
@@ -510,16 +535,17 @@ void ParticleRatioWithRun2()
     // cout << Form("Maximum Run3 systematic uncertainty = %.2f %%\n", maxRun3);
     // cout << Form("Maximum Run2 systematic uncertainty = %.2f %%\n", maxRun2);
     // cout << "==============================================================\n";
-
-    ScaleGraph(gEPOS_Yield[9][kITY0][kKstar_epos], 0.5); // In EPOS it is sum not average for all particles in latest root file.
-    gEPOS_Yield[9][kITY0][kKstar_epos]->SetLineStyle(9);
-    gEPOS_Yield[9][kITY0][kKstar_epos]->SetLineWidth(3);
-    gEPOS_Yield[9][kITY0][kKstar_epos]->Draw("l same");
-    ScaleGraph(gEPOS_Yield[9][kITY80][kKstar_epos], 0.5);
-    gEPOS_Yield[9][kITY80][kKstar_epos]->SetLineColor(kBlue - 6);
-    gEPOS_Yield[9][kITY80][kKstar_epos]->SetLineStyle(1);
-    gEPOS_Yield[9][kITY80][kKstar_epos]->SetLineWidth(3);
-    gEPOS_Yield[9][kITY80][kKstar_epos]->Draw("l same");
+    TGraphErrors *gKstarEPOSYieldUrQMDClone1 = (TGraphErrors *)(gEPOS_Yield[9][kITY0][kKstar_epos])->Clone("gKstarEPOSYieldUrQMDClone1");
+    TGraphErrors *gKstarEPOSNoUrQMDClone1 = (TGraphErrors *)(gEPOS_Yield[9][kITY80][kKstar_epos])->Clone("gKstarEPOSNoUrQMDClone1");
+    ScaleGraph(gKstarEPOSYieldUrQMDClone1, 0.5); // In EPOS it is sum not average for all particles in latest root file.
+    gKstarEPOSYieldUrQMDClone1->SetLineStyle(9);
+    gKstarEPOSYieldUrQMDClone1->SetLineWidth(3);
+    gKstarEPOSYieldUrQMDClone1->Draw("l same");
+    ScaleGraph(gKstarEPOSNoUrQMDClone1, 0.5);
+    gKstarEPOSNoUrQMDClone1->SetLineColor(kBlue - 6);
+    gKstarEPOSNoUrQMDClone1->SetLineStyle(1);
+    gKstarEPOSNoUrQMDClone1->SetLineWidth(3);
+    gKstarEPOSNoUrQMDClone1->Draw("l same");
     // gEPOS_Yield[9][kITY81][kKstar_epos]->SetLineColor(kGreen + 2);
     // gEPOS_Yield[9][kITY81][kKstar_epos]->SetLineStyle(4);
     // gEPOS_Yield[9][kITY81][kKstar_epos]->Draw("l same");
@@ -534,8 +560,9 @@ void ParticleRatioWithRun2()
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
-        ScaleGraph(gPythiaYieldLocal[imodel][kKstar_epos], 0.5);
-        gPythiaYieldLocal[imodel][kKstar_epos]->Draw("l same");
+        TGraphErrors *gPythiaYieldLocalClone = (TGraphErrors *)(gPythiaYieldLocal[imodel][kKstar_epos])->Clone(Form("gPythiaYieldLocalClone_%d", imodel));
+        ScaleGraph(gPythiaYieldLocalClone, 0.5);
+        gPythiaYieldLocalClone->Draw("l same");
     }
 
     TLegend *legend = new TLegend(0.18, 0.75, 0.48, 0.9);
@@ -628,7 +655,7 @@ void ParticleRatioWithRun2()
     legend2->Draw();
     // latex.DrawLatex(0.7, 0.85, "#frac{K* (892)^{0} + #bar{K}* (892)^{0}}{2}");
     latex.DrawLatex(0.28, 0.9, "K* (892)^{0}");
-    // if (isSavePlots)
+    if (isSavePlots)
     {
         cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar_EPOS_UrQMDON.png");
     }
@@ -964,104 +991,476 @@ void ParticleRatioWithRun2()
         cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.png");
     }
 
-    // //=====================================================================
-    // //  ====== <pT> vs mass/n_q for for different mult classes ===========
-    // //=====================================================================
+    //=====================================================================
+    //  ====== <pT> vs mass/n_q for common multiplicity classes ===========
+    //=====================================================================
+
     TCanvas *cMeanPtMassNq = new TCanvas("cMeanPtMassNq", "cMeanPtMassNq", 1440, 720);
     SetCanvasStyle(cMeanPtMassNq, 0.15, 0.03, 0.03, 0.15);
-    cMeanPtMassNq->Divide(4, 3);
-    TGraphErrors *gMPtMultClasses[10][2]; // 10 multiplicity classes, 2 for statistical and systematic errors
-    int multClasses[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    cMeanPtMassNq->Divide(2, 2, 0, 0);
+    const int Nx = 2;
+    const int Ny = 2;
+    // Margins
+    Float_t lMargin = 0.07;
+    Float_t rMargin = 0.003;
+    Float_t bMargin = 0.1;
+    Float_t tMargin = 0.03;
+
+    // Create a new pad for the text
+    TPad *textPad = new TPad("textPad", "", 0, 0, 1, 1);
+    textPad->SetFillStyle(0); // Make the pad transparent
+    textPad->Draw();
+    textPad->cd(); // Switch to the text pad
+
+    // Create a TLatex object for the left side text
+    TLatex *textLeft = new TLatex(0.019, 0.45, "#LT#it{p}_{T}#GT (GeV/#it{c})");
+    textLeft->SetTextAlign(12); // Left alignment
+    textLeft->SetTextAngle(90); // Rotate the text by 90 degrees
+    textLeft->SetTextSize(0.045);
+    textLeft->SetTextFont(42);
+    textLeft->Draw();
+
+    // Create a TLatex object for the bottom text
+    TLatex *textBottom = new TLatex(0.5, 0.025, "Mass / n_{q} (GeV/#it{c}^{2})");
+    textBottom->SetTextAlign(22); // Center alignment
+    textBottom->SetTextSize(0.045);
+    textBottom->SetTextFont(42);
+    textBottom->Draw();
+
+    cMeanPtMassNq->cd();
+    CanvasPartition(cMeanPtMassNq, Nx, Ny, lMargin, rMargin, bMargin, tMargin);
+    TPad *pad[Nx][Ny];
+
     TLatex latexMPtMassNq;
     latexMPtMassNq.SetNDC();
     latexMPtMassNq.SetTextFont(42);
-    latexMPtMassNq.SetTextSize(0.04);
-    int sizePDGMasses = sizeof(PDGMasses) / sizeof(PDGMasses[0]);
 
-    // Print the dNch/deta values for Xi(1530) and Charged K* for each multiplicity class
-    int totalPointsKstar = gMeanPtAll[0][0]->GetN();
-    int totalPointsXiStar = gMeanPtAll[7][0]->GetN();
-    int totalPointsChKstar = gMeanPtAll[6][0]->GetN();
-    int totalPointsPhi = gMeanPtAll[1][0]->GetN();
+    const int sizePDGMasses = sizeof(PDGMasses) / sizeof(PDGMasses[0]);
 
-    for (int iKstar = 0; iKstar < totalPointsKstar; iKstar++)
-    {
-        double xKstar, yKstar;
-        gMeanPtAll[0][0]->GetPoint(iKstar, xKstar, yKstar);
-        cout << "Multiplicity class " << iKstar << ": dNch/deta for K*0 = " << xKstar << endl;
-    }
-    cout << endl;
-    for (int iXi = 0; iXi < totalPointsXiStar; iXi++)
-    {
-        double xXi, yXi;
-        gMeanPtAll[7][0]->GetPoint(iXi, xXi, yXi);
-        cout << "Multiplicity class " << iXi << ": dNch/deta for Xi(1530) = " << xXi << endl;
-    }
-    cout << endl;
-    for (int iChKstar = 0; iChKstar < totalPointsChKstar; iChKstar++)
-    {
-        double xChKstar, yChKstar;
-        gMeanPtAll[6][0]->GetPoint(iChKstar, xChKstar, yChKstar);
-        cout << "Multiplicity class " << iChKstar << ": dNch/deta for Charged K* = " << xChKstar << endl;
-    }
-    cout << endl;
-    for (int iPhi = 0; iPhi < totalPointsPhi; iPhi++)
-    {
-        double xPhi, yPhi;
-        gMeanPtAll[1][0]->GetPoint(iPhi, xPhi, yPhi);
-        cout << "Multiplicity class " << iPhi << ": dNch/deta for Phi = " << xPhi << endl;
-    }
-
-
-    for (int iMult = 0; iMult < 10; iMult++)
-    {
-        gMPtMultClasses[iMult][0] = new TGraphErrors();
-        gMPtMultClasses[iMult][1] = new TGraphErrors();
-        gMPtMultClasses[iMult][0]->SetName(Form("gMPtMultClass_%d_stat", iMult));
-        gMPtMultClasses[iMult][1]->SetName(Form("gMPtMultClass_%d_sys", iMult));
-
-        for (int iMasses = 0; iMasses < sizePDGMasses; iMasses++)
+    // High, Mid, Low indices
+    const int multIndex[3][14] =
         {
-            if (iMult == 0)
-                cout << "Particle " << ParticleNames2[iMasses] << ", No. of Mult Classes " << gMeanPtAll[iMasses][0]->GetN() << endl;
+            {8, 8, 8, 8, 8, 8, 1, 3, 3, 8, 8, 3, 3, 8},
+            {4, 4, 4, 4, 4, 4, 5, 1, 1, 4, 4, 1, 1, 4},
+            {1, 1, 1, 1, 1, 1, 7, 0, 0, 1, 1, 0, 0, 1}};
 
-            double x, y;
-            gMeanPtAll[iMasses][0]->GetPoint(iMult, x, y);
-            double xerr = gMeanPtAll[iMasses][0]->GetErrorX(iMult);
-            double yerr = gMeanPtAll[iMasses][0]->GetErrorY(iMult);
-            double yerr_sys = gMeanPtAll[iMasses][1]->GetErrorY(iMult);
+    const char *className[3] =
+        {
+            "Low",
+            "Mid",
+            "High"};
 
-            gMPtMultClasses[iMult][0]->SetPoint(iMasses, PDGMasses[iMasses] / nq[iMasses], y);
-            gMPtMultClasses[iMult][1]->SetPoint(iMasses, PDGMasses[iMasses] / nq[iMasses], y);
-            gMPtMultClasses[iMult][0]->SetPointError(iMasses, 0, yerr);
-            gMPtMultClasses[iMult][1]->SetPointError(iMasses, 0, yerr_sys);
+    const char *activityRange[3] =
+        {
+            "4.5 < #LTdN_{ch}/d#eta#GT_{|#eta|<0.5} < 5.9",
+            "11.5 < #LTdN_{ch}/d#eta#GT_{|#eta|<0.5} < 13.0",
+            "18.5 < #LTdN_{ch}/d#eta#GT_{|#eta|<0.5} < 20.0"};
+
+    // TGraphErrors *gClass[4][2];
+    TGraphErrors *gMeson[4][2];
+    TGraphErrors *gBaryon[4][2];
+
+    // for (int iclass = 0; iclass < 4; iclass++)
+    for (int ix = 0; ix < Nx; ix++)
+    {
+        for (int iy = 0; iy < Ny; iy++)
+        {
+            // int iclass = ix * Ny + iy;
+            int panelMap[2][2] =
+                {
+                    {2, 0}, // ix=0
+                    {3, 1}  // ix=1
+                };
+
+            int iclass = panelMap[ix][iy];
+            // gClass[iclass][0] = new TGraphErrors();
+            // gClass[iclass][1] = new TGraphErrors();
+
+            // gClass[iclass][0]->SetName(Form("gClass_%d_stat", iclass));
+            // gClass[iclass][1]->SetName(Form("gClass_%d_sys", iclass));
+
+            gMeson[iclass][0] = new TGraphErrors();
+            gMeson[iclass][1] = new TGraphErrors();
+            gBaryon[iclass][0] = new TGraphErrors();
+            gBaryon[iclass][1] = new TGraphErrors();
+            gMeson[iclass][0]->SetName(Form("gMeson_%d_stat", iclass));
+            gMeson[iclass][1]->SetName(Form("gMeson_%d_sys", iclass));
+            gBaryon[iclass][0]->SetName(Form("gBaryon_%d_stat", iclass));
+            gBaryon[iclass][1]->SetName(Form("gBaryon_%d_sys", iclass));
+
+            int point = 0;
+
+            for (int ip = 0; ip < sizePDGMasses; ip++)
+            {
+                int imult = -1;
+
+                if (iclass < 3)
+                {
+                    imult = multIndex[iclass][ip];
+                    if (imult >= gMeanPtAll[ip][0]->GetN())
+                        continue;
+                }
+                else
+                {
+                    // Fourth panel:
+                    // only particles with 10 multiplicity bins
+                    // excluding K*0
+                    if (ip == 0)
+                        continue;
+                    if (gMeanPtAll[ip][0]->GetN() != 10)
+                        continue;
+                    imult = 0;
+                }
+
+                double x, y;
+                gMeanPtAll[ip][0]->GetPoint(imult, x, y);
+
+                double eyStat = gMeanPtAll[ip][0]->GetErrorY(imult);
+                double eySys = gMeanPtAll[ip][1]->GetErrorY(imult);
+
+                double massOverNq = PDGMasses[ip] / nq[ip];
+
+                int color = (nq[ip] == 2) ? kRed + 1 : kBlue + 1;
+
+                // gClass[iclass][0]->SetPoint(point, massOverNq, y);
+                // gClass[iclass][1]->SetPoint(point, massOverNq, y);
+
+                if (nq[ip] == 2)
+                {
+                    gMeson[iclass][0]->SetPoint(point, massOverNq, y);
+                    gMeson[iclass][1]->SetPoint(point, massOverNq, y);
+                    gMeson[iclass][0]->SetPointError(point, 0, eyStat);
+                    gMeson[iclass][1]->SetPointError(point, 0, eySys);
+                }
+                else
+                {
+                    gBaryon[iclass][0]->SetPoint(point, massOverNq, y);
+                    gBaryon[iclass][1]->SetPoint(point, massOverNq, y);
+                    gBaryon[iclass][0]->SetPointError(point, 0, eyStat);
+                    gBaryon[iclass][1]->SetPointError(point, 0, eySys);
+                }
+
+                // gClass[iclass][0]->SetPointError(point, 0, eyStat);
+                // gClass[iclass][1]->SetPointError(point, 0, eySys);
+
+                point++;
+            }
+
+            cMeanPtMassNq->cd(0);
+            pad[ix][iy] = (TPad *)cMeanPtMassNq->FindObject(Form("pad_%d_%d", ix, iy));
+            pad[ix][iy]->Draw();
+            pad[ix][iy]->SetFillStyle(4000);
+            pad[ix][iy]->SetFrameFillStyle(4000);
+            pad[ix][iy]->cd();
+            // Size factors
+            Float_t xFactor = pad[0][0]->GetAbsWNDC() / pad[ix][iy]->GetAbsWNDC();
+            Float_t yFactor = pad[0][0]->GetAbsHNDC() / pad[ix][iy]->GetAbsHNDC();
+
+            gPad->SetTicks();
+
+            gMeson[iclass][0]->SetMarkerStyle(20);
+            gMeson[iclass][0]->SetMarkerSize(1.2);
+            gMeson[iclass][0]->SetMarkerColor(kRed + 1);
+            gMeson[iclass][0]->SetLineColor(kRed + 1);
+
+            gMeson[iclass][1]->SetLineColor(kRed + 1);
+            gMeson[iclass][1]->SetFillStyle(0);
+
+            gMeson[iclass][0]->GetXaxis()->SetTitle(0);
+            gMeson[iclass][0]->GetYaxis()->SetTitle(0);
+
+            gMeson[iclass][0]->GetXaxis()->SetLabelSize(0.075);
+            gMeson[iclass][0]->GetYaxis()->SetLabelSize(0.075);
+            gMeson[iclass][0]->SetMinimum(0.15);
+            gMeson[iclass][0]->SetMaximum(2.48);
+
+            gMeson[iclass][0]->GetXaxis()->SetLimits(0.01, 0.59);
+            gMeson[iclass][0]->GetYaxis()->SetNdivisions(505);
+
+            gMeson[iclass][0]->Draw("AP");
+            gMeson[iclass][1]->Draw("5 same");
+
+            gBaryon[iclass][0]->SetMarkerStyle(21);
+            gBaryon[iclass][0]->SetMarkerSize(1.2);
+            gBaryon[iclass][0]->SetMarkerColor(kBlue + 1);
+            gBaryon[iclass][0]->SetLineColor(kBlue + 1);
+
+            gBaryon[iclass][1]->SetLineColor(kBlue + 1);
+            gBaryon[iclass][1]->SetFillStyle(0);
+            gBaryon[iclass][0]->SetTitle(0);
+            gBaryon[iclass][0]->Draw("P same");
+            gBaryon[iclass][1]->Draw("5 same");
+
+            const char *shortName[] =
+                {
+                    "K*",        // 0
+                    "#phi",      // 1
+                    "#pi",       // 2
+                    "K",         // 3
+                    "p",         // 4
+                    "K_{S}^{0}", // 5
+                    "K*",        // 6
+                    "#Xi*",      // 7
+                    "#Lambda*",  // 8
+                    "#rho",      // 9
+                    "#Xi",       // 10
+                    "#Sigma*",   // 11
+                    "#Omega",    // 12
+                    "#Lambda"    // 13
+                };
+
+            vector<float> adjustments = {
+                -0.002, // K*0
+                0,      // phi
+                0,      // pion
+                -0.006, // Kaon
+                0,      // proton
+                0.006,  // Kshort
+                -0.002, // charged K*
+                0.009,  // Xi(1530)
+                -0.009, // Lambda(1520)
+                0,      // Rho(770)
+                -0.008, // Xi(Ground state)
+                0.007,  // Sigma(1385)
+                0,      // Omega
+                0,      // Lambda (ground state)
+            };
+
+            if (iclass == 0)
+            {
+                for (int ip = 1; ip < sizePDGMasses; ip++)
+                {
+                    double xx = PDGMasses[ip] / nq[ip];
+
+                    TLatex tnew;
+                    tnew.DrawLatex(xx + adjustments[ip], 0.28, shortName[ip]);
+                }
+            }
+
+            if (iclass < 3)
+            {
+                latexMPtMassNq.SetTextSize(0.06 * yFactor);
+                latexMPtMassNq.DrawLatex(XtoPad(0.08), YtoPad(0.85), activityRange[iclass]);
+            }
+            else
+            {
+                latexMPtMassNq.SetTextSize(0.06 * yFactor);
+                latexMPtMassNq.DrawLatex(XtoPad(0.08), YtoPad(0.85), "#LTdN_{ch}/d#eta#GT_{|#eta|<0.5} = 25.75");
+            }
         }
-        cMeanPtMassNq->cd(iMult + 1);
-        gMPtMultClasses[iMult][0]->SetMarkerStyle(20);
-        gMPtMultClasses[iMult][0]->SetMarkerColor(kBlue);
-        gMPtMultClasses[iMult][0]->SetLineColor(kBlue);
-        gMPtMultClasses[iMult][0]->GetXaxis()->SetTitle("Mass/n_{q} (GeV/#it{c}^{2})");
-        gMPtMultClasses[iMult][0]->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/#it{c})");
-        gMPtMultClasses[iMult][0]->SetMaximum(2.5);
-        gMPtMultClasses[iMult][0]->SetMinimum(0.0);
-        gMPtMultClasses[iMult][0]->Draw("APE");
-        gMPtMultClasses[iMult][1]->SetLineColor(kBlue);
-        gMPtMultClasses[iMult][1]->SetFillStyle(0);
-        gMPtMultClasses[iMult][1]->Draw("5 same");
-        latexMPtMassNq.DrawLatex(0.6, 0.8, Form("Multiplicity: %d-%d", multClasses[iMult], multClasses[iMult + 1]));
     }
-    // cout << "Total size of graph is " << gMPtMultClasses[0][0]->GetN() << endl;
-    // for (int iMult = 0; iMult < 10; iMult++)
-    // {
-    //     cout << "Multiplicity: " << multClasses[iMult] << "-" << multClasses[iMult + 1] << endl;
-    //     for (int iMasses = 0; iMasses < sizePDGMasses; iMasses++)
-    //     {
-    //         double x, y;
-    //         gMPtMultClasses[iMult][0]->GetPoint(iMasses, x, y);
-    //         cout << "Mass/n_q: " << x << ", <pT>: " << y << endl;
-    //     }
-    // }
-    cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_Run3.png");
+
+    if (isSavePlots)
+        cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_CommonClasses.png");
+
+    //=====================================================================
+    //  ====== <pT> vs mass for common multiplicity classes ===========
+    //=====================================================================
+
+    TCanvas *cMeanPtMassClass = new TCanvas("cMeanPtMassClass", "cMeanPtMassClass", 1440, 720);
+    SetCanvasStyle(cMeanPtMassClass, 0.15, 0.03, 0.03, 0.15);
+    cMeanPtMassClass->Divide(2, 2, 0, 0);
+
+    // Create a new pad for the text
+    TPad *textPad2 = new TPad("textPad2", "", 0, 0, 1, 1);
+    textPad2->SetFillStyle(0); // Make the pad transparent
+    textPad2->Draw();
+    textPad2->cd(); // Switch to the text pad
+
+    textLeft->Draw();
+    textBottom->SetTitle("Mass (GeV/#it{c}^{2})");
+    textBottom->Draw();
+
+    cMeanPtMassClass->cd();
+    CanvasPartition(cMeanPtMassClass, Nx, Ny, lMargin, rMargin, bMargin, tMargin);
+    TPad *pad2[Nx][Ny];
+
+    latexMPtMassNq.SetNDC();
+    latexMPtMassNq.SetTextFont(42);
+
+    TGraphErrors *gMeson2[4][2];
+    TGraphErrors *gBaryon2[4][2];
+
+    // for (int iclass = 0; iclass < 4; iclass++)
+    for (int ix = 0; ix < Nx; ix++)
+    {
+        for (int iy = 0; iy < Ny; iy++)
+        {
+            int panelMap[2][2] =
+                {
+                    {2, 0}, // ix=0
+                    {3, 1}  // ix=1
+                };
+
+            int iclass = panelMap[ix][iy];
+
+            gMeson2[iclass][0] = new TGraphErrors();
+            gMeson2[iclass][1] = new TGraphErrors();
+            gBaryon2[iclass][0] = new TGraphErrors();
+            gBaryon2[iclass][1] = new TGraphErrors();
+            gMeson2[iclass][0]->SetName(Form("gMeson2_%d_stat", iclass));
+            gMeson2[iclass][1]->SetName(Form("gMeson2_%d_sys", iclass));
+            gBaryon2[iclass][0]->SetName(Form("gBaryon2_%d_stat", iclass));
+            gBaryon2[iclass][1]->SetName(Form("gBaryon2_%d_sys", iclass));
+
+            int point = 0;
+
+            for (int ip = 0; ip < sizePDGMasses; ip++)
+            {
+                int imult = -1;
+
+                if (iclass < 3)
+                {
+                    imult = multIndex[iclass][ip];
+                    if (imult >= gMeanPtAll[ip][0]->GetN())
+                        continue;
+                }
+                else
+                {
+                    // Fourth panel:
+                    // only particles with 10 multiplicity bins
+                    // excluding K*0
+                    if (ip == 0)
+                        continue;
+                    if (gMeanPtAll[ip][0]->GetN() != 10)
+                        continue;
+                    imult = 0;
+                }
+
+                double x, y;
+                gMeanPtAll[ip][0]->GetPoint(imult, x, y);
+
+                double eyStat = gMeanPtAll[ip][0]->GetErrorY(imult);
+                double eySys = gMeanPtAll[ip][1]->GetErrorY(imult);
+
+                double massOverNq = PDGMasses[ip];
+
+                int color = (nq[ip] == 2) ? kRed + 1 : kBlue + 1;
+
+                if (nq[ip] == 2)
+                {
+                    gMeson2[iclass][0]->SetPoint(point, massOverNq, y);
+                    gMeson2[iclass][1]->SetPoint(point, massOverNq, y);
+                    gMeson2[iclass][0]->SetPointError(point, 0, eyStat);
+                    gMeson2[iclass][1]->SetPointError(point, 0, eySys);
+                }
+                else
+                {
+                    gBaryon2[iclass][0]->SetPoint(point, massOverNq, y);
+                    gBaryon2[iclass][1]->SetPoint(point, massOverNq, y);
+                    gBaryon2[iclass][0]->SetPointError(point, 0, eyStat);
+                    gBaryon2[iclass][1]->SetPointError(point, 0, eySys);
+                }
+
+                point++;
+            }
+
+            cMeanPtMassClass->cd(0);
+            pad2[ix][iy] = (TPad *)cMeanPtMassClass->FindObject(Form("pad_%d_%d", ix, iy));
+            pad2[ix][iy]->Draw();
+            pad2[ix][iy]->SetFillStyle(4000);
+            pad2[ix][iy]->SetFrameFillStyle(4000);
+            pad2[ix][iy]->cd();
+            // Size factors
+            Float_t xFactor = pad2[0][0]->GetAbsWNDC() / pad2[ix][iy]->GetAbsWNDC();
+            Float_t yFactor = pad2[0][0]->GetAbsHNDC() / pad2[ix][iy]->GetAbsHNDC();
+
+            gPad->SetTicks();
+
+            gMeson2[iclass][0]->SetMarkerStyle(20);
+            gMeson2[iclass][0]->SetMarkerSize(1.2);
+            gMeson2[iclass][0]->SetMarkerColor(kRed + 1);
+            gMeson2[iclass][0]->SetLineColor(kRed + 1);
+
+            gMeson2[iclass][1]->SetLineColor(kRed + 1);
+            gMeson2[iclass][1]->SetFillStyle(0);
+
+            gMeson2[iclass][0]->GetXaxis()->SetTitle(0);
+            gMeson2[iclass][0]->GetYaxis()->SetTitle(0);
+
+            gMeson2[iclass][0]->GetXaxis()->SetLabelSize(0.075);
+            gMeson2[iclass][0]->GetYaxis()->SetLabelSize(0.075);
+            gMeson2[iclass][0]->SetMinimum(0.15);
+            gMeson2[iclass][0]->SetMaximum(2.48);
+
+            gMeson2[iclass][0]->GetXaxis()->SetLimits(0.01, 1.89);
+            gMeson2[iclass][0]->GetYaxis()->SetNdivisions(505);
+
+            gMeson2[iclass][0]->Draw("AP");
+            gMeson2[iclass][1]->Draw("5 same");
+
+            gBaryon2[iclass][0]->SetMarkerStyle(21);
+            gBaryon2[iclass][0]->SetMarkerSize(1.2);
+            gBaryon2[iclass][0]->SetMarkerColor(kBlue + 1);
+            gBaryon2[iclass][0]->SetLineColor(kBlue + 1);
+
+            gBaryon2[iclass][1]->SetLineColor(kBlue + 1);
+            gBaryon2[iclass][1]->SetFillStyle(0);
+            gBaryon2[iclass][0]->SetTitle(0);
+            gBaryon2[iclass][0]->Draw("P same");
+            gBaryon2[iclass][1]->Draw("5 same");
+
+            const char *shortName[] =
+                {
+                    "K*",        // 0
+                    "#phi",      // 1
+                    "#pi",       // 2
+                    "K",         // 3
+                    "p",         // 4
+                    "K_{S}^{0}", // 5
+                    "K*",        // 6
+                    "#Xi*",      // 7
+                    "#Lambda*",  // 8
+                    "#rho",      // 9
+                    "#Xi",       // 10
+                    "#Sigma*",   // 11
+                    "#Omega",    // 12
+                    "#Lambda"    // 13
+                };
+
+            vector<float> adjustments = {
+                -0.01,  // K*0
+                0,      // phi
+                0,      // pion
+                -0.022, // Kaon
+                0.012,  // proton
+                0.022,  // Kshort
+                -0.01,  // charged K*
+                0.028,  // Xi(1530)
+                -0.024, // Lambda(1520)
+                0,      // Rho(770)
+                -0.008, // Xi(Ground state)
+                0.007,  // Sigma(1385)
+                0,      // Omega
+                0,      // Lambda (ground state)
+            };
+
+            if (iclass == 0)
+            {
+                for (int ip = 1; ip < sizePDGMasses; ip++)
+                {
+                    double xx = PDGMasses[ip];
+
+                    TLatex tnew;
+                    tnew.DrawLatex(xx + adjustments[ip], 0.28, shortName[ip]);
+                }
+            }
+
+            if (iclass < 3)
+            {
+                latexMPtMassNq.SetTextSize(0.06 * yFactor);
+                latexMPtMassNq.DrawLatex(XtoPad(0.08), YtoPad(0.85), activityRange[iclass]);
+            }
+            else
+            {
+                latexMPtMassNq.SetTextSize(0.06 * yFactor);
+                latexMPtMassNq.DrawLatex(XtoPad(0.08), YtoPad(0.85), "#LTdN_{ch}/d#eta#GT_{|#eta|<0.5} = 25.75");
+            }
+        }
+    }
+
+    if (isSavePlots)
+        cMeanPtMassClass->SaveAs("Plots/MeanPt_Mass_CommonClasses.png");
 
     //=================================================================================
     // =====================(<pT> - m) vs <dNch/deta> (hadrons) =========================
@@ -1133,7 +1532,7 @@ void ParticleRatioWithRun2()
     legendMeanPtMassScaled->AddEntry(gMPtXiStarRun2Scaled[0], "#Xi(1530)", "P");
     legendMeanPtMassScaled->AddEntry(gMPtOmegaRun2Scaled[0], "#Omega", "P");
     legendMeanPtMassScaled->Draw();
-    // if (isSavePlots)
+    if (isSavePlots)
     {
         cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.png");
     }
@@ -1194,7 +1593,7 @@ void ParticleRatioWithRun2()
     gMPtOmegaRun2Scaled[1]->Draw("5 same");
 
     legendMeanPtMassScaled->Draw();
-    // if (isSavePlots)
+    if (isSavePlots)
     {
         cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.png");
     }
@@ -1363,8 +1762,8 @@ void ParticleRatioWithRun2()
     gRatioKstarKaon[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarKaon[0]->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarKaon[0]);
-    // gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.25, 0.43);
-    gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.19, 0.46);
+    gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.25, 0.73);
+    // gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.19, 0.46);
     gRatioKstarKaon[0]->GetXaxis()->SetLimits(0, 27);
     gRatioKstarKaon[0]->SetMarkerColor(kRed);
     gRatioKstarKaon[0]->SetLineColor(kRed);
@@ -1424,7 +1823,7 @@ void ParticleRatioWithRun2()
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
-        TGraphErrors *gRatioKstarKaPythiaModel = MakeRatio(gPythiaYieldLocal[imodel][kKstar_epos], gPythiaYieldLocal[imodel][kKaon_epos], true, 0.5);
+        TGraphErrors *gRatioKstarKaPythiaModel = MakeRatio(gPythiaYieldLocal[imodel][kKstar_epos], gPythiaYieldLocal[imodel][kKaon_epos], true, 1.0);
         setStyle(gRatioKstarKaPythiaModel, colorsPythia[imodel], lineStylesPythia[imodel]);
         gRatioKstarKaPythiaModel->Draw("l same");
         legendRatio2->AddEntry(gRatioKstarKaPythiaModel, modelLabelLocal[imodel], "l");
@@ -1434,7 +1833,7 @@ void ParticleRatioWithRun2()
     legendRatio2->Draw();
     // latex.DrawLatex(0.28, 0.88, "#frac{K^{*0} + #bar{K}^{*0}}{K^{+} + K^{-}}");
     latex.DrawLatex(0.28, 0.88, "#frac{K^{*0}}{K}");
-    if (isSavePlots)
+    // if (isSavePlots)
     {
         cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
     }
@@ -1448,8 +1847,8 @@ void ParticleRatioWithRun2()
     gRatioKstarPion[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gRatioKstarPion[0]->GetYaxis()->SetTitle("dN/dy");
     SetGraphErrorStyle(gRatioKstarPion[0]);
-    // gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.026, 0.059);
-    gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.032, 0.072);
+    gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.029, 0.158);
+    // gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.032, 0.072);
     gRatioKstarPion[0]->GetXaxis()->SetLimits(0, 27);
     gRatioKstarPion[0]->SetMarkerColor(kRed);
     gRatioKstarPion[0]->SetLineColor(kRed);
@@ -1472,7 +1871,7 @@ void ParticleRatioWithRun2()
     gKstarPiRatio_7TeV[1]->SetFillStyle(0);
     // gKstarPiRatio_7TeV[1]->Draw("5 same");
 
-    // K* is (K* + anit_K*)/2, but for pion it is (Pi^+ + Pi^-), so no need a factor 2 correction.
+    // K* is (K* + anit_K*)/2, but for pion it is (Pi^+ + Pi^-), so no need a factor 2 correction. (In new EPOS files the K*0 is not average, so no need to scale Pi,K,p)
     TGraphErrors *gRatioKstarPi_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gMYieldPionEPOS_IST0, true, 1.0);
     TGraphErrors *gRatioKstarPi_IST9_ITY80 = MakeRatio(gEPOS_Yield[9][kITY80][kKstar_epos], gMYieldPionEPOS_IST0, true, 1.0);
 
@@ -1491,7 +1890,7 @@ void ParticleRatioWithRun2()
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
-        TGraphErrors *gRatioKstarPiPythiaModel = MakeRatio(gPythiaYieldLocal[imodel][kKstar_epos], gPythiaYieldLocal[imodel][kPion_epos], true, 0.5);
+        TGraphErrors *gRatioKstarPiPythiaModel = MakeRatio(gPythiaYieldLocal[imodel][kKstar_epos], gPythiaYieldLocal[imodel][kPion_epos], true, 1.0);
         setStyle(gRatioKstarPiPythiaModel, colorsPythia[imodel], lineStylesPythia[imodel]);
         gRatioKstarPiPythiaModel->Draw("l same");
     }
@@ -1501,7 +1900,7 @@ void ParticleRatioWithRun2()
     legendRatio3->AddEntry(gKstarPiRatio_7TeV[0], "pp, #sqrt{s} = 7 TeV", "P");
     legendRatio3->Draw();
     legendRatio2->Draw();
-    if (isSavePlots)
+    // if (isSavePlots)
     {
         cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.png");
     }
@@ -2335,21 +2734,23 @@ void ParticleRatioWithRun2()
 
     gMYieldPionEPOS_IST0->SetLineStyle(2);
     gMYieldPionEPOS_IST0->SetLineWidth(3);
-    ScaleGraph(gMYieldPionEPOS_IST0, 0.5); // In model, Pi,K,p are not averaged.
-    gMYieldPionEPOS_IST0->SetLineColor(kRed + 1);
-    gMYieldPionEPOS_IST0->Draw("l same");
+    TGraphErrors *gMYieldPionEPOSClone = (TGraphErrors *)gMYieldPionEPOS_IST0->Clone("gMYieldPionEPOSClone");
+    ScaleGraph(gMYieldPionEPOSClone, 0.5); // In model, Pi,K,p are not averaged.
+    gMYieldPionEPOSClone->SetLineColor(kRed + 1);
+    gMYieldPionEPOSClone->Draw("l same");
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
         setStyle(gPythiaYieldLocal[imodel][kPion_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        ScaleGraph(gPythiaYieldLocal[imodel][kPion_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldLocal[imodel][kPion_epos]->Draw("l same");
+        TGraphErrors *gPythiaYieldPionClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kPion_epos]->Clone(Form("gPythiaYieldPionClone_%d", imodel));
+        ScaleGraph(gPythiaYieldPionClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldPionClone->Draw("l same");
     }
     TLegend *legTemp = new TLegend(0.2, 0.65, 0.55, 0.85);
     SetLegendStyle(legTemp);
     legTemp->SetTextSize(0.03);
     legTemp->AddEntry(gMYieldPion[0], "Data", "p");
-    legTemp->AddEntry(gMYieldPionEPOS_IST0, "EPOS", "l");
+    legTemp->AddEntry(gMYieldPionEPOSClone, "EPOS", "l");
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
         legTemp->AddEntry(gPythiaYieldLocal[imodel][kPion_epos], modelLabelLocal[imodel], "l");
@@ -2379,17 +2780,19 @@ void ParticleRatioWithRun2()
     gMYieldKaon[1]->SetLineColor(kRed);
     gMYieldKaon[1]->Draw("5 same");
 
-    gMYieldKaonEPOS_IST0->SetLineStyle(2);
-    gMYieldKaonEPOS_IST0->SetLineWidth(3);
-    ScaleGraph(gMYieldKaonEPOS_IST0, 0.5);
-    gMYieldKaonEPOS_IST0->SetLineColor(kRed + 1);
-    gMYieldKaonEPOS_IST0->Draw("l same");
+    TGraphErrors *gMYieldKaonEPOSClone = (TGraphErrors *)gMYieldKaonEPOS_IST0->Clone("gMYieldKaonEPOSClone");
+    gMYieldKaonEPOSClone->SetLineStyle(2);
+    gMYieldKaonEPOSClone->SetLineWidth(3);
+    ScaleGraph(gMYieldKaonEPOSClone, 0.5);
+    gMYieldKaonEPOSClone->SetLineColor(kRed + 1);
+    gMYieldKaonEPOSClone->Draw("l same");
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
         setStyle(gPythiaYieldLocal[imodel][kKaon_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        ScaleGraph(gPythiaYieldLocal[imodel][kKaon_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldLocal[imodel][kKaon_epos]->Draw("l same");
+        TGraphErrors *gPythiaYieldKaonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kKaon_epos]->Clone(Form("gPythiaYieldKaonClone_%d", imodel));
+        ScaleGraph(gPythiaYieldKaonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldKaonClone->Draw("l same");
     }
     legTemp->Draw();
     latex.DrawLatex(0.28, 0.88, "K^{#pm}");
@@ -2417,15 +2820,17 @@ void ParticleRatioWithRun2()
 
     gMYieldProtonEPOS_IST0->SetLineStyle(2);
     gMYieldProtonEPOS_IST0->SetLineWidth(3);
-    ScaleGraph(gMYieldProtonEPOS_IST0, 0.5);
-    gMYieldProtonEPOS_IST0->SetLineColor(kRed + 1);
-    gMYieldProtonEPOS_IST0->Draw("l same");
+    TGraphErrors *gMYieldProtonEPOSClone = (TGraphErrors *)gMYieldProtonEPOS_IST0->Clone("gMYieldProtonEPOSClone");
+    ScaleGraph(gMYieldProtonEPOSClone, 0.5);
+    gMYieldProtonEPOSClone->SetLineColor(kRed + 1);
+    gMYieldProtonEPOSClone->Draw("l same");
 
     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
     {
         setStyle(gPythiaYieldLocal[imodel][kProton_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        ScaleGraph(gPythiaYieldLocal[imodel][kProton_epos], 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldLocal[imodel][kProton_epos]->Draw("l same");
+        TGraphErrors *gPythiaYieldProtonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kProton_epos]->Clone(Form("gPythiaYieldProtonClone_%d", imodel));
+        ScaleGraph(gPythiaYieldProtonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+        gPythiaYieldProtonClone->Draw("l same");
     }
     legTemp->Draw();
     latex.DrawLatex(0.28, 0.88, "p");
@@ -2434,41 +2839,41 @@ void ParticleRatioWithRun2()
         cProtonYield->SaveAs("Plots/ProtonYield_Run3.png");
     }
 
-    //====================================================
-    // ==================Phi yeild======================
-    //====================================================
-    TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
-    SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldPhiRun2[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldPhiRun2[0]->GetYaxis()->SetTitle("dN/dy");
-    SetGraphErrorStyle(gMYieldPhiRun2[0]);
-    gMYieldPhiRun2[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
-    gMYieldPhiRun2[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldPhiRun2[0]->SetMarkerColor(kRed);
-    gMYieldPhiRun2[0]->SetLineColor(kRed);
-    gMYieldPhiRun2[0]->Draw("APE");
-    gMYieldPhiRun2[1]->SetFillStyle(0);
-    gMYieldPhiRun2[1]->SetLineColor(kRed);
-    gMYieldPhiRun2[1]->Draw("5 same");
+    // //====================================================
+    // // ==================Phi yeild======================
+    // //====================================================
+    // TCanvas *cPhiYield = new TCanvas("cPhiYield", "cPhiYield", 720, 720);
+    // SetCanvasStyle(cPhiYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldPhiRun2[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldPhiRun2[0]->GetYaxis()->SetTitle("dN/dy");
+    // SetGraphErrorStyle(gMYieldPhiRun2[0]);
+    // gMYieldPhiRun2[0]->GetYaxis()->SetRangeUser(0.0, 0.25);
+    // gMYieldPhiRun2[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldPhiRun2[0]->SetMarkerColor(kRed);
+    // gMYieldPhiRun2[0]->SetLineColor(kRed);
+    // gMYieldPhiRun2[0]->Draw("APE");
+    // gMYieldPhiRun2[1]->SetFillStyle(0);
+    // gMYieldPhiRun2[1]->SetLineColor(kRed);
+    // gMYieldPhiRun2[1]->Draw("5 same");
 
-    gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
-    gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
-    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
-    gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
-    gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
+    // gEPOS_Yield[9][kITY0][kPhi_epos]->SetLineStyle(9);
+    // gEPOS_Yield[9][kITY0][kPhi_epos]->Draw("l same");
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineColor(kBlue - 6);
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->SetLineStyle(1);
+    // gEPOS_Yield[9][kITY80][kPhi_epos]->Draw("l same");
 
-    TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
-    SetLegendStyle(legTempPhi);
-    legTempPhi->SetTextSize(0.03);
-    legTempPhi->AddEntry(gMYieldPhiRun2[0], "Data", "p");
-    legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
-    legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
-    legTempPhi->Draw();
-    latex.DrawLatex(0.28, 0.88, "#phi");
-    // if (isSavePlots)
-    {
-        cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
-    }
+    // TLegend *legTempPhi = new TLegend(0.2, 0.65, 0.55, 0.85);
+    // SetLegendStyle(legTempPhi);
+    // legTempPhi->SetTextSize(0.03);
+    // legTempPhi->AddEntry(gMYieldPhiRun2[0], "Data", "p");
+    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY0][kPhi_epos], "EPOS UrQMD OFF", "l");
+    // legTempPhi->AddEntry(gEPOS_Yield[9][kITY80][kPhi_epos], "EPOS UrQMD ON", "l");
+    // legTempPhi->Draw();
+    // latex.DrawLatex(0.28, 0.88, "#phi");
+    // // if (isSavePlots)
+    // {
+    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
+    // }
 
     // */
 }
@@ -2870,6 +3275,142 @@ TGraphErrors *DivideByMultModel(TGraphErrors *gr, double WhichMultPoint, double 
     }
 
     return grCopy;
+}
+void CanvasPartition(TCanvas *C, const Int_t Nx, const Int_t Ny,
+                     Float_t lMargin, Float_t rMargin,
+                     Float_t bMargin, Float_t tMargin)
+{
+    if (!C)
+        return;
+
+    // Setup Pad layout:
+    Float_t vSpacing = 0.0;
+    Float_t vStep = (1. - bMargin - tMargin - (Ny - 1) * vSpacing) / Ny;
+
+    Float_t hSpacing = 0.0;
+    Float_t hStep = (1. - lMargin - rMargin - (Nx - 1) * hSpacing) / Nx;
+
+    Float_t vposd, vposu, vmard, vmaru, vfactor;
+    Float_t hposl, hposr, hmarl, hmarr, hfactor;
+
+    for (Int_t i = 0; i < Nx; i++)
+    {
+
+        if (i == 0)
+        {
+            hposl = 0.0;
+            hposr = lMargin + hStep;
+            hfactor = hposr - hposl;
+            hmarl = lMargin / hfactor;
+            hmarr = 0.0;
+        }
+        else if (i == Nx - 1)
+        {
+            hposl = hposr + hSpacing;
+            hposr = hposl + hStep + rMargin;
+            hfactor = hposr - hposl;
+            hmarl = 0.0;
+            hmarr = rMargin / (hposr - hposl);
+        }
+        else
+        {
+            hposl = hposr + hSpacing;
+            hposr = hposl + hStep;
+            hfactor = hposr - hposl;
+            hmarl = 0.0;
+            hmarr = 0.0;
+        }
+
+        for (Int_t j = 0; j < Ny; j++)
+        {
+
+            if (j == 0)
+            {
+                vposd = 0.0;
+                vposu = bMargin + vStep;
+                vfactor = vposu - vposd;
+                vmard = bMargin / vfactor;
+                vmaru = 0.0;
+            }
+            else if (j == Ny - 1)
+            {
+                vposd = vposu + vSpacing;
+                vposu = vposd + vStep + tMargin;
+                vfactor = vposu - vposd;
+                vmard = 0.0;
+                vmaru = tMargin / (vposu - vposd);
+            }
+            else
+            {
+                vposd = vposu + vSpacing;
+                vposu = vposd + vStep;
+                vfactor = vposu - vposd;
+                vmard = 0.0;
+                vmaru = 0.0;
+            }
+
+            C->cd(0);
+
+            auto name = TString::Format("pad_%d_%d", i, j);
+            auto pad = (TPad *)C->FindObject(name.Data());
+            if (pad)
+                delete pad;
+            pad = new TPad(name.Data(), "", hposl, vposd, hposr, vposu);
+            pad->SetLeftMargin(hmarl);
+            pad->SetRightMargin(hmarr);
+            pad->SetBottomMargin(vmard);
+            pad->SetTopMargin(vmaru);
+
+            pad->SetFrameBorderMode(0);
+            pad->SetBorderMode(0);
+            pad->SetBorderSize(0);
+
+            pad->Draw();
+        }
+    }
+}
+
+double XtoPad(double x)
+{
+    double xl, yl, xu, yu;
+    gPad->GetPadPar(xl, yl, xu, yu);
+    double pw = xu - xl;
+    double lm = gPad->GetLeftMargin();
+    double rm = gPad->GetRightMargin();
+    double fw = pw - pw * lm - pw * rm;
+    return (x * fw + pw * lm) / pw;
+}
+
+double YtoPad(double y)
+{
+    double xl, yl, xu, yu;
+    gPad->GetPadPar(xl, yl, xu, yu);
+    double ph = yu - yl;
+    double tm = gPad->GetTopMargin();
+    double bm = gPad->GetBottomMargin();
+    double fh = ph - ph * bm - ph * tm;
+    return (y * fh + bm * ph) / ph;
+}
+
+void makeGraphXaxisCube(TGraph *gr)
+{
+    if (!gr)
+        return;
+
+    for (int i = 0; i < gr->GetN(); ++i)
+    {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        gr->SetPoint(i, x * x * x, y);
+    }
+
+    if (auto *ge = dynamic_cast<TGraphErrors *>(gr))
+    {
+        for (int i = 0; i < ge->GetN(); ++i)
+        {
+            ge->SetPointError(i, ge->GetErrorX(i) * ge->GetErrorX(i) * ge->GetErrorX(i), ge->GetErrorY(i));
+        }
+    }
 }
 
 /*

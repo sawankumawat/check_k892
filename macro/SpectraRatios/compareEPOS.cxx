@@ -3,52 +3,9 @@
 #include "../src/style.h"
 using namespace std;
 
-TFile *OpenFile(const string &path)
-{
-    TFile *f = new TFile(path.c_str(), "read");
-    if (f->IsZombie())
-    {
-        cout << "Error: File not found: " << path << endl;
-        return nullptr;
-    }
-    return f;
-}
-
-TH1D *GetHisto(TFile *f, const string &name)
-{
-    TH1D *histo = (TH1D *)f->Get(name.c_str());
-
-    if (!histo || histo == nullptr)
-    {
-        cout << "Error: histo " << name << " not found in file " << f->GetName() << endl;
-        return nullptr;
-    }
-
-    SetHistoQA(histo);
-    histo->SetTitle(0);
-    return histo;
-}
-
-void ScaleGraph(TGraph *gr, double scale)
-{
-    if (!gr)
-        return;
-
-    for (int i = 0; i < gr->GetN(); ++i)
-    {
-        double x, y;
-        gr->GetPoint(i, x, y);
-        gr->SetPoint(i, x, y * scale);
-    }
-
-    if (auto *ge = dynamic_cast<TGraphErrors *>(gr))
-    {
-        for (int i = 0; i < ge->GetN(); ++i)
-        {
-            ge->SetPointError(i, ge->GetErrorX(i), ge->GetErrorY(i) * scale);
-        }
-    }
-}
+TFile *OpenFile(const string &path);
+TH1D *GetHisto(TFile *f, const string &name);
+void ScaleGraph(TGraph *gr, double scale);
 
 void makeGraphXaxisCube(TGraph *gr)
 {
@@ -90,8 +47,24 @@ void compareEPOS()
 {
     string KstarPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
     TFile *fKstar = OpenFile(KstarPath + "Results.root");
-    TFile *fEPOSHyunji = OpenFile("ModelRootFiles/EPOS_pp13TeV_rhoKstar_Hyunji.root");
+    TFile *fPikp = OpenFile("ConversionCodes/ppRun3_PiKpHEP.root");
+    TFile *fEPOSHyunji = OpenFile("ModelRootFiles/EPOS_pp13TeV_rhoKstar_Hyunji2.root");
     TFile *fEPOS = OpenFile("ModelRootFiles/EPOS_finalQA_INELgt0Correct.root");
+    TFile *fEPOSHyperloop = OpenFile("ModelRootFiles/ModelResults.root");
+
+    TGraphErrors *gYieldPionData = GetGraph(fPikp, "gPion_MeanYield_stat");
+    TGraphErrors *gYieldKaonData = GetGraph(fPikp, "gKaon_MeanYield_stat");
+    TGraphErrors *gYieldProtonData = GetGraph(fPikp, "gProton_MeanYield_stat");
+
+    TGraphErrors *gdNdyKstarHloop = GetGraph(fEPOSHyperloop, "EPOS_Hydro/Kstar/gMeanYield_Kstar");
+    TGraphErrors *gMPtKstarHloop = GetGraph(fEPOSHyperloop, "EPOS_Hydro/Kstar/gMeanpT_Kstar");
+    TGraphErrors *gdNdyPionHloop = GetGraph(fEPOSHyperloop, "EPOS_Hydro/Pion/gMeanYield_Pion");
+    TGraphErrors *gdNdyKaonHloop = GetGraph(fEPOSHyperloop, "EPOS_Hydro/Kaon/gMeanYield_Kaon");
+    TGraphErrors *gdNdyProtonHloop = GetGraph(fEPOSHyperloop, "EPOS_Hydro/Proton/gMeanYield_Proton");
+
+    TGraphErrors *gMPtPionData = GetGraph(fPikp, "gPion_MeanpT_stat");
+    TGraphErrors *gMPtKaonData = GetGraph(fPikp, "gKaon_MeanpT_stat");
+    TGraphErrors *gMPtProtonData = GetGraph(fPikp, "gProton_MeanpT_stat");
 
     TGraphErrors *gdNdyKstarHyunji_NoUrQMD = GetGraph(fEPOSHyunji, "c1_dNdy/Kstar892/UrQMD_OFF");
     TGraphErrors *gdNdyKstarHyunji_ITY80 = GetGraph(fEPOSHyunji, "c1_dNdy/Kstar892/UrQMD_reg");
@@ -108,6 +81,20 @@ void compareEPOS()
     TGraphErrors *gMPtKstarEPOS_NoUrQMD = GetGraph(fEPOS, "IST9/meanpt_kstar_vs_mult");
     TGraphErrors *gMPtKstarEPOS_ITY80 = GetGraph(fEPOS, "IST9_ITY80/meanpt_kstar_vs_mult");
     TGraphErrors *gMPtKstarEPOS_ITY81 = GetGraph(fEPOS, "IST9_ITY81/meanpt_kstar_vs_mult");
+
+    TGraphErrors *gdNdyKaonHyunji_NoUrQMD = GetGraph(fEPOSHyunji, "c1_dNdy/kaon/UrQMD_OFF");
+    TGraphErrors *gdNdyKaonHyunji = GetGraph(fEPOSHyunji, "c1_dNdy/kaon/UrQMD_ON");
+    TGraphErrors *gdNdyPionHyunji_NoUrQMD = GetGraph(fEPOSHyunji, "c1_dNdy/pion/UrQMD_OFF");
+    TGraphErrors *gdNdyPionHyunji = GetGraph(fEPOSHyunji, "c1_dNdy/pion/UrQMD_ON");
+    TGraphErrors *gdNdyProtonHyunji_NoUrQMD = GetGraph(fEPOSHyunji, "c1_dNdy/proton/UrQMD_OFF");
+    TGraphErrors *gdNdyProtonHyunji = GetGraph(fEPOSHyunji, "c1_dNdy/proton/UrQMD_ON");
+
+    TGraphErrors *gdNdyKaon_IST0 = GetGraph(fEPOS, "IST0/kaon_vs_mult");
+    TGraphErrors *gdNdyPion_IST0 = GetGraph(fEPOS, "IST0/pion_vs_mult");
+    TGraphErrors *gdNdyProton_IST0 = GetGraph(fEPOS, "IST0/proton_vs_mult");
+    ScaleGraph(gdNdyKaon_IST0, 0.5);
+    ScaleGraph(gdNdyPion_IST0, 0.5);
+    ScaleGraph(gdNdyProton_IST0, 0.5);
 
     TGraphErrors *gMYieldKstar[2], *gMPtKstar[2];
     for (int i = 0; i < 2; i++)
@@ -163,7 +150,11 @@ void compareEPOS()
     gdNdyKstarHyunji_ITY81->SetLineColor(kRed - 5);
     gdNdyKstarHyunji_ITY81->SetLineWidth(3);
     gdNdyKstarHyunji_ITY81->SetLineStyle(6);
-    gdNdyKstarHyunji_ITY81->Draw("L same");
+    // gdNdyKstarHyunji_ITY81->Draw("L same");
+
+    gdNdyKstarHloop->SetLineColor(kMagenta);
+    gdNdyKstarHloop->SetLineWidth(2);
+    gdNdyKstarHloop->Draw("L same");
 
     TLegend *legdNdyKstar = new TLegend(0.17, 0.73, 0.52, 0.95);
     legdNdyKstar->SetBorderSize(0);
@@ -174,7 +165,8 @@ void compareEPOS()
     legdNdyKstar->AddEntry(gdNdyKstarEPOS_ITY80, "EPOS (UrQMD) Sawan", "l");
     legdNdyKstar->AddEntry(gdNdyKstarHyunji_NoUrQMD, "EPOS (No UrQMD) Hyunji", "l");
     legdNdyKstar->AddEntry(gdNdyKstarHyunji_ITY80, "EPOS (UrQMD) Hyunji (reg)", "l");
-    legdNdyKstar->AddEntry(gdNdyKstarHyunji_ITY81, "EPOS (UrQMD) Hyunji (reg+res)", "l");
+    // legdNdyKstar->AddEntry(gdNdyKstarHyunji_ITY81, "EPOS (UrQMD) Hyunji (reg+res)", "l");
+    legdNdyKstar->AddEntry(gdNdyKstarHloop, "EPOS Hyperloop", "l");
     legdNdyKstar->Draw();
     cdNdyKstar->SaveAs("Plots/dNdyKstar_Comparison.png");
 
@@ -219,4 +211,154 @@ void compareEPOS()
     gMPtKstarHyunji_ITY81->Draw("L same");
     legdNdyKstar->Draw();
     cMeanPtKstar->SaveAs("Plots/MeanPtKstar_Comparison.png");
+
+    TCanvas *cYieldPion = new TCanvas("cYieldPion", "cYieldPion", 720, 720);
+    SetCanvasStyle(cYieldPion, 0.15, 0.03, 0.03, 0.15);
+
+    gYieldPionData->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gYieldPionData->GetYaxis()->SetTitle("dN/dy");
+    gYieldPionData->GetXaxis()->SetLimits(0, 27);
+    gYieldPionData->GetYaxis()->SetRangeUser(0, 20);
+    gYieldPionData->SetLineWidth(3);
+    gYieldPionData->SetMarkerColor(kBlack);
+    gYieldPionData->SetLineColor(kBlack);
+    gYieldPionData->Draw("APE");
+    gdNdyPion_IST0->SetLineColor(kBlue + 1);
+    gdNdyPion_IST0->SetLineWidth(2);
+    gdNdyPion_IST0->Draw("L same");
+    makeGraphXaxisCube(gdNdyPionHyunji_NoUrQMD);
+    gdNdyPionHyunji_NoUrQMD->SetLineColor(kGreen + 1);
+    gdNdyPionHyunji_NoUrQMD->SetLineWidth(2);
+    gdNdyPionHyunji_NoUrQMD->Draw("L same");
+    makeGraphXaxisCube(gdNdyPionHyunji);
+    gdNdyPionHyunji->SetLineColor(kRed - 5);
+    gdNdyPionHyunji->SetLineWidth(3);
+    gdNdyPionHyunji->SetLineStyle(6);
+    gdNdyPionHyunji->Draw("L same");
+
+    TLegend *legYieldPion = new TLegend(0.17, 0.73, 0.52, 0.95);
+    legYieldPion->SetBorderSize(0);
+    legYieldPion->SetFillStyle(0);
+    legYieldPion->SetTextSize(0.027);
+    legYieldPion->AddEntry(gYieldPionData, "pp 13.6 TeV, Pion", "lp");
+    legYieldPion->AddEntry(gdNdyPion_IST0, "EPOS (No UrQMD) Sawan", "l");
+    legYieldPion->AddEntry(gdNdyPionHyunji_NoUrQMD, "EPOS (No UrQMD) Hyunji", "l");
+    legYieldPion->AddEntry(gdNdyPionHyunji, "EPOS (UrQMD) Hyunji", "l");
+    legYieldPion->Draw();
+    cYieldPion->SaveAs("Plots/dNdyPion_Comparison.png");
+
+    TCanvas *cYieldKaon = new TCanvas("cYieldKaon", "cYieldKaon", 720, 720);
+    SetCanvasStyle(cYieldKaon, 0.15, 0.03, 0.03, 0.15);
+    gYieldKaonData->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gYieldKaonData->GetYaxis()->SetTitle("dN/dy");
+    gYieldKaonData->GetXaxis()->SetLimits(0, 27);
+    gYieldKaonData->GetYaxis()->SetRangeUser(0, 2);
+    gYieldKaonData->SetLineWidth(3);
+    gYieldKaonData->SetMarkerColor(kBlack);
+    gYieldKaonData->SetLineColor(kBlack);
+    gYieldKaonData->Draw("APE");
+    gdNdyKaon_IST0->SetLineColor(kBlue + 1);
+    gdNdyKaon_IST0->SetLineWidth(2);
+    gdNdyKaon_IST0->Draw("L same");
+    makeGraphXaxisCube(gdNdyKaonHyunji_NoUrQMD);
+    gdNdyKaonHyunji_NoUrQMD->SetLineColor(kGreen + 1);
+    gdNdyKaonHyunji_NoUrQMD->SetLineWidth(2);
+    gdNdyKaonHyunji_NoUrQMD->Draw("L same");
+    makeGraphXaxisCube(gdNdyKaonHyunji);
+    gdNdyKaonHyunji->SetLineColor(kRed - 5);
+    gdNdyKaonHyunji->SetLineWidth(3);
+    gdNdyKaonHyunji->SetLineStyle(6);
+    gdNdyKaonHyunji->Draw("L same");
+
+    TLegend *legYieldKaon = new TLegend(0.17, 0.73, 0.52, 0.95);
+    legYieldKaon->SetBorderSize(0);
+    legYieldKaon->SetFillStyle(0);
+    legYieldKaon->SetTextSize(0.027);
+    legYieldKaon->AddEntry(gYieldKaonData, "pp 13.6 TeV, Kaon", "lp");
+    legYieldKaon->AddEntry(gdNdyKaon_IST0, "EPOS (No UrQMD) Sawan", "l");
+    legYieldKaon->AddEntry(gdNdyKaonHyunji_NoUrQMD, "EPOS (No UrQMD) Hyunji", "l");
+    legYieldKaon->AddEntry(gdNdyKaonHyunji, "EPOS (UrQMD) Hyunji", "l");
+    legYieldKaon->Draw();
+    cYieldKaon->SaveAs("Plots/dNdyKaon_Comparison.png");
+
+    TCanvas *cYieldProton = new TCanvas("cYieldProton", "cYieldProton", 720, 720);
+    SetCanvasStyle(cYieldProton, 0.15, 0.03, 0.03, 0.15);
+    gYieldProtonData->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    gYieldProtonData->GetYaxis()->SetTitle("dN/dy");
+    gYieldProtonData->GetXaxis()->SetLimits(0, 27);
+    gYieldProtonData->GetYaxis()->SetRangeUser(0, 1);
+    gYieldProtonData->SetLineWidth(3);
+    gYieldProtonData->SetMarkerColor(kBlack);
+    gYieldProtonData->SetLineColor(kBlack);
+    gYieldProtonData->Draw("APE");
+    gdNdyProton_IST0->SetLineColor(kBlue + 1);
+    gdNdyProton_IST0->SetLineWidth(2);
+    gdNdyProton_IST0->Draw("L same");
+    makeGraphXaxisCube(gdNdyProtonHyunji_NoUrQMD);
+    gdNdyProtonHyunji_NoUrQMD->SetLineColor(kGreen + 1);
+    gdNdyProtonHyunji_NoUrQMD->SetLineWidth(2);
+    gdNdyProtonHyunji_NoUrQMD->Draw("L same");
+    makeGraphXaxisCube(gdNdyProtonHyunji);
+    gdNdyProtonHyunji->SetLineColor(kRed - 5);
+    gdNdyProtonHyunji->SetLineWidth(3);
+    gdNdyProtonHyunji->SetLineStyle(6);
+    gdNdyProtonHyunji->Draw("L same");
+
+    TLegend *legYieldProton = new TLegend(0.17, 0.73, 0.52, 0.95);
+    legYieldProton->SetBorderSize(0);
+    legYieldProton->SetFillStyle(0);
+    legYieldProton->SetTextSize(0.027);
+    legYieldProton->AddEntry(gYieldProtonData, "pp 13.6 TeV, Proton", "lp");
+    legYieldProton->AddEntry(gdNdyProton_IST0, "EPOS (No UrQMD) Sawan", "l");
+    legYieldProton->AddEntry(gdNdyProtonHyunji_NoUrQMD, "EPOS (No UrQMD) Hyunji", "l");
+    legYieldProton->AddEntry(gdNdyProtonHyunji, "EPOS (UrQMD) Hyunji", "l");
+    legYieldProton->Draw();
+    cYieldProton->SaveAs("Plots/dNdyProton_Comparison.png");
+}
+
+TFile *OpenFile(const string &path)
+{
+    TFile *f = new TFile(path.c_str(), "read");
+    if (f->IsZombie())
+    {
+        cout << "Error: File not found: " << path << endl;
+        return nullptr;
+    }
+    return f;
+}
+
+TH1D *GetHisto(TFile *f, const string &name)
+{
+    TH1D *histo = (TH1D *)f->Get(name.c_str());
+
+    if (!histo || histo == nullptr)
+    {
+        cout << "Error: histo " << name << " not found in file " << f->GetName() << endl;
+        return nullptr;
+    }
+
+    SetHistoQA(histo);
+    histo->SetTitle(0);
+    return histo;
+}
+
+void ScaleGraph(TGraph *gr, double scale)
+{
+    if (!gr)
+        return;
+
+    for (int i = 0; i < gr->GetN(); ++i)
+    {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        gr->SetPoint(i, x, y * scale);
+    }
+
+    if (auto *ge = dynamic_cast<TGraphErrors *>(gr))
+    {
+        for (int i = 0; i < ge->GetN(); ++i)
+        {
+            ge->SetPointError(i, ge->GetErrorX(i), ge->GetErrorY(i) * scale);
+        }
+    }
 }

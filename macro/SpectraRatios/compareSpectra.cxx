@@ -295,14 +295,14 @@ void compareSpectra()
         hGenSpectraRebinned->SetLineColor(kRed + 1);
         hGenSpectraRebinned->SetLineStyle(2);
         hGenSpectraRebinned->SetLineWidth(3);
-        hGenSpectraRebinned->Draw("HIST SAME");
-        hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("HIST SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaShoving]->Draw("HIST SAME");
+        hGenSpectraRebinned->Draw("L SAME");
+        hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaShoving]->Draw("L SAME");
         hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
-        hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("HIST SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("HIST SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("HIST SAME");
-        hSpecRebinnedEPOS[WhichCent - 1]->Draw("HIST SAME");
+        hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("L SAME");
+        hSpecRebinnedEPOS[WhichCent - 1]->Draw("L SAME");
 
         TLegend *legend = new TLegend(0.48, 0.68, 0.93, 0.92);
         SetLegendStyle(legend);

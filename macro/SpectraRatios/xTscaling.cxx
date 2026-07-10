@@ -77,14 +77,22 @@ void xTscaling()
     TH1D *hStatErrorRun2p76TeV = GetHisto(fRun2p76TeV, "Table 1/Hist1D_y1_e1");
     TH1D *hTotalSysErrorRun2p76TeV = GetHisto(fRun2p76TeV, "Table 1/Hist1D_y1_e2");
 
+    string pathRun5p02TeV = "HEP_data/HEPData_KstarPhi_ppINEL_5p02TeV.root";
+    TFile *fRun5p02TeV = OpenFile(pathRun5p02TeV);
+    TGraphErrors *gSpectraRun5p02TeV = GetGraph(fRun5p02TeV, "Table 2/Graph1D_y1");
+    TH1D *hStatErrorRun5p02TeV = GetHisto(fRun5p02TeV, "Table 2/Hist1D_y1_e1");
+    TH1D *hTotalSysErrorRun5p02TeV = GetHisto(fRun5p02TeV, "Table 2/Hist1D_y1_e2");
+
     const double sqrts136 = 13600.;
     const double sqrts13 = 13000.;
     const double sqrts7 = 7000.;
     const double sqrts276 = 2760.;
+    const double sqrts502 = 5020.;
 
     const double sigma_inel136 = 77.904; // mb
     const double sigma_inel13 = 77.6;    // mb
     const double sigma_inel7 = 70.9;     // mb
+    const double sigma_inel502 = 67.6;   // mb
     const double sigma_inel276 = 61.8;   // mb
 
     // I have scaled all other graphs than 13 TeV instead of scaling 13 TeV only, due to published result with K* + anit-kstar sum only.
@@ -94,6 +102,7 @@ void xTscaling()
     auto gXT13_n = GraphToXTGraph(gSpectraRun13TeV, hStatError, hTotalSysError, sqrts13, sigma_inel13, 1.0, false, 1.0);
     auto gXT7_n = GraphToXTGraph(gSpectraRun7TeV, hStatErrorRun7TeV, hTotalSysErrorRun7TeV, sqrts7, sigma_inel7, 1.0, false, 2.0);
     auto gXT276_n = GraphToXTGraph(gSpectraRun2p76TeV, hStatErrorRun2p76TeV, hTotalSysErrorRun2p76TeV, sqrts276, sigma_inel276, 1.0, true, 2.0);
+    auto gXT502_n = GraphToXTGraph(gSpectraRun5p02TeV, hStatErrorRun5p02TeV, hTotalSysErrorRun5p02TeV, sqrts502, sigma_inel502, 1.0, false, 2.0);
 
     // auto gN13 = CalculateN(gXT136_n, gXT13_n, sqrts136, sqrts13); // No use, energy difference is too small
     auto gN7 = CalculateN(gXT136_n, gXT7_n, sqrts136, sqrts7);
@@ -101,14 +110,16 @@ void xTscaling()
     auto gn7_276 = CalculateN(gXT7_n, gXT276_n, sqrts7, sqrts276);
     auto gn13_276 = CalculateN(gXT13_n, gXT276_n, sqrts13, sqrts276);
     auto gn13_7 = CalculateN(gXT13_n, gXT7_n, sqrts13, sqrts7);
-    string labels[5] = {
+    auto gn505 = CalculateN(gXT136_n, gXT502_n, sqrts136, sqrts502);
+    string labels[6] = {
         "n#left(#frac{Y(13.6)}{Y(7)}#right)",
         "n#left(#frac{Y(13.6)}{Y(2.76)}#right)",
         "n#left(#frac{Y(7)}{Y(2.76)}#right)",
         "n#left(#frac{Y(13)}{Y(2.76)}#right)",
-        "n#left(#frac{Y(13)}{Y(7)}#right)"};
+        "n#left(#frac{Y(13)}{Y(7)}#right)",
+        "n#left(#frac{Y(13.6)}{Y(5.02)}#right)"};
 
-    vector<TGraph *> gNList = {gN7, gN276, gn7_276, gn13_276, gn13_7};
+    vector<TGraph *> gNList = {gN7, gN276, gn7_276, gn13_276, gn13_7, gn505};
 
     TCanvas *cN = new TCanvas("cN", "cN", 1080, 720);
     SetCanvasStyle(cN, 0.13, 0.10, 0.01, 0.12);
@@ -120,7 +131,8 @@ void xTscaling()
         {1.8e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
         {1.8e-3, 5.45e-3}, // 7 TeV / 2.76 TeV
         {1.6e-3, 2.8e-3},  // 13 TeV / 2.76 TeV
-        {0.75e-3, 2.8e-3}   // 13 TeV / 7 TeV
+        {0.75e-3, 2.8e-3}, // 13 TeV / 7 TeV
+        {1.6e-3, 4.1e-3}   // 13.6 TeV / 5.02 TeV
     };
 
     // Fit all graphs and then calculate the average n(xT) value
@@ -168,6 +180,7 @@ void xTscaling()
     auto gXT13 = GraphToXTGraph(gSpectraRun13TeV, hStatError, hTotalSysError, sqrts13, sigma_inel13, pow(sqrts13, nAverage), false, 1.0);
     auto gXT7 = GraphToXTGraph(gSpectraRun7TeV, hStatErrorRun7TeV, hTotalSysErrorRun7TeV, sqrts7, sigma_inel7, pow(sqrts7, nAverage), false, 2.0);
     auto gXT276 = GraphToXTGraph(gSpectraRun2p76TeV, hStatErrorRun2p76TeV, hTotalSysErrorRun2p76TeV, sqrts276, sigma_inel276, pow(sqrts276, nAverage), true, 2.0);
+    auto gXT502 = GraphToXTGraph(gSpectraRun5p02TeV, hStatErrorRun5p02TeV, hTotalSysErrorRun5p02TeV, sqrts502, sigma_inel502, pow(sqrts502, nAverage), false, 2.0);
 
     gXT7->SetMarkerSize(1.7);
     gXT276->SetMarkerSize(1.7);
@@ -178,7 +191,7 @@ void xTscaling()
     gPad->SetLogx();
     TH1D *hSpectraDummy = new TH1D("hSpectraDummy", "", 10000000, 1e-7, 1.0);
     SetHistoQA(hSpectraDummy);
-    hSpectraDummy->GetXaxis()->SetRangeUser(9e-7, 9e-2);
+    hSpectraDummy->GetXaxis()->SetRangeUser(9e-7, 3e-2);
     // hSpectraDummy->GetYaxis()->SetRangeUser(8e+11, 8e+23);
     hSpectraDummy->GetYaxis()->SetRangeUser(8e+9, 9.9e+21);
     hSpectraDummy->GetYaxis()->SetTitleOffset(1.6);
@@ -204,6 +217,10 @@ void xTscaling()
     gXT276->SetMarkerColor(kOrange + 7);
     gXT276->SetLineColor(kOrange + 7);
     gXT276->Draw("P same");
+    gXT502->SetMarkerStyle(24);
+    gXT502->SetMarkerColor(kMagenta + 1);
+    gXT502->SetLineColor(kMagenta + 1);
+    gXT502->Draw("P same");
 
     // Create a combined graph
     TGraphErrors *gXTAll = new TGraphErrors();
@@ -236,17 +253,23 @@ void xTscaling()
     gXTAll->Fit(fitPL, "REBMS");
     fitPL->Draw("same");
 
-    TLegend *leg = new TLegend(0.65, 0.62, 0.93, 0.95);
+    TLegend *leg = new TLegend(0.68, 0.88, 0.93, 0.95);
     SetLegendStyle(leg);
-    leg->SetTextSize(0.035);
+    leg->SetTextSize(0.045);
     leg->AddEntry((TObject *)0, "K*^{0}", "");
-    leg->AddEntry(gXT136, "13.6 TeV", "p");
-    leg->AddEntry(gXT13, "13 TeV", "p");
-    leg->AddEntry(gXT7, "7 TeV", "p");
-    leg->AddEntry(gXT276, "2.76 TeV", "p");
-    leg->AddEntry(fitPL, "Combined", "l");
-    leg->AddEntry((TObject *)0, "power-law fit", "");
     leg->Draw();
+
+    TLegend *leg2 = new TLegend(0.2, 0.2, 0.73, 0.65);
+    SetLegendStyle(leg2);
+    leg2->SetTextSize(0.035);
+    leg2->AddEntry(gXT136, "13.6 TeV", "p");
+    leg2->AddEntry(gXT13, "13 TeV", "p");
+    leg2->AddEntry(gXT7, "7 TeV", "p");
+    leg2->AddEntry(gXT502, "5.02 TeV", "p");
+    leg2->AddEntry(gXT276, "2.76 TeV", "p");
+    leg2->AddEntry(fitPL, "Combined", "l");
+    leg2->AddEntry((TObject *)0, "power-law fit", "");
+    leg2->Draw();
     cXT->SaveAs("Plots/xT_scaling.png");
 }
 

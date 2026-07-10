@@ -506,21 +506,13 @@ void EPOS_finalCodeQA()
 
             for (int istBin = 0; istBin < NIST; ++istBin)
             {
-                s.hPtCentIST[istBin][icent]->Scale(
-                    1.0 / (norm * s.hPtCentIST[istBin][icent]->GetBinWidth(1)));
+                s.hPtCentIST[istBin][icent]->Scale(1.0 / (norm));
             }
 
-            s.hPtCentIST9_ITY80[icent]->Scale(
-                1.0 / (norm * s.hPtCentIST9_ITY80[icent]->GetBinWidth(1)));
-
-            s.hPtCentIST9_ITY81[icent]->Scale(
-                1.0 / (norm * s.hPtCentIST9_ITY81[icent]->GetBinWidth(1)));
-
-            s.hPtCentNoIST[icent]->Scale(
-                1.0 / (norm * s.hPtCentNoIST[icent]->GetBinWidth(1)));
-
-            s.hPtCentIST0or8[icent]->Scale(
-                1.0 / (norm * s.hPtCentIST0or8[icent]->GetBinWidth(1)));
+            s.hPtCentIST9_ITY80[icent]->Scale(1.0 / (norm));
+            s.hPtCentIST9_ITY81[icent]->Scale(1.0 / (norm));
+            s.hPtCentNoIST[icent]->Scale(1.0 / (norm));
+            s.hPtCentIST0or8[icent]->Scale(1.0 / (norm));
         }
     }
 
@@ -677,5 +669,5 @@ void EPOS_finalCodeQA()
     }
 
     fout->Close();
-    cout << "\nSaved EPOS_finalQA_ptCut.root.\n";
+    cout << "\nSaved EPOS_finalQA.root.\n";
 }

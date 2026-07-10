@@ -8,6 +8,11 @@ TH1D *GetHisto(TFile *f, const string &name);
 TGraphErrors *GetGraph(TFile *f, const string &name);
 TH1D *RebinToMatch(const TH1D *hInput, const TH1D *hReference, const TString &newName = "");
 void canvas_style(TCanvas *c, double pad1Size = 0.7, double pad2Size = 0.3, double leftMargin = 0.16, double rightMargin = 0.06, double topMargin = 0.02, double bottomMargin = 0.35);
+TSpline3 *MakeSmoothSpline(TH1 *h, const char *name);
+TGraph *MakeGraph(TH1 *h);
+TGraph *RestrictGraphX(const TGraph *gIn, double xmin, double xmax, const char *name = "gRestricted");
+template <class TH>
+TH *RestrictHistogramX(const TH *hIn, double xmin, double xmax, const char *newName);
 
 struct ClosestMultiplicity
 {
@@ -17,7 +22,7 @@ struct ClosestMultiplicity
     double value = 0.0; // selected multiplicity (or average)
 };
 ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target);
-TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_");
+TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_", bool isEPOS = false);
 TH1D *BuildRatioHistogram(TH1D *hNumerator, TH1D *hDenominator, const TString &name);
 
 void compareSpectra()
@@ -105,7 +110,8 @@ void compareSpectra()
     TH1D *hSpectraModelEPOS[10];
     TH1D *hSpecRebinnedEPOS[10];
     vector<double> dNdEtaEPOS(10, 0.0);
-    TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9_ITY80/kstar_vs_mult");
+    // TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9_ITY80/kstar_vs_mult");
+    TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9/kstar_vs_mult");
 
     for (int ialice = 0; ialice < 10; ialice++)
     {
@@ -114,36 +120,27 @@ void compareSpectra()
             gPythiaYieldLocal[imodel] = GetGraph(fPythiaModels[imodel], "gMeanYield_kstar");
 
             int totalPoints = gPythiaYieldLocal[imodel]->GetN();
-            cout << "Model: " << modelLabelLocal[imodel] << ", Total points: " << totalPoints << endl;
+            // cout << "Model: " << modelLabelLocal[imodel] << ", Total points: " << totalPoints << endl;
 
             for (int ipoint = 0; ipoint < totalPoints; ipoint++)
             {
                 double x, y;
                 gPythiaYieldLocal[imodel]->GetPoint(ipoint, x, y);
-                cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+                // cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
             }
-            cout << endl;
+            // cout << endl;
             ClosestMultiplicity match = FindClosestMultiplicity(gPythiaYieldLocal[imodel], dnch_detaRun3[ialice]);
             dNdEtaPythia[imodel][ialice] = match.value;
 
             if (match.useAverage)
             {
-                cout << modelLabelLocal[imodel]
-                     << " : Average of points "
-                     << match.idx1 << " and "
-                     << match.idx2
-                     << " (value = " << match.value << ")"
-                     << endl;
+                // cout << modelLabelLocal[imodel] << " : Average of points " << match.idx1 << " and " << match.idx2 << " (value = " << match.value << ")" << endl;
             }
             else
             {
-                cout << modelLabelLocal[imodel]
-                     << " : Closest point "
-                     << match.idx1
-                     << " (value = " << match.value << ")"
-                     << endl;
+                // cout << modelLabelLocal[imodel] << " : Closest point " << match.idx1 << " (value = " << match.value << ")" << endl;
             }
-            cout << endl;
+            // cout << endl;
 
             hSpectraModel[ialice][imodel] = BuildSpectrum(fPythiaModels[imodel], match);
             hSpecRebinned[ialice][imodel] = RebinToMatch(hSpectraModel[ialice][imodel], hSpectra[ialice], Form("hSpec_%d_%s", ialice, modelLabelLocal[imodel]));
@@ -157,40 +154,36 @@ void compareSpectra()
 
         // Same for EPOS
         int totalPointsEPOS = gEPOSYield->GetN();
-        cout << "EPOS: Total points: " << totalPointsEPOS << endl;
+        // cout << "EPOS: Total points: " << totalPointsEPOS << endl;
         for (int ipoint = 0; ipoint < totalPointsEPOS; ipoint++)
         {
             double x, y;
             gEPOSYield->GetPoint(ipoint, x, y);
-            cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+            // cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
         }
-        cout << endl;
+        // cout << endl;
         ClosestMultiplicity matchEPOS = FindClosestMultiplicity(gEPOSYield, dnch_detaRun3[ialice]);
 
         if (matchEPOS.useAverage)
         {
-            cout << "EPOS : Average of points "
-                 << matchEPOS.idx1 << " and "
-                 << matchEPOS.idx2
-                 << " (value = " << matchEPOS.value << ")"
-                 << endl;
+            // cout << "EPOS : Average of points " << matchEPOS.idx1 << " and " << matchEPOS.idx2 << " (value = " << matchEPOS.value << ")" << endl;
         }
         else
         {
-            cout << "EPOS : Closest point "
-                 << matchEPOS.idx1
-                 << " (value = " << matchEPOS.value << ")"
-                 << endl;
+            // cout << "EPOS : Closest point " << matchEPOS.idx1 << " (value = " << matchEPOS.value << ")" << endl;
         }
-        cout << endl;
+        // cout << endl;
         dNdEtaEPOS[ialice] = matchEPOS.value;
 
-        hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9_ITY80/hPtMB_kstar_IST9_ITY80_Cent");
+        // hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9_ITY80/hPtMB_kstar_IST9_ITY80_Cent");
+        hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9/hPtMB_kstar_IST9_Cent", true);
         hSpecRebinnedEPOS[ialice] = RebinToMatch(hSpectraModelEPOS[ialice], hSpectra[ialice], Form("hSpecEPOS_%d", ialice));
+
+        cout << "Multiplicity: " << dnch_detaRun3[ialice] << ", EPOS Yield from histogram: " << hSpectraModelEPOS[ialice]->Integral() << endl;
 
         // Average K*892 and anti-K*892
         hSpecRebinnedEPOS[ialice]->Scale(0.5);
-        hSpecRebinnedEPOS[ialice]->SetLineColor(kGreen - 2);
+        hSpecRebinnedEPOS[ialice]->SetLineColor(kBlue + 1);
         hSpecRebinnedEPOS[ialice]->SetLineStyle(2);
         hSpecRebinnedEPOS[ialice]->SetLineWidth(3);
     }
@@ -295,32 +288,56 @@ void compareSpectra()
         hGenSpectraRebinned->SetLineColor(kRed + 1);
         hGenSpectraRebinned->SetLineStyle(2);
         hGenSpectraRebinned->SetLineWidth(3);
-        hGenSpectraRebinned->Draw("L SAME");
-        hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaShoving]->Draw("L SAME");
-        hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
-        hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("L SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("L SAME");
-        // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("L SAME");
-        hSpecRebinnedEPOS[WhichCent - 1]->Draw("L SAME");
 
-        TLegend *legend = new TLegend(0.48, 0.68, 0.93, 0.92);
+        // TSpline3 *spGen = MakeSmoothSpline(hGenSpectraRebinned, Form("spGen_%d", WhichCent));
+        // TSpline3 *spMonash = MakeSmoothSpline(hSpecRebinned[WhichCent - 1][kPythiaMonash], Form("spMonash_%d", WhichCent));
+        // TSpline3 *spRopes = MakeSmoothSpline(hSpecRebinned[WhichCent - 1][kPythiaRopes], Form("spRopes_%d", WhichCent));
+        // TSpline3 *spEPOS = MakeSmoothSpline(hSpecRebinnedEPOS[WhichCent - 1], Form("spEPOS_%d", WhichCent));
+        // spGen->Draw("SAME");
+        // spMonash->Draw("SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
+        // spRopes->Draw("SAME");
+        // spEPOS->Draw("SAME");
+
+        MakeGraph(hGenSpectraRebinned)->Draw("L SAME");
+        MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaMonash])->Draw("L SAME");
+        hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
+        MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaRopes])->Draw("L SAME");
+        hSpecRebinned[WhichCent - 1][kPythiaShoving]->SetLineStyle(1);
+        MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaShoving])->Draw("L SAME");
+        // MakeGraph(hSpecRebinnedEPOS[WhichCent - 1])->Draw("L SAME");
+        // hSpectraModelEPOS[WhichCent - 1]->SetLineStyle(1);
+        // MakeGraph(hSpectraModelEPOS[WhichCent - 1])->Draw("L SAME");
+        TGraph *gEPOS = RestrictGraphX(MakeGraph(hSpecRebinnedEPOS[WhichCent - 1]), 0.0, 6.0, "gEPOS");
+        // gEPOS->Draw("L SAME");
+
+        // hGenSpectraRebinned->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
+        // // hSpecRebinned[WhichCent - 1][kPythiaShoving]->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
+        // hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("L SAME");
+        // // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("L SAME");
+        // // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("L SAME");
+        // hSpecRebinnedEPOS[WhichCent - 1]->Draw("L SAME");
+
+        TLegend *legend = new TLegend(0.48, 0.6, 0.93, 0.92);
         SetLegendStyle(legend);
-        legend->SetTextSize(0.03);
+        legend->SetTextSize(0.04);
         legend->AddEntry(hSpectra[WhichCent], Form("pp, %d-%d%%", centrality[WhichCent - 1], centrality[WhichCent]), "pe");
         legend->AddEntry(hGenSpectraRebinned, "Pythia Monash (Central Prod.)", "l");
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonash], modelLabelLocal[kPythiaMonash], "l");
-        // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaShoving], modelLabelLocal[kPythiaShoving], "l");
+        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaShoving], modelLabelLocal[kPythiaShoving], "l");
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabelLocal[kPythiaRopes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabelLocal[kPythiaMonashRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabelLocal[kPythiaRes], "l");
-        legend->AddEntry(hSpecRebinnedEPOS[WhichCent - 1], "EPOS", "l");
+        // legend->AddEntry(hSpecRebinnedEPOS[WhichCent - 1], "EPOS", "l");
         legend->Draw();
 
         //============================================
         //=======Bottom panel for ratio plots========
         //============================================
         cPythiaCentral->cd(2);
+        // gPad->SetLogy();
         TH1D *hRatioGen = BuildRatioHistogram(hSpectra[WhichCent], hGenSpectraRebinned, Form("hRatioGen_%.0f_%.0f", multlow, multhigh));
 
         TH1D *hRatioMonash = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaMonash], Form("hRatioMonash_%.0f_%.0f", multlow, multhigh));
@@ -333,37 +350,39 @@ void compareSpectra()
 
         TH1D *hRatioEPOS = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinnedEPOS[WhichCent - 1], Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh));
 
-        hRatioGen->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-        hRatioGen->GetYaxis()->SetTitleSize(0.036 / pad2Size);
-        hRatioGen->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-        hRatioGen->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-        hRatioGen->GetYaxis()->SetTitleOffset(2.0 * pad2Size);
-        hRatioGen->GetYaxis()->SetTitle("Data / Model");
-        hRatioGen->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
-        hRatioGen->SetMaximum(2.3);
-        hRatioGen->SetMinimum(0.0);
-        hRatioGen->GetYaxis()->SetNdivisions(505);
-        hRatioGen->Draw("HIST"); // First one initializes the frame
-
-        TLine *line = new TLine(hRatioGen->GetXaxis()->GetXmin(), 1.0, hRatioGen->GetXaxis()->GetXmax(), 1.0);
-        line->SetLineColor(kBlack);
-        line->SetLineStyle(8);
-        line->Draw("SAME");
-
         // --- NEW: Data Systematic Uncertainty Band Around 1.0 ---
         TH1D *hRatioSysData = (TH1D *)hSpectraSys[WhichCent]->Clone(Form("hRatioSysData_%.0f_%.0f", multlow, multhigh));
         hRatioSysData->Divide(hSpectra[WhichCent]); // Sets bin contents to 1.0, scales errors relatively
         hRatioSysData->SetFillColor(kGray);         // Color of the shaded band
         hRatioSysData->SetFillStyle(3001);          // Semi-transparent/hashed fill style
         hRatioSysData->SetMarkerStyle(0);           // Remove markers
-        hRatioSysData->Draw("E2 SAME");             // Draw as an error band before model curves
+        hRatioSysData->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+        hRatioSysData->GetYaxis()->SetTitleSize(0.036 / pad2Size);
+        hRatioSysData->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+        hRatioSysData->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+        hRatioSysData->GetYaxis()->SetTitleOffset(2.0 * pad2Size);
+        hRatioSysData->GetYaxis()->SetTitle("Data / Model");
+        hRatioSysData->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+        hRatioSysData->SetMaximum(2.05);
+        // hRatioSysData->SetMaximum(9.0);
+        hRatioSysData->SetMinimum(0.3);
+        // hRatioSysData->GetYaxis()->SetMoreLogLabels(kTRUE);
+        hRatioSysData->GetYaxis()->SetNdivisions(505);
+        hRatioSysData->Draw("E2"); // Draw as an error band before model curves
 
+        TLine *line = new TLine(hRatioGen->GetXaxis()->GetXmin(), 1.0, hRatioGen->GetXaxis()->GetXmax(), 1.0);
+        line->SetLineColor(kBlack);
+        line->SetLineStyle(8);
+        line->Draw("SAME");
+
+        hRatioGen->Draw("HIST SAME"); // Central production
         hRatioMonash->Draw("HIST SAME");
-        // hRatioShoving->Draw("HIST SAME");
+        hRatioShoving->Draw("HIST SAME");
         // hRatioMonashRes->Draw("HIST SAME");
         hRatioRopes->Draw("HIST SAME");
-        hRatioEPOS->Draw("HIST SAME");
-        hRatioGen->Draw("HIST SAME"); // Draw last to ensure it's on top
+        // hRatioEPOS->GetXaxis()->SetRangeUser(0.0, 6.0);
+        // hRatioEPOS->Draw("HIST SAME");
+        // RestrictHistogramX(hRatioEPOS, 0.0, 6.0, Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh))->Draw("HIST SAME");
 
         cPythiaCentral->SaveAs(Form("Plots/SpectraCompare/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
 
@@ -435,7 +454,7 @@ TH1D *RebinToMatch(const TH1D *hInput, const TH1D *hReference, const TString &ne
 
     TH1D *hRebinned = (TH1D *)hReference->Clone(hName);
     hRebinned->Reset();
-    hRebinned->Sumw2();
+    // hRebinned->Sumw2();
 
     for (int i = 1; i <= hReference->GetNbinsX(); ++i)
     {
@@ -518,9 +537,7 @@ ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target)
     return result;
 }
 
-TH1D *BuildSpectrum(TFile *file,
-                    const ClosestMultiplicity &match,
-                    const char *histPrefix = "hkstarPt_")
+TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_", bool isEPOS = false)
 {
     if (!file)
         return nullptr;
@@ -529,6 +546,9 @@ TH1D *BuildSpectrum(TFile *file,
     if (!match.useAverage)
     {
         TH1D *h = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
+        if (isEPOS)
+            h->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
+
         h = (TH1D *)h->Clone(Form("%s_clone_%d", histPrefix, match.idx1));
         // h->Scale(1.0 / h->Integral());
         return h;
@@ -538,11 +558,13 @@ TH1D *BuildSpectrum(TFile *file,
     TH1D *h1 = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
     TH1D *h2 = GetHisto(file, Form("%s%d", histPrefix, match.idx2));
 
-    h1 = (TH1D *)h1->Clone(Form("%s_avg_%d_%d",
-                                histPrefix,
-                                match.idx1,
-                                match.idx2));
+    if (isEPOS)
+    {
+        h1->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
+        h2->Scale(0.1);
+    }
 
+    h1 = (TH1D *)h1->Clone(Form("%s_avg_%d_%d", histPrefix, match.idx1, match.idx2));
     h2 = (TH1D *)h2->Clone(Form("%s_tmp_%d", histPrefix, match.idx2));
 
     // h1->Scale(1.0 / h1->Integral());
@@ -596,3 +618,105 @@ TH1D *BuildRatioHistogram(TH1D *hNumerator,
 
     return hRatio;
 }
+
+TSpline3 *MakeSmoothSpline(TH1 *h, const char *name)
+{
+    int n = h->GetNbinsX();
+    TGraph *gr = new TGraph(n);
+
+    for (int i = 1; i <= n; i++)
+    {
+        gr->SetPoint(i - 1,
+                     h->GetBinCenter(i),
+                     h->GetBinContent(i));
+    }
+
+    TSpline3 *sp = new TSpline3(name, gr);
+
+    sp->SetLineColor(h->GetLineColor());
+    sp->SetLineStyle(h->GetLineStyle());
+    sp->SetLineWidth(h->GetLineWidth());
+
+    return sp;
+}
+
+TGraph *MakeGraph(TH1 *h)
+{
+    int n = h->GetNbinsX();
+    TGraph *gr = new TGraph(n);
+
+    for (int i = 1; i <= n; i++)
+    {
+        gr->SetPoint(i - 1,
+                     h->GetBinCenter(i),
+                     h->GetBinContent(i));
+    }
+
+    gr->SetLineColor(h->GetLineColor());
+    gr->SetLineStyle(h->GetLineStyle());
+    gr->SetLineWidth(h->GetLineWidth());
+
+    return gr;
+}
+
+TGraph *RestrictGraphX(const TGraph *gIn, double xmin, double xmax,
+                       const char *name = "gRestricted")
+{
+    if (!gIn)
+        return nullptr;
+
+    TGraph *gOut = new TGraph();
+    gOut->SetName(name);
+
+    // Copy style
+    gOut->SetLineColor(gIn->GetLineColor());
+    gOut->SetLineStyle(gIn->GetLineStyle());
+    gOut->SetLineWidth(gIn->GetLineWidth());
+    gOut->SetMarkerColor(gIn->GetMarkerColor());
+    gOut->SetMarkerStyle(gIn->GetMarkerStyle());
+    gOut->SetMarkerSize(gIn->GetMarkerSize());
+
+    int ip = 0;
+    for (int i = 0; i < gIn->GetN(); ++i)
+    {
+        double x, y;
+        gIn->GetPoint(i, x, y);
+
+        if (x >= xmin && x <= xmax)
+        {
+            gOut->SetPoint(ip++, x, y);
+        }
+    }
+
+    return gOut;
+}
+
+template <class TH>
+TH *RestrictHistogramX(const TH *hIn, double xmin, double xmax, const char *newName)
+{
+    if (!hIn)
+        return nullptr;
+
+    TH *hOut = (TH *)hIn->Clone(newName);
+    hOut->Reset("ICES"); // Keep axes, errors, statistics
+
+    for (int ibin = 1; ibin <= hIn->GetNbinsX(); ++ibin)
+    {
+        double x = hIn->GetBinCenter(ibin);
+
+        if (x >= xmin && x <= xmax)
+        {
+            hOut->SetBinContent(ibin, hIn->GetBinContent(ibin));
+            hOut->SetBinError(ibin, hIn->GetBinError(ibin));
+        }
+        else
+        {
+            hOut->SetBinContent(ibin, -999);
+            hOut->SetBinError(ibin, 0);
+        }
+    }
+    hOut->GetXaxis()->SetRangeUser(xmin, xmax);
+
+    return hOut;
+}
+

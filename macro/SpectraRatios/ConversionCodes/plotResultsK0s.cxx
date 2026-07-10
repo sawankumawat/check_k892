@@ -30,8 +30,8 @@ void plotResultsK0s()
 
     TFile *fOutput = new TFile("../K0s_Run3_Results/Sawan/ResultsK0s.root", "recreate");
     hCorrectedMinBiasSpectra->Write("hCorrectedMinBiasSpectra");
-    hMeanpT->Write("gMeanpTRun3");
-    hYield->Write("gMeanYieldRun3");
+    hMeanpT->Write("gMeanpTRun3_stat");
+    hYield->Write("gMeanYieldRun3_stat");
     hMeanpT->Write("gMeanpTRun3_sys");
     hYield->Write("gMeanYieldRun3_sys");
     fOutput->Close();

@@ -179,8 +179,8 @@ void plot_spectra()
             {
                 // TH1F *h1 = (TH1F *)hmultClone[imult]->Clone("h1");
                 // TH1F *h2 = (TH1F *)hmultClone[imult]->Clone("h2");
-                TH1F *h1 = (TH1F *)hmult[imult]->Clone("h1");
-                TH1F *h2 = (TH1F *)hmult[imult]->Clone("h2");
+                TH1F *h1 = (TH1F *)hmult[imult]->Clone(Form("h1_%d", imult));
+                TH1F *h2 = (TH1F *)hmult[imult]->Clone(Form("h2_%d", imult));
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
@@ -203,11 +203,12 @@ void plot_spectra()
                 // fitFcn->SetParameter(1, 0.05);
                 fitFcn->SetParameter(1, 0.5);
                 fitFcn->FixParameter(2, 0.895);
-                fitFcn->SetParameter(3, 0.35);
+                fitFcn->SetParameter(3, 0.25);
                 fitFcn->SetParNames("n", "dn/dy", "mass", "T");
                 fitFcn->SetLineColor(colors[imult]);
 
                 TH1 *hout = YieldMean(h1, h2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+                hout->SetDirectory(nullptr);
                 c->cd(1);
                 // fitFcn->SetLineColor(color);
                 fitFcn->SetLineColor(colors[imult]);
@@ -282,8 +283,8 @@ void plot_spectra()
             // Now lets calculate the mean pT and yield as a function of dN_charge/deta
             for (int imult = 1; imult < numofmultbins + 1; imult++)
             {
-                TH1F *h1 = (TH1F *)hmultClone[imult]->Clone("h1");
-                TH1F *h2 = (TH1F *)hmultClone[imult]->Clone("h2");
+                TH1F *h1 = (TH1F *)hmultClone[imult]->Clone(Form("h1_%d", imult));
+                TH1F *h2 = (TH1F *)hmultClone[imult]->Clone(Form("h2_%d", imult));
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
@@ -307,12 +308,13 @@ void plot_spectra()
                 fitFcn->SetParameter(1, 0.5);
                 // fitFcn->SetParameter(1, 50);
                 fitFcn->FixParameter(2, 0.895);
-                fitFcn->SetParameter(3, 0.35);
+                fitFcn->SetParameter(3, 0.3);
                 fitFcn->SetParNames("n", "dn/dy", "mass", "T");
                 fitFcn->SetLineColor(colors[imult]);
                 fitFcn->SetLineStyle(2);
 
                 TH1 *hout = YieldMean(h1, h2, fitFcn, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+                hout->SetDirectory(nullptr);
 
                 // Taking from Levy fit
                 meanpT[imult - 1] = hout->GetBinContent(5);
@@ -366,6 +368,8 @@ void plot_spectra()
             }
             TString tempPath = outputfolder + "/spectra_temp." + outputType;
             ctemp->SaveAs(tempPath.Data());
+            ctemp->Close();
+            ctemp->Delete();
 
             // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
             double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};

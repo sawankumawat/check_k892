@@ -3,15 +3,15 @@
 // Projection of signal in different pT bins *************************************
 
 #if defined(DATASET_LHC220_pass6_small) || defined(DATASET_LHC220_pass7)
-// const Int_t Npt = 27;
+// const Int_t Npt = 27; // INEL with Run 2 bins
 // const Int_t Npt = 14;
-// const Int_t Npt = 18; // Just for checks
+// const Int_t Npt = 18; // Finalized pT bins for INEL>0
 const Int_t Npt = 34; // INEL with even higher pT bins
 
 // double pT_bins[Npt + 1] = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0}; // Run2 INEL
 // double pT_bins[Npt + 1] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 10.0}; // Run2 INEL > 0
 
-// double pT_bins[Npt + 1] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0}; // Just for checks
+// double pT_bins[Npt + 1] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0}; // Finalized pT bins for INEL>0
 double pT_bins[Npt + 1] = {0.0, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0}; // INEL with even higher pT bins
 
 const int pt_start = 0;

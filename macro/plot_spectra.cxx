@@ -229,8 +229,13 @@ void plot_spectra()
                     leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
             }
         }
-        c->cd(1);
+        TLatex lat;
+        lat.SetNDC();
+        lat.SetTextSize(0.05);
+        // lat.SetTextFont(42);
+        lat.DrawLatex(0.18, 0.9, "K*(892)^{0}");
 
+        c->cd(1);
         leg->SetTextSize(0.03);
         leg->Draw();
 

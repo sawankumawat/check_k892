@@ -7,9 +7,9 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 void efficiency()
 {
-    bool makePIDplots = true; // qa plots
+    bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "png"; // pdf, eps
+    string outputtype = "pdf"; // pdf, eps
     bool isINEL = true;
     const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -475,19 +475,19 @@ void efficiency()
             TCanvas *cefficiency = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cefficiency, 0.16, 0.06, 0.01, 0.14);
             double pad1Size, pad2Size;
-            canvas_style(cefficiency, pad1Size, pad2Size);
-            cefficiency->cd(1);
+            // canvas_style(cefficiency, pad1Size, pad2Size);
+            // cefficiency->cd(1);
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 SetHistoQA(heff[imult]);
                 heff[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                 heff[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-                heff[imult]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-                heff[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-                heff[imult]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-                heff[imult]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-                heff[imult]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
-                heff[imult]->SetMaximum(0.75);
+                // heff[imult]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+                // heff[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+                // heff[imult]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+                // heff[imult]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+                // heff[imult]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
+                heff[imult]->SetMaximum(0.65);
                 heff[imult]->SetMarkerStyle(markers[imult]);
                 heff[imult]->SetMarkerSize(1.2);
                 heff[imult]->Draw("pe same PLC PMC");
@@ -503,39 +503,40 @@ void efficiency()
             line->SetLineStyle(2);
             line->SetLineColor(kBlack);
             line->SetLineWidth(2);
-            line->Draw();
+            // line->Draw();
             TLegend *legall = new TLegend(0.20, 0.8, 0.92, 0.92);
             legall->SetTextSize(0.03);
             legall->SetNColumns(5);
             legall->SetFillStyle(0);
             legall->SetBorderSize(0);
-            legall->AddEntry(heff[0], "0-100%", "p");
+            // legall->AddEntry(heff[0], "0-100%", "p");
+            legall->AddEntry(heff[0], "pp, INEL", "p");
             for (int imult = 1; imult < multLoopEnd; imult++)
             {
                 legall->AddEntry(heff[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "p");
             }
             legall->Draw();
 
-            cefficiency->cd(2);
-            gPad->SetGridy(1);
-            for (int imult = 1; imult < multLoopEnd; imult++)
-            {
-                TH1F *hRatio1 = (TH1F *)heff[imult]->Clone(Form("hRatio1_%d", imult));
-                SetHistoQA(hRatio1);
-                hRatio1->Divide(heff[0]);
-                hRatio1->GetYaxis()->SetTitleSize(0.03 / pad2Size);
-                hRatio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-                hRatio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-                hRatio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-                hRatio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-                hRatio1->GetYaxis()->SetTitle("Ratio to 0-100%");
-                hRatio1->GetYaxis()->SetTitleOffset(2.1 * pad2Size);
-                hRatio1->SetMarkerStyle(20);
-                hRatio1->SetMarkerSize(1.0);
-                hRatio1->GetYaxis()->SetNdivisions(505);
-                hRatio1->GetYaxis()->SetRangeUser(0.69, 1.29);
-                hRatio1->Draw("ep same PLC PMC");
-            }
+            // cefficiency->cd(2);
+            // gPad->SetGridy(1);
+            // for (int imult = 1; imult < multLoopEnd; imult++)
+            // {
+            //     TH1F *hRatio1 = (TH1F *)heff[imult]->Clone(Form("hRatio1_%d", imult));
+            //     SetHistoQA(hRatio1);
+            //     hRatio1->Divide(heff[0]);
+            //     hRatio1->GetYaxis()->SetTitleSize(0.03 / pad2Size);
+            //     hRatio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+            //     hRatio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+            //     hRatio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+            //     hRatio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+            //     hRatio1->GetYaxis()->SetTitle("Ratio to 0-100%");
+            //     hRatio1->GetYaxis()->SetTitleOffset(2.1 * pad2Size);
+            //     hRatio1->SetMarkerStyle(20);
+            //     hRatio1->SetMarkerSize(1.0);
+            //     hRatio1->GetYaxis()->SetNdivisions(505);
+            //     hRatio1->GetYaxis()->SetRangeUser(0.69, 1.29);
+            //     hRatio1->Draw("ep same PLC PMC");
+            // }
 
             cefficiency->SaveAs(outputfolder + "/efficiency_all_mult." + outputtype);
 
@@ -587,6 +588,7 @@ void efficiency()
             TCanvas *cSignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
             legall->Clear();
+            legall->AddEntry((TObject *)0, "pp, INEL", "");
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 if (imult == 0)
@@ -615,7 +617,8 @@ void efficiency()
                 heventloss[imult]->SetLineWidth(2);
                 heventloss[imult]->SetLineColor(colors[imult]);
                 heventloss[imult]->Draw("l same");
-                legall->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                // legall->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                legall->AddEntry(hSignalLoss[imult], "Signal Loss", "p");
             }
             legall->AddEntry(heventloss[0], "Event Loss", "l");
             legall->Draw();
@@ -624,6 +627,7 @@ void efficiency()
             TCanvas *cEventBySignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cEventBySignalLoss, 0.16, 0.06, 0.01, 0.14);
             legall->Clear();
+            legall->AddEntry((TObject *)0, "pp, INEL", "");
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 if (imult == 0)
@@ -641,14 +645,15 @@ void efficiency()
                 hRatioEvBySig[imult]->GetYaxis()->SetTitle("Event Loss / Signal Loss");
                 hRatioEvBySig[imult]->GetYaxis()->SetTitleOffset(1.6);
                 hRatioEvBySig[imult]->SetStats(0);
-                hRatioEvBySig[imult]->SetMaximum(1.25);
+                // hRatioEvBySig[imult]->SetMaximum(1.25);
+                hRatioEvBySig[imult]->SetMaximum(0.92);
                 hRatioEvBySig[imult]->SetMinimum(0.6);
                 hRatioEvBySig[imult]->SetMarkerStyle(markers[imult]);
                 hRatioEvBySig[imult]->SetMarkerSize(1.2);
                 hRatioEvBySig[imult]->SetMarkerColor(colors[imult]);
                 hRatioEvBySig[imult]->SetLineColor(colors[imult]);
                 hRatioEvBySig[imult]->Draw("pe same");
-                legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                // legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
             }
             legall->Draw();
             cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss." + outputtype);

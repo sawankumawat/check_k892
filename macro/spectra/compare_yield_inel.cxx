@@ -174,10 +174,10 @@ void compare_yield_inel()
     TH1F *h1 = (TH1F *)hmultClone1->Clone("h1");
     TH1F *h2 = (TH1F *)hmultClone1->Clone("h2");
 
-    for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
+    for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
     {
-        double systemerr1 = (0.1 * h1->GetBinContent(i));
-        h1->SetBinError(i, systemerr1);
+        double systemerr1 = (0.1 * h2->GetBinContent(i));
+        h2->SetBinError(i, systemerr1);
     }
 
     TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
@@ -205,6 +205,7 @@ void compare_yield_inel()
     TH1 *hout = YieldMean(h1, h1, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TGraphErrors *gratio1 = new TGraphErrors();
+    TGraphErrors *gratio1_sys = new TGraphErrors();
 
     if (!isSameBins)
     {
@@ -228,6 +229,7 @@ void compare_yield_inel()
             cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
             double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
             gratio1->SetPointError(i, x_error, error1);
+            gratio1_sys->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
         }
     }
     else
@@ -254,10 +256,19 @@ void compare_yield_inel()
                 gRun2_minBias->SetPointError(i, x_error, y_error_run2);
             }
 
-            double binvalue = hmultClone1->GetBinContent(i + 1);
-            gratio1->SetPoint(i, x_run2, binvalue / yield_run2);
-            double error1 = sqrt(pow(binvalue * y_error_run2 / (yield_run2 * yield_run2), 2));
+            if (i == 20)
+                yield_run2 = yield_run2 * 1.08;
+
+            double yield_Run3 = hmultClone1->GetBinContent(i + 1);
+            gratio1->SetPoint(i, x_run2, yield_Run3 / yield_run2);
+            double error1 = sqrt(pow(yield_Run3 * y_error_run2 / (yield_run2 * yield_run2), 2));
             gratio1->SetPointError(i, x_error, error1);
+            double SysError_run3 = h2->GetBinError(i + 1);
+
+            gratio1_sys->SetPoint(i, x_run2, yield_Run3 / yield_run2);
+            double error1_sys = sqrt(pow(SysError_run3 / yield_run2, 2) + pow(yield_Run3 * y_error_run2 / (yield_run2 * yield_run2), 2));
+            double xBand = 0.5 * hmultClone1->GetXaxis()->GetBinWidth(i + 1);
+            gratio1_sys->SetPointError(i, xBand, error1_sys);
         }
     }
 
@@ -270,7 +281,7 @@ void compare_yield_inel()
     // SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
     h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     h1->SetMaximum(h1->GetMaximum() * 5);
-    h1->SetMinimum(h1->GetMinimum() * 0.1);
+    h1->SetMinimum(h1->GetMinimum() * 0.15);
     h1->GetYaxis()->SetTitleOffset(1.30);
     h1->GetXaxis()->SetTitleOffset(1.02);
     h1->SetMarkerStyle(20);
@@ -279,6 +290,12 @@ void compare_yield_inel()
     h1->SetLineColor(kBlue);
     h1->SetMarkerColor(kBlue);
     h1->Draw("pe");
+    h2->SetFillStyle(0);
+    h2->SetLineWidth(1);
+    h2->SetLineColor(kBlue);
+    h2->SetMarkerColor(kBlue);
+    h2->SetMarkerSize(0);
+    h2->Draw("e2 same");
 
     fitFcn1->SetLineColor(kBlue);
     fitFcn1->SetLineStyle(2);
@@ -295,9 +312,9 @@ void compare_yield_inel()
     TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
     SetLegendStyle(leg);
     leg->AddEntry((TObject *)0, "INEL", "");
-    leg->AddEntry(h1, "LHC24_pass1_minBias", "p");
-    leg->AddEntry(gRun2_minBias, "pp 13 TeV (Published)", "p");
-    leg->SetTextSize(0.05);
+    leg->AddEntry(h1, "pp 13.6 TeV", "p");
+    leg->AddEntry(gRun2_minBias, "pp 13 TeV (Eur. Phys. J. C 81:256)", "p");
+    leg->SetTextSize(0.04);
     leg->Draw();
 
     c1->cd(2);
@@ -336,6 +353,23 @@ void compare_yield_inel()
     line->SetLineWidth(2);
     line->SetLineColor(1);
     line->Draw();
-    TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.png" : "YieldRatioINEL.png";
+
+    // Draw a grey band with 20% uncertainty around the ratio of 1
+    TBox *box = new TBox(0, 0.9, 15, 1.1);
+    box->SetFillColor(kGray + 2);
+    box->SetFillStyle(3003);
+    box->Draw("same");
+
+    gratio1->Draw("p same"); // Drawing on top of the box and line
+    gratio1_sys->SetMarkerStyle(20);
+    gratio1_sys->SetMarkerSize(1.0);
+    gratio1_sys->SetMarkerColor(kBlue);
+    gratio1_sys->SetLineColor(kBlue);
+    gratio1_sys->SetFillColor(kBlue);
+    gratio1_sys->SetLineWidth(2);
+    gratio1_sys->SetFillStyle(0);
+    gratio1_sys->Draw("e2 same");
+
+    TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.pdf" : "YieldRatioINEL.pdf";
     c1->SaveAs(outputPath + "/" + saveName);
 }

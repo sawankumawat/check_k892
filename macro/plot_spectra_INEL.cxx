@@ -24,12 +24,15 @@ void plot_spectra_INEL()
     TFile *fINEL = OpenFile(filePath + "corrected_spectra_0_120.root");
     TH1D *hSpectraINEL = GetHisto(fINEL, "mult_0-120/corrected_spectra_Integral_final");
 
+    TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert_INELTemp.root");
+    TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hSysINELTemp");
+
     TH1F *h1 = (TH1F *)hSpectraINEL->Clone("h1");
     TH1F *h2 = (TH1F *)hSpectraINEL->Clone("h2");
 
     for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
     {
-        double systemerr = (h2->GetBinContent(i) * 0.08); // Assuming 8% systematic uncertainty
+        double systemerr = (h2->GetBinContent(i) * hSysINELTemp->GetBinContent(i)); 
         h2->SetBinError(i, systemerr);
     }
 
@@ -70,16 +73,23 @@ void plot_spectra_INEL()
     hSpectraINEL->SetMarkerStyle(20);
     hSpectraINEL->SetMarkerSize(1.2);
     hSpectraINEL->Draw("pe");
+    h2->SetMarkerStyle(20);
+    h2->SetMarkerSize(1.2);
+    h2->SetMarkerColor(kBlack);
+    h2->SetLineColor(kBlack);
+    h2->SetFillStyle(0);
+    h2->SetLineWidth(2);
+    h2->Draw("e2 same");
     fitFcn->Draw("l same");
-    TLegend *leg = new TLegend(0.55, 0.65, 0.85, 0.88);
-    leg->SetTextSize(0.04);
+    TLegend *leg = new TLegend(0.5, 0.65, 0.85, 0.88);
+    leg->SetTextSize(0.035);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->AddEntry((TObject *)0, "K*(892)^{0}", "");
-    leg->AddEntry(hSpectraINEL, "pp, #sqrt{s} = 13.6 TeV", "p");
+    leg->AddEntry(hSpectraINEL, "pp INEL, #sqrt{s} = 13.6 TeV", "p");
     leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
     leg->Draw();
-    cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-120.png").c_str());
+    cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-120.pdf").c_str());
 }
 TH1D *GetHisto(TFile *f, const string &name)
 {

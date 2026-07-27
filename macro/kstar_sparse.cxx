@@ -28,10 +28,10 @@ void kstar_sparse()
     // const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "png";     // pdf, eps
+    string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
-    bool makeQAplots = true;
+    bool makeQAplots = false;
     bool makeallpTplots = true; // make all pT plots
     bool calcInvMass = true;
     bool isINEL = true;
@@ -188,7 +188,7 @@ void kstar_sparse()
         }
 
         for (int imult = 0; imult < nmultbins + 1; imult++)
-        // for (int imult = 4; imult < nmultbins + 1; imult++)
+        // for (int imult = 8; imult < 9; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -254,7 +254,7 @@ void kstar_sparse()
             {
                 // gStyle->SetOptStat(1110);
                 gStyle->SetOptStat(0);
-                gStyle->SetOptFit(1);
+                gStyle->SetOptFit(0);
 
                 // Check if directory exists, if not create it
                 TDirectory *dir = filecmp->GetDirectory(Form("mult_%d-%d", (int)multlow, (int)multhigh));
@@ -739,7 +739,7 @@ void kstar_sparse()
                     fitFcn1->Draw("same");
                     fitFcn2->Draw("same");
 
-                    TLegend *pag = new TLegend(0.14, 0.6, 0.35, 0.9);
+                    TLegend *pag = new TLegend(0.135, 0.6, 0.345, 0.9);
                     pag->SetBorderSize(0);
                     pag->SetTextFont(42);
                     pag->SetTextSize(0.035);
@@ -748,12 +748,12 @@ void kstar_sparse()
                     pag->AddEntry((TObject *)0, "pp, #sqrt{s} = 13.6 TeV", "");
                     pag->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
                     pag->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
-                    pag->AddEntry((TObject *)0, Form("#it{p}_{T} = %.2f-%.2f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
+                    pag->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
                     if (!multipanel_plots)
                         pag->Draw();
 
-                    TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
-                    // TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
+                    // TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
+                    TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
                     pag2->SetBorderSize(0);
                     pag2->SetTextFont(42);
                     pag2->SetTextSize(0.035);
@@ -798,10 +798,12 @@ void kstar_sparse()
                     gPad->SetRightMargin(0.04);
                     gPad->SetLeftMargin(0.15);
                     gPad->SetBottomMargin(0.15);
-                    fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.15);
+                    // fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.15);
+                    fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.23);
                     fHistTotal[ip]->SetMarkerSize(1.0);
                     hfbkg->SetMarkerSize(1.0);
                     fHistTotal[ip]->GetXaxis()->SetRangeUser(0.7, 1.3);
+                    fHistTotal[ip]->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
                     fHistTotal[ip]->Draw("pe");
                     fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
@@ -817,7 +819,20 @@ void kstar_sparse()
                     // (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
                     ltx->Draw();
                     if (!multipanel_plots)
-                        pag->Draw();
+                    {
+                        // pag->Draw();
+                        TLegend *pagTemp = new TLegend(0.14, 0.72, 0.35, 0.93);
+                        pagTemp->SetBorderSize(0);
+                        pagTemp->SetTextFont(42);
+                        pagTemp->SetTextSize(0.033);
+                        pagTemp->SetFillStyle(0);
+                        pagTemp->AddEntry((TObject *)0, "ALICE", "");
+                        pagTemp->AddEntry((TObject *)0, "pp, #sqrt{s} = 13.6 TeV", "");
+                        pagTemp->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
+                        // pagTemp->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
+                        pagTemp->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
+                        pagTemp->Draw();
+                    }
 
                     TLegend *pag3;
                     pag3 = (!multipanel_plots) ? new TLegend(0.7, 0.65, 0.9, 0.9) : new TLegend(0.2, 0.7, 0.45, 0.9);
@@ -944,6 +959,7 @@ void kstar_sparse()
                     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                     hintegral_yield->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
                     gPad->SetLogy(1);
+                     hintegral_yield->GetYaxis()->SetTitleOffset(1.5);
                     // hintegral_yield->GetXaxis()->SetRangeUser(-0.1, 15.2);
                     hintegral_yield->SetStats(0);
                     hintegral_yield->Draw("pe");
@@ -956,7 +972,12 @@ void kstar_sparse()
                     // t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
                     legyield->Draw();
                     // csig->SaveAs(outputfolder_mult + ("/yield_integral." + outputtype).c_str());
-                    csig->SaveAs(outputfolder_mult + "/yield_integral.png");
+                    TLatex latYield;
+                    latYield.SetTextSize(0.05);
+                    latYield.SetTextFont(42);
+                    latYield.DrawLatexNDC(0.65, 0.83, "pp, INEL");
+                    latYield.DrawLatexNDC(0.65, 0.71, "K*(892)^{0}");
+                    csig->SaveAs(outputfolder_mult + "/yield_integral.pdf");
                     csig->Clear();
 
                     // Yield vs pT (bin counting method)

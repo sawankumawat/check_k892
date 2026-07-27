@@ -13,8 +13,10 @@ void plotResultsK0s()
     }
     TH1F *hCorrectedMinBiasSpectra = (TH1F *)fSpectra->Get("hPtCorrected");
     TGraphErrors *hMeanpT = (TGraphErrors *)fResults->Get("MeanptNchStat");
+    TGraphErrors *hMeanpTsys = (TGraphErrors *)fResults->Get("MeanptNchSys");
     TGraphErrors *hYield = (TGraphErrors *)fResults->Get("YieldsNchStat");
-    if (hCorrectedMinBiasSpectra == nullptr || hMeanpT == nullptr || hYield == nullptr)
+    TGraphErrors *hYieldsys = (TGraphErrors *)fResults->Get("YieldsNchSys");
+    if (hCorrectedMinBiasSpectra == nullptr || hMeanpT == nullptr || hYield == nullptr || hMeanpTsys == nullptr || hYieldsys == nullptr)
     {
         cout << "Error: histograms not found" << endl;
         return;
@@ -32,7 +34,7 @@ void plotResultsK0s()
     hCorrectedMinBiasSpectra->Write("hCorrectedMinBiasSpectra");
     hMeanpT->Write("gMeanpTRun3_stat");
     hYield->Write("gMeanYieldRun3_stat");
-    hMeanpT->Write("gMeanpTRun3_sys");
-    hYield->Write("gMeanYieldRun3_sys");
+    hMeanpTsys->Write("gMeanpTRun3_sys");
+    hYieldsys->Write("gMeanYieldRun3_sys");
     fOutput->Close();
 }

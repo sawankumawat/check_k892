@@ -1,7 +1,7 @@
 
 // The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
-const bool multipanel_plots = 0;
+const bool multipanel_plots = 1;
 const bool save_plots = 1;
 // const string kfoldername_temp = "kstarqa_id21631/hInvMass";
 const string kfoldername_temp = "kstarqa/hInvMass";

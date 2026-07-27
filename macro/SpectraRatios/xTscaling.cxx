@@ -46,7 +46,8 @@ TGraphErrors *GetGraph(TFile *f, const string &name)
 TGraphErrors *HistToXTGraph(TH1D *hStat, TH1D *hRelSys, double sqrts, double sigmaINEL, double nAverage = 1.0, bool alreadyNormalizedYield = false, float AverageKstar = 1.0);
 TGraphErrors *GraphToXTGraph(TGraphErrors *gInput, TH1D *hStat, TH1D *hSys, double sqrts, double sigmaINEL, double nAverage = 1.0, bool alreadyNormalizedYield = false, float AverageKstar = 1.0);
 void GetGraphRange(TGraph *g, double &xmin, double &xmax);
-TGraph *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2);
+TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2);
+TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2);
 
 void xTscaling()
 {
@@ -106,43 +107,60 @@ void xTscaling()
 
     // auto gN13 = CalculateN(gXT136_n, gXT13_n, sqrts136, sqrts13); // No use, energy difference is too small
     auto gN7 = CalculateN(gXT136_n, gXT7_n, sqrts136, sqrts7);
-    auto gN276 = CalculateN(gXT136_n, gXT276_n, sqrts136, sqrts276);
+    auto gN276 = CalculateN2(gXT136_n, gXT276_n, sqrts136, sqrts276);
     auto gn7_276 = CalculateN(gXT7_n, gXT276_n, sqrts7, sqrts276);
     auto gn13_276 = CalculateN(gXT13_n, gXT276_n, sqrts13, sqrts276);
     auto gn13_7 = CalculateN(gXT13_n, gXT7_n, sqrts13, sqrts7);
-    auto gn505 = CalculateN(gXT136_n, gXT502_n, sqrts136, sqrts502);
+    auto gn505 = CalculateN2(gXT136_n, gXT502_n, sqrts136, sqrts502);
+
+    // string labels[6] = {
+    //     "n#left(#frac{Y(13.6)}{Y(7)}#right)",
+    //     "n#left(#frac{Y(13.6)}{Y(2.76)}#right)",
+    //     "n#left(#frac{Y(7)}{Y(2.76)}#right)",
+    //     "n#left(#frac{Y(13)}{Y(2.76)}#right)",
+    //     "n#left(#frac{Y(13)}{Y(7)}#right)",
+    //     "n#left(#frac{Y(13.6)}{Y(5.02)}#right)"};
+
     string labels[6] = {
         "n#left(#frac{Y(13.6)}{Y(7)}#right)",
+        "n#left(#frac{Y(13.6)}{Y(5.02)}#right)",
         "n#left(#frac{Y(13.6)}{Y(2.76)}#right)",
-        "n#left(#frac{Y(7)}{Y(2.76)}#right)",
-        "n#left(#frac{Y(13)}{Y(2.76)}#right)",
         "n#left(#frac{Y(13)}{Y(7)}#right)",
-        "n#left(#frac{Y(13.6)}{Y(5.02)}#right)"};
+        "n#left(#frac{Y(7)}{Y(2.76)}#right)"};
 
-    vector<TGraph *> gNList = {gN7, gN276, gn7_276, gn13_276, gn13_7, gn505};
+    // vector<TGraph *> gNList = {gN7, gN276, gn7_276, gn13_276, gn13_7, gn505};
+    vector<TGraph *> gNList = {gN7, gn505, gN276, gn13_7, gn7_276};
 
     TCanvas *cN = new TCanvas("cN", "cN", 1080, 720);
     SetCanvasStyle(cN, 0.13, 0.10, 0.01, 0.12);
     cN->Divide(3, 2);
     vector<double> nValues;
 
+    // vector<vector<double>> fitRanges = {
+    //     {1.6e-3, 3.4e-3},  // 13.6 TeV / 7 TeV
+    //     {1.8e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
+    //     {1.8e-3, 5.45e-3}, // 7 TeV / 2.76 TeV
+    //     {1.6e-3, 2.8e-3},  // 13 TeV / 2.76 TeV
+    //     {0.75e-3, 2.8e-3}, // 13 TeV / 7 TeV
+    //     {1.6e-3, 4.1e-3}   // 13.6 TeV / 5.02 TeV
+    // };
+
     vector<vector<double>> fitRanges = {
-        {1.6e-3, 3.4e-3},  // 13.6 TeV / 7 TeV
-        {1.8e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
-        {1.8e-3, 5.45e-3}, // 7 TeV / 2.76 TeV
-        {1.6e-3, 2.8e-3},  // 13 TeV / 2.76 TeV
+        {1.3e-3, 3.4e-3},  // 13.6 TeV / 7 TeV
+        {1.6e-3, 4.1e-3},  // 13.6 TeV / 5.02 TeV
+        {1.9e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
         {0.75e-3, 2.8e-3}, // 13 TeV / 7 TeV
-        {1.6e-3, 4.1e-3}   // 13.6 TeV / 5.02 TeV
+        {1.8e-3, 4.2e-3}  // 7 TeV / 2.76 TeV
     };
 
     // Fit all graphs and then calculate the average n(xT) value
     for (int i = 0; i < gNList.size(); ++i)
     {
         cN->cd(i + 1);
-        gPad->SetLeftMargin(0.12);
-        gPad->SetRightMargin(0.11);
+        gPad->SetLeftMargin(0.14);
+        gPad->SetRightMargin(0.08);
         gPad->SetTopMargin(0.05);
-        gPad->SetBottomMargin(0.11);
+        gPad->SetBottomMargin(0.13);
         TGraph *gN = gNList[i];
         gN->GetXaxis()->SetTitle("x_{T}=2p_{T}/#sqrt{s}");
         gN->GetYaxis()->SetTitle("n(x_{T})");
@@ -152,7 +170,11 @@ void xTscaling()
         gN->SetMarkerColor(kRed);
         gN->SetLineColor(kRed);
         gN->SetMaximum(6.3);
-        gN->Draw("AP");
+        gN->SetMinimum(-0.9);
+        gN->GetXaxis()->SetRangeUser(0, 4.5e-3);
+        gN->GetYaxis()->SetTitleSize(0.05);
+        gN->GetXaxis()->SetTitleSize(0.05);
+        gN->Draw("APE");
 
         TF1 *pol0 = new TF1(Form("pol0_%d", i), "[0]", fitRanges[i][0], fitRanges[i][1]);
         pol0->SetLineColor(kBlue + 2);
@@ -164,15 +186,20 @@ void xTscaling()
         lat.SetTextSize(0.045);
         lat.SetTextFont(42);
         lat.DrawLatex(0.5, 0.4, labels[i].c_str());
-        lat.DrawLatex(0.5, 0.3, Form("<n> = %.2f", pol0->GetParameter(0)));
+        lat.SetTextSize(0.05);
+        lat.DrawLatex(0.45, 0.27, Form("n = %.2f #pm %.2f", pol0->GetParameter(0), pol0->GetParError(0)));
         nValues.push_back(pol0->GetParameter(0));
 
         cout << "n value from fit is " << pol0->GetParameter(0) << endl;
+        cout << "Chi2/NDF is " << pol0->GetChisquare() / pol0->GetNDF() << endl;
     }
-    cN->SaveAs("Plots/n_xT.png");
+    cN->SaveAs("Plots/n_xT.pdf");
 
     double nAverage = std::accumulate(nValues.begin(), nValues.end(), 0.0) / nValues.size();
     cout << "Average n value is " << nAverage << endl;
+    //calculate the maximum deviation from the average value
+    double nMaxDeviation = *std::max_element(nValues.begin(), nValues.end()) - *std::min_element(nValues.begin(), nValues.end());
+    cout << "Maximum deviation from average n value is " << nMaxDeviation << endl;
 
     // nAverage = 4.53; // Run2 value
 
@@ -267,8 +294,8 @@ void xTscaling()
     leg2->AddEntry(gXT7, "7 TeV", "p");
     leg2->AddEntry(gXT502, "5.02 TeV", "p");
     leg2->AddEntry(gXT276, "2.76 TeV", "p");
-    leg2->AddEntry(fitPL, "Combined", "l");
-    leg2->AddEntry((TObject *)0, "power-law fit", "");
+    leg2->AddEntry(fitPL, "power-law (ax^{b}(1+x)^{c})", "l");
+    // leg2->AddEntry((TObject *)0, "", "");
     leg2->Draw();
     cXT->SaveAs("Plots/xT_scaling.png");
 }
@@ -287,6 +314,8 @@ TGraphErrors *HistToXTGraph(TH1D *hStat, TH1D *hRelSys, double sqrts, double sig
 
         double esys = hRelSys ? hRelSys->GetBinContent(ibin) * y : 0.0;
         double etot = sqrt(estat * estat + esys * esys);
+
+        // cout << "Relative error for bin " << ibin << " is " << etot / y << endl;
 
         double invY = (alreadyNormalizedYield) ? (y * sigmaINEL * nAverage * AverageKstar) : (y * sigmaINEL * nAverage * AverageKstar / (2.0 * TMath::Pi() * pt));
         double invEY = (alreadyNormalizedYield) ? (etot * sigmaINEL * nAverage * AverageKstar) : (etot * sigmaINEL * nAverage * AverageKstar / (2.0 * TMath::Pi() * pt));
@@ -317,6 +346,8 @@ TGraphErrors *GraphToXTGraph(TGraphErrors *gInput, TH1D *hStat, TH1D *hSys, doub
         double ex = gInput->GetErrorX(i);
         double stat = hStat->GetBinContent(i + 1);
         double sys = hSys->GetBinContent(i + 1);
+
+        // cout << "Relative error for point " << i + 1 << " is " << sqrt(stat * stat + sys * sys) / y << endl;
 
         double total = sqrt(stat * stat + sys * sys);
 
@@ -350,7 +381,8 @@ void GetGraphRange(TGraph *g, double &xmin, double &xmax)
     }
 }
 
-TGraph *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2)
+TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
+                         double sqrts1, double sqrts2)
 {
     double xmin1, xmax1;
     double xmin2, xmax2;
@@ -361,9 +393,26 @@ TGraph *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqr
     double xmin = std::max(xmin1, xmin2);
     double xmax = std::min(xmax1, xmax2);
 
-    TSpline3 spline("spline", g2);
+    // Spline for central values of g2
+    TSpline3 splineY("splineY", g2);
 
-    TGraph *gN = new TGraph();
+    // Create graph containing y-errors of g2
+    TGraph *g2Errors = new TGraph();
+
+    for (int i = 0; i < g2->GetN(); i++)
+    {
+        double x, y;
+        g2->GetPoint(i, x, y);
+
+        double ey = g2->GetErrorY(i);
+
+        g2Errors->SetPoint(i, x, ey);
+    }
+
+    // Spline for y-errors of g2
+    TSpline3 splineEY("splineEY", g2Errors);
+
+    TGraphErrors *gN = new TGraphErrors();
 
     for (int i = 0; i < g1->GetN(); i++)
     {
@@ -374,24 +423,197 @@ TGraph *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqr
         if (xT < xmin || xT > xmax)
             continue;
 
-        double y2 = spline.Eval(xT);
+        // y1 uncertainty
+        double ey1 = g1->GetErrorY(i);
+
+        // Interpolated y2 and its uncertainty
+        double y2 = splineY.Eval(xT);
+        double ey2 = splineEY.Eval(xT);
 
         if (y1 <= 0 || y2 <= 0)
             continue;
 
-        // cout << std::setprecision(6)
-        //      << "xT = " << xT
-        //      << "  y136 = " << y1
-        //      << "  yOther = " << y2
-        //      << "  ratio = " << y1 / y2
-        //      << endl;
+        double denominator = log(sqrts1 / sqrts2);
 
-        double n = -log(y1 / y2) / log(sqrts1 / sqrts2);
-        // Formula given in https://journals.aps.org/prl/pdf/10.1103/PhysRevLett.105.062002 (formula 3)
+        double n = -log(y1 / y2) / denominator;
 
-        gN->SetPoint(gN->GetN(), xT, n);
+        // Error propagation
+        double en = (1.0 / fabs(denominator)) *
+                    sqrt(pow(ey1 / y1, 2) +
+                         pow(ey2 / y2, 2));
+
+        int point = gN->GetN();
+
+        // Assuming no xT uncertainty
+        gN->SetPoint(point, xT, n);
+        gN->SetPointError(point, 0.0, en);
     }
-    // cout<<endl;
+
+    delete g2Errors;
+
     SetGraphStyle(gN);
+
+    return gN;
+}
+
+TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
+                         double sqrts1, double sqrts2)
+{
+    double xmin1, xmax1;
+    double xmin2, xmax2;
+
+    GetGraphRange(g1, xmin1, xmax1);
+    GetGraphRange(g2, xmin2, xmax2);
+
+    double xmin = std::max(xmin1, xmin2);
+    double xmax = std::min(xmax1, xmax2);
+
+    // -------------------------------------------------------
+    // Central spline for g2
+    // -------------------------------------------------------
+    TSpline3 splineY("splineY", g2);
+
+    // -------------------------------------------------------
+    // Create upper and lower variation graphs for g2
+    // -------------------------------------------------------
+    TGraph *g2Up   = new TGraph();
+    TGraph *g2Down = new TGraph();
+
+    for (int i = 0; i < g2->GetN(); i++)
+    {
+        double x, y;
+        g2->GetPoint(i, x, y);
+
+        double ey = g2->GetErrorY(i);
+
+        g2Up->SetPoint(i, x, y + ey);
+        g2Down->SetPoint(i, x, y - ey);
+    }
+
+    // Splines for upper and lower variations
+    TSpline3 splineUp("splineUp", g2Up);
+    TSpline3 splineDown("splineDown", g2Down);
+
+    // -------------------------------------------------------
+    // Output graph
+    // -------------------------------------------------------
+    TGraphErrors *gN = new TGraphErrors();
+
+    double denominator = log(sqrts1 / sqrts2);
+
+    // Protect against sqrt(s1) = sqrt(s2)
+    if (fabs(denominator) < 1e-12)
+    {
+        cout << "Error: sqrts1 and sqrts2 are equal!" << endl;
+
+        delete g2Up;
+        delete g2Down;
+
+        return gN;
+    }
+
+    // -------------------------------------------------------
+    // Loop over points of g1
+    // -------------------------------------------------------
+    for (int i = 0; i < g1->GetN(); i++)
+    {
+        double xT, y1;
+
+        g1->GetPoint(i, xT, y1);
+
+        // Only use common xT range
+        if (xT < xmin || xT > xmax)
+            continue;
+
+        // Error on y1
+        double ey1 = g1->GetErrorY(i);
+
+        // ---------------------------------------------------
+        // Interpolate g2
+        // ---------------------------------------------------
+        double y2 = splineY.Eval(xT);
+
+        double y2Up   = splineUp.Eval(xT);
+        double y2Down = splineDown.Eval(xT);
+
+        // Check central values
+        if (y1 <= 0 || y2 <= 0)
+            continue;
+
+        // ---------------------------------------------------
+        // Central value of n
+        // ---------------------------------------------------
+        double n =
+            -log(y1 / y2) / denominator;
+
+        // ---------------------------------------------------
+        // Upper/lower variations of y1
+        // ---------------------------------------------------
+        double y1Up   = y1 + ey1;
+        double y1Down = y1 - ey1;
+
+        // Log requires positive values
+        if (y1Down <= 0 || y2Down <= 0)
+            continue;
+
+        // ---------------------------------------------------
+        // Calculate extreme variations of n
+        //
+        // Combination 1:
+        // y1 increases and y2 decreases
+        //
+        // Combination 2:
+        // y1 decreases and y2 increases
+        // ---------------------------------------------------
+
+        double nVar1 =
+            -log(y1Up / y2Down) / denominator;
+
+        double nVar2 =
+            -log(y1Down / y2Up) / denominator;
+
+        // ---------------------------------------------------
+        // Difference from central value
+        // ---------------------------------------------------
+        double en1 = fabs(nVar1 - n);
+        double en2 = fabs(nVar2 - n);
+
+        // Take maximum deviation as symmetric uncertainty
+        double en = std::max(en1, en2);
+
+        // ---------------------------------------------------
+        // Fill output graph
+        // ---------------------------------------------------
+        int point = gN->GetN();
+
+        gN->SetPoint(point, xT, n);
+
+        // x error = 0
+        // y error = propagated error on n
+        gN->SetPointError(point, 0.0, en);
+
+        // Optional debugging
+        /*
+        cout << std::setprecision(6)
+             << "xT = " << xT
+             << "  y1 = " << y1
+             << " +/- " << ey1
+             << "  y2 = " << y2
+             << " +" << fabs(y2Up-y2)
+             << " -" << fabs(y2-y2Down)
+             << "  n = " << n
+             << " +/- " << en
+             << endl;
+        */
+    }
+
+    // -------------------------------------------------------
+    // Cleanup
+    // -------------------------------------------------------
+    delete g2Up;
+    delete g2Down;
+
+    SetGraphStyle(gN);
+
     return gN;
 }

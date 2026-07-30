@@ -4,7 +4,9 @@
 #include "TF2.h"
 #include "TMinuit.h"
 #include "TMath.h"
+#include "TRandom3.h"
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TStyle.h"
 
 // Global pointer to access the data histogram inside the Minuit FCN
@@ -190,7 +192,40 @@ void Angular2Dfit3()
     std::cout << Form("t22       | %10.1f | %8.1f +/- %5.1f\n", true_t22, fit_t22, err_t22);
     std::cout << "============================================\n";
 
-    // 8. Draw the toy data histogram
-    TCanvas *c1 = new TCanvas("c1", "PWA Binned Toy", 800, 600);
+    // 8. Draw the toy data histogram with the fitted intensity overlaid
+    // Create a wrapper/scaled TF2 to match histogram bin counts on the Z axis
+    double dOmega2 = hData->GetXaxis()->GetBinWidth(1) * hData->GetYaxis()->GetBinWidth(1);
+
+    // Standard intensity TF2 for 2D contour (cd 1)
+    TF2 *fFit2D = (TF2 *)fInt->Clone("fFit2D");
+    fFit2D->SetParameters(fit_t00, fit_t20, fit_t22);
+    fFit2D->SetLineColor(kRed + 1);
+    fFit2D->SetLineWidth(2);
+
+    // Scaled intensity TF2 for 3D surface matching histogram counts (cd 2)
+    // Intensity * dOmega yields expected bin contents (mu)
+    TF2 *fFit3D = new TF2("fFit3D", [fit_t00, fit_t20, fit_t22, dOmega2](double *x, double *p)
+                          {
+    double par[3] = {fit_t00, fit_t20, fit_t22};
+    return Intensity(x, par) * dOmega2; }, -1.0, 1.0, -TMath::Pi(), TMath::Pi(), 0);
+
+    fFit3D->SetLineColor(kRed);
+    fFit3D->SetFillColorAlpha(kRed, 0.35); // Semi-transparent red surface
+
+    TCanvas *c1 = new TCanvas("c1", "PWA Binned Toy Fits", 1400, 600);
+    c1->Divide(2, 1);
+
+    // Left Pad: 2D Color plot with contour overlay
+    c1->cd(1);
+    gPad->SetRightMargin(0.15);
     hData->Draw("COLZ");
+    fFit2D->Draw("CONT3 SAME");
+
+    // Right Pad: 3D LEGO plot with 3D Fitted Surface overlay
+    c1->cd(2);
+    gPad->SetRightMargin(0.15);
+    hData->Draw("LEGO2");
+    fFit3D->Draw("SURF SAME"); // Overlays fit surface directly in 3D view
+
+    c1->Update();
 }

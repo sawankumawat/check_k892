@@ -51,8 +51,14 @@ const std::string kDataset_temp = "LHC22o_pass7_small/";
 // const std::string kDataFilename_temp2 = "systematic2022_new.root"; // combined above files
 
 //================New check 2026=================================
-const std::string kDataFilename_temp2 = "683092.root"; // LHC23_pass4_thin_small
+// const std::string kDataFilename_temp2 = "683092.root"; // LHC23_pass4_thin_small
+// const std::string kDataFilename_temp2 = "684267.root"; // LHC23_pass4_thin // optimise
+const std::string kDataFilename_temp2 = "684267.root"; // pp reference //normal and optimise
 
+//================MC information============================
+// 710034 // 2024 (LHC24l8)
+// 709908 // 2023 (LHC24l9)
+// 682938 // pp reference (LHC26d2)
 
 #endif
 

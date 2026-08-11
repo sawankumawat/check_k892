@@ -82,25 +82,46 @@ void fcn(int &npar, double *gin, double &f, double *par, int iflag)
     f = nll;
 }
 
+double BW(double m, double m0, double gamma)
+{
+    double num = gamma / 2.0;
+    return num * num / ((m - m0) * (m - m0) + num * num);
+}
+
 // Mass-dependent parameter shapes for true input generation
-double GetTrueT00(double mass) { return 100000.0 * exp(-0.5 * std::pow((mass - 1.5) / 0.3, 2)); }
-double GetTrueT20(double mass) { return 20000.0 * sin(TMath::Pi() * (mass - 1.0)); }
-double GetTrueT22(double mass) { return 15000.0 * (mass - 1.0); }
-double GetTrueT21(double mass) { return 7000.0 * cos(TMath::Pi() * (mass - 1.0)); }
+double GetTrueT00(double m)
+{
+    return 70000 * BW(m, 1.35, 0.08) + 35000 * BW(m, 1.72, 0.10);
+}
+
+double GetTrueT20(double m)
+{
+    return 25000 * BW(m, 1.52, 0.09);
+}
+
+double GetTrueT22(double m)
+{
+    return 15000 * BW(m, 1.52, 0.09) + 12000 * BW(m, 1.72, 0.10);
+}
+
+double GetTrueT21(double m)
+{
+    return 10000 * BW(m, 1.35, 0.08) - 6000 * BW(m, 1.72, 0.10);
+}
 
 void PWAToyFullMassRange()
 {
     gStyle->SetOptStat(0);
 
-    // Binning setup: 40 MeV/c^2 mass bins from 1.0 to 2.0 GeV/c^2
+    // Binning setup: 20 MeV/c^2 mass bins from 1.0 to 2.0 GeV/c^2
     const double mMin = 1.0;
     const double mMax = 2.0;
-    const double binWidth = 0.04;
+    const double binWidth = 0.02;
     const int nMassBins = std::round((mMax - mMin) / binWidth);
 
     // Spectra Histograms
-    TH1D *hGen = new TH1D("hGen", "Generated Yield;M(K^{0}_{s}K^{0}_{s}) [GeV/c^{2}];Events / 40 MeV/c^{2}", nMassBins, mMin, mMax);
-    TH1D *hPW = new TH1D("hPW", "Reconstructed PW Yield;M(K^{0}_{s}K^{0}_{s}) [GeV/c^{2}];Events / 40 MeV/c^{2}", nMassBins, mMin, mMax);
+    TH1D *hGen = new TH1D("hGen", "Generated Yield;M(K^{0}_{s}K^{0}_{s}) [GeV/c^{2}];Events / 20 MeV/c^{2}", nMassBins, mMin, mMax);
+    TH1D *hPW = new TH1D("hPW", "Reconstructed PW Yield;M(K^{0}_{s}K^{0}_{s}) [GeV/c^{2}];Events / 20 MeV/c^{2}", nMassBins, mMin, mMax);
 
     TRandom3 randGen(42);
 
@@ -121,7 +142,7 @@ void PWAToyFullMassRange()
         if (hData)
             delete hData;
         hData = new TH2D(Form("hData_bin_%d", im), "Toy Data;cos(#theta);#phi",
-                         50, -1.0, 1.0, 50, -TMath::Pi(), TMath::Pi());
+                         80, -1.0, 1.0, 80, -TMath::Pi(), TMath::Pi());
 
         double dOmega = hData->GetXaxis()->GetBinWidth(1) * hData->GetYaxis()->GetBinWidth(1);
         int totalGenerated = 0;
@@ -208,7 +229,8 @@ void PWAToyFullMassRange()
 
     hGen->SetLineColor(kBlack);
     hGen->SetLineWidth(2);
-    hGen->Draw("HIST E");
+    hGen->SetMarkerStyle(20);
+    hGen->Draw("pe");
 
     hPW->SetMarkerStyle(20);
     hPW->SetMarkerSize(0.9);

@@ -52,11 +52,6 @@ void ParticleRatioWithRun2()
     bool isSavePlots = true;
     string KstarPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
     TFile *fKstar = OpenFile(KstarPath + "Results.root");
-    if (fKstar->IsZombie())
-    {
-        cout << "Error: Kstar file not found" << endl;
-        return;
-    }
 
     TFile *fPion = OpenFile("PiKp_Run3_Results/Sawan/Pi_results.root");
     TFile *fProton = OpenFile("PiKp_Run3_Results/Sawan/Pr_results.root");

@@ -66,17 +66,31 @@ void compareYieldSimple()
         kPythiaMonashRescattering,
         kNModels
     };
+    // enum Particle
+    // {
+    //     kKstar,
+    //     kPhi,
+    //     kPion,
+    //     kKaon,
+    //     kProton,
+    //     kPionMinus,
+    //     kKaonMinus,
+    //     kAntiProton,
+    //     kXi1530,
+    //     kKshort,
+    //     kKstarPM,
+    //     kNParticles
+    // };
+
     enum Particle
     {
         kKstar,
-        kPhi,
         kPion,
         kKaon,
         kProton,
         kPionMinus,
         kKaonMinus,
         kAntiProton,
-        kXi1530,
         kKshort,
         kKstarPM,
         kNParticles
@@ -89,12 +103,12 @@ void compareYieldSimple()
     };
 
     ModelStyle modelStyle[kNModels] = {
-        {kGreen + 2, 2},  // EPOS
+        {kGreen + 2, 2}, // EPOS
         {kBlue + 1, 2},  // Pythia CR
         {kMagenta, 4},   // Pythia Monash
         {kCyan + 1, 7},  // Pythia Ropes
         {kRed + 1, 3},   // Pythia Shoving
-        {kBlue + 1, 2} // Pythia Monash Rescattering
+        {kBlue + 1, 2}   // Pythia Monash Rescattering
     };
 
     const char *modelLabel[kNModels] = {
@@ -105,15 +119,16 @@ void compareYieldSimple()
         "Pythia Shoving",
         "Pythia Monash Rescattering"};
 
-    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResults.root", "read");
+    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResults2.root", "read");
     if (ModelsHyperloop->IsZombie())
     {
         cout << "Error: Hyperloop model file not found" << endl;
         return;
     }
 
-    string hyperloopModels[kNModels] = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
-    string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
+    string hyperloopModels[kNModels] = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering"};
+    // string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
+    string particles[kNParticles] = {"Kstar", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Kshort", "KstarPM"};
 
     TGraphErrors *gMYield[kNModels][kNParticles];
     TGraphErrors *gMeanPt[kNModels][kNParticles];
@@ -159,29 +174,34 @@ void compareYieldSimple()
             double x, yPion, yPionMinus;
             gMYield[iModel][kPion]->GetPoint(i, x, yPion);
             gMYield[iModel][kPionMinus]->GetPoint(i, x, yPionMinus);
-            double yPionTotal = (yPion + yPionMinus)/2.0;
+            double yPionTotal = (yPion + yPionMinus) / 2.0;
             gMYield[iModel][kPion]->SetPoint(i, x, yPionTotal);
 
             // Kaon
             double yKaon, yKaonMinus;
             gMYield[iModel][kKaon]->GetPoint(i, x, yKaon);
             gMYield[iModel][kKaonMinus]->GetPoint(i, x, yKaonMinus);
-            double yKaonTotal = (yKaon + yKaonMinus)/2.0;
+            double yKaonTotal = (yKaon + yKaonMinus) / 2.0;
             gMYield[iModel][kKaon]->SetPoint(i, x, yKaonTotal);
 
             // Proton
             double yProton, yAntiProton;
             gMYield[iModel][kProton]->GetPoint(i, x, yProton);
             gMYield[iModel][kAntiProton]->GetPoint(i, x, yAntiProton);
-            double yProtonTotal = (yProton + yAntiProton)/2.0;
+            double yProtonTotal = (yProton + yAntiProton) / 2.0;
             gMYield[iModel][kProton]->SetPoint(i, x, yProtonTotal);
         }
     }
 
+    // vector<int> modelsToPlot = {
+    //     kEPOS_Hydro,
+    //     kPythiaMonash,
+    //     kPythiaMonashRescattering};
+
     vector<int> modelsToPlot = {
-        kEPOS_Hydro,
         kPythiaMonash,
-        kPythiaMonashRescattering};
+        kPythiaRopes,
+        kPythiaShoving};
 
     TCanvas *cdNdyKstar = new TCanvas("cdNdyKstar", "cdNdyKstar", 720, 720);
     SetCanvasStyle(cdNdyKstar, 0.15, 0.03, 0.03, 0.15);
@@ -200,6 +220,7 @@ void compareYieldSimple()
 
     for (auto model : modelsToPlot)
     {
+        ScaleGraph(gMYield[model][kKstar], 1.0 / (2.0));
         gMYield[model][kKstar]->Draw("l same");
     }
 
@@ -257,15 +278,15 @@ void compareYieldSimple()
     latex.DrawLatex(0.28, 0.9, "K* (892)^{0}");
     cMeanPtKstar->SaveAs("Plots/YieldCompareHyperloopModels/Kstar_MeanPt.png");
 
-    //=============EPOS model ran locally================
-    TFile *fEPOSLocal = OpenFile("dNdy_vs_Nch_PercentileSliced.root");
-    TGraphErrors *gMYieldPionEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_#pi");
-    TGraphErrors *gMYieldKaonEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_K");
-    TGraphErrors *gMYieldProtonEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_p");
+    // //=============EPOS model ran locally================
+    // TFile *fEPOSLocal = OpenFile("dNdy_vs_Nch_PercentileSliced.root");
+    // TGraphErrors *gMYieldPionEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_#pi");
+    // TGraphErrors *gMYieldKaonEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_K");
+    // TGraphErrors *gMYieldProtonEPOS = GetGraph(fEPOSLocal, "gYieldVsNch_p");
 
-    SetGraphErrorStyle(gMYieldPionEPOS);
-    SetGraphErrorStyle(gMYieldKaonEPOS);
-    SetGraphErrorStyle(gMYieldProtonEPOS);
+    // SetGraphErrorStyle(gMYieldPionEPOS);
+    // SetGraphErrorStyle(gMYieldKaonEPOS);
+    // SetGraphErrorStyle(gMYieldProtonEPOS);
 
     //====================================================
     // ==================Pion yeild======================
@@ -283,10 +304,10 @@ void compareYieldSimple()
     gMYieldPion[1]->SetFillStyle(0);
     gMYieldPion[1]->SetLineColor(kRed);
     gMYieldPion[1]->Draw("5 same");
-    ScaleGraph(gMYieldPionEPOS, 0.5);
-    gMYieldPionEPOS->SetLineColor(kGray + 3);
-    gMYieldPionEPOS->SetLineWidth(3);
-    gMYieldPionEPOS->Draw("l same");
+    // ScaleGraph(gMYieldPionEPOS, 0.5);
+    // gMYieldPionEPOS->SetLineColor(kGray + 3);
+    // gMYieldPionEPOS->SetLineWidth(3);
+    // gMYieldPionEPOS->Draw("l same");
 
     for (auto model : modelsToPlot)
     {
@@ -294,7 +315,7 @@ void compareYieldSimple()
     }
 
     legend->Draw();
-    legend2->AddEntry(gMYieldPionEPOS, "EPOS (local)", "L");
+    // legend2->AddEntry(gMYieldPionEPOS, "EPOS (local)", "L");
     legend2->Draw();
     latex.SetTextSize(0.05);
     latex.DrawLatex(0.28, 0.9, "#pi");
@@ -316,10 +337,10 @@ void compareYieldSimple()
     gMYieldKaon[1]->SetFillStyle(0);
     gMYieldKaon[1]->SetLineColor(kRed);
     gMYieldKaon[1]->Draw("5 same");
-    ScaleGraph(gMYieldKaonEPOS, 0.5);
-    gMYieldKaonEPOS->SetLineColor(kGray + 3);
-    gMYieldKaonEPOS->SetLineWidth(3);
-    gMYieldKaonEPOS->Draw("l same");
+    // ScaleGraph(gMYieldKaonEPOS, 0.5);
+    // gMYieldKaonEPOS->SetLineColor(kGray + 3);
+    // gMYieldKaonEPOS->SetLineWidth(3);
+    // gMYieldKaonEPOS->Draw("l same");
 
     for (auto model : modelsToPlot)
     {
@@ -347,10 +368,10 @@ void compareYieldSimple()
     gMYieldProton[1]->SetFillStyle(0);
     gMYieldProton[1]->SetLineColor(kRed);
     gMYieldProton[1]->Draw("5 same");
-    ScaleGraph(gMYieldProtonEPOS, 0.5);
-    gMYieldProtonEPOS->SetLineColor(kGray + 3);
-    gMYieldProtonEPOS->SetLineWidth(3);
-    gMYieldProtonEPOS->Draw("l same");
+    // ScaleGraph(gMYieldProtonEPOS, 0.5);
+    // gMYieldProtonEPOS->SetLineColor(kGray + 3);
+    // gMYieldProtonEPOS->SetLineWidth(3);
+    // gMYieldProtonEPOS->Draw("l same");
 
     for (auto model : modelsToPlot)
     {

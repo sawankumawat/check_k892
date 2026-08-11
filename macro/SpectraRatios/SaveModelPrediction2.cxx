@@ -13,7 +13,7 @@ using namespace std;
 
 void SaveModelPrediction2()
 {
-    const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
+    const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
     // const map<string, double> branchingRatios = {
     //     {"Kstar", 0.666},
@@ -44,10 +44,10 @@ void SaveModelPrediction2()
     float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
     const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);
 
-    TFile *fOutput = new TFile("ModelRootFiles/ModelResults.root", "recreate");
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2.root", "recreate");
     if (fOutput->IsZombie())
     {
-        cout << "Error: cannot create output file ModelResults.root" << endl;
+        cout << "Error: cannot create output file ModelResults2.root" << endl;
         return;
     }
 
@@ -185,7 +185,7 @@ void SaveModelPrediction2()
                 TH1D *hPt = hParticlevsFT0M->ProjectionX(Form("hPt_%s_%s_%d", modelName.c_str(), particleType.c_str(), icent), binLow, binHigh);
                 hPt->SetDirectory(nullptr);
                 hPt->Scale(1.0 / nEvents);
-                hPt->Write(Form("hPt_%s_%d_%0.0f_%0.0f", particleType.c_str(), icent, percentilesRun3[icent], percentilesRun3[icent + 1]));
+                hPt->Write(Form("hPt_%s_%d", particleType.c_str(), icent));
 
                 const double meanPt = hPt->GetMean();
                 const double yield = hPt->Integral() / br;

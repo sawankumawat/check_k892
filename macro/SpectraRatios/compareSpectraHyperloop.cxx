@@ -22,10 +22,10 @@ struct ClosestMultiplicity
     double value = 0.0; // selected multiplicity (or average)
 };
 ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target);
-TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_", bool isEPOS = false);
+TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *whichModel);
 TH1D *BuildRatioHistogram(TH1D *hNumerator, TH1D *hDenominator, const TString &name);
 
-void compareSpectra()
+void compareSpectraHyperloop()
 {
     TFile *fSpectras[11];
     int multClasses[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
@@ -61,89 +61,79 @@ void compareSpectra()
     }
 
     //===============================================
-    // ============EPOS tested locally================
+    // ===========Pythia and EPOS from hyperloop================
     //===============================================
-    TFile *fEPOS = OpenFile("EPOS_finalQA_CorrectpTCutPiKp.root");
+    TFile *ModelsHyperloop = OpenFile("ModelRootFiles/ModelResults2.root");
 
-    //===============================================
-    // ===========Pythia tested locally================
-    //===============================================
-    TFile *fPythiaMonash = OpenFile("../../pythia/Pythia_MonashLocal.root");
-    TFile *fPythiaMonashNoCR = OpenFile("../../pythia/Pythia_MonashWoCRLocal.root");
-    TFile *fPythiaShoving = OpenFile("../../pythia/Pythia_ShovingLocal.root");
-    TFile *fPythiaMonashRescattering = OpenFile("../../pythia/Pythia_MonashRescatteringLocal.root");
-    TFile *fPythiaRopes = OpenFile("../../pythia/Pythia_RopesLocal.root");
-    TFile *fPythiaRescattering = OpenFile("../../pythia/Pythia_RescatteringLocal.root");
-
-    enum PythiaModel
+    enum Model
     {
+        kEPOS_Hydro,
+        kPythiaCR,
         kPythiaMonash,
-        kPythiaMonashNoCR,
-        kPythiaShoving,
         kPythiaRopes,
-        kPythiaMonashRes,
-        kPythiaRes,
-        kNPythiaModels
+        kPythiaShoving,
+        kPythiaMonashRescattering,
+        kNModels
     };
 
-    const char *modelLabelLocal[kNPythiaModels] = {
+    const char *modelLabel[kNModels] = {
+        "EPOS Hydro",
+        "Pythia CR",
         "Pythia Monash",
-        "Pythia Monash No CR",
-        "Pythia Shoving",
         "Pythia Ropes",
-        "Pythia Monash Rescattering",
-        "Pythia Rescattering"};
+        "Pythia Shoving",
+        "Pythia Monash Rescattering"};
 
-    vector<TFile *> fPythiaModels = {fPythiaMonash, fPythiaMonashNoCR, fPythiaShoving, fPythiaRopes, fPythiaMonashRescattering, fPythiaRescattering};
-    TGraphErrors *gPythiaYieldLocal[kNPythiaModels];
+    string hyperloopModels[kNModels] = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering"};
+
+    TGraphErrors *gYield[kNModels];
     int centrality[11] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
     double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
 
-    TH1D *hSpectraHighestMult[kNPythiaModels];
-    TH1D *hSpectraMult20to30[kNPythiaModels];
-    vector<vector<double>> dNdEtaPythia(kNPythiaModels, vector<double>(11, 0.0));
+    vector<vector<double>> dNdEtaPythia(kNModels, vector<double>(11, 0.0));
 
-    int colorsPythia[kNPythiaModels + 100] = {kMagenta, kBrown, kGreen + 2, kGray + 2, kBlue + 1, kAzure + 7, kOrange + 2};
+    int colorsPythia[kNModels + 100] = {kMagenta, kBrown, kGreen + 2, kGray + 2, kBlue + 1, kAzure + 7, kOrange + 2};
 
-    TH1D *hSpectraModel[10][kNPythiaModels];
-    TH1D *hSpecRebinned[10][kNPythiaModels];
+    TH1D *hSpectraModel[10][kNModels];
+    TH1D *hSpecRebinned[10][kNModels];
     TH1D *hSpectraModelEPOS[10];
     TH1D *hSpecRebinnedEPOS[10];
     vector<double> dNdEtaEPOS(10, 0.0);
-    // TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9_ITY80/kstar_vs_mult");
-    TGraphErrors *gEPOSYield = GetGraph(fEPOS, "IST9/kstar_vs_mult");
 
     for (int ialice = 0; ialice < 10; ialice++)
     {
-        for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+        for (int imodel = 0; imodel < kNModels; imodel++)
         {
-            gPythiaYieldLocal[imodel] = GetGraph(fPythiaModels[imodel], "gMeanYield_kstar");
+            gYield[imodel] = GetGraph(ModelsHyperloop, hyperloopModels[imodel] + "/Kstar/gMeanYield_Kstar");
 
-            int totalPoints = gPythiaYieldLocal[imodel]->GetN();
-            // cout << "Model: " << modelLabelLocal[imodel] << ", Total points: " << totalPoints << endl;
-
-            for (int ipoint = 0; ipoint < totalPoints; ipoint++)
+            int totalPoints = gYield[imodel]->GetN();
+            if (ialice == 0)
             {
-                double x, y;
-                gPythiaYieldLocal[imodel]->GetPoint(ipoint, x, y);
-                // cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+                cout << "Model: " << modelLabel[imodel] << ", Total points: " << totalPoints << endl;
+
+                for (int ipoint = 0; ipoint < totalPoints; ipoint++)
+                {
+                    double x, y;
+                    gYield[imodel]->GetPoint(ipoint, x, y);
+                    cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+                }
+                cout << endl;
             }
-            // cout << endl;
-            ClosestMultiplicity match = FindClosestMultiplicity(gPythiaYieldLocal[imodel], dnch_detaRun3[ialice]);
+            ClosestMultiplicity match = FindClosestMultiplicity(gYield[imodel], dnch_detaRun3[ialice]);
             dNdEtaPythia[imodel][ialice] = match.value;
 
             if (match.useAverage)
             {
-                // cout << modelLabelLocal[imodel] << " : Average of points " << match.idx1 << " and " << match.idx2 << " (value = " << match.value << ")" << endl;
+                cout << modelLabel[imodel] << " : Average of points " << match.idx1 << " and " << match.idx2 << " (value = " << match.value << ")" << endl;
             }
             else
             {
-                // cout << modelLabelLocal[imodel] << " : Closest point " << match.idx1 << " (value = " << match.value << ")" << endl;
+                cout << modelLabel[imodel] << " : Closest point " << match.idx1 << " (value = " << match.value << ")" << endl;
             }
-            // cout << endl;
+            cout << endl;
 
-            hSpectraModel[ialice][imodel] = BuildSpectrum(fPythiaModels[imodel], match);
-            hSpecRebinned[ialice][imodel] = RebinToMatch(hSpectraModel[ialice][imodel], hSpectra[ialice], Form("hSpec_%d_%s", ialice, modelLabelLocal[imodel]));
+            hSpectraModel[ialice][imodel] = BuildSpectrum(ModelsHyperloop, match, hyperloopModels[imodel].c_str());
+            hSpecRebinned[ialice][imodel] = RebinToMatch(hSpectraModel[ialice][imodel], hSpectra[ialice], Form("hSpec_%d_%s", ialice, modelLabel[imodel]));
 
             // Average K*892 and anti-K*892
             hSpecRebinned[ialice][imodel]->Scale(0.5);
@@ -151,74 +141,10 @@ void compareSpectra()
             hSpecRebinned[ialice][imodel]->SetLineStyle(2);
             hSpecRebinned[ialice][imodel]->SetLineWidth(3);
         }
-
-        // Same for EPOS
-        int totalPointsEPOS = gEPOSYield->GetN();
-        // cout << "EPOS: Total points: " << totalPointsEPOS << endl;
-        for (int ipoint = 0; ipoint < totalPointsEPOS; ipoint++)
-        {
-            double x, y;
-            gEPOSYield->GetPoint(ipoint, x, y);
-            // cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
-        }
-        // cout << endl;
-        ClosestMultiplicity matchEPOS = FindClosestMultiplicity(gEPOSYield, dnch_detaRun3[ialice]);
-
-        if (matchEPOS.useAverage)
-        {
-            // cout << "EPOS : Average of points " << matchEPOS.idx1 << " and " << matchEPOS.idx2 << " (value = " << matchEPOS.value << ")" << endl;
-        }
-        else
-        {
-            // cout << "EPOS : Closest point " << matchEPOS.idx1 << " (value = " << matchEPOS.value << ")" << endl;
-        }
-        // cout << endl;
-        dNdEtaEPOS[ialice] = matchEPOS.value;
-
-        // hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9_ITY80/hPtMB_kstar_IST9_ITY80_Cent");
-        hSpectraModelEPOS[ialice] = BuildSpectrum(fEPOS, matchEPOS, "IST9/hPtMB_kstar_IST9_Cent", true);
-        hSpecRebinnedEPOS[ialice] = RebinToMatch(hSpectraModelEPOS[ialice], hSpectra[ialice], Form("hSpecEPOS_%d", ialice));
-
-        cout << "Multiplicity: " << dnch_detaRun3[ialice] << ", EPOS Yield from histogram: " << hSpectraModelEPOS[ialice]->Integral() << endl;
-
-        // Average K*892 and anti-K*892
-        hSpecRebinnedEPOS[ialice]->Scale(0.5);
-        hSpecRebinnedEPOS[ialice]->SetLineColor(kBlue + 1);
-        hSpecRebinnedEPOS[ialice]->SetLineStyle(2);
-        hSpecRebinnedEPOS[ialice]->SetLineWidth(3);
     }
 
-    // //======================================================
-    // //    ===========EPOS local model (min Bias only)===========
-    // //======================================================
-    // TFile *fEPOS2 = OpenFile("ModelRootFiles/EPOS_finalQA_ptCut_FinerBins.root");
-    // TH1D *hEPOS_Yield = GetHisto(fEPOS2, "IST9_ITY80/hPtMB_kstar");
-    // TCanvas *cEPOS = new TCanvas("cEPOS", "cEPOS", 720, 720);
-    // SetCanvasStyle(cEPOS, 0.15, 0.03, 0.05, 0.15);
-    // gPad->SetLogy();
-    // hSpectra[0]->Draw("PE");
-
-    // hEPOS_Yield->Scale(1.0 / hEPOS_Yield->Integral());
-    // hEPOS_Yield->Scale(0.2); // Average of K* and K*bar
-
-    // TH1D *hEPOS_rebinned = RebinToMatch(hEPOS_Yield, hSpectra[0], "hEPOS_rebinned");
-    // hEPOS_rebinned->SetLineColor(kRed + 1);
-    // hEPOS_rebinned->SetLineStyle(2);
-    // hEPOS_rebinned->Draw("HIST SAME");
-
-    // //Check from hyperloop epos file
-    // TFile *fEPOS_hyperloop = OpenFile("ModelRootFiles/EPOS_Hydro.root");
-    // TH2D *hMultSpectra = (TH2D *)fEPOS_hyperloop->Get("mc-particle-prediction/prediction/pt/FT0AC/Kstar");
-    // TH1D *hSpectraHydro = hMultSpectra->ProjectionX("hSpectraHydro");
-    // hSpectraHydro->Scale(1.0 / hSpectraHydro->Integral());
-    // hSpectraHydro->Scale(0.18);        // Average of K* and K*bar
-    // TH1D *hSpectraHydro_rebinned = RebinToMatch(hSpectraHydro, hSpectra[0], "hSpectraHydro_rebinned");
-    // hSpectraHydro_rebinned->SetLineColor(kBlue + 1);
-    // hSpectraHydro_rebinned->SetLineStyle(2);
-    // hSpectraHydro_rebinned->Draw("HIST SAME");
-
     //============================================================
-    //=================Pythia (Central production)========================
+    //=================Resutls========================
     //============================================================
     TFile *fMC = OpenFile("../..//mc/LHC24f3c/679945.root");
     THnSparse *hGenSparse = (THnSparse *)fMC->Get("kstarqa/hInvMass/hk892GenpT");
@@ -325,11 +251,11 @@ void compareSpectra()
         legend->SetTextSize(0.04);
         legend->AddEntry(hSpectra[WhichCent], Form("pp, %d-%d%%", centrality[WhichCent - 1], centrality[WhichCent]), "pe");
         legend->AddEntry(hGenSpectraRebinned, "Pythia Monash (Central Prod.)", "l");
-        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonash], modelLabelLocal[kPythiaMonash], "l");
-        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaShoving], modelLabelLocal[kPythiaShoving], "l");
-        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabelLocal[kPythiaRopes], "l");
-        // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabelLocal[kPythiaMonashRes], "l");
-        // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabelLocal[kPythiaRes], "l");
+        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonash], modelLabel[kPythiaMonash], "l");
+        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaShoving], modelLabel[kPythiaShoving], "l");
+        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabel[kPythiaRopes], "l");
+        // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabel[kPythiaMonashRes], "l");
+        // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabel[kPythiaRes], "l");
         // legend->AddEntry(hSpecRebinnedEPOS[WhichCent - 1], "EPOS", "l");
         legend->Draw();
 
@@ -394,7 +320,7 @@ void compareSpectra()
     // for (int i = 0; i < 10; i++)
     // {
     //     cout << Form("%d-%d\t", centrality[i], centrality[i + 1]) << Form("%.2f\t", dnch_detaRun3[i]) << Form("%.2f\t", dNdEtaEPOS[i]);
-    //     for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    //     for (int imodel = 0; imodel < kNModels; imodel++)
     //     {
     //         cout << Form("%.2f\t", dNdEtaPythia[imodel][i]);
     //     }
@@ -537,7 +463,7 @@ ClosestMultiplicity FindClosestMultiplicity(TGraphErrors *g, double target)
     return result;
 }
 
-TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *histPrefix = "hkstarPt_", bool isEPOS = false)
+TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *whichModel)
 {
     if (!file)
         return nullptr;
@@ -545,27 +471,24 @@ TH1D *BuildSpectrum(TFile *file, const ClosestMultiplicity &match, const char *h
     // ---------- Single multiplicity ----------
     if (!match.useAverage)
     {
-        TH1D *h = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
-        if (isEPOS)
-            h->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
+        TH1D *h = GetHisto(file, Form("%s/Kstar/hPt_Kstar_%d", whichModel, match.idx1));
 
-        h = (TH1D *)h->Clone(Form("%s_clone_%d", histPrefix, match.idx1));
+        // h->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
+
+        h = (TH1D *)h->Clone(Form("%s_clone_%d", whichModel, match.idx1));
         // h->Scale(1.0 / h->Integral());
         return h;
     }
 
     // ---------- Average of two multiplicities ----------
-    TH1D *h1 = GetHisto(file, Form("%s%d", histPrefix, match.idx1));
-    TH1D *h2 = GetHisto(file, Form("%s%d", histPrefix, match.idx2));
+    TH1D *h1 = GetHisto(file, Form("%s/Kstar/hPt_Kstar_%d", whichModel, match.idx1));
+    TH1D *h2 = GetHisto(file, Form("%s/Kstar/hPt_Kstar_%d", whichModel, match.idx2));
 
-    if (isEPOS)
-    {
-        h1->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
-        h2->Scale(0.1);
-    }
+    // h1->Scale(0.1); // Temporary multiplying by original bin width of 0.1 GeV/c.
+    // h2->Scale(0.1);
 
-    h1 = (TH1D *)h1->Clone(Form("%s_avg_%d_%d", histPrefix, match.idx1, match.idx2));
-    h2 = (TH1D *)h2->Clone(Form("%s_tmp_%d", histPrefix, match.idx2));
+    h1 = (TH1D *)h1->Clone(Form("%s_avg_%d_%d", whichModel, match.idx1, match.idx2));
+    h2 = (TH1D *)h2->Clone(Form("%s_tmp_%d", whichModel, match.idx2));
 
     // h1->Scale(1.0 / h1->Integral());
     // h2->Scale(1.0 / h2->Integral());
@@ -719,4 +642,3 @@ TH *RestrictHistogramX(const TH *hIn, double xmin, double xmax, const char *newN
 
     return hOut;
 }
-

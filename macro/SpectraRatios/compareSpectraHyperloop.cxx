@@ -94,10 +94,8 @@ void compareSpectraHyperloop()
 
     int colorsPythia[kNModels + 100] = {kMagenta, kBrown, kGreen + 2, kGray + 2, kBlue + 1, kAzure + 7, kOrange + 2};
 
-    TH1D *hSpectraModel[10][kNModels];
-    TH1D *hSpecRebinned[10][kNModels];
-    TH1D *hSpectraModelEPOS[10];
-    TH1D *hSpecRebinnedEPOS[10];
+    TH1D *hSpectraModel[11][kNModels];
+    TH1D *hSpecRebinned[11][kNModels];
     vector<double> dNdEtaEPOS(10, 0.0);
 
     for (int ialice = 0; ialice < 10; ialice++)
@@ -218,7 +216,7 @@ void compareSpectraHyperloop()
         // TSpline3 *spGen = MakeSmoothSpline(hGenSpectraRebinned, Form("spGen_%d", WhichCent));
         // TSpline3 *spMonash = MakeSmoothSpline(hSpecRebinned[WhichCent - 1][kPythiaMonash], Form("spMonash_%d", WhichCent));
         // TSpline3 *spRopes = MakeSmoothSpline(hSpecRebinned[WhichCent - 1][kPythiaRopes], Form("spRopes_%d", WhichCent));
-        // TSpline3 *spEPOS = MakeSmoothSpline(hSpecRebinnedEPOS[WhichCent - 1], Form("spEPOS_%d", WhichCent));
+        // TSpline3 *spEPOS = MakeSmoothSpline(hSpecRebinned[WhichCent - 1][kEPOS_Hydro], Form("spEPOS_%d", WhichCent));
         // spGen->Draw("SAME");
         // spMonash->Draw("SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
@@ -231,11 +229,7 @@ void compareSpectraHyperloop()
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaRopes])->Draw("L SAME");
         hSpecRebinned[WhichCent - 1][kPythiaShoving]->SetLineStyle(1);
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaShoving])->Draw("L SAME");
-        // MakeGraph(hSpecRebinnedEPOS[WhichCent - 1])->Draw("L SAME");
-        // hSpectraModelEPOS[WhichCent - 1]->SetLineStyle(1);
-        // MakeGraph(hSpectraModelEPOS[WhichCent - 1])->Draw("L SAME");
-        TGraph *gEPOS = RestrictGraphX(MakeGraph(hSpecRebinnedEPOS[WhichCent - 1]), 0.0, 6.0, "gEPOS");
-        // gEPOS->Draw("L SAME");
+        // MakeGraph(hSpecRebinned[WhichCent - 1][kEPOS_Hydro])->Draw("L SAME");
 
         // hGenSpectraRebinned->Draw("L SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
@@ -244,7 +238,7 @@ void compareSpectraHyperloop()
         // hSpecRebinned[WhichCent - 1][kPythiaRopes]->Draw("L SAME");
         // // hSpecRebinned[WhichCent - 1][kPythiaMonashRes]->Draw("L SAME");
         // // hSpecRebinned[WhichCent - 1][kPythiaRes]->Draw("L SAME");
-        // hSpecRebinnedEPOS[WhichCent - 1]->Draw("L SAME");
+        // hSpecRebinned[WhichCent - 1][kEPOS_Hydro]->Draw("L SAME");
 
         TLegend *legend = new TLegend(0.48, 0.6, 0.93, 0.92);
         SetLegendStyle(legend);
@@ -256,7 +250,7 @@ void compareSpectraHyperloop()
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabel[kPythiaRopes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabel[kPythiaMonashRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabel[kPythiaRes], "l");
-        // legend->AddEntry(hSpecRebinnedEPOS[WhichCent - 1], "EPOS", "l");
+        // legend->AddEntry(hSpecRebinned[WhichCent - 1][kEPOS_Hydro], "EPOS", "l");
         legend->Draw();
 
         //============================================
@@ -268,13 +262,13 @@ void compareSpectraHyperloop()
 
         TH1D *hRatioMonash = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaMonash], Form("hRatioMonash_%.0f_%.0f", multlow, multhigh));
 
-        TH1D *hRatioMonashRes = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaMonashRes], Form("hRatioMonashRes_%.0f_%.0f", multlow, multhigh));
+        TH1D *hRatioMonashRes = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering], Form("hRatioMonashRes_%.0f_%.0f", multlow, multhigh));
 
         TH1D *hRatioShoving = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaShoving], Form("hRatioShoving_%.0f_%.0f", multlow, multhigh));
 
         TH1D *hRatioRopes = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaRopes], Form("hRatioRopes_%.0f_%.0f", multlow, multhigh));
 
-        TH1D *hRatioEPOS = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinnedEPOS[WhichCent - 1], Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh));
+        TH1D *hRatioEPOS = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kEPOS_Hydro], Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh));
 
         // --- NEW: Data Systematic Uncertainty Band Around 1.0 ---
         TH1D *hRatioSysData = (TH1D *)hSpectraSys[WhichCent]->Clone(Form("hRatioSysData_%.0f_%.0f", multlow, multhigh));

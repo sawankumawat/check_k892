@@ -13,7 +13,7 @@ using namespace std;
 
 void SaveModelPrediction2()
 {
-    const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering"};
+    const vector<string> modelNames = {"EPOS_Hydro2", "Pythia_CR2", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering2"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
     // const map<string, double> branchingRatios = {
     //     {"Kstar", 0.666},

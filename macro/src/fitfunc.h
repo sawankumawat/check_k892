@@ -21,12 +21,9 @@ Double_t polynomial3(Double_t *x, Double_t *par)
 
 Double_t BreitWignerpoly3(Double_t *x, Double_t *par)
 {
-    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
 
     double poly3 = par[3] + par[4] * x[0] + par[5] * x[0] * x[0] + par[6] * x[0] * x[0] * x[0];
-
-    // double normalizedx0 = x[0] - 0.493 - 0.139;
-    // double poly3 = par[3] + par[4] * normalizedx0 + par[5] * normalizedx0 * normalizedx0 + par[6] * normalizedx0 * normalizedx0 * normalizedx0;
 
     return (BW + poly3);
 }

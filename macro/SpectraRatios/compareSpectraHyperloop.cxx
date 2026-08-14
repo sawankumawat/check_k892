@@ -84,7 +84,7 @@ void compareSpectraHyperloop()
         "Pythia Shoving",
         "Pythia Monash Rescattering"};
 
-    string hyperloopModels[kNModels] = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering"};
+    string hyperloopModels[kNModels] = {"EPOS_Hydro2", "Pythia_CR2", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering2"};
 
     TGraphErrors *gYield[kNModels];
     int centrality[11] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
@@ -92,10 +92,10 @@ void compareSpectraHyperloop()
 
     vector<vector<double>> dNdEtaPythia(kNModels, vector<double>(11, 0.0));
 
-    int colorsPythia[kNModels + 100] = {kMagenta, kBrown, kGreen + 2, kGray + 2, kBlue + 1, kAzure + 7, kOrange + 2};
+    int colorsPythia[kNModels + 100] = {kBrown, kAzure + 7, kMagenta, kGray + 2, kGreen + 2, kBlue + 1, kOrange + 2};
 
-    TH1D *hSpectraModel[11][kNModels];
-    TH1D *hSpecRebinned[11][kNModels];
+    TH1D *hSpectraModel[10][kNModels];
+    TH1D *hSpecRebinned[10][kNModels];
     vector<double> dNdEtaEPOS(10, 0.0);
 
     for (int ialice = 0; ialice < 10; ialice++)
@@ -154,7 +154,6 @@ void compareSpectraHyperloop()
 
     for (int iMult = 1; iMult < 11; iMult++)
     {
-
         // double multlow = 0;
         // double multhigh = 1;
         double multlow = multClasses[iMult - 1];
@@ -230,6 +229,7 @@ void compareSpectraHyperloop()
         hSpecRebinned[WhichCent - 1][kPythiaShoving]->SetLineStyle(1);
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaShoving])->Draw("L SAME");
         // MakeGraph(hSpecRebinned[WhichCent - 1][kEPOS_Hydro])->Draw("L SAME");
+        MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering])->Draw("L SAME");
 
         // hGenSpectraRebinned->Draw("L SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
@@ -251,6 +251,7 @@ void compareSpectraHyperloop()
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabel[kPythiaMonashRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabel[kPythiaRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kEPOS_Hydro], "EPOS", "l");
+        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering], modelLabel[kPythiaMonashRescattering], "l");
         legend->Draw();
 
         //============================================
@@ -269,6 +270,8 @@ void compareSpectraHyperloop()
         TH1D *hRatioRopes = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaRopes], Form("hRatioRopes_%.0f_%.0f", multlow, multhigh));
 
         TH1D *hRatioEPOS = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kEPOS_Hydro], Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh));
+
+        TH1D *hRatioMonashRescattering = BuildRatioHistogram(hSpectra[WhichCent], hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering], Form("hRatioMonashRescattering_%.0f_%.0f", multlow, multhigh));
 
         // --- NEW: Data Systematic Uncertainty Band Around 1.0 ---
         TH1D *hRatioSysData = (TH1D *)hSpectraSys[WhichCent]->Clone(Form("hRatioSysData_%.0f_%.0f", multlow, multhigh));
@@ -303,6 +306,7 @@ void compareSpectraHyperloop()
         // hRatioEPOS->GetXaxis()->SetRangeUser(0.0, 6.0);
         // hRatioEPOS->Draw("HIST SAME");
         // RestrictHistogramX(hRatioEPOS, 0.0, 6.0, Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh))->Draw("HIST SAME");
+        hRatioMonashRescattering->Draw("HIST SAME");
 
         cPythiaCentral->SaveAs(Form("Plots/SpectraCompare/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "src/style.h"
+#include "src/fitfunc.h"
 
 TFile *OpenFile(const string &path);
 template <typename T>
@@ -16,9 +17,9 @@ Double_t expPol3(Double_t *x, Double_t *par)
 Double_t breitWigner(Double_t *x, Double_t *par)
 {
     double m = x[0];
-    double mass = par[0];
-    double width = par[1];
-    double amp = par[2];
+    double amp = par[0];
+    double mass = par[1];
+    double width = par[2];
 
     double denominator = (m - mass) * (m - mass) + width * width / 4.0;
 
@@ -32,8 +33,9 @@ Double_t BWExpol(Double_t *x, Double_t *par)
 
 void doublePhiSimpleOpti5()
 {
-    gStyle->SetOptFit(1111);
+    gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests";
     ////======Pair=========
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processopti5/AnalysisResults.root");
 
@@ -140,18 +142,18 @@ void doublePhiSimpleOpti5()
     TF1 *fitFunc = new TF1("fitFunc", BWExpol, 2.5, 2.9, 7);
     fitFunc->SetParNames("Mass", "Width", "Yield", "p0", "p1", "p2", "p3");
 
-    fitFunc->SetParameter(0, 2.7);  // Mass
-    fitFunc->SetParameter(1, 0.03); // Width
-    fitFunc->SetParameter(2, 100);  // Yield
+    fitFunc->SetParameter(0, 100);  // Yield
+    fitFunc->SetParameter(1, 2.7);  // Mass
+    fitFunc->SetParameter(2, 0.03); // Width
 
     fitFunc->SetParameter(3, fitBkg->GetParameter(0)); // p0
     fitFunc->SetParameter(4, fitBkg->GetParameter(1)); // p1
     fitFunc->SetParameter(5, fitBkg->GetParameter(2)); // p2
     fitFunc->SetParameter(6, fitBkg->GetParameter(3)); // p3
 
-    fitFunc->SetParLimits(0, 2.65, 2.75);
-    fitFunc->SetParLimits(1, 0.01, 0.05);
-    fitFunc->SetParLimits(2, 0, 1e4);
+    fitFunc->SetParLimits(0, 0, 1e4);
+    fitFunc->SetParLimits(1, 2.65, 2.75);
+    fitFunc->SetParLimits(2, 0.01, 0.05);
 
     hInvMass->Fit(fitFunc, "REBMS");
 
@@ -166,7 +168,107 @@ void doublePhiSimpleOpti5()
     fitBW->SetLineColor(kRed);
     fitBW->SetLineStyle(2);
     fitBW->Draw("same");
-    cInvMass->SaveAs("DoublePhiFitSouravBhaiya.png");
+    cInvMass->SaveAs(savepath + "/DoublePhiFit.png");
+
+    // Phi mass correlation plot
+    TH3F *hPhiMassVsPt = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
+    TH2F *hPhiPhiMass = (TH2F *)hPhiMassVsPt->Project3D("yx");
+    SetHistoQA(hPhiPhiMass);
+    TCanvas *cPhiPhiMassCorr = new TCanvas("cPhiPhiMassCorr", "Phi Mass vs Pt", 720, 720);
+    SetCanvasStyle(cPhiPhiMassCorr, 0.18, 0.03, 0.05, 0.15);
+    hPhiPhiMass->GetXaxis()->SetTitle("M_{#phi1} (GeV/#it{c})");
+    hPhiPhiMass->GetYaxis()->SetTitle("M_{#phi2} (GeV/#it{c})");
+    hPhiPhiMass->Draw("colz");
+
+    TCanvas *cPhiVsPt = new TCanvas("cPhiVsPt", "Phi Mass vs Pt", 1080, 720);
+    cPhiVsPt->Divide(4, 3);
+    double pTBins[13] = {0.5, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 20.0};
+    TLatex *latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextFont(22);
+    latex->SetTextSize(0.06);
+    vector<pair<double, double>> fitMass, fitResolution, fitWidth;
+    for (int ibin = 0; ibin < 12; ibin++)
+    {
+        int lowpTBin = hPhiMassVsPt->GetZaxis()->FindBin(pTBins[ibin] + 0.0001);
+        int highpTBin = hPhiMassVsPt->GetZaxis()->FindBin(pTBins[ibin + 1] - 0.0001);
+        TH1D *hPhi1 = hPhiMassVsPt->ProjectionY(Form("hPhi1_pT_%.1f_%.1f", pTBins[ibin], pTBins[ibin + 1]), lowpTBin, highpTBin, -1, -1, "E");
+        SetHistoQA(hPhi1);
+        cPhiVsPt->cd(ibin + 1);
+        hPhi1->Draw("pe");
+
+        float fitRangeLow = 1.001;
+        float fitRangeHigh = 1.039;
+
+        //******Fitting for Phi*********************
+        TF1 *fitFcn = new TF1("fitfunc", voigtpol2, fitRangeLow, fitRangeHigh, 7);       // sig+bkg fit function
+        TF1 *fitFcnBkg = new TF1("fitfunc1", polynomial2, fitRangeLow, fitRangeHigh, 3); // only residualbkg
+        TF1 *fitFcnSig = new TF1("fitFcnSig", voigt, fitRangeLow, fitRangeHigh, 4);      // only signal
+
+        // for voigtian distribution
+        fitFcn->SetParameter(0, 5000);          // yield
+        fitFcn->SetParLimits(0, 0, 1e6);        // yield
+        fitFcn->SetParameter(1, 1.019);         // mass peak
+        fitFcn->SetParLimits(1, 1.006, 1.0316); // mass peak
+        fitFcn->SetParameter(2, 0.0012);        //  Gaussian width (Detector resolution)
+        fitFcn->SetParLimits(2, 0.001, 0.009);  // Gaussian width.
+        // fitFcn->SetParameter(3, 0.0042);   //lorentzian width (Resonance width)
+        fitFcn->FixParameter(3, 0.0042); // lorentzian width
+
+        TFitResultPtr r = hPhi1->Fit("fitfunc", "REBMS");
+        fitFcnBkg->SetParameters(fitFcn->GetParameter(4), fitFcn->GetParameter(5), fitFcn->GetParameter(6));
+        fitFcnSig->SetParameters(fitFcn->GetParameter(0), fitFcn->GetParameter(1), fitFcn->GetParameter(2), fitFcn->GetParameter(3));
+        fitFcnBkg->SetLineColor(kBlue);
+        fitFcnSig->SetLineColor(kGreen + 2);
+        fitFcnBkg->SetLineStyle(2);
+        fitFcnSig->SetLineStyle(2);
+        // fitFcnSig->SetNpx(10000);
+        fitFcnBkg->Draw("same");
+        fitFcnSig->Draw("same");
+        latex->DrawLatex(0.25, 0.92, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pTBins[ibin], pTBins[ibin + 1]));
+        // latex->DrawLatex(0.12, 0.82, Form("#Chi^{2}/NDF = %d", static_cast<int>(r->Chi2() / r->Ndf())));
+        latex->DrawLatex(0.12, 0.82, Form("#Gamma = %.4f", fitFcnSig->GetParameter(2)));
+        latex->DrawLatex(0.12, 0.74, Form("M_{#Phi} = %.4f", fitFcnSig->GetParameter(1)));
+
+        fitMass.push_back({fitFcnSig->GetParameter(1), fitFcnSig->GetParError(1)});
+        fitResolution.push_back({fitFcnSig->GetParameter(2) * 1000, fitFcnSig->GetParError(2) * 1000});
+        fitWidth.push_back({fitFcnSig->GetParameter(3), fitFcnSig->GetParError(3)});
+    }
+    cPhiVsPt->SaveAs(savepath + "/PhiMassVsPt.pdf");
+
+    TCanvas *cMassVsPt = new TCanvas("cMassVsPt", "Mass vs Pt", 720, 720);
+    SetCanvasStyle(cMassVsPt, 0.20, 0.03, 0.05, 0.15);
+    TGraphErrors *gMassVsPt = new TGraphErrors(fitMass.size());
+    for (size_t i = 0; i < fitMass.size(); i++)
+    {
+        gMassVsPt->SetPoint(i, (pTBins[i] + pTBins[i + 1]) / 2.0, fitMass[i].first);
+        gMassVsPt->SetPointError(i, (pTBins[i + 1] - pTBins[i]) / 2.0, fitMass[i].second);
+    }
+    gMassVsPt->SetMarkerStyle(20);
+    gMassVsPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    gMassVsPt->GetYaxis()->SetTitle("M_{#Phi} (GeV/#it{c}^{2})");
+    gMassVsPt->GetYaxis()->SetRangeUser(1.0194, 1.0202);
+    SetGraphErrorStyle(gMassVsPt);
+    gMassVsPt->GetYaxis()->SetTitleOffset(2.1);
+    gMassVsPt->Draw("AP");
+    cMassVsPt->SaveAs(savepath + "/PhiMassVsPt.png");
+
+    TCanvas *cResolutionVsPt = new TCanvas("cResolutionVsPt", "Width vs Pt", 720, 720);
+    SetCanvasStyle(cResolutionVsPt, 0.15, 0.03, 0.05, 0.15);
+    TGraphErrors *gResolutionvsPt = new TGraphErrors(fitResolution.size());
+    for (size_t i = 0; i < fitResolution.size(); i++)
+    {
+        gResolutionvsPt->SetPoint(i, (pTBins[i] + pTBins[i + 1]) / 2.0, fitResolution[i].first);
+        gResolutionvsPt->SetPointError(i, (pTBins[i + 1] - pTBins[i]) / 2.0, fitResolution[i].second);
+    }
+    gResolutionvsPt->SetMarkerStyle(20);
+    gResolutionvsPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    gResolutionvsPt->GetYaxis()->SetTitle("Resolution (MeV/#it{c}^{2})");
+    SetGraphErrorStyle(gResolutionvsPt);
+    gResolutionvsPt->SetMinimum(1.1);
+    gResolutionvsPt->SetMaximum(2.9);
+    gResolutionvsPt->Draw("AP");
+    cResolutionVsPt->SaveAs(savepath + "/PhiResolutionVsPt.png");
 }
 
 // //====================From histogram SEMassUnlike_AllVars===============================

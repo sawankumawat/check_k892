@@ -269,6 +269,10 @@ void doublePhiSimpleOpti5()
     gResolutionvsPt->SetMaximum(2.9);
     gResolutionvsPt->Draw("AP");
     cResolutionVsPt->SaveAs(savepath + "/PhiResolutionVsPt.png");
+
+    TFile *fPhiParams = new TFile(savepath + "/PhiParams.root", "recreate");
+    gMassVsPt->Write("gMassVsPt");
+    gResolutionvsPt->Write("gResolutionVsPt");
 }
 
 // //====================From histogram SEMassUnlike_AllVars===============================

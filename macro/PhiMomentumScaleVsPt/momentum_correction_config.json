@@ -1,0 +1,13 @@
+{
+  "doublephimeson": {
+    "cfgApplyKaonMomentumCorrection": true,
+    "cfgMomCorrP0Percent": 0.8070297818,
+    "cfgMomCorrP1Percent": 0.4731985587,
+    "cfgMomCorrP2GeV": 1.640496614,
+    "cfgMomCorrP3GeV": 0.2835206394,
+    "cfgMomCorrP4PercentPerGeV": -0.0239206051,
+    "cfgMomCorrP5PercentPerGeV2": 0.003470669042,
+    "cfgMomCorrPtMin": 0.8,
+    "cfgMomCorrPtMax": 20
+  }
+}

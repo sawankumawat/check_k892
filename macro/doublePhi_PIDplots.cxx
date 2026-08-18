@@ -7,16 +7,10 @@
 void doublePhi_PIDplots()
 {
     gStyle->SetOptStat(0);
-    // TString subWagon = "";
-    // TString subWagon = "_PID1000";
-    TString subWagon = "_pid2_opti5";
+    TString subWagon = "";
 
     TString filepath = "../data/doublePhi/";
-    // TString filepath = "/home/sawan/alice/practice/DoublePhiAnalyzedFiles/";
-
-    // TFile *file = new TFile(filepath + "/Analysis_ac_ah_MergedPID4ME.root");
-    // TFile *file = new TFile(filepath + "/AnalysisResults_ac_ah_new.root");
-    TFile *file = new TFile(filepath + "/680311.root");
+    TFile *file = new TFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults.root");
     if (file->IsZombie())
     {
         cerr << "File not found " << endl;
@@ -32,7 +26,7 @@ void doublePhi_PIDplots()
         return;
     }
 
-    TCanvas *cPIDTPCKaPos = new TCanvas("cPIDTPCKaPos", "PIDTPCKa", 1440, 800);
+    TCanvas *cPIDTPCKaPos = new TCanvas("cPIDTPCKaPos", "PIDTPCKa Positive", 1080, 720);
     SetCanvasStyle(cPIDTPCKaPos, 0.1, 0.05, 0.06, 0.17);
     cPIDTPCKaPos->cd();
     TPad *mainPadPos = new TPad("mainPadPos", "", 0.0, 0.0, 1.0, 0.96);
@@ -41,23 +35,14 @@ void doublePhi_PIDplots()
     mainPadPos->cd();
     mainPadPos->Divide(4, 4, 0.001, 0.001);
 
-    TCanvas *cPIDTPCKaNeg = new TCanvas("cPIDTPCKaNeg", "PIDTPCKa", 1440, 800);
-    SetCanvasStyle(cPIDTPCKaNeg, 0.1, 0.05, 0.06, 0.17);
-    cPIDTPCKaNeg->cd();
-    TPad *mainPadNeg = new TPad("mainPadNeg", "", 0.0, 0.0, 1.0, 0.96);
-    mainPadNeg->SetMargin(0.0, 0.0, 0.0, 0.0);
-    mainPadNeg->Draw();
-    mainPadNeg->cd();
-    mainPadNeg->Divide(4, 4, 0.001, 0.001);
-
-    TCanvas *cPIDTPCTOFKa = new TCanvas("cPIDTPCTOFKa", "PIDTPCTOFKa", 1440, 800);
+    TCanvas *cPIDTPCTOFKa = new TCanvas("cPIDTPCTOFKa", "PIDTPCTOFKa", 1280, 720);
     SetCanvasStyle(cPIDTPCTOFKa, 0.1, 0.05, 0.06, 0.17);
     cPIDTPCTOFKa->cd();
     TPad *mainPadTPCTOF = new TPad("mainPadTPCTOF", "", 0.0, 0.0, 1.0, 0.96);
     mainPadTPCTOF->SetMargin(0.0, 0.0, 0.0, 0.0);
     mainPadTPCTOF->Draw();
     mainPadTPCTOF->cd();
-    mainPadTPCTOF->Divide(3, 2, 0.001, 0.001);
+    mainPadTPCTOF->Divide(4, 2, 0.001, 0.001);
 
     TLatex lat;
     lat.SetNDC();
@@ -74,10 +59,16 @@ void doublePhi_PIDplots()
     float pion_contamination_peak_mean[] = {-7, -7, -6, -5, -3, -2, -1, 1, 1, 2, 3, 3, 3, 3, 3, 3};
     vector<vector<float>> kaonPIDrange = {{-2.7, 2.3}, {-2.5, 2.5}, {-1.5, 2.5}, {-0.75, 2.5}, {-0.3, 2.5}, {-0.0, 2.5}, {-0.0, 2.5}, {-2, 0.0}, {-1.5, 0.0}, {-1.5, 0.0}, {-1, 0.0}, {-2.5, 1}, {-2.5, 1}, {-2.5, 1}, {-2.5, 1}, {-2.5, 1.5}};
 
-    float pTbins_forCombinedTPCTOF[] = {0.5, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0};
+    float pTbins_forCombinedTPCTOF[] = {2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.0, 8.0, 10.0};
     int nPtBins_forCombinedTPCTOF = sizeof(pTbins_forCombinedTPCTOF) / sizeof(float) - 1;
 
     vector<float> purityPionVec, purityKaonVec, purityPionVecSelected, purityKaonVecSelected;
+
+    float slopesSouravBhaiya[] = {1.29, 0.94, 0.62, 0.62, 0.32, 0.22, 0.10};
+    float interceptsSouravBhaiya[] = {3.34, 2.45, 1.55, 1.55, 1.45, 1.35, 1.25};
+
+    float slopesNew[] = {1.4, 1.16, 1.0, 0.76, 0.52, 0.12, 0.04};
+    float interceptsNew[] = {3.87, 2.53, 2.0, 1.47, 1.2, 1.2, 1.15};
 
     for (Int_t ip = 0; ip < total_pT_bins; ip++) // start pt bin loop
     {
@@ -182,23 +173,10 @@ void doublePhi_PIDplots()
         lat.DrawLatexNDC(0.2, 0.71, Form("Mean1: %.1f, #sigma_{1}: %.1f", doubleGausFit->GetParameter(1), doubleGausFit->GetParameter(2)));
         lat.DrawLatexNDC(0.2, 0.62, Form("Mean2: %.1f, #sigma_{2}: %.1f", doubleGausFit->GetParameter(4), doubleGausFit->GetParameter(5)));
 
-        mainPadNeg->cd(ip + 1);
-        gPad->SetLogy();
-        gPad->SetLeftMargin(0.15);
-        gPad->SetRightMargin(0.02);
-        gPad->SetBottomMargin(0.13);
-        gPad->SetTopMargin(0.07);
-        hKaonTPC1Dneg->GetXaxis()->SetTitle("TPC N_{#sigma} Kaon");
-        hKaonTPC1Dneg->GetYaxis()->SetTitle("Counts");
-        hKaonTPC1Dneg->GetXaxis()->SetRangeUser(-5.5, 5.5);
-        hKaonTPC1Dneg->SetMaximum(hKaonTPC1Dneg->GetMaximum() * 10);
-        hKaonTPC1Dneg->SetLineColor(kRed + 1);
-        hKaonTPC1Dneg->SetLineWidth(2);
-        hKaonTPC1Dneg->Draw("HIST");
-
         if (ip < nPtBins_forCombinedTPCTOF)
         {
             mainPadTPCTOF->cd(ip + 1);
+            gPad->SetLogz();
             gPad->SetLeftMargin(0.15);
             gPad->SetRightMargin(0.02);
             gPad->SetBottomMargin(0.13);
@@ -232,6 +210,27 @@ void doublePhi_PIDplots()
             line0y->SetLineColor(kGreen + 2);
             line0y->SetLineStyle(2);
             line0y->Draw("same");
+
+            TF1 *pidLine = new TF1(Form("pidLine_%d", ip), "[0]*x + [1]", -3, 3);
+            pidLine->SetParName(0, "Slope");
+            pidLine->SetParName(1, "Intercept");
+
+            pidLine->SetParameters(slopesSouravBhaiya[ip], interceptsSouravBhaiya[ip]);
+            // pidLine->SetParLimits(0, -3.0, 3.0);
+            // pidLine->SetParLimits(1, -10.0, 10.0);
+            pidLine->SetLineColor(kRed);
+            pidLine->SetLineWidth(2);
+
+            TF1 *pidLineNew = new TF1(Form("pidLineNew_%d", ip), "[0]*x + [1]", -3, 3);
+            pidLineNew->SetParName(0, "Slope");
+            pidLineNew->SetParName(1, "Intercept");
+            pidLineNew->SetParameters(slopesNew[ip], interceptsNew[ip]);
+            pidLineNew->SetLineColor(kBlue);
+            pidLineNew->SetLineWidth(2);
+            pidLineNew->SetLineStyle(2);
+            pidLineNew->Draw("same");
+
+            pidLine->Draw("same");
         }
     }
     cPIDTPCKaPos->cd();
@@ -250,25 +249,7 @@ void doublePhi_PIDplots()
     latCanvasTitle6.DrawLatex(0.5, 0.5, "n#sigma_{TPC} Ka");
     cPIDTPCKaPos->Modified();
     cPIDTPCKaPos->Update();
-    cPIDTPCKaPos->SaveAs("doublePhi/PIDPlots/TPC_Kaon_pos.png");
-
-    cPIDTPCKaNeg->cd();
-    TPad *titlePad6Neg = new TPad("titlePad6Neg", "", 0.0, 0.94, 1.0, 1.0);
-    titlePad6Neg->SetFillStyle(0);
-    titlePad6Neg->SetFrameFillStyle(0);
-    titlePad6Neg->SetBorderMode(0);
-    titlePad6Neg->SetMargin(0, 0, 0, 0);
-    titlePad6Neg->Draw();
-    titlePad6Neg->cd();
-    TLatex latCanvasTitle6Neg;
-    latCanvasTitle6Neg.SetNDC();
-    latCanvasTitle6Neg.SetTextFont(42);
-    latCanvasTitle6Neg.SetTextSize(0.45);
-    latCanvasTitle6Neg.SetTextAlign(22);
-    latCanvasTitle6Neg.DrawLatex(0.5, 0.5, "n#sigma_{TPC} Ka");
-    cPIDTPCKaNeg->Modified();
-    cPIDTPCKaNeg->Update();
-    cPIDTPCKaNeg->SaveAs("doublePhi/PIDPlots/TPC_Kaon_neg.png");
+    // cPIDTPCKaPos->SaveAs("doublePhi/PIDPlots/TPC_Kaon_pos.png");
 
     cPIDTPCTOFKa->cd();
     TPad *titlePad7 = new TPad("titlePad7", "", 0.0, 0.94, 1.0, 1.0);
@@ -286,7 +267,7 @@ void doublePhi_PIDplots()
     latCanvasTitle7.DrawLatex(0.5, 0.5, "n#sigma_{TPC+TOF} Ka");
     cPIDTPCTOFKa->Modified();
     cPIDTPCTOFKa->Update();
-    cPIDTPCTOFKa->SaveAs("doublePhi/PIDPlots/TOF_Kaon.png");
+    // cPIDTPCTOFKa->SaveAs("doublePhi/PIDPlots/TOF_Kaon.png");
 
     TCanvas *cPurityKaon = new TCanvas("cPurityKaon", "PurityKaon", 720, 720);
     SetCanvasStyle(cPurityKaon, 0.13, 0.03, 0.03, 0.13);
@@ -316,5 +297,5 @@ void doublePhi_PIDplots()
     lineat90Kaon->SetLineColor(kGray + 2);
     lineat90Kaon->SetLineStyle(2);
     lineat90Kaon->Draw("same");
-    cPurityKaon->SaveAs("doublePhi/PIDPlots/KaonPurity.png");
+    // cPurityKaon->SaveAs("doublePhi/PIDPlots/KaonPurity.png");
 }

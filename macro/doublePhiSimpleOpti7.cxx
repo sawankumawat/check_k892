@@ -36,6 +36,7 @@ void doublePhiSimpleOpti7()
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests";
+
     ////======Pair=========
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processopti5/AnalysisResults.root");
 
@@ -58,7 +59,7 @@ void doublePhiSimpleOpti7()
 
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
-    hInvMass->Rebin(8);
+    hInvMass->Rebin(6);
     hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));

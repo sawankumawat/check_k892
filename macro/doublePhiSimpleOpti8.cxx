@@ -1,0 +1,516 @@
+#include <iostream>
+#include "src/style.h"
+#include "src/fitfunc.h"
+
+TFile *OpenFile(const string &path);
+template <typename T>
+T *GetHisto(TFile *f, const std::string &name);
+
+Double_t expPol3(Double_t *x, Double_t *par)
+{
+    return (pow(x[0], par[0])) * TMath::Exp(
+                                     par[1] * x[0] +
+                                     par[2] * x[0] * x[0] +
+                                     par[3] * x[0] * x[0] * x[0]);
+}
+
+Double_t breitWigner(Double_t *x, Double_t *par)
+{
+    double m = x[0];
+    double amp = par[0];
+    double mass = par[1];
+    double width = par[2];
+
+    double denominator = (m - mass) * (m - mass) + width * width / 4.0;
+
+    return amp * width / (TMath::Pi() * 2 * denominator);
+}
+
+Double_t BWExpol(Double_t *x, Double_t *par)
+{
+    return breitWigner(x, par) + expPol3(x, &par[3]);
+}
+
+void doublePhiSimpleOpti8()
+{
+    gStyle->SetOptFit(0);
+    gStyle->SetOptStat(0);
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests";
+    int rebinFactor = 6;
+
+    ////======Pair=========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processopti5/AnalysisResults.root");
+
+    ////=====New===========
+    ////====2026 data========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResultsRefit2.root");
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_LHC26_PID2003.root");
+
+    ////======2025 data==========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsLHC25.root");
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsKaShift2.root");
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults_LHC25_PID2003.root");
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults_LHC25_KaShifted_BhaiyaCode2.root"); // opti9, shifted
+
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+    // THnSparseF *hRot = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRotational");
+
+    TH1D *hPt = hUnlike->Projection(1, "E");
+    TH1D *hDeltaM = hUnlike->Projection(2, "E");
+
+    int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
+    int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
+
+    int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
+    int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
+
+    int lowChi2 = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
+    int highChi2 = hUnlike->GetAxis(4)->FindBin(8.0 - 0.00001);
+
+    int lowFitProb = hUnlike->GetAxis(5)->FindBin(0.3 + 0.00001);
+    int highFitProb = hUnlike->GetAxis(5)->FindBin(2.0 - 0.00001);
+
+    hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
+    hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
+    hUnlike->GetAxis(4)->SetRange(lowChi2, highChi2);
+    hUnlike->GetAxis(5)->SetRange(lowFitProb, highFitProb);
+
+    // hRot->GetAxis(1)->SetRange(lowpT, highpT);
+
+    TH1D *hInvMass = hUnlike->Projection(0, "E");
+    SetHistoQA(hInvMass);
+    hInvMass->Rebin(rebinFactor);
+    hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
+    hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
+    hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
+
+    int lowDeltaMBkg = hUnlike->GetAxis(2)->FindBin(0.005 + 0.00001);
+    int highDeltaMBkg = hUnlike->GetAxis(2)->FindBin(100 - 0.00001);
+
+    int lowChi2Bkg = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
+    int highChi2Bkg = hUnlike->GetAxis(4)->FindBin(30.0 - 0.00001);
+
+    int lowFitProbBkg = hUnlike->GetAxis(5)->FindBin(0.0 + 0.00001);
+    int highFitProbBkg = hUnlike->GetAxis(5)->FindBin(2.0 - 0.00001);
+
+    hUnlike->GetAxis(2)->SetRange(lowDeltaMBkg, highDeltaMBkg);
+    hUnlike->GetAxis(4)->SetRange(lowChi2Bkg, highChi2Bkg);
+    hUnlike->GetAxis(5)->SetRange(lowFitProbBkg, highFitProbBkg);
+
+    TH1D *hInvMassBkg = hUnlike->Projection(0, "E");
+    SetHistoQA(hInvMassBkg);
+    hInvMassBkg->Rebin(rebinFactor);
+    hInvMassBkg->GetXaxis()->SetRangeUser(2.5, 2.9);
+
+    // TH1D *h1DRot = hRot->Projection(0, "E");
+    // h1DRot->Rebin(rebinFactor);
+    // SetHistoQA(h1DRot);
+
+    TH1D *hBkg = (TH1D *)hInvMass->Clone("hBkg");
+    hBkg->Reset();
+
+    for (int i = 1; i <= hInvMass->GetNbinsX(); i++)
+    {
+        double x = hInvMass->GetBinCenter(i);
+
+        // Exclude signal region
+        if (x >= 2.65 && x <= 2.75)
+            continue;
+
+        hBkg->SetBinContent(i, hInvMass->GetBinContent(i));
+        hBkg->SetBinError(i, hInvMass->GetBinError(i));
+    }
+
+    TCanvas *cBkg = new TCanvas("cBkg", "Background", 720, 720);
+    SetCanvasStyle(cBkg, 0.15, 0.03, 0.05, 0.15);
+    hBkg->Draw("pe");
+
+    const double FIT_MIN = 2.5;
+    const double FIT_MAX = 2.9;
+
+    TF1 *fitBkg = new TF1("fitBkg", expPol3, FIT_MIN, FIT_MAX, 4);
+    fitBkg->SetParNames("p0", "p1", "p2", "p3");
+    fitBkg->SetParameters(1.0, 1.0, 1.0, 1.0);
+    hBkg->Fit(fitBkg, "REBM");
+
+    TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
+    SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
+    // hInvMass->GetYaxis()->SetRangeUser(971, 2058);
+    hInvMass->Draw("pe");
+
+    // TLine *lineat2p65 = new TLine(2.65, 971, 2.65, 2058);
+    // lineat2p65->SetLineColor(kRed);
+    // lineat2p65->SetLineStyle(2);
+    // lineat2p65->SetLineWidth(2);
+    // lineat2p65->Draw();
+
+    TLatex *latex = new TLatex();
+    latex->SetNDC();
+    latex->SetTextFont(22);
+    latex->SetTextSize(0.03);
+
+    // TLatex *latex2 = new TLatex();
+    // latex2->SetNDC();
+    // latex2->SetTextFont(42);
+    // latex2->SetTextSize(0.03);
+    // latex2->DrawLatex(0.55, 0.9, "LHC25_skimmed");
+    // latex2->DrawLatex(0.55, 0.85, "Before Kaon Momentum shift");
+
+    // // Normalize the rotational background
+    // int lowNormBin = h1DRot->GetXaxis()->FindBin(2.85 + 0.00001);
+    // int highNormBin = h1DRot->GetXaxis()->FindBin(2.9 - 0.00001);
+    // double SigCounts = hInvMass->Integral(lowNormBin, highNormBin);
+    // double RotCounts = h1DRot->Integral(lowNormBin, highNormBin);
+    // double scaleFactor = SigCounts / RotCounts;
+    // h1DRot->Scale(scaleFactor);
+    // h1DRot->SetLineColor(kRed);
+    // h1DRot->SetMarkerColor(kRed);
+    // h1DRot->Draw("pe same");
+
+    // // Normalize the background from deltaM>0.005
+    int lowNormBin = hInvMassBkg->GetXaxis()->FindBin(2.85 + 0.00001);
+    int highNormBin = hInvMassBkg->GetXaxis()->FindBin(2.9 - 0.00001);
+    double SigCounts = hInvMass->Integral(lowNormBin, highNormBin);
+    double BkgCounts = hInvMassBkg->Integral(lowNormBin, highNormBin);
+    double scaleFactor = SigCounts / BkgCounts;
+    hInvMassBkg->Scale(scaleFactor);
+    hInvMassBkg->SetLineColor(kRed);
+    hInvMassBkg->SetMarkerColor(kRed);
+    hInvMassBkg->Draw("HISTe same");
+
+    TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", BWExpol, FIT_MIN, FIT_MAX, 7);
+    fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
+    fInitialCombinedFit->SetParameter(0, 100.0); // Signal yield
+    fInitialCombinedFit->SetParameter(1, 2.70);  // Mass
+    fInitialCombinedFit->SetParameter(2, 0.03);  // Width
+
+    fInitialCombinedFit->SetParameter(3, fitBkg->GetParameter(0));
+    fInitialCombinedFit->SetParameter(4, fitBkg->GetParameter(1));
+    fInitialCombinedFit->SetParameter(5, fitBkg->GetParameter(2));
+    fInitialCombinedFit->SetParameter(6, fitBkg->GetParameter(3));
+
+    fInitialCombinedFit->SetParLimits(0, 0.0, 1.0e6);
+    fInitialCombinedFit->SetParLimits(1, 2.65, 2.75);
+    fInitialCombinedFit->SetParLimits(2, 0.01, 0.05);
+    fInitialCombinedFit->SetLineStyle(2);
+    fInitialCombinedFit->SetLineColor(kMagenta);
+    hInvMass->Fit(fInitialCombinedFit, "REBMS");
+
+    //============================================================
+    // Likelihood fit (S + B)
+    //============================================================
+
+    TF1 *fitFunc = new TF1("fitFunc", BWExpol, FIT_MIN, FIT_MAX, 7);
+    fitFunc->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
+
+    fitFunc->SetParameter(0, fInitialCombinedFit->GetParameter(0)); // Signal yield
+    fitFunc->SetParameter(1, fInitialCombinedFit->GetParameter(1)); // Mass
+    fitFunc->SetParameter(2, fInitialCombinedFit->GetParameter(2)); // Width
+
+    fitFunc->SetParameter(3, fInitialCombinedFit->GetParameter(3));
+    fitFunc->SetParameter(4, fInitialCombinedFit->GetParameter(4));
+    fitFunc->SetParameter(5, fInitialCombinedFit->GetParameter(5));
+    fitFunc->SetParameter(6, fInitialCombinedFit->GetParameter(6));
+
+    fitFunc->SetParLimits(0, 0.0, 1.0e6);
+    fitFunc->SetParLimits(1, 2.65, 2.75);
+    fitFunc->SetParLimits(2, 0.01, 0.05);
+
+    TFitResultPtr fitResultSB = hInvMass->Fit(fitFunc, "RLS");
+
+    if (fitResultSB.Get() == nullptr)
+    {
+        cout << "ERROR: S+B likelihood fit failed!" << endl;
+        return;
+    }
+
+    double signalYield = fitFunc->GetParameter(0);
+    double signalYieldErr = fitFunc->GetParError(0);
+    double massFit = fitFunc->GetParameter(1);
+    double massErr = fitFunc->GetParError(1);
+    double widthFit = fitFunc->GetParameter(2);
+    double widthErr = fitFunc->GetParError(2);
+
+    cout << endl;
+    cout << "==========================================" << endl;
+    cout << "       S + B LIKELIHOOD FIT" << endl;
+    cout << "==========================================" << endl;
+
+    cout << "Mass  = " << massFit << " +/- " << massErr << " GeV/c2" << endl;
+    cout << "Width = " << widthFit << " +/- " << widthErr << " GeV/c2" << endl;
+    cout << "Signal yield S = " << signalYield << " +/- " << signalYieldErr << endl;
+
+    double logL_SB = fitResultSB->MinFcnValue();
+
+    //============================================================
+    //      Background-only likelihood fit
+    //============================================================
+    TF1 *fitBOnly = new TF1("fitBOnly", expPol3, FIT_MIN, FIT_MAX, 4);
+    fitBOnly->SetParNames("p0", "p1", "p2", "p3");
+    fitBOnly->SetParameters(fInitialCombinedFit->GetParameter(3), fInitialCombinedFit->GetParameter(4), fInitialCombinedFit->GetParameter(5), fInitialCombinedFit->GetParameter(6));
+    TFitResultPtr fitResultB = hInvMass->Fit(fitBOnly, "RLS0");
+
+    if (fitResultB.Get() == nullptr)
+    {
+        cout << "ERROR: Background-only likelihood fit failed!" << endl;
+        return;
+    }
+    double logL_B = fitResultB->MinFcnValue();
+
+    //============================================================
+    // Likelihood-ratio test statistic and significance
+    //============================================================
+    double q0 = 2.0 * (logL_B - logL_SB);
+
+    if (q0 < 0)
+        q0 = 0.0;
+
+    double significance = TMath::Sqrt(q0);
+
+    //============================================================
+    // p-value
+    //
+    // For a one-sided discovery test:
+    // p0 = 0.5 * erfc(Z/sqrt(2))
+    //
+    // The factor 0.5 accounts for the physical boundary
+    // S >= 0 in the asymptotic Cowan et al. treatment.
+    //============================================================
+
+    double pValue = 0.5 * TMath::Erfc(significance / TMath::Sqrt(2.0));
+
+    cout << endl;
+    cout << "==========================================" << endl;
+    cout << "       LIKELIHOOD-RATIO RESULTS" << endl;
+    cout << "==========================================" << endl;
+
+    cout << "S+B MinFcnValue = " << logL_SB << endl;
+    cout << "B-only MinFcnValue = " << logL_B << endl;
+    cout << "q0 = " << q0 << endl;
+    cout << "Signal yield S = " << signalYield << " +/- " << signalYieldErr << endl;
+    cout << "Significance Z = " << significance << " sigma" << endl;
+    cout << "p0 = " << pValue << endl;
+    cout << "==========================================" << endl;
+
+    //============================================================
+    // Draw S+B fit
+    //============================================================
+
+    // S+B total fit
+    fitFunc->SetLineColor(kBlack);
+    fitFunc->SetLineWidth(2);
+    fitFunc->Draw("same");
+
+    // Background from S+B fit
+    TF1 *fitBkgFinal = new TF1("fitBkgFinal", expPol3, FIT_MIN, FIT_MAX, 4);
+
+    fitBkgFinal->SetParameters(fitFunc->GetParameter(3), fitFunc->GetParameter(4), fitFunc->GetParameter(5), fitFunc->GetParameter(6));
+
+    fitBkgFinal->SetLineColor(kBlue);
+    fitBkgFinal->SetLineStyle(2);
+    fitBkgFinal->Draw("same");
+
+    // Signal component
+    TF1 *fitSignal = new TF1("fitSignal", breitWigner, FIT_MIN, FIT_MAX, 3);
+
+    fitSignal->SetParameters(fitFunc->GetParameter(0), fitFunc->GetParameter(1), fitFunc->GetParameter(2));
+
+    fitSignal->SetLineColor(kRed);
+    fitSignal->SetLineStyle(2);
+    fitSignal->Draw("same");
+    cout << "Signal in +-3sigma is " << fitSignal->Integral(massFit - 10 * widthFit, massFit + 10 * widthFit) << endl;
+
+    TLegend *legend = new TLegend(0.63, 0.72, 0.9, 0.92);
+    legend->SetBorderSize(0);
+    legend->SetFillStyle(0);
+    legend->SetTextFont(42);
+    legend->SetTextSize(0.03);
+    legend->AddEntry(hInvMass, "#Delta M < 0.005", "pe");
+    legend->AddEntry(hInvMassBkg, "#Delta M > 0.005", "pe");
+    legend->AddEntry(fitFunc, "BW + expol3", "l");
+    legend->AddEntry(fitBkgFinal, "expol3 (bkg)", "l");
+    legend->AddEntry(fitSignal, "Breit-Wigner", "l");
+    legend->Draw();
+
+    latex->DrawLatex(0.2, 0.45, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
+    latex->DrawLatex(0.2, 0.40, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
+    // latex->DrawLatex(0.2, 0.35, Form("N_{sig} = %.1f #pm %.1f", signalYield, signalYieldErr));
+    latex->DrawLatex(0.2, 0.35, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
+    latex->DrawLatex(0.2, 0.30, Form("p-value = %.3e", pValue));
+    latex->DrawLatex(0.2, 0.25, Form("Significance (Z) = %.2f #sigma", significance));
+    latex->DrawLatex(0.25, 0.85, "LHC26_pass1_skimmed");
+
+    // Temporary plot the phi-phi correlation plot
+    TH3F *hPhiPhiMassCorrelation = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
+    TCanvas *cPhiPhiMassCorrelation = new TCanvas("cPhiPhiMassCorrelation", "cPhiPhiMassCorrelation", 720, 720);
+    SetCanvasStyle(cPhiPhiMassCorrelation, 0.19, 0.15, 0.05, 0.13);
+    double deltaMLow = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.0);
+    double deltaMHigh = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.015); // 0.01 is good cut (60% statistics are lost)
+    // hPhiPhiMassCorrelation->GetZaxis()->SetRange(deltaMLow, deltaMHigh);
+
+    TH2F *hPhiPhiMassCorrProj = (TH2F *)hPhiPhiMassCorrelation->Project3D("xy");
+    SetHistoQA2D(hPhiPhiMassCorrProj);
+    hPhiPhiMassCorrProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
+    hPhiPhiMassCorrProj->GetYaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
+    hPhiPhiMassCorrProj->GetYaxis()->SetTitleOffset(1.9);
+    hPhiPhiMassCorrProj->GetXaxis()->SetNdivisions(505);
+    hPhiPhiMassCorrProj->Draw("COLZ");
+    TLine *lineHorizontalPDG = new TLine(1.019461, 1.0, 1.019461, 1.04);
+    lineHorizontalPDG->SetLineColor(kRed);
+    lineHorizontalPDG->SetLineStyle(2);
+    TLine *lineVerticalPDG = new TLine(1.0, 1.019461, 1.04, 1.019461);
+    lineVerticalPDG->SetLineColor(kRed);
+    lineVerticalPDG->SetLineStyle(2);
+    lineHorizontalPDG->Draw("same");
+    lineVerticalPDG->Draw("same");
+
+    // //================================================
+    // //==========Phi Mass vs Pt========================
+    // //================================================
+
+    // // // Phi mass correlation plot
+    // // TH3F *hPhiMassVsPt = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
+    // // TH2F *hPhiPhiMass = (TH2F *)hPhiMassVsPt->Project3D("yx");
+    // // SetHistoQA(hPhiPhiMass);
+    // // TCanvas *cPhiPhiMassCorr = new TCanvas("cPhiPhiMassCorr", "Phi Mass vs Pt", 720, 720);
+    // // SetCanvasStyle(cPhiPhiMassCorr, 0.18, 0.03, 0.05, 0.15);
+    // // hPhiPhiMass->GetXaxis()->SetTitle("M_{#phi1} (GeV/#it{c})");
+    // // hPhiPhiMass->GetYaxis()->SetTitle("M_{#phi2} (GeV/#it{c})");
+    // // hPhiPhiMass->Draw("colz");
+
+    // TH2F *hPhiMassVsPt = GetHisto<TH2F>(fInput, "doublephimeson/hPhiMassVsPt");
+    // // TH2F *hPhiMassVsPt = GetHisto<TH2F>(fInput, "doublephimeson/hPhiMassVsPtShifted");
+    // SetHistoQA(hPhiMassVsPt);
+
+    // TCanvas *cPhiVsPt = new TCanvas("cPhiVsPt", "Phi Mass vs Pt", 1080, 720);
+    // cPhiVsPt->Divide(4, 4);
+    // double pTBins[17] = {0.4, 0.6, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0};
+    // latex->SetTextSize(0.06);
+    // vector<pair<double, double>> fitMass, fitResolution, fitWidth;
+    // for (int ibin = 0; ibin < 16; ibin++)
+    // {
+    //     // int lowpTBin = hPhiMassVsPt->GetZaxis()->FindBin(pTBins[ibin] + 0.0001);
+    //     // int highpTBin = hPhiMassVsPt->GetZaxis()->FindBin(pTBins[ibin + 1] - 0.0001);
+    //     // TH1D *hPhi1 = hPhiMassVsPt->ProjectionY(Form("hPhi1_pT_%.1f_%.1f", pTBins[ibin], pTBins[ibin + 1]), lowpTBin, highpTBin, -1, -1, "E");
+
+    //     int lowpTBin = hPhiMassVsPt->GetYaxis()->FindBin(pTBins[ibin] + 0.0001);
+    //     int highpTBin = hPhiMassVsPt->GetYaxis()->FindBin(pTBins[ibin + 1] - 0.0001);
+    //     TH1D *hPhi1 = hPhiMassVsPt->ProjectionX(Form("hPhi1_pT_%.1f_%.1f", pTBins[ibin], pTBins[ibin + 1]), lowpTBin, highpTBin, "E");
+    //     SetHistoQA(hPhi1);
+    //     cPhiVsPt->cd(ibin + 1);
+    //     hPhi1->Draw("pe");
+
+    //     float fitRangeLow = 1.001;
+    //     float fitRangeHigh = 1.039;
+
+    //     //******Fitting for Phi*********************
+    //     TF1 *fitFcn = new TF1("fitfunc", voigtpol2, fitRangeLow, fitRangeHigh, 7);       // sig+bkg fit function
+    //     TF1 *fitFcnBkg = new TF1("fitfunc1", polynomial2, fitRangeLow, fitRangeHigh, 3); // only residualbkg
+    //     TF1 *fitFcnSig = new TF1("fitFcnSig", voigt, fitRangeLow, fitRangeHigh, 4);      // only signal
+
+    //     // for voigtian distribution
+    //     fitFcn->SetParameter(0, 5000);         // yield
+    //     fitFcn->SetParLimits(0, 0, 1e6);       // yield
+    //     fitFcn->SetParameter(1, 1.019);        // mass peak
+    //     // fitFcn->SetParLimits(1, 1.006, 1.025); // mass peak //LHC26_skimmed
+    //     fitFcn->SetParLimits(1, 1.006, 1.0202); // mass peak //LHC26_skimmed
+    //     // fitFcn->SetParLimits(1, 1.01, 1.0195); // mass peak //LHC25_skimmed
+
+    //     // if (ibin == 2 || ibin == 3) // for LHC25 only
+    //     //     fitFcn->SetParLimits(1, 1.0188, 1.0195);
+    //     if (ibin ==9)
+    //     fitFcn->SetParLimits(1, 1.0188, 1.02); // for LHC25 only
+
+    //     fitFcn->SetParameter(2, 0.0012);       //  Gaussian width (Detector resolution)
+    //     fitFcn->SetParLimits(2, 0.001, 0.009); // Gaussian width.
+    //     // fitFcn->SetParameter(3, 0.0042);   //lorentzian width (Resonance width)
+    //     fitFcn->FixParameter(3, 0.0042); // lorentzian width
+
+    //     TFitResultPtr r = hPhi1->Fit("fitfunc", "REBMS");
+    //     fitFcnBkg->SetParameters(fitFcn->GetParameter(4), fitFcn->GetParameter(5), fitFcn->GetParameter(6));
+    //     fitFcnSig->SetParameters(fitFcn->GetParameter(0), fitFcn->GetParameter(1), fitFcn->GetParameter(2), fitFcn->GetParameter(3));
+    //     fitFcnBkg->SetLineColor(kBlue);
+    //     fitFcnSig->SetLineColor(kGreen + 2);
+    //     fitFcnBkg->SetLineStyle(2);
+    //     fitFcnSig->SetLineStyle(2);
+    //     // fitFcnSig->SetNpx(10000);
+    //     fitFcnBkg->Draw("same");
+    //     fitFcnSig->Draw("same");
+    //     latex->DrawLatex(0.25, 0.92, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pTBins[ibin], pTBins[ibin + 1]));
+    //     // latex->DrawLatex(0.12, 0.82, Form("#Chi^{2}/NDF = %d", static_cast<int>(r->Chi2() / r->Ndf())));
+    //     latex->DrawLatex(0.12, 0.82, Form("#Gamma = %.4f", fitFcnSig->GetParameter(2)));
+    //     latex->DrawLatex(0.12, 0.74, Form("M_{#Phi} = %.4f", fitFcnSig->GetParameter(1)));
+
+    //     fitMass.push_back({fitFcnSig->GetParameter(1), fitFcnSig->GetParError(1)});
+    //     fitResolution.push_back({fitFcnSig->GetParameter(2) * 1000, fitFcnSig->GetParError(2) * 1000});
+    //     fitWidth.push_back({fitFcnSig->GetParameter(3), fitFcnSig->GetParError(3)});
+    // }
+    // cPhiVsPt->SaveAs(savepath + "/PhiMassVsPt_26New.pdf");
+
+    // TCanvas *cMassVsPt = new TCanvas("cMassVsPt", "Mass vs Pt", 720, 720);
+    // SetCanvasStyle(cMassVsPt, 0.20, 0.03, 0.05, 0.15);
+    // TGraphErrors *gMassVsPt = new TGraphErrors(fitMass.size());
+    // for (size_t i = 0; i < fitMass.size(); i++)
+    // {
+    //     gMassVsPt->SetPoint(i, (pTBins[i] + pTBins[i + 1]) / 2.0, fitMass[i].first);
+    //     gMassVsPt->SetPointError(i, (pTBins[i + 1] - pTBins[i]) / 2.0, fitMass[i].second);
+    // }
+    // gMassVsPt->SetMarkerStyle(20);
+    // gMassVsPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    // gMassVsPt->GetYaxis()->SetTitle("M_{#Phi} (GeV/#it{c}^{2})");
+    // // gMassVsPt->GetYaxis()->SetRangeUser(1.0194, 1.0202);
+    // SetGraphErrorStyle(gMassVsPt);
+    // gMassVsPt->GetYaxis()->SetTitleOffset(2.1);
+    // gMassVsPt->Draw("AP");
+    // cMassVsPt->SaveAs(savepath + "/PhiMassVsPt.png");
+
+    // TCanvas *cResolutionVsPt = new TCanvas("cResolutionVsPt", "Width vs Pt", 720, 720);
+    // SetCanvasStyle(cResolutionVsPt, 0.15, 0.03, 0.05, 0.15);
+    // TGraphErrors *gResolutionvsPt = new TGraphErrors(fitResolution.size());
+    // for (size_t i = 0; i < fitResolution.size(); i++)
+    // {
+    //     gResolutionvsPt->SetPoint(i, (pTBins[i] + pTBins[i + 1]) / 2.0, fitResolution[i].first);
+    //     gResolutionvsPt->SetPointError(i, (pTBins[i + 1] - pTBins[i]) / 2.0, fitResolution[i].second);
+    // }
+    // gResolutionvsPt->SetMarkerStyle(20);
+    // gResolutionvsPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
+    // gResolutionvsPt->GetYaxis()->SetTitle("Resolution (MeV/#it{c}^{2})");
+    // SetGraphErrorStyle(gResolutionvsPt);
+    // gResolutionvsPt->SetMinimum(1.1);
+    // gResolutionvsPt->SetMaximum(2.9);
+    // gResolutionvsPt->Draw("AP");
+    // cResolutionVsPt->SaveAs(savepath + "/PhiResolutionVsPt.png");
+
+    // // TFile *fPhiParams = new TFile(savepath + "/PhiParams25_v2.root", "recreate");
+    // // gMassVsPt->Write("gMassVsPt");
+    // // gResolutionvsPt->Write("gResolutionVsPt");
+}
+
+//==============End of the main code==================
+
+TFile *OpenFile(const string &path)
+{
+    TFile *f = new TFile(path.c_str(), "read");
+    if (f->IsZombie())
+    {
+        cout << "Error: File not found: " << path << endl;
+        return nullptr;
+    }
+    return f;
+}
+
+template <typename T>
+T *GetHisto(TFile *f, const std::string &name)
+{
+    T *histo = dynamic_cast<T *>(f->Get(name.c_str()));
+
+    if (!histo)
+    {
+        std::cout << "Error: histo " << name
+                  << " not found in file " << f->GetName() << std::endl;
+        return nullptr;
+    }
+
+    return histo;
+}

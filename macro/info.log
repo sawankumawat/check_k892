@@ -1,0 +1,514 @@
+
+Processing doublePhiBackgroundEstimation.cxx...
+========== 2D FIT RESULTS ==========
+Bin range 2.50 - 2.51
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01983 +/- 4.36152e-05
+Width       : 0.00711834 +/- 0.000152142
+N_SS        : 0.00804042 +/- 0.00032289
+N_nonSS     : 0.012611 +/- 0.00124446
+Chi2        : 1942.42
+NDF         : 1594
+Chi2 / NDF  : 1.21858
+Bkg par0   : 19.8626 +/- 1.241
+Bkg par1   : 375.635 +/- 25.1025
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.51 - 2.52
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01985 +/- 4.54035e-05
+Width       : 0.00727458 +/- 0.000155626
+N_SS        : 0.00793108 +/- 0.0003234
+N_nonSS     : 0.0124852 +/- 0.00127488
+Chi2        : 2073.08
+NDF         : 1594
+Chi2 / NDF  : 1.30055
+Bkg par0   : 19.8591 +/- 1.28353
+Bkg par1   : 370.907 +/- 25.8842
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.52 - 2.53
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01981 +/- 4.44475e-05
+Width       : 0.00708289 +/- 0.000155268
+N_SS        : 0.00747097 +/- 0.000310166
+N_nonSS     : 0.0122308 +/- 0.00120412
+Chi2        : 2075.75
+NDF         : 1592
+Chi2 / NDF  : 1.30387
+Bkg par0   : 20.3956 +/- 1.26856
+Bkg par1   : 375.014 +/- 25.6079
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.53 - 2.54
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.0199 +/- 4.54342e-05
+Width       : 0.00699168 +/- 0.000149871
+N_SS        : 0.00738551 +/- 0.000302388
+N_nonSS     : 0.0120543 +/- 0.00117549
+Chi2        : 2045.26
+NDF         : 1592
+Chi2 / NDF  : 1.28471
+Bkg par0   : 20.6562 +/- 1.27104
+Bkg par1   : 390.606 +/- 26.0177
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.54 - 2.55
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01992 +/- 4.52869e-05
+Width       : 0.00714778 +/- 0.000160205
+N_SS        : 0.0072169 +/- 0.000308206
+N_nonSS     : 0.013552 +/- 0.00132168
+Chi2        : 1902.22
+NDF         : 1594
+Chi2 / NDF  : 1.19337
+Bkg par0   : 19.1851 +/- 1.1983
+Bkg par1   : 345.375 +/- 23.2199
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.55 - 2.56
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01996 +/- 4.87579e-05
+Width       : 0.00740195 +/- 0.000167849
+N_SS        : 0.00737825 +/- 0.000322094
+N_nonSS     : 0.0126166 +/- 0.00131145
+Chi2        : 2142.72
+NDF         : 1594
+Chi2 / NDF  : 1.34424
+Bkg par0   : 19.9593 +/- 1.31695
+Bkg par1   : 367.708 +/- 25.651
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.56 - 2.57
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01978 +/- 4.68629e-05
+Width       : 0.00747963 +/- 0.000166986
+N_SS        : 0.00797326 +/- 0.000336655
+N_nonSS     : 0.0117859 +/- 0.00123818
+Chi2        : 1931.68
+NDF         : 1593
+Chi2 / NDF  : 1.21261
+Bkg par0   : 20.8083 +/- 1.37228
+Bkg par1   : 380.377 +/- 27.2603
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.57 - 2.58
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01999 +/- 4.94735e-05
+Width       : 0.00768673 +/- 0.000169848
+N_SS        : 0.00784779 +/- 0.000338576
+N_nonSS     : 0.012423 +/- 0.00133889
+Chi2        : 1829.04
+NDF         : 1594
+Chi2 / NDF  : 1.14746
+Bkg par0   : 20.1623 +/- 1.3714
+Bkg par1   : 345.281 +/- 25.5188
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.58 - 2.59
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01984 +/- 4.66664e-05
+Width       : 0.00706607 +/- 0.000160423
+N_SS        : 0.00683582 +/- 0.000303929
+N_nonSS     : 0.0123524 +/- 0.00119232
+Chi2        : 1861
+NDF         : 1591
+Chi2 / NDF  : 1.1697
+Bkg par0   : 20.7671 +/- 1.26704
+Bkg par1   : 357.219 +/- 24.4477
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.59 - 2.60
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01984 +/- 4.75437e-05
+Width       : 0.00722188 +/- 0.000168677
+N_SS        : 0.00734762 +/- 0.000327288
+N_nonSS     : 0.0103022 +/- 0.00106034
+Chi2        : 1901.2
+NDF         : 1593
+Chi2 / NDF  : 1.19347
+Bkg par0   : 23.1958 +/- 1.47594
+Bkg par1   : 425.629 +/- 29.8379
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.60 - 2.61
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01988 +/- 4.9557e-05
+Width       : 0.00753803 +/- 0.000181068
+N_SS        : 0.00746272 +/- 0.000335432
+N_nonSS     : 0.0100753 +/- 0.00110396
+Chi2        : 1946.23
+NDF         : 1594
+Chi2 / NDF  : 1.22097
+Bkg par0   : 23.2886 +/- 1.57776
+Bkg par1   : 387.637 +/- 28.7394
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.61 - 2.62
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01999 +/- 5.08518e-05
+Width       : 0.00748405 +/- 0.000169537
+N_SS        : 0.00668778 +/- 0.000315885
+N_nonSS     : 0.013415 +/- 0.00136644
+Chi2        : 1900.76
+NDF         : 1593
+Chi2 / NDF  : 1.1932
+Bkg par0   : 19.6918 +/- 1.27746
+Bkg par1   : 341.021 +/- 24.1858
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.62 - 2.63
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01988 +/- 4.97146e-05
+Width       : 0.00748515 +/- 0.000175329
+N_SS        : 0.00688224 +/- 0.000319535
+N_nonSS     : 0.0117079 +/- 0.00122977
+Chi2        : 2038.73
+NDF         : 1594
+Chi2 / NDF  : 1.279
+Bkg par0   : 21.3755 +/- 1.41067
+Bkg par1   : 356.021 +/- 25.4804
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.63 - 2.64
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01981 +/- 4.98291e-05
+Width       : 0.0074583 +/- 0.000170737
+N_SS        : 0.00707494 +/- 0.000326482
+N_nonSS     : 0.0120043 +/- 0.00122922
+Chi2        : 1929.29
+NDF         : 1593
+Chi2 / NDF  : 1.21111
+Bkg par0   : 21.1087 +/- 1.35789
+Bkg par1   : 378.859 +/- 26.5681
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.64 - 2.65
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01984 +/- 4.72643e-05
+Width       : 0.00713548 +/- 0.000163935
+N_SS        : 0.00705749 +/- 0.00031304
+N_nonSS     : 0.0110771 +/- 0.00110897
+Chi2        : 2143.45
+NDF         : 1594
+Chi2 / NDF  : 1.3447
+Bkg par0   : 22.1734 +/- 1.38553
+Bkg par1   : 400.108 +/- 27.6662
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.73 - 2.74
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01985 +/- 4.98031e-05
+Width       : 0.0071963 +/- 0.000172408
+N_SS        : 0.0062366 +/- 0.000299432
+N_nonSS     : 0.0115233 +/- 0.00115969
+Chi2        : 1953.98
+NDF         : 1591
+Chi2 / NDF  : 1.22814
+Bkg par0   : 21.2827 +/- 1.35
+Bkg par1   : 383.689 +/- 26.227
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.74 - 2.75
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01989 +/- 4.97274e-05
+Width       : 0.00737479 +/- 0.000177218
+N_SS        : 0.006024 +/- 0.000297144
+N_nonSS     : 0.0155839 +/- 0.00156671
+Chi2        : 2000.82
+NDF         : 1591
+Chi2 / NDF  : 1.25759
+Bkg par0   : 17.0645 +/- 1.12446
+Bkg par1   : 301.886 +/- 21.2372
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.75 - 2.76
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01977 +/- 5.11175e-05
+Width       : 0.00720736 +/- 0.000170371
+N_SS        : 0.00574412 +/- 0.000291365
+N_nonSS     : 0.0145931 +/- 0.00142035
+Chi2        : 1906.29
+NDF         : 1593
+Chi2 / NDF  : 1.19666
+Bkg par0   : 18.1564 +/- 1.14608
+Bkg par1   : 321.724 +/- 22.2262
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.76 - 2.77
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01983 +/- 5.0613e-05
+Width       : 0.00770204 +/- 0.000178606
+N_SS        : 0.00698254 +/- 0.000321353
+N_nonSS     : 0.0139106 +/- 0.0015037
+Chi2        : 2113.84
+NDF         : 1594
+Chi2 / NDF  : 1.32612
+Bkg par0   : 17.864 +/- 1.24702
+Bkg par1   : 334.656 +/- 24.85
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.77 - 2.78
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.0199 +/- 5.22328e-05
+Width       : 0.00758335 +/- 0.000181569
+N_SS        : 0.00638014 +/- 0.000314586
+N_nonSS     : 0.0135926 +/- 0.00144245
+Chi2        : 2023.05
+NDF         : 1590
+Chi2 / NDF  : 1.27236
+Bkg par0   : 18.499 +/- 1.26396
+Bkg par1   : 324.314 +/- 24.0661
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.78 - 2.79
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01985 +/- 5.38571e-05
+Width       : 0.00767615 +/- 0.000179975
+N_SS        : 0.00626861 +/- 0.000315218
+N_nonSS     : 0.0161596 +/- 0.00169972
+Chi2        : 1963.83
+NDF         : 1591
+Chi2 / NDF  : 1.23434
+Bkg par0   : 16.3374 +/- 1.13023
+Bkg par1   : 294.832 +/- 22.0154
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.79 - 2.80
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01974 +/- 5.08106e-05
+Width       : 0.00742667 +/- 0.000176749
+N_SS        : 0.00615286 +/- 0.000298375
+N_nonSS     : 0.0132855 +/- 0.00138961
+Chi2        : 2170.1
+NDF         : 1593
+Chi2 / NDF  : 1.36227
+Bkg par0   : 18.5784 +/- 1.25265
+Bkg par1   : 352.758 +/- 24.4643
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.80 - 2.81
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01982 +/- 5.18739e-05
+Width       : 0.0076114 +/- 0.000179646
+N_SS        : 0.00647405 +/- 0.000314986
+N_nonSS     : 0.0132979 +/- 0.00142639
+Chi2        : 1978.29
+NDF         : 1594
+Chi2 / NDF  : 1.24108
+Bkg par0   : 18.3271 +/- 1.26412
+Bkg par1   : 314.634 +/- 24.0407
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.81 - 2.82
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01992 +/- 5.05636e-05
+Width       : 0.00755801 +/- 0.000178829
+N_SS        : 0.00681733 +/- 0.000312973
+N_nonSS     : 0.0116608 +/- 0.00129626
+Chi2        : 2123.49
+NDF         : 1594
+Chi2 / NDF  : 1.33218
+Bkg par0   : 19.5773 +/- 1.38274
+Bkg par1   : 384.151 +/- 28.6885
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.82 - 2.83
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01979 +/- 5.38825e-05
+Width       : 0.00786086 +/- 0.000201061
+N_SS        : 0.00568396 +/- 0.000309752
+N_nonSS     : 0.0185053 +/- 0.00200792
+Chi2        : 1972.47
+NDF         : 1593
+Chi2 / NDF  : 1.23821
+Bkg par0   : 14.784 +/- 1.07808
+Bkg par1   : 269.684 +/- 20.8763
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.83 - 2.84
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01985 +/- 5.32952e-05
+Width       : 0.00767958 +/- 0.000186158
+N_SS        : 0.00619643 +/- 0.000310409
+N_nonSS     : 0.0122457 +/- 0.0013511
+Chi2        : 1956.69
+NDF         : 1592
+Chi2 / NDF  : 1.22908
+Bkg par0   : 19.2538 +/- 1.35641
+Bkg par1   : 347.521 +/- 26.4048
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.84 - 2.85
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01996 +/- 5.13441e-05
+Width       : 0.00726489 +/- 0.000177191
+N_SS        : 0.00580214 +/- 0.00029329
+N_nonSS     : 0.0129511 +/- 0.00133605
+Chi2        : 1988.5
+NDF         : 1590
+Chi2 / NDF  : 1.25063
+Bkg par0   : 18.6141 +/- 1.23824
+Bkg par1   : 326.591 +/- 23.308
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.85 - 2.86
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01984 +/- 5.25002e-05
+Width       : 0.0075362 +/- 0.000190902
+N_SS        : 0.00538955 +/- 0.000286174
+N_nonSS     : 0.0161458 +/- 0.00171563
+Chi2        : 1930.78
+NDF         : 1591
+Chi2 / NDF  : 1.21356
+Bkg par0   : 16.0977 +/- 1.13394
+Bkg par1   : 288.184 +/- 21.4049
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.86 - 2.87
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01993 +/- 5.21569e-05
+Width       : 0.00741528 +/- 0.000190291
+N_SS        : 0.00553206 +/- 0.000291972
+N_nonSS     : 0.0127975 +/- 0.00137857
+Chi2        : 2066.7
+NDF         : 1592
+Chi2 / NDF  : 1.29818
+Bkg par0   : 18.2626 +/- 1.27304
+Bkg par1   : 331.05 +/- 24.5386
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.87 - 2.88
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01982 +/- 5.49477e-05
+Width       : 0.0075166 +/- 0.000193828
+N_SS        : 0.00534732 +/- 0.00029677
+N_nonSS     : 0.0129533 +/- 0.00139171
+Chi2        : 1956.49
+NDF         : 1592
+Chi2 / NDF  : 1.22895
+Bkg par0   : 18.3017 +/- 1.26997
+Bkg par1   : 327.606 +/- 24.9496
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.88 - 2.89
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.0198 +/- 5.25009e-05
+Width       : 0.00741172 +/- 0.000186352
+N_SS        : 0.00541511 +/- 0.00029044
+N_nonSS     : 0.0136765 +/- 0.00144472
+Chi2        : 1971.92
+NDF         : 1593
+Chi2 / NDF  : 1.23787
+Bkg par0   : 17.3881 +/- 1.19706
+Bkg par1   : 307.432 +/- 23.112
+====================================
+
+========== 2D FIT RESULTS ==========
+Bin range 2.89 - 2.90
+Fit status        : 0
+Covariance quality: 3
+Fit valid         : true
+Mass peak   : 1.01985 +/- 5.36358e-05
+Width       : 0.00748599 +/- 0.000195929
+N_SS        : 0.00473912 +/- 0.000275285
+N_nonSS     : 0.0183698 +/- 0.00197665
+Chi2        : 2098.8
+NDF         : 1593
+Chi2 / NDF  : 1.31751
+Bkg par0   : 14.1956 +/- 1.03691
+Bkg par1   : 232.549 +/- 18.1698
+====================================
+

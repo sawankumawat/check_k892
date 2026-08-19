@@ -136,7 +136,7 @@ void doublePhiSimpleOpti8()
 
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
-    // hInvMass->GetYaxis()->SetRangeUser(971, 2058);
+    hInvMass->GetYaxis()->SetRangeUser(1.4e3, 3.1e3);
     hInvMass->Draw("pe");
 
     // TLine *lineat2p65 = new TLine(2.65, 971, 2.65, 2058);
@@ -170,14 +170,25 @@ void doublePhiSimpleOpti8()
 
     // // Normalize the background from deltaM>0.005
     int lowNormBin = hInvMassBkg->GetXaxis()->FindBin(2.85 + 0.00001);
-    int highNormBin = hInvMassBkg->GetXaxis()->FindBin(2.9 - 0.00001);
+    int highNormBin = hInvMassBkg->GetXaxis()->FindBin(2.90 - 0.00001);
     double SigCounts = hInvMass->Integral(lowNormBin, highNormBin);
     double BkgCounts = hInvMassBkg->Integral(lowNormBin, highNormBin);
     double scaleFactor = SigCounts / BkgCounts;
     hInvMassBkg->Scale(scaleFactor);
     hInvMassBkg->SetLineColor(kRed);
     hInvMassBkg->SetMarkerColor(kRed);
-    hInvMassBkg->Draw("HISTe same");
+    // hInvMassBkg->Draw("HISTe same");
+
+    // TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
+    // legTemp->SetBorderSize(0);
+    // legTemp->SetFillStyle(0);
+    // legTemp->SetTextFont(42);
+    // legTemp->SetTextSize(0.03);
+    // legTemp->AddEntry(hInvMass, "#Delta#it{M}_{#phi} < 0.005", "pe");
+    // legTemp->AddEntry(hInvMassBkg, "#Delta#it{M}_{#phi} #geq 0.005", "l");
+    // legTemp->AddEntry((TObject *)0, "Normalized in 2.85 < #it{M}_{#phi#phi} < 2.90 GeV/#it{c}^{2}", "");
+    // legTemp->Draw();
+    // cInvMass->SaveAs(savepath + "/InvariantMassWithoutFit.png");
 
     TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", BWExpol, FIT_MIN, FIT_MAX, 7);
     fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
@@ -298,7 +309,7 @@ void doublePhiSimpleOpti8()
     //============================================================
 
     // S+B total fit
-    fitFunc->SetLineColor(kBlack);
+    fitFunc->SetLineColor(kRed + 1);
     fitFunc->SetLineWidth(2);
     fitFunc->Draw("same");
 
@@ -321,13 +332,13 @@ void doublePhiSimpleOpti8()
     fitSignal->Draw("same");
     cout << "Signal in +-3sigma is " << fitSignal->Integral(massFit - 10 * widthFit, massFit + 10 * widthFit) << endl;
 
-    TLegend *legend = new TLegend(0.63, 0.72, 0.9, 0.92);
+    TLegend *legend = new TLegend(0.53, 0.72, 0.9, 0.92);
     legend->SetBorderSize(0);
     legend->SetFillStyle(0);
     legend->SetTextFont(42);
     legend->SetTextSize(0.03);
-    legend->AddEntry(hInvMass, "#Delta M < 0.005", "pe");
-    legend->AddEntry(hInvMassBkg, "#Delta M > 0.005", "pe");
+    legend->AddEntry(hInvMass, "#Delta M < 0.005, #it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "pe");
+    // legend->AddEntry(hInvMassBkg, "#Delta M > 0.005", "pe");
     legend->AddEntry(fitFunc, "BW + expol3", "l");
     legend->AddEntry(fitBkgFinal, "expol3 (bkg)", "l");
     legend->AddEntry(fitSignal, "Breit-Wigner", "l");
@@ -340,34 +351,35 @@ void doublePhiSimpleOpti8()
     latex->DrawLatex(0.2, 0.30, Form("p-value = %.3e", pValue));
     latex->DrawLatex(0.2, 0.25, Form("Significance (Z) = %.2f #sigma", significance));
     latex->DrawLatex(0.25, 0.85, "LHC26_pass1_skimmed");
+    cInvMass->SaveAs(savepath + "/InvariantMassWithFit.png");
 
-    // Temporary plot the phi-phi correlation plot
-    TH3F *hPhiPhiMassCorrelation = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
-    TCanvas *cPhiPhiMassCorrelation = new TCanvas("cPhiPhiMassCorrelation", "cPhiPhiMassCorrelation", 720, 720);
-    SetCanvasStyle(cPhiPhiMassCorrelation, 0.19, 0.15, 0.05, 0.13);
-    double deltaMLow = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.0);
-    double deltaMHigh = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.015); // 0.01 is good cut (60% statistics are lost)
-    // hPhiPhiMassCorrelation->GetZaxis()->SetRange(deltaMLow, deltaMHigh);
-
-    TH2F *hPhiPhiMassCorrProj = (TH2F *)hPhiPhiMassCorrelation->Project3D("xy");
-    SetHistoQA2D(hPhiPhiMassCorrProj);
-    hPhiPhiMassCorrProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-    hPhiPhiMassCorrProj->GetYaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
-    hPhiPhiMassCorrProj->GetYaxis()->SetTitleOffset(1.9);
-    hPhiPhiMassCorrProj->GetXaxis()->SetNdivisions(505);
-    hPhiPhiMassCorrProj->Draw("COLZ");
-    TLine *lineHorizontalPDG = new TLine(1.019461, 1.0, 1.019461, 1.04);
-    lineHorizontalPDG->SetLineColor(kRed);
-    lineHorizontalPDG->SetLineStyle(2);
-    TLine *lineVerticalPDG = new TLine(1.0, 1.019461, 1.04, 1.019461);
-    lineVerticalPDG->SetLineColor(kRed);
-    lineVerticalPDG->SetLineStyle(2);
-    lineHorizontalPDG->Draw("same");
-    lineVerticalPDG->Draw("same");
-
+    
     // //================================================
     // //==========Phi Mass vs Pt========================
     // //================================================
+    // // Temporary plot the phi-phi correlation plot
+    // TH3F *hPhiPhiMassCorrelation = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
+    // TCanvas *cPhiPhiMassCorrelation = new TCanvas("cPhiPhiMassCorrelation", "cPhiPhiMassCorrelation", 720, 720);
+    // SetCanvasStyle(cPhiPhiMassCorrelation, 0.19, 0.15, 0.05, 0.13);
+    // double deltaMLow = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.0);
+    // double deltaMHigh = hPhiPhiMassCorrelation->GetZaxis()->FindBin(0.015); // 0.01 is good cut (60% statistics are lost)
+    // // hPhiPhiMassCorrelation->GetZaxis()->SetRange(deltaMLow, deltaMHigh);
+    
+    // TH2F *hPhiPhiMassCorrProj = (TH2F *)hPhiPhiMassCorrelation->Project3D("xy");
+    // SetHistoQA2D(hPhiPhiMassCorrProj);
+    // hPhiPhiMassCorrProj->GetXaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
+    // hPhiPhiMassCorrProj->GetYaxis()->SetTitle("#it{M}_{K^{+}K^{-}} (GeV/#it{c}^{2})");
+    // hPhiPhiMassCorrProj->GetYaxis()->SetTitleOffset(1.9);
+    // hPhiPhiMassCorrProj->GetXaxis()->SetNdivisions(505);
+    // hPhiPhiMassCorrProj->Draw("COLZ");
+    // TLine *lineHorizontalPDG = new TLine(1.019461, 1.0, 1.019461, 1.04);
+    // lineHorizontalPDG->SetLineColor(kRed);
+    // lineHorizontalPDG->SetLineStyle(2);
+    // TLine *lineVerticalPDG = new TLine(1.0, 1.019461, 1.04, 1.019461);
+    // lineVerticalPDG->SetLineColor(kRed);
+    // lineVerticalPDG->SetLineStyle(2);
+    // lineHorizontalPDG->Draw("same");
+    // lineVerticalPDG->Draw("same");
 
     // // // Phi mass correlation plot
     // // TH3F *hPhiMassVsPt = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");

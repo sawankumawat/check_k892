@@ -19,99 +19,45 @@ TFile *OpenFile(const string &path);
 template <typename T>
 T *GetHisto(TFile *f, const string &name);
 
-double VoigtianShape(double m, double m0, double sigma, double gamma)
-{
-    return TMath::Voigt(m - m0, sigma, gamma);
-}
-
-double FitVoightianpol2(double *x, double *par)
-{
-    double m = x[0];
-    double amp = par[0];
-    double m0 = par[1];
-    double sigma = par[2];
-    double gamma = par[3];
-
-    double pol2 = par[4] + par[5] * m + par[6] * m * m;
-
-    return amp * VoigtianShape(m, m0, sigma, gamma) + pol2;
-}
-
 double BWShape(double m, double m0, double gamma)
 {
     double denominator = (m - m0) * (m - m0) + gamma * gamma / 4.0;
     return gamma / (TMath::Pi() * 2 * denominator);
 }
 
-// 2D Fit Function Model
-double FitFunc2DVoigt(double *x, double *p)
-{
-    double m1 = x[0];
-    double m2 = x[1];
-
-    double n_SS = p[0];
-    double n_singlePhi = p[1];
-    double n_KKKK = p[2];
-
-    double m0 = p[3];
-    double sigma = p[4];
-    double gamma = p[5];
-
-    double sig1 = VoigtianShape(m1, m0, sigma, gamma);
-    double sig2 = VoigtianShape(m2, m0, sigma, gamma);
-
-    auto Bkg = [&](double m)
-    {
-        return p[6] + p[7] * m + p[8] * m * m;
-    };
-
-    // auto Bkg = [&](double m)
-    // {
-    //     double z = m - m0;
-    //     return p[6] + p[7] * z + p[8] * z * z;
-    // };
-
-    double bkg1 = Bkg(m1);
-    double bkg2 = Bkg(m2);
-
-    double shape_SS = sig1 * sig2;
-    double shape_singlePhi = 0.5 * (sig1 * bkg2 + bkg1 * sig2);
-    double shape_KKKK = bkg1 * bkg2;
-
-    return n_SS * shape_SS + n_singlePhi * shape_singlePhi + n_KKKK * shape_KKKK;
-}
-
 double FitFunc2DBW(double *x, double *p)
 {
     double m1 = x[0];
     double m2 = x[1];
+    double mPDG = 1.0198; // PDG mass of phi meson in GeV/c^2
 
     double n_SS = p[0];
-    double n_singlePhi = p[1];
-    double n_KKKK = p[2];
+    double n_nonSS = p[1];
 
-    double m0 = p[3];
-    double gamma = p[4];
+    double m0 = p[2];
+    double gamma = p[3];
 
     double sig1 = BWShape(m1, m0, gamma);
     double sig2 = BWShape(m2, m0, gamma);
 
     auto Bkg = [&](double m)
     {
-        return p[5] + p[6] * m + p[7] * m * m;
+        double z = m - mPDG;
+        // return p[4] + p[5] * z + p[6] * z * z;
+        return p[4] + p[5] * z;
     };
 
     double bkg1 = Bkg(m1);
     double bkg2 = Bkg(m2);
 
     double shape_SS = sig1 * sig2;
-    double shape_singlePhi = 0.5 * (sig1 * bkg2 + bkg1 * sig2);
-    double shape_KKKK = bkg1 * bkg2;
 
-    return n_SS * shape_SS + n_singlePhi * shape_singlePhi + n_KKKK * shape_KKKK;
+    // Merge non-SS background shape into a single component
+    double shape_nonSS = sig1 * bkg2 + bkg1 * sig2 + bkg1 * bkg2;
+    return n_SS * shape_SS + n_nonSS * shape_nonSS;
 }
 
-void doublePhiBackgroundEstimation()
+void doublePhiTemplateBW()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
@@ -134,10 +80,14 @@ void doublePhiBackgroundEstimation()
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
 
     TH3D *h3D = hUnlike->Projection(0, 4, 5, "E");
-    int rebin = 10;
+    int rebin = 15;
 
-    int totalBins = h3D->GetNbinsX() / rebin;
+    // int totalBins = h3D->GetNbinsX() / rebin;
+    int totalBins = 1;
     double interval = (2.9 - 2.5) / totalBins; // Calculate the interval for each bin
+
+    double last_pars[7] = {0.0};
+    bool has_valid_seed = false;
 
     // ================================================
     // 1D Histograms for SS and Non-SS Yields
@@ -151,8 +101,8 @@ void doublePhiBackgroundEstimation()
 
         double massLow = 2.5 + ibin * interval + 0.00001;
         double massHigh = 2.5 + (ibin + 1) * interval - 0.00001;
-        
-        //Exclude region 2.65 to 2.73 (signal region)
+
+        // Exclude region 2.65 to 2.73 (signal region)
         if (massLow > 2.65 && massHigh < 2.73)
         {
             h_N_SS->SetBinContent(ibin + 1, 0);
@@ -161,7 +111,6 @@ void doublePhiBackgroundEstimation()
             h_N_nonSS->SetBinError(ibin + 1, 0);
             continue;
         }
-
 
         int lowInvMassBin = h3D->GetXaxis()->FindBin(massLow);
         int highInvMassBin = h3D->GetXaxis()->FindBin(massHigh);
@@ -183,53 +132,62 @@ void doublePhiBackgroundEstimation()
         // ================================================
         // 2D FIT using BW + pol2 background model
         // ================================================
-        TF2 *f2D = new TF2("f2D", FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 8);
+        TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 6);
 
-        // Seed Yields (scaled by bin area)
-        f2D->SetParameter(0, (0.20 * totalIntegral) * binArea); // N_SS seed
-        f2D->SetParLimits(0, 0.0, totalIntegral * binArea * 10.0);
+        // // Seed Yields (scaled by bin area)
+        // f2D->SetParameter(0, (0.5 * totalIntegral) * binArea); // N_SS seed
+        // f2D->SetParLimits(0, 0.0, totalIntegral * binArea * 10.0);
 
-        f2D->SetParameter(1, (0.30 * totalIntegral) * binArea); // N_singlePhi seed
-        f2D->SetParLimits(1, 0.0, totalIntegral * binArea * 10.0);
+        // f2D->SetParameter(1, (0.5 * totalIntegral) * binArea); // N_nonSS seed
+        // f2D->SetParLimits(1, 0.0, totalIntegral * binArea * 10.0);
 
-        f2D->SetParameter(2, (0.50 * totalIntegral) * binArea); // N_KKKK seed
-        f2D->SetParLimits(2, 0.0, totalIntegral * binArea * 10.0);
+        // ================================================
+        // SEQUENTIAL SEEDING LOGIC
+        // ================================================
+        if (!has_valid_seed)
+        {
+            // Default initial guesses (for bin 0 or after a fit failure)
+            f2D->SetParameter(0, (0.5 * totalIntegral) * binArea); // N_SS
+            f2D->SetParameter(1, (0.5 * totalIntegral) * binArea); // N_nonSS
 
-        // BW Parameters
-        f2D->SetParameter(3, 1.019); // Mass peak
-        f2D->SetParLimits(3, 1.010, 1.030);
-        f2D->SetParameter(4, 0.00425); // Width
-        f2D->SetParLimits(4, 0.001, 0.01);
+            f2D->SetParameter(2, 1.019); // Mass peak
+            f2D->SetParLimits(2, 1.016, 1.025);
+            f2D->SetParameter(3, 0.00425); // Width
+            f2D->SetParLimits(3, 0.003, 0.009);
 
-        // Pol2 Background Parameters
-        f2D->SetParameter(5, 1.0);
-        f2D->SetParameter(6, 1.0);
-        f2D->SetParameter(7, 1.0);
+            f2D->SetParameter(4, 1.0); // Pol2 p0
+            f2D->SetParameter(5, 1.0); // Pol2 p1
+            // f2D->SetParameter(6, 1.0); // Pol2 p2
+        }
+        else
+        {
+            // Seed parameters from the previous valid converged bin
+            for (int p = 0; p < 6; p++)
+            {
+                f2D->SetParameter(p, last_pars[p]);
+            }
+            // Preserve parameter limits for signal mass & width
+            f2D->SetParLimits(2, 1.016, 1.025);
+            f2D->SetParLimits(3, 0.003, 0.009);
+        }
 
-        // f2D->SetNpx(1000);
-        // f2D->SetNpy(1000);
+        f2D->SetNpx(1000);
+        f2D->SetNpy(1000);
 
         TVirtualFitter::SetDefaultFitter("Minuit2");
-        TVirtualFitter::SetMaxIterations(10000);
+        TVirtualFitter::SetMaxIterations(20000);
         ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2", "Migrad");
 
         // Perform the 2D fit and store result
         h2D_Mass->Fit(f2D, "Q0ERN");
-        TFitResultPtr fitResult = h2D_Mass->Fit(f2D, "0ERSN");
+        TFitResultPtr fitResult = h2D_Mass->Fit(f2D, "Q0ERSN");
 
         // Convert fitted density parameters back to integrated bin counts
         double n_SS = f2D->GetParameter(0) / binArea;
         double err_SS = f2D->GetParError(0) / binArea;
 
-        double n_singlePhi = f2D->GetParameter(1) / binArea;
-        double err_single = f2D->GetParError(1) / binArea;
-
-        double n_KKKK = f2D->GetParameter(2) / binArea;
-        double err_KKKK = f2D->GetParError(2) / binArea;
-
-        // Non-SS yield is the combined contribution of single-Phi and non-resonant KKKK
-        double n_nonSS = n_singlePhi + n_KKKK;
-        double err_nonSS = std::sqrt(err_single * err_single + err_KKKK * err_KKKK);
+        double n_nonSS = f2D->GetParameter(1) / binArea;
+        double err_nonSS = f2D->GetParError(1) / binArea;
 
         // Fill the 1D pair-mass histograms
         h_N_SS->SetBinContent(ibin + 1, n_SS);
@@ -242,23 +200,34 @@ void doublePhiBackgroundEstimation()
         int covQual = fitResult.Get() ? fitResult->CovMatrixStatus() : -1;
         bool fitValid = fitResult.Get() && fitStatus == 0 && covQual >= 2;
 
+        // ================================================
+        // UPDATE SEED STORE ONLY ON VALID FITS
+        // ================================================
+        if (fitValid)
+        {
+            for (int p = 0; p < 6; p++)
+            {
+                last_pars[p] = f2D->GetParameter(p);
+            }
+            has_valid_seed = true;
+        }
+
         // Print fit quality
         cout << "========== 2D FIT RESULTS ==========" << endl;
         cout << "Bin range " << Form("%.2f - %.2f", 2.5 + ibin * interval, 2.5 + (ibin + 1) * interval) << endl;
         cout << "Fit status        : " << fitStatus << endl;
         cout << "Covariance quality: " << covQual << endl;
         cout << "Fit valid         : " << boolalpha << fitValid << endl;
-        cout << "Mass peak   : " << f2D->GetParameter(3) << " +/- " << f2D->GetParError(3) << endl;
-        cout << "Width       : " << f2D->GetParameter(4) << " +/- " << f2D->GetParError(4) << endl;
+        cout << "Mass peak   : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
+        cout << "Width       : " << f2D->GetParameter(3) << " +/- " << f2D->GetParError(3) << endl;
         cout << "N_SS        : " << f2D->GetParameter(0) << " +/- " << f2D->GetParError(0) << endl;
-        cout << "N_singlePhi : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
-        cout << "N_KKKK      : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
+        cout << "N_nonSS     : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
         cout << "Chi2        : " << f2D->GetChisquare() << endl;
         cout << "NDF         : " << f2D->GetNDF() << endl;
         cout << "Chi2 / NDF  : " << f2D->GetChisquare() / f2D->GetNDF() << endl;
-        cout << "Bkg par0   : " << f2D->GetParameter(5) << " +/- " << f2D->GetParError(5) << endl;
-        cout << "Bkg par1   : " << f2D->GetParameter(6) << " +/- " << f2D->GetParError(6) << endl;
-        cout << "Bkg par2   : " << f2D->GetParameter(7) << " +/- " << f2D->GetParError(7) << endl;
+        cout << "Bkg par0   : " << f2D->GetParameter(4) << " +/- " << f2D->GetParError(4) << endl;
+        cout << "Bkg par1   : " << f2D->GetParameter(5) << " +/- " << f2D->GetParError(5) << endl;
+        // cout << "Bkg par2   : " << f2D->GetParameter(6) << " +/- " << f2D->GetParError(6) << endl;
 
         cout << "====================================" << endl;
         cout << endl;
@@ -304,70 +273,6 @@ void doublePhiBackgroundEstimation()
     TFile *fOutput = new TFile(savepath + "/DoublePhiBackgroundTemplates.root", "RECREATE");
     h_N_SS->Write("h_N_SS");
     h_N_nonSS->Write("h_N_nonSS");
-
-    // // ================================================
-    // // 2D FIT using voigtian + pol2 background model
-    // // ================================================
-    // TF2 *f2D = new TF2("f2D", FitFunc2DVoigt, 1.0, 1.04, 1.0, 1.04, 9);
-
-    // // Seed Yields (scaled by bin area)
-    // f2D->SetParameter(0, (0.20 * totalIntegral) * binArea); // N_SS seed
-    // f2D->SetParLimits(0, 0.0, totalIntegral * binArea * 2.0);
-
-    // f2D->SetParameter(1, (0.30 * totalIntegral) * binArea); // N_singlePhi seed
-    // f2D->SetParLimits(1, 0.0, totalIntegral * binArea * 2.0);
-
-    // f2D->SetParameter(2, (0.50 * totalIntegral) * binArea); // N_KKKK seed
-    // f2D->SetParLimits(2, 0.0, totalIntegral * binArea * 2.0);
-
-    // // Voigtian Parameters
-    // f2D->SetParameter(3, 1.019); // Mass peak
-    // f2D->SetParLimits(3, 1.010, 1.030);
-
-    // f2D->SetParameter(4, 0.0012); // Gaussian resolution width
-    // f2D->SetParLimits(4, 0.0001, 0.0100);
-
-    // f2D->FixParameter(5, 0.00425); // Fixed Lorentzian natural width
-
-    // // Pol2 Background Parameters
-    // f2D->SetParameter(6, 1.0);
-    // f2D->SetParameter(7, 1.0);
-    // f2D->SetParameter(8, 1.0);
-
-    // f2D->SetNpx(10000);
-
-    // TVirtualFitter::SetDefaultFitter("Minuit2");
-    // TVirtualFitter::SetMaxIterations(10000);
-    // ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2", "Migrad");
-
-    // // Perform the 2D fit and store result
-    // // TFitResultPtr fitResult = h2D_Mass->Fit(f2D, "0ERMS");
-
-    // // 3. Two Migrad passes, no MINOS
-    // h2D_Mass->Fit(f2D, "Q0ERN");
-
-    // TFitResultPtr fitResult = h2D_Mass->Fit(f2D, "Q0ERSN");
-
-    // int fitStatus = static_cast<int>(fitResult);
-    // int covQual = fitResult.Get() ? fitResult->CovMatrixStatus() : -1;
-    // bool fitValid = fitResult.Get() && fitStatus == 0 && covQual >= 2;
-
-    // // Print fit quality
-    // cout << "========== 2D FIT RESULTS ==========" << endl;
-    // cout << "Fit status        : " << fitStatus << endl;
-    // cout << "Covariance quality: " << covQual << endl;
-    // cout << "Fit valid         : " << boolalpha << fitValid << endl;
-    // cout << "N_SS        : " << f2D->GetParameter(0) << " +/- " << f2D->GetParError(0) << endl;
-    // cout << "N_singlePhi : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
-    // cout << "N_KKKK      : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
-    // cout << "Chi2        : " << f2D->GetChisquare() << endl;
-    // cout << "NDF         : " << f2D->GetNDF() << endl;
-
-    // if (f2D->GetNDF() > 0)
-    // {
-    //     cout << "Chi2 / NDF  : " << f2D->GetChisquare() / f2D->GetNDF() << endl;
-    // }
-    // cout << "====================================" << endl;
 
     //========================================================================
     //=======To visualize 1D phi projections with the fits=================

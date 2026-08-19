@@ -25,6 +25,46 @@ double BWShape(double m, double m0, double gamma)
     return gamma / (TMath::Pi() * 2 * denominator);
 }
 
+// double FitFunc2DBW(double *x, double *p)
+// {
+//     double m1 = x[0];
+//     double m2 = x[1];
+//     double mPDG = 1.0198; // PDG mass of phi meson in GeV/c^2
+
+//     double n_SS = p[0];
+//     double n_nonSS = p[1];
+
+//     double m0 = p[2];
+//     double gamma = p[3];
+
+//     double sig1 = BWShape(m1, m0, gamma);
+//     double sig2 = BWShape(m2, m0, gamma);
+
+//     // //pol3 background function
+//     // auto Bkg = [&](double m)
+//     // {
+//     //     double z = m - mPDG;
+//     //     return p[4] + p[5] * z + p[6] * z * z;
+//     // };
+
+//     // exp(pol3) background function
+//     auto Bkg = [&](double m)
+//     {
+//         double z = m - mPDG;
+//         return pow(m, p[4]) * TMath::Exp(p[5] * m + p[6] * m * m + p[7] * m * m * m);
+//         // return pow(z, p[4]) * TMath::Exp(p[5] * z + p[6] * z * z + p[7] * z * z * z);
+//     };
+
+//     double bkg1 = Bkg(m1);
+//     double bkg2 = Bkg(m2);
+
+//     double shape_SS = sig1 * sig2;
+
+//     // Merge non-SS background shape into a single component
+//     double shape_nonSS = sig1 * bkg2 + bkg1 * sig2 + bkg1 * bkg2;
+//     return n_SS * shape_SS + n_nonSS * shape_nonSS;
+// }
+
 double FitFunc2DBW(double *x, double *p)
 {
     double m1 = x[0];
@@ -32,26 +72,20 @@ double FitFunc2DBW(double *x, double *p)
     double mPDG = 1.0198; // PDG mass of phi meson in GeV/c^2
 
     double n_SS = p[0];
-    double n_nonSS = p[1];
+    double n_SB = p[1];
+    double n_BB = p[2];
 
-    double m0 = p[2];
-    double gamma = p[3];
+    double m0 = p[3];
+    double gamma = p[4];
 
     double sig1 = BWShape(m1, m0, gamma);
     double sig2 = BWShape(m2, m0, gamma);
-
-    // //pol3 background function
-    // auto Bkg = [&](double m)
-    // {
-    //     double z = m - mPDG;
-    //     return p[4] + p[5] * z + p[6] * z * z;
-    // };
 
     // exp(pol3) background function
     auto Bkg = [&](double m)
     {
         double z = m - mPDG;
-        return pow(m, p[4]) * TMath::Exp(p[5] * m + p[6] * m * m + p[7] * m * m * m);
+        return pow(m, p[5]) * TMath::Exp(p[6] * m + p[7] * m * m + p[8] * m * m * m);
         // return pow(z, p[4]) * TMath::Exp(p[5] * z + p[6] * z * z + p[7] * z * z * z);
     };
 
@@ -59,10 +93,10 @@ double FitFunc2DBW(double *x, double *p)
     double bkg2 = Bkg(m2);
 
     double shape_SS = sig1 * sig2;
+    double shape_SB = sig1 * bkg2 + bkg1 * sig2;
+    double shape_BB = bkg1 * bkg2;
 
-    // Merge non-SS background shape into a single component
-    double shape_nonSS = sig1 * bkg2 + bkg1 * sig2 + bkg1 * bkg2;
-    return n_SS * shape_SS + n_nonSS * shape_nonSS;
+    return n_SS * shape_SS + n_SB * shape_SB + n_BB * shape_BB;
 }
 
 void doublePhiTemplateBWpol3()
@@ -88,13 +122,13 @@ void doublePhiTemplateBWpol3()
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
 
     TH3D *h3D = hUnlike->Projection(0, 4, 5, "E");
-    int rebin = 12;
+    int rebin = 15;
 
     int totalBins = h3D->GetNbinsX() / rebin;
     // totalBins = 1;                             // For testing, only process the first bin
     double interval = (2.9 - 2.5) / totalBins; // Calculate the interval for each bin
 
-    double last_pars[8] = {0.0};
+    double last_pars[9] = {0.0};
     bool has_valid_seed = false;
 
     // ================================================
@@ -110,15 +144,15 @@ void doublePhiTemplateBWpol3()
         double massLow = 2.5 + ibin * interval + 0.00001;
         double massHigh = 2.5 + (ibin + 1) * interval - 0.00001;
 
-        // Exclude region 2.65 to 2.73 (signal region)
-        if (massLow > 2.65 && massHigh < 2.73)
-        {
-            h_N_SS->SetBinContent(ibin + 1, 0);
-            h_N_SS->SetBinError(ibin + 1, 0);
-            h_N_nonSS->SetBinContent(ibin + 1, 0);
-            h_N_nonSS->SetBinError(ibin + 1, 0);
-            continue;
-        }
+        // // Exclude region 2.65 to 2.73 (signal region)
+        // if (massLow > 2.65 && massHigh < 2.73)
+        // {
+        //     h_N_SS->SetBinContent(ibin + 1, 0);
+        //     h_N_SS->SetBinError(ibin + 1, 0);
+        //     h_N_nonSS->SetBinContent(ibin + 1, 0);
+        //     h_N_nonSS->SetBinError(ibin + 1, 0);
+        //     continue;
+        // }
 
         int lowInvMassBin = h3D->GetXaxis()->FindBin(massLow);
         int highInvMassBin = h3D->GetXaxis()->FindBin(massHigh);
@@ -140,7 +174,8 @@ void doublePhiTemplateBWpol3()
         // ================================================
         // 2D FIT using BW + pol2 background model
         // ================================================
-        TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 8);
+        // TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 8);
+        TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 9);
 
         // // Seed Yields (scaled by bin area)
         // f2D->SetParameter(0, (0.5 * totalIntegral) * binArea); // N_SS seed
@@ -156,22 +191,25 @@ void doublePhiTemplateBWpol3()
         {
             // Default initial guesses (for bin 0 or after a fit failure)
             f2D->SetParameter(0, (0.5 * totalIntegral) * binArea); // N_SS
-            f2D->SetParameter(1, (0.5 * totalIntegral) * binArea); // N_nonSS
+            // f2D->SetParameter(1, (0.5 * totalIntegral) * binArea); // N_nonSS
 
-            f2D->SetParameter(2, 1.019); // Mass peak
-            f2D->SetParLimits(2, 1.016, 1.025);
-            f2D->SetParameter(3, 0.00425); // Width
-            f2D->SetParLimits(3, 0.003, 0.009);
+            f2D->SetParameter(1, (0.5 * totalIntegral) * binArea); // N_BS
+            f2D->SetParameter(2, (0.5 * totalIntegral) * binArea); // N_BB
 
-            // f2D->SetParameter(4, 1.0); // Pol2 p0
-            // f2D->SetParameter(5, 1.0); // Pol2 p1
-            // f2D->SetParameter(6, 1.0); // Pol2 p2
-            // f2D->SetParameter(7, 1.0); // Pol2 p3
+            f2D->SetParameter(3, 1.019); // Mass peak
+            f2D->SetParLimits(3, 1.016, 1.025);
+            f2D->SetParameter(4, 0.00425); // Width
+            f2D->SetParLimits(4, 0.003, 0.009);
 
-            f2D->FixParameter(4, 166.3); // Pol2 p0
-            f2D->FixParameter(5, 68.4); // Pol2 p1
-            f2D->FixParameter(6, 12.4); // Pol2 p2
-            f2D->FixParameter(7, -77.2); // Pol2 p3
+            // f2D->SetParameter(5,  166.3); // Pol2 p0
+            // f2D->SetParameter(6, 68.4); // Pol2 p1
+            // f2D->SetParameter(7, 12.4); // Pol2 p2
+            // f2D->SetParameter(8, -77.2); // Pol2 p3
+
+            f2D->FixParameter(5, 166.3); // Pol2 p0
+            f2D->FixParameter(6, 68.4);  // Pol2 p1
+            f2D->FixParameter(7, 12.4);  // Pol2 p2
+            f2D->FixParameter(8, -77.2); // Pol2 p3
         }
         // else
         // {
@@ -181,8 +219,8 @@ void doublePhiTemplateBWpol3()
         //         f2D->SetParameter(p, last_pars[p]);
         //     }
         //     // Preserve parameter limits for signal mass & width
-        //     f2D->SetParLimits(2, 1.016, 1.025);
-        //     f2D->SetParLimits(3, 0.003, 0.009);
+        //     f2D->SetParLimits(3, 1.016, 1.025);
+        //     f2D->SetParLimits(4, 0.003, 0.009);
         // }
 
         f2D->SetNpx(1000);
@@ -201,15 +239,24 @@ void doublePhiTemplateBWpol3()
         double n_SS = f2D->GetParameter(0) / binArea;
         double err_SS = f2D->GetParError(0) / binArea;
 
-        double n_nonSS = f2D->GetParameter(1) / binArea;
-        double err_nonSS = f2D->GetParError(1) / binArea;
+        // double n_nonSS = f2D->GetParameter(1) / binArea;
+        // double err_nonSS = f2D->GetParError(1) / binArea;
+
+        double n_SB = f2D->GetParameter(1) / binArea;
+        double err_SB = f2D->GetParError(1) / binArea;
+
+        double n_BB = f2D->GetParameter(2) / binArea;
+        double err_BB = f2D->GetParError(2) / binArea;
 
         // Fill the 1D pair-mass histograms
         h_N_SS->SetBinContent(ibin + 1, n_SS);
         h_N_SS->SetBinError(ibin + 1, err_SS);
 
-        h_N_nonSS->SetBinContent(ibin + 1, n_nonSS);
-        h_N_nonSS->SetBinError(ibin + 1, err_nonSS);
+        // h_N_nonSS->SetBinContent(ibin + 1, n_nonSS);
+        // h_N_nonSS->SetBinError(ibin + 1, err_nonSS);
+
+        h_N_nonSS->SetBinContent(ibin + 1, n_SB + n_BB);
+        h_N_nonSS->SetBinError(ibin + 1, sqrt(err_SB * err_SB + err_BB * err_BB));
 
         int fitStatus = static_cast<int>(fitResult);
         int covQual = fitResult.Get() ? fitResult->CovMatrixStatus() : -1;
@@ -220,7 +267,7 @@ void doublePhiTemplateBWpol3()
         // ================================================
         if (fitValid)
         {
-            for (int p = 0; p < 8; p++)
+            for (int p = 0; p < 9; p++)
             {
                 last_pars[p] = f2D->GetParameter(p);
             }
@@ -233,17 +280,18 @@ void doublePhiTemplateBWpol3()
         cout << "Fit status        : " << fitStatus << endl;
         cout << "Covariance quality: " << covQual << endl;
         cout << "Fit valid         : " << boolalpha << fitValid << endl;
-        cout << "Mass peak   : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
-        cout << "Width       : " << f2D->GetParameter(3) << " +/- " << f2D->GetParError(3) << endl;
+        cout << "Mass peak   : " << f2D->GetParameter(3) << " +/- " << f2D->GetParError(3) << endl;
+        cout << "Width       : " << f2D->GetParameter(4) << " +/- " << f2D->GetParError(4) << endl;
         cout << "N_SS        : " << f2D->GetParameter(0) << " +/- " << f2D->GetParError(0) << endl;
-        cout << "N_nonSS     : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
+        cout << "N_SB     : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
+        cout << "N_BB     : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
         cout << "Chi2        : " << f2D->GetChisquare() << endl;
         cout << "NDF         : " << f2D->GetNDF() << endl;
         cout << "Chi2 / NDF  : " << f2D->GetChisquare() / f2D->GetNDF() << endl;
-        cout << "Bkg par0   : " << f2D->GetParameter(4) << " +/- " << f2D->GetParError(4) << endl;
-        cout << "Bkg par1   : " << f2D->GetParameter(5) << " +/- " << f2D->GetParError(5) << endl;
-        cout << "Bkg par2   : " << f2D->GetParameter(6) << " +/- " << f2D->GetParError(6) << endl;
-        cout << "Bkg par3   : " << f2D->GetParameter(7) << " +/- " << f2D->GetParError(7) << endl;
+        cout << "Bkg par0   : " << f2D->GetParameter(5) << " +/- " << f2D->GetParError(5) << endl;
+        cout << "Bkg par1   : " << f2D->GetParameter(6) << " +/- " << f2D->GetParError(6) << endl;
+        cout << "Bkg par2   : " << f2D->GetParameter(7) << " +/- " << f2D->GetParError(7) << endl;
+        cout << "Bkg par3   : " << f2D->GetParameter(8) << " +/- " << f2D->GetParError(8) << endl;
 
         cout << "====================================" << endl;
         cout << endl;
@@ -273,7 +321,7 @@ void doublePhiTemplateBWpol3()
     h_N_SS->SetMarkerSize(0.8);
     // h_N_SS->SetMinimum(h_N_SS->GetMaximum() * 0.1);
     // h_N_SS->SetMaximum(h_N_SS->GetMaximum() * 1.5);
-    h_N_SS->Draw("E1");
+    h_N_SS->Draw("pe");
     cSS->SaveAs(savepath + "/SS_Template.png");
 
     TCanvas *cNonSS = new TCanvas("cNonSS", "Non-SS Template", 800, 600);
@@ -283,7 +331,7 @@ void doublePhiTemplateBWpol3()
     h_N_nonSS->SetMarkerSize(0.8);
     // h_N_nonSS->SetMinimum(h_N_nonSS->GetMaximum() * 0.1);
     // h_N_nonSS->SetMaximum(h_N_nonSS->GetMaximum() * 1.5);
-    h_N_nonSS->Draw("E1");
+    h_N_nonSS->Draw("pe");
     cNonSS->SaveAs(savepath + "/NonSS_Template.png");
 
     TFile *fOutput = new TFile(savepath + "/DoublePhiBackgroundTemplates.root", "RECREATE");

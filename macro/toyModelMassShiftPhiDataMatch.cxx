@@ -266,7 +266,7 @@ void toyModelMassShiftPhiDataMatch()
     // 5. Plot epsilon correction
     // =========================================================
 
-    TCanvas *c1 = new TCanvas("c1", "Momentum Scale Correction", 800, 600);
+    TCanvas *c1 = new TCanvas("c1", "Momentum Scale Correction", 720, 720);
     SetCanvasStyle(c1, 0.15, 0.03, 0.05, 0.15);
     c1->SetGrid();
 
@@ -288,8 +288,8 @@ void toyModelMassShiftPhiDataMatch()
     // 6. Plot 2025 vs 2026 vs corrected 2025
     // =========================================================
 
-    TCanvas *c2 = new TCanvas("c2", "Phi Mass Closure", 900, 650);
-    SetCanvasStyle(c2, 0.15, 0.03, 0.09, 0.15);
+    TCanvas *c2 = new TCanvas("c2", "Phi Mass Closure", 720, 720);
+    SetCanvasStyle(c2, 0.17, 0.03, 0.09, 0.13);
     c2->SetGrid();
 
     TGraph *g2025 = new TGraph(nBins, ptCenters.data(), m2025.data());
@@ -316,19 +316,23 @@ void toyModelMassShiftPhiDataMatch()
     gCorrected->SetMarkerStyle(24);
     gCorrected->SetMarkerColor(kGreen + 2);
     gCorrected->SetLineColor(kGreen + 2);
-    
+
     g2025->SetMinimum(1.0176);
     g2025->SetMaximum(1.0206);
-    g2025->GetYaxis()->SetTitleOffset(1.8);
+    g2025->GetYaxis()->SetTitleOffset(1.9);
+    g2025->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
     g2025->Draw("APL");
     g2026->Draw("PL SAME");
     gCorrected->Draw("PL SAME");
 
-    TLegend *legend = new TLegend(0.4, 0.20, 0.65, 0.4);
-    
+    TLegend *legend = new TLegend(0.4, 0.20, 0.7, 0.4);
+    legend->SetTextFont(42);
+    legend->SetTextSize(0.03);
+
     legend->AddEntry(g2025, "2025", "lp");
     legend->AddEntry(g2026, "2026", "lp");
     legend->AddEntry(gCorrected, "2025 + #epsilon correction", "lp");
-
     legend->Draw();
+    c2->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiMassClosure.png");
+
 }

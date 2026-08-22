@@ -19,7 +19,7 @@ void comparePhiMass()
     TGraphErrors *gMassVsPt1 = GetHisto<TGraphErrors>(f1, "gMassVsPt");
     TGraphErrors *gMassVsPt2 = GetHisto<TGraphErrors>(f2, "gMassVsPt");
 
-    TFile *f4 = OpenFile((savePath + "/PhiParams25_v2.root").Data());
+    TFile *f4 = OpenFile((savePath + "/PhiParams25_Shifted.root").Data());
     TGraphErrors *gMassVsPt3 = GetHisto<TGraphErrors>(f4, "gMassVsPt");
 
     TCanvas *cMassVsPt = new TCanvas("cMassVsPt", "Mass vs Pt", 720, 720);
@@ -75,12 +75,12 @@ void comparePhiMass()
     legend->AddEntry(gMassVsPt2, "LHC25_skimmed", "p");
     legend->AddEntry(gMassVsPt3, "LHC25_skimmed (Kaon momentum shifted)", "p");
     legend->AddEntry(linePDG, "PDG Mass", "l");
-    
+
     legend->SetTextFont(42);
     legend->SetTextSize(0.03);
     legend->SetBorderSize(0);
     legend->Draw();
-    cMassVsPt->SaveAs("/home/sawan/Documents/PhiMassVsPt_Compare.png");
+    cMassVsPt->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiMassShift/PhiMassVsPt_Compare.png");
 
     double pTBins[13] = {0.5, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 20.0};
     TGraphErrors *gMassShift = new TGraphErrors(gMassVsPt1->GetN());
@@ -111,6 +111,32 @@ void comparePhiMass()
     latex->SetTextSize(0.035);
     latex->DrawLatex(0.25, 0.85, "#Delta M_{#Phi} (LHC25_skimmed - LHC26_skimmed)");
     // cMassShift->SaveAs("PhiMassShiftVsPt.png");
+
+    // TGraphErrors *gPurity25 = GetHisto<TGraphErrors>(f2, "gPurity");
+    // TGraphErrors *gPurity26 = GetHisto<TGraphErrors>(f1, "gPurity");
+    // TCanvas *cPurityVsPt = new TCanvas("cPurityVsPt", "Purity vs Pt", 720, 720);
+    // SetCanvasStyle(cPurityVsPt, 0.15, 0.03, 0.05, 0.15);
+    // SetGraphErrorStyle(gPurity25);
+    // gPurity25->SetMarkerStyle(21);
+    // gPurity25->SetMarkerColor(kBlue);
+    // gPurity25->SetLineColor(kBlue);
+    // gPurity26->SetMarkerStyle(20);
+    // gPurity26->SetMarkerColor(kRed);
+    // gPurity26->SetLineColor(kRed);
+    // gPurity25->Draw("APE");
+    // gPurity26->Draw("PE SAME");
+    // latex->SetTextSize(0.035);
+    // latex->DrawLatex(0.25, 0.88, "Fit function : Voigtian + Pol2");
+    // latex->DrawLatex(0.25, 0.81, "Purity window: #it{M}_{#Phi} #pm 0.005 GeV/#it{c}^{2}");
+
+    // TLegend *legendPurity = new TLegend(0.22, 0.75, 0.85, 0.85);
+    // legendPurity->AddEntry(gPurity26, "LHC26_skimmed", "p");
+    // legendPurity->AddEntry(gPurity25, "LHC25_skimmed", "p");
+    // legendPurity->SetTextFont(42);
+    // legendPurity->SetTextSize(0.03);
+    // legendPurity->SetBorderSize(0);
+    // legendPurity->Draw();
+    // cPurityVsPt->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiMassShift/PhiPurityVsPt_Compare.png");
 }
 
 //==============End of the main code==================

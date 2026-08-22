@@ -44,12 +44,12 @@ double FitFunc2DBW(double *x, double *p)
     double sig1 = BWShape(m1, m0, gamma);
     double sig2 = BWShape(m2, m0, gamma);
 
-    // exp(pol3) background function
+    // pol2 background function
     auto Bkg = [&](double m)
     {
-        double z = m - mPDG;
-        return pow(m, p[6]) * TMath::Exp(p[7] * m + p[8] * m * m + p[9] * m * m * m);
-        // return pow(z, p[4]) * TMath::Exp(p[5] * z + p[6] * z * z + p[7] * z * z * z);
+        // double z = m - mPDG;
+        // return p[6] + p[7] * z + p[8] * z * z;
+        return p[6] + p[7] * m + p[8] * m * m;
     };
 
     double bkg1 = Bkg(m1);
@@ -63,7 +63,7 @@ double FitFunc2DBW(double *x, double *p)
     return n_SS * shape_SS + n_SB * shape_SB + n_BS * shape_BS + n_BB * shape_BB;
 }
 
-void doublePhiTemplateBWExpol3_v2()
+void doublePhiTemplatePol2()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
@@ -95,11 +95,12 @@ void doublePhiTemplateBWExpol3_v2()
     hUnlike->GetAxis(1)->SetRange(0, -1); // Reset pT range for further analysis
 
     // 2. Fix the bin-beating effect by iterating strictly by bin index
-    int rebin = 12;
+    int rebin = 10;
     int startBin = h3D_full->GetXaxis()->FindBin(2.5 + 0.0001);
     int endBin = h3D_full->GetXaxis()->FindBin(2.9 - 0.0001);
     int nBinsInRange = endBin - startBin + 1;
     int totalBins = nBinsInRange / rebin;
+    // totalBins = 1; // For testing, set to 1. Remove this line for full analysis.
 
     // ================================================
     // 1D Histograms for SS and Non-SS Yields
@@ -126,30 +127,23 @@ void doublePhiTemplateBWExpol3_v2()
         // 2D FIT using BW + Expol background model
         // ================================================
         // FIX: Increased parameter count from 9 to 16
-        TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 10);
+        TF2 *f2D = new TF2(Form("f2D_bin%d", ibin), FitFunc2DBW, 1.0, 1.04, 1.0, 1.04, 9);
 
         f2D->SetParameter(0, 0.006); // N_SS
         f2D->SetParameter(1, 0.001); // N_BS
         f2D->SetParameter(2, 0.001); // N_SB
         f2D->SetParameter(3, 0.002); // N_BB
 
-        // f2D->SetParLimits(0, 0, 1e9);
-        // f2D->SetParLimits(1, 0, 1e9);
-        // f2D->SetParLimits(2, 0, 1e9);
-        // f2D->SetParLimits(3, 0, 1e9);
-
         f2D->FixParameter(4, 1.01983);  // Mass peak
         f2D->FixParameter(5, 0.007077); // Width
 
-        // f2D->SetParameter(6,  166.3); // Pol2 p0
-        // f2D->SetParameter(7, 68.4); // Pol2 p1
-        // f2D->SetParameter(8, 12.4); // Pol2 p2
-        // f2D->SetParameter(9, -77.2); // Pol2 p3
+        // f2D->SetParameter(6, -6.5e6); // Pol2 p0
+        // f2D->SetParameter(7, 218977);  // Pol2 p1
+        // f2D->SetParameter(8, 6.7e6);  // Pol2 p2
 
-        f2D->FixParameter(6, 166.3); // Pol2 p0
-        f2D->FixParameter(7, 68.4);  // Pol2 p1
-        f2D->FixParameter(8, 12.4);  // Pol2 p2
-        f2D->FixParameter(9, -77.2); // Pol2 p3
+        f2D->FixParameter(6, -6.5e6); // Pol2 p0
+        f2D->FixParameter(7, 218977); // Pol2 p1
+        f2D->FixParameter(8, 6.7e6);  // Pol2 p2
 
         f2D->SetNpx(1000); // Reduced for speed, increase if fit drawing looks jagged
         f2D->SetNpy(1000);
@@ -180,7 +174,6 @@ void doublePhiTemplateBWExpol3_v2()
         cout << "Bkg par0   : " << f2D->GetParameter(6) << " +/- " << f2D->GetParError(6) << endl;
         cout << "Bkg par1   : " << f2D->GetParameter(7) << " +/- " << f2D->GetParError(7) << endl;
         cout << "Bkg par2   : " << f2D->GetParameter(8) << " +/- " << f2D->GetParError(8) << endl;
-        cout << "Bkg par3   : " << f2D->GetParameter(9) << " +/- " << f2D->GetParError(9) << endl;
 
         cout << "====================================" << endl;
         cout << endl;
@@ -210,16 +203,12 @@ void doublePhiTemplateBWExpol3_v2()
                 double m2 = h2D_cut->GetXaxis()->GetBinCenter(ix);
                 double m1 = h2D_cut->GetYaxis()->GetBinCenter(iy);
 
-                // // Compute shapes using full-fit parameters
-                // double S1 = BWShape(m1, par[4], par[5]);
-                // double S2 = BWShape(m2, par[6], par[7]);
-                // double B1 = std::max(0.0, ExpolBkg(m1, par[8], par[9], par[10], par[11]));
-                // double B2 = std::max(0.0, ExpolBkg(m2, par[12], par[13], par[14], par[15]));
-
                 double S1 = BWShape(m1, f2D->GetParameter(4), f2D->GetParameter(5));
                 double S2 = BWShape(m2, f2D->GetParameter(4), f2D->GetParameter(5));
-                double B1 = std::max(0.0, pow(m1, f2D->GetParameter(6)) * TMath::Exp(f2D->GetParameter(7) * m1 + f2D->GetParameter(8) * m1 * m1 + f2D->GetParameter(9) * m1 * m1 * m1));
-                double B2 = std::max(0.0, pow(m2, f2D->GetParameter(6)) * TMath::Exp(f2D->GetParameter(7) * m2 + f2D->GetParameter(8) * m2 * m2 + f2D->GetParameter(9) * m2 * m2 * m2));
+                // double z1 = m1 - 1.0198;
+                // double z2 = m2 - 1.0198;
+                double B1 = std::max(0.0, f2D->GetParameter(6) + f2D->GetParameter(7) * m1 + f2D->GetParameter(8) * m1 * m1);
+                double B2 = std::max(0.0, f2D->GetParameter(6) + f2D->GetParameter(7) * m2 + f2D->GetParameter(8) * m2 * m2);
 
                 double valSS = f2D->GetParameter(0) * S1 * S2;
                 double valSB = f2D->GetParameter(1) * S1 * B2;
@@ -253,7 +242,7 @@ void doublePhiTemplateBWExpol3_v2()
         h2D_Mass->GetYaxis()->SetRangeUser(1.0, 1.04);
         h2D_Mass->Draw("colz");
         f2D->Draw("SAME");
-        c2D->SaveAs(savepath + Form("/2DFits/2D_Mass_bin%d.png", ibin));
+        c2D->SaveAs(savepath + Form("/2DFits/Pol2/2D_Mass_bin%d.png", ibin));
 
         delete c2D;
         delete f2D;
@@ -268,7 +257,7 @@ void doublePhiTemplateBWExpol3_v2()
     h_N_SS->SetMarkerStyle(20);
     h_N_SS->SetMarkerSize(0.8);
     h_N_SS->Draw("pe");
-    cSS->SaveAs(savepath + "/SS_Template.png");
+    cSS->SaveAs(savepath + "/SS_Template_pol2.png");
 
     TCanvas *cNonSS = new TCanvas("cNonSS", "Non-SS Template", 720, 720);
     SetCanvasStyle(cNonSS, 0.15, 0.05, 0.08, 0.12);
@@ -277,7 +266,7 @@ void doublePhiTemplateBWExpol3_v2()
     h_N_nonSS->SetMarkerSize(0.8);
     h_N_nonSS->GetYaxis()->SetRangeUser(1000, 2300);
     h_N_nonSS->Draw("pe");
-    cNonSS->SaveAs(savepath + "/NonSS_Template.png");
+    cNonSS->SaveAs(savepath + "/NonSS_Template_pol2.png");
 
     TCanvas *cTotal = new TCanvas("cTotal", "Total Yield", 720, 720);
     SetCanvasStyle(cTotal, 0.15, 0.05, 0.08, 0.12);
@@ -285,9 +274,9 @@ void doublePhiTemplateBWExpol3_v2()
     h_N_Total->SetMarkerStyle(20);
     h_N_Total->SetMarkerSize(0.8);
     h_N_Total->Draw("pe");
-    cTotal->SaveAs(savepath + "/Total_Yield.png");
+    cTotal->SaveAs(savepath + "/Total_Yield_pol2.png");
 
-    TFile *fOutput = new TFile(savepath + "/DoublePhiBackgroundTemplates.root", "RECREATE");
+    TFile *fOutput = new TFile(savepath + "/PhiPhiBkgTemplate_pol2.root", "RECREATE");
     h_N_SS->Write("h_N_SS");
     h_N_nonSS->Write("h_N_nonSS");
     fOutput->Close();

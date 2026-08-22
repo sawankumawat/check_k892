@@ -138,7 +138,7 @@ void doublePhiSimpleOpti8Voigt()
     SetCanvasStyle(cBkg, 0.15, 0.03, 0.05, 0.15);
     hBkg->Draw("pe");
 
-    const double FIT_MIN = 2.4;
+    const double FIT_MIN = 2.41;
     const double FIT_MAX = 2.95;
 
     TF1 *fitBkg = new TF1("fitBkg", expPol3, FIT_MIN, FIT_MAX, 4);
@@ -203,7 +203,7 @@ void doublePhiSimpleOpti8Voigt()
     // cInvMass->SaveAs(savepath + "/InvariantMassWithoutFit" + suffix + ".png");
 
     TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", VoigtExpol, FIT_MIN, FIT_MAX, 8);
-    fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
+    fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Resolution", "Width", "p0", "p1", "p2", "p3");
     fInitialCombinedFit->SetParameter(0, 100.0); // Signal yield
     fInitialCombinedFit->SetParameter(1, 2.70);  // Mass
     fInitialCombinedFit->FixParameter(2, 0.012);  // Gaussian Width (Detector Resolution)
@@ -214,9 +214,9 @@ void doublePhiSimpleOpti8Voigt()
     fInitialCombinedFit->SetParameter(6, fitBkg->GetParameter(2));
     fInitialCombinedFit->SetParameter(7, fitBkg->GetParameter(3));
 
-    fInitialCombinedFit->SetParLimits(0, 0.0, 1.0e6);
+    fInitialCombinedFit->SetParLimits(0, 0.0, 1.0e4);
     fInitialCombinedFit->SetParLimits(1, 2.65, 2.75);
-    fInitialCombinedFit->SetParLimits(3, 0.002, 0.05);
+    fInitialCombinedFit->SetParLimits(3, 0.012, 0.05);
     fInitialCombinedFit->SetLineStyle(2);
     fInitialCombinedFit->SetLineColor(kMagenta);
     hInvMass->Fit(fInitialCombinedFit, "REBMS");
@@ -233,10 +233,10 @@ void doublePhiSimpleOpti8Voigt()
     fitFunc->FixParameter(2, fInitialCombinedFit->GetParameter(2)); // Gaussian Width
     fitFunc->SetParameter(3, fInitialCombinedFit->GetParameter(3)); // Lorentzian Width
 
-    fitFunc->SetParameter(4, fInitialCombinedFit->GetParameter(4));
-    fitFunc->SetParameter(5, fInitialCombinedFit->GetParameter(5));
-    fitFunc->SetParameter(6, fInitialCombinedFit->GetParameter(6));
-    fitFunc->SetParameter(7, fInitialCombinedFit->GetParameter(7));
+    fitFunc->FixParameter(4, fInitialCombinedFit->GetParameter(4));
+    fitFunc->FixParameter(5, fInitialCombinedFit->GetParameter(5));
+    fitFunc->FixParameter(6, fInitialCombinedFit->GetParameter(6));
+    fitFunc->FixParameter(7, fInitialCombinedFit->GetParameter(7));
 
     // fitFunc->FixParameter(4, -299.779);
     // fitFunc->FixParameter(5, 63.05);
@@ -245,9 +245,9 @@ void doublePhiSimpleOpti8Voigt()
 
     fitFunc->SetParLimits(0, 0.0, 1.0e3);
     fitFunc->SetParLimits(1, 2.65, 2.75);
-    fitFunc->SetParLimits(3, 0.002, 0.05);
+    fitFunc->SetParLimits(3, 0.005, 0.05);
 
-    TFitResultPtr fitResultSB = hInvMass->Fit(fitFunc, "RLS");
+    TFitResultPtr fitResultSB = hInvMass->Fit(fitFunc, "RIMELS");
 
     if (fitResultSB.Get() == nullptr)
     {

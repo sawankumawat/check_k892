@@ -18,8 +18,11 @@ void fitPhiPhiTemplate()
     gStyle->SetOptStat(0);
 
     // Paths
-    TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/DoublePhiBackgroundTemplates.root";
+    TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/PhiPhiBkgTemplate_BW.root";
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+    TString suffix = "BWExpol3";
+    // TString suffix = "Voigt";
+    // TString suffix = "pol2";
 
     // Open input ROOT file
     TFile *fInput = OpenFile(inFilePath.Data());
@@ -85,9 +88,33 @@ void fitPhiPhiTemplate()
     f_nonSS_template->SetParameters(f_nonSS_sideband->GetParameters());
 
     // Plot Step 1 Results
-    TCanvas *cTemplates = new TCanvas("cTemplates", "Background Templates", 1280, 480);
+    TCanvas *cTemplates = new TCanvas("cTemplates", "Background Templates", 1280, 620);
     SetCanvasStyle(cTemplates, 0.15, 0.03, 0.05, 0.15);
     cTemplates->Divide(2, 1);
+
+    // Left sideband SS
+    TF1 *f_SS_left = new TF1("f_SS_left", chebyshev3_full, 2.5, excLow, 4);
+    f_SS_left->SetParameters(f_SS_sideband->GetParameters());
+    f_SS_left->SetLineColor(kRed);
+    f_SS_left->SetLineWidth(3);
+
+    // Right sideband SS
+    TF1 *f_SS_right = new TF1("f_SS_right", chebyshev3_full, excHigh, 2.9, 4);
+    f_SS_right->SetParameters(f_SS_sideband->GetParameters());
+    f_SS_right->SetLineColor(kRed);
+    f_SS_right->SetLineWidth(3);
+
+    // Left sideband non-SS
+    TF1 *f_nonSS_left = new TF1("f_nonSS_left", chebyshev3_full, 2.5, excLow, 4);
+    f_nonSS_left->SetParameters(f_nonSS_sideband->GetParameters());
+    f_nonSS_left->SetLineColor(kRed);
+    f_nonSS_left->SetLineWidth(3);
+
+    // Right sideband non-SS
+    TF1 *f_nonSS_right = new TF1("f_nonSS_right", chebyshev3_full, excHigh, 2.9, 4);
+    f_nonSS_right->SetParameters(f_nonSS_sideband->GetParameters());
+    f_nonSS_right->SetLineColor(kRed);
+    f_nonSS_right->SetLineWidth(3);
 
     cTemplates->cd(1);
     gPad->SetLeftMargin(0.15);
@@ -101,11 +128,22 @@ void fitPhiPhiTemplate()
     h_N_SS->SetTitle("SS template (Chebyshev-3)");
     h_N_SS->Draw("PE");
     f_SS_sideband->SetLineColor(kRed);
-    f_SS_sideband->SetLineWidth(2);
-    f_SS_sideband->Draw("SAME");
+    f_SS_sideband->SetLineWidth(3);
+    // f_SS_sideband->Draw("SAME");
+    f_SS_left->Draw("SAME");
+    f_SS_right->Draw("SAME");
     f_SS_template->SetLineStyle(2); // Dotted line interpolation
     f_SS_template->SetLineColor(kRed);
     f_SS_template->Draw("SAME");
+
+    TLegend *leg = new TLegend(0.35, 0.75, 0.88, 0.88);
+    leg->SetBorderSize(0);
+    leg->SetFillStyle(0);
+    leg->SetTextSize(0.033);
+    leg->AddEntry(h_N_SS, "Extracted N_{SS}", "p");
+    leg->AddEntry(f_SS_sideband, "Chebyshev-3 fit (side-bands)", "l");
+    leg->AddEntry(f_SS_template, "Interpolated in excluded window", "l");
+    leg->Draw();
 
     cTemplates->cd(2);
     gPad->SetLeftMargin(0.15);
@@ -119,37 +157,66 @@ void fitPhiPhiTemplate()
     h_N_nonSS->SetTitle("Non-SS template (Chebyshev-3)");
     h_N_nonSS->Draw("PE");
     f_nonSS_sideband->SetLineColor(kRed);
-    f_nonSS_sideband->SetLineWidth(2);
-    f_nonSS_sideband->Draw("SAME");
+    f_nonSS_sideband->SetLineWidth(3);
+    // f_nonSS_sideband->Draw("SAME");
+    f_nonSS_left->Draw("SAME");
+    f_nonSS_right->Draw("SAME");
     f_nonSS_template->SetLineStyle(2);
     f_nonSS_template->SetLineColor(kRed);
     f_nonSS_template->Draw("SAME");
 
-    cTemplates->SaveAs(savepath + "/Background_Templates.png");
+    TLegend *leg3 = new TLegend(0.5, 0.75, 0.88, 0.88);
+    leg3->SetBorderSize(0);
+    leg3->SetFillStyle(0);
+    leg3->SetTextSize(0.033);
+    leg3->AddEntry(h_N_nonSS, "Extracted N_{non-SS}", "p");
+    leg3->Draw();
+
+    cTemplates->SaveAs(savepath + "/Bkg_Templates=" + suffix + ".png");
 
     // =========================================================================
     // STEP 2: Combine Templates to Form Total Background Fit
     // =========================================================================
 
-    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_MorePhiBins.root");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassDoublePhi");
+    // TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_MorePhiBins.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassDoublePhi");
+
+    // int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
+    // int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
+
+    // int lowDeltaM = hUnlike->GetAxis(6)->FindBin(0.0 + 0.00001);
+    // int highDeltaM = hUnlike->GetAxis(6)->FindBin(0.005 - 0.00001);
+
+    // hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
+    // hUnlike->GetAxis(6)->SetRange(lowDeltaM, highDeltaM);
+    // TH1D *hInvMass = hUnlike->Projection(0, "E");
+    // hInvMass->Rebin(8);
+    // hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
+
+    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiRefitted");
+    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
 
     int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
 
-    int lowDeltaM = hUnlike->GetAxis(6)->FindBin(0.0 + 0.00001);
-    int highDeltaM = hUnlike->GetAxis(6)->FindBin(0.005 - 0.00001);
+    int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
+    int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
+
+    int lowChi2 = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
+    int highChi2 = hUnlike->GetAxis(3)->FindBin(25.0 - 0.00001);
+
+    int lowFitProb = hUnlike->GetAxis(4)->FindBin(0.3 + 0.00001);
+    int highFitProb = hUnlike->GetAxis(4)->FindBin(2.0 - 0.00001);
 
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
-    hUnlike->GetAxis(6)->SetRange(lowDeltaM, highDeltaM);
-    TH1D *hInvMass = hUnlike->Projection(0, "E");
-    hInvMass->Rebin(8);
-    hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
+    hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
+    hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
+    hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
 
-    // Construct Total Mass spectrum (Sum of extracted SS and non-SS yields as pseudo-data)
-    // TH1D *h_Data = (TH1D *)h_N_SS->Clone("h_Data");
-    // h_Data->Add(h_N_nonSS);
-    // h_Data->SetTitle("Background Template Fit;M_{#phi#phi} (GeV/c^{2});Counts");
+    TH1D *hInvMass = hUnlike->Projection(0, "E");
+    hInvMass->Rebin(6);
+    hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
 
     TH1D *h_Data = (TH1D *)hInvMass->Clone("h_Data");
     TH1D *h_Data_NoPeak = (TH1D *)hInvMass->Clone("h_Data_NoPeak");
@@ -199,7 +266,7 @@ void fitPhiPhiTemplate()
     TF1 *f_TotalBkg_Full = new TF1("f_TotalBkg_Full", total_bkg_full_func, 2.5, 2.9, 2);
     f_TotalBkg_Full->SetParameters(f_TotalBkg_Sideband->GetParameters());
     f_TotalBkg_Full->SetLineColor(kRed);
-    f_TotalBkg_Full->SetLineWidth(2);
+    f_TotalBkg_Full->SetLineWidth(3);
 
     // Individual component components for visualization
     TF1 *f_SS_Component = new TF1("f_SS_Component", [f_SS_template](double *x, double *p)
@@ -219,8 +286,8 @@ void fitPhiPhiTemplate()
     SetCanvasStyle(cBkgFit, 0.15, 0.03, 0.05, 0.15);
     h_Data->SetMarkerStyle(20);
     SetHistoQA(h_Data);
-    h_Data->SetMinimum(980);
-    h_Data->SetMaximum(4300);
+    h_Data->SetMinimum(480);
+    h_Data->SetMaximum(3300);
     h_Data->GetXaxis()->SetTitle("M_{#phi#phi} (GeV/#it{c}^{2})");
     h_Data->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", h_Data->GetBinWidth(1) * 1000));
     h_Data->Draw("PE");
@@ -231,16 +298,16 @@ void fitPhiPhiTemplate()
     f_nonSS_Component->SetLineWidth(3);
     f_nonSS_Component->Draw("SAME");
 
-    TLegend *leg = new TLegend(0.55, 0.73, 0.88, 0.92);
-    leg->AddEntry(h_Data, "Data", "pe");
-    leg->AddEntry(f_TotalBkg_Full, "Total background", "l");
-    leg->AddEntry(f_SS_Component, "SS shape", "l");
-    leg->AddEntry(f_nonSS_Component, "non-SS background", "l");
-    leg->SetBorderSize(0);
-    leg->SetFillStyle(0);
-    leg->Draw();
+    TLegend *leg2 = new TLegend(0.55, 0.73, 0.88, 0.92);
+    leg2->AddEntry(h_Data, "Data", "pe");
+    leg2->AddEntry(f_TotalBkg_Full, "Total background", "l");
+    leg2->AddEntry(f_SS_Component, "SS shape", "l");
+    leg2->AddEntry(f_nonSS_Component, "non-SS background", "l");
+    leg2->SetBorderSize(0);
+    leg2->SetFillStyle(0);
+    leg2->Draw();
 
-    cBkgFit->SaveAs(savepath + "/Total_Background_Fit.png");
+    cBkgFit->SaveAs(savepath + "/Bkg_Fit=" + suffix + ".png");
 
     // Save fitted background models for Step 3 signal extraction
     TFile *fOut = new TFile(savepath + "/Step1_Step2_Background_Results.root", "RECREATE");
@@ -282,7 +349,8 @@ void fitPhiPhiTemplate()
         double gamma = p[2];
 
         double denominator = (m - m0) * (m - m0) + (gamma * gamma) / 4.0;
-        return (N * (gamma / 2.0)) / denominator;
+        double numerator = N * gamma / (2 * TMath::Pi());
+        return numerator / denominator;
     };
 
     // Fit function range focused around the signal peak region
@@ -300,7 +368,7 @@ void fitPhiPhiTemplate()
 
     // Fit signal peak
     SetHistoQA(h_Subtracted);
-    h_Subtracted->GetYaxis()->SetRangeUser(-230, 290);
+    h_Subtracted->GetYaxis()->SetRangeUser(-230, 390);
     h_Subtracted->Fit(f_Signal, "R0Q");
 
     // 3. Extract parameters and statistical significance
@@ -331,17 +399,25 @@ void fitPhiPhiTemplate()
     f_Zero->Draw("SAME");
 
     // Display extracted fit parameter text overlay
-    TLegend *legSig = new TLegend(0.15, 0.76, 0.5, 0.91);
+    TLegend *legSig = new TLegend(0.11, 0.72, 0.4, 0.91);
     legSig->SetBorderSize(0);
     legSig->SetFillStyle(0);
     legSig->SetTextSize(0.032);
-    // legSig->AddEntry((TObject*)0, Form("N_{X} = %.1f #pm %.1f", yield, yieldErr), "");
+    legSig->AddEntry((TObject *)0, Form("N_{X} = %.1f #pm %.1f", yield, yieldErr), "");
     legSig->AddEntry((TObject *)0, Form("M_{X} = %.4f #pm %.4f", mass, massErr), "");
     legSig->AddEntry((TObject *)0, Form("#Gamma_{X} = %.4f #pm %.4f", width, widthErr), "");
-    legSig->AddEntry((TObject*)0, Form("yield / error = %.2f", significance), "");
+    legSig->AddEntry((TObject *)0, Form("Stat. Significance = %.2f", significance), "");
     legSig->Draw();
 
-    cSignal->SaveAs(savepath + "/Signal_Extraction.png");
+    TLegend *legSig2 = new TLegend(0.55, 0.78, 0.88, 0.91);
+    legSig2->SetBorderSize(0);
+    legSig2->SetFillStyle(0);
+    legSig2->SetTextSize(0.032);
+    legSig2->AddEntry(h_Subtracted, "Data - Background", "pe");
+    legSig2->AddEntry(f_Signal, "Breit-Wigner Fit", "l");
+    legSig2->Draw();
+
+    cSignal->SaveAs(savepath + "/TetraquarkPeakFit=" + suffix + ".png");
 
     // Output values to terminal
     std::cout << "\n========== STEP 3 FIT RESULTS ==========" << std::endl;

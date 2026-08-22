@@ -47,8 +47,8 @@ void doublePhiSimpleOpti8()
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit";
-    string suffix = "26_fit2p5_2p9";
-    int rebinFactor = 6;
+    string suffix = "26_fit2p4_2p95";
+    int rebinFactor = 8;
 
     ////======Pair=========
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processopti5/AnalysisResults.root");
@@ -93,7 +93,7 @@ void doublePhiSimpleOpti8()
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
     hInvMass->Rebin(rebinFactor);
-    hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
+    hInvMass->GetXaxis()->SetRangeUser(2.4, 2.95);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
 
@@ -113,7 +113,7 @@ void doublePhiSimpleOpti8()
     TH1D *hInvMassBkg = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMassBkg);
     hInvMassBkg->Rebin(rebinFactor);
-    hInvMassBkg->GetXaxis()->SetRangeUser(2.5, 2.9);
+    hInvMassBkg->GetXaxis()->SetRangeUser(2.4, 2.95);
 
     // TH1D *h1DRot = hRot->Projection(0, "E");
     // h1DRot->Rebin(rebinFactor);
@@ -138,8 +138,8 @@ void doublePhiSimpleOpti8()
     SetCanvasStyle(cBkg, 0.15, 0.03, 0.05, 0.15);
     hBkg->Draw("pe");
 
-    const double FIT_MIN = 2.5;
-    const double FIT_MAX = 2.9;
+    const double FIT_MIN = 2.41;
+    const double FIT_MAX = 2.95;
 
     TF1 *fitBkg = new TF1("fitBkg", expPol3, FIT_MIN, FIT_MAX, 4);
     fitBkg->SetParNames("p0", "p1", "p2", "p3");
@@ -148,7 +148,7 @@ void doublePhiSimpleOpti8()
 
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
-    hInvMass->GetYaxis()->SetRangeUser(1.4e3, 3.3e3);
+    // hInvMass->GetYaxis()->SetRangeUser(1.4e3, 3.3e3);
     hInvMass->Draw("pe");
 
     // TLine *lineat2p65 = new TLine(2.65, 971, 2.65, 2058);
@@ -191,16 +191,17 @@ void doublePhiSimpleOpti8()
     hInvMassBkg->SetMarkerColor(kRed);
     // hInvMassBkg->Draw("HISTe same");
 
-    // TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
-    // legTemp->SetBorderSize(0);
-    // legTemp->SetFillStyle(0);
-    // legTemp->SetTextFont(42);
-    // legTemp->SetTextSize(0.03);
-    // legTemp->AddEntry(hInvMass, "#Delta#it{M}_{#phi} < 0.005", "pe");
+    TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
+    legTemp->SetBorderSize(0);
+    legTemp->SetFillStyle(0);
+    legTemp->SetTextFont(42);
+    legTemp->SetTextSize(0.03);
+    legTemp->AddEntry((TObject *)0, "#Delta#it{M}_{#phi} < 0.005", "");
+    legTemp->AddEntry((TObject *)0, "#it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "");
     // legTemp->AddEntry(hInvMassBkg, "#Delta#it{M}_{#phi} #geq 0.005", "l");
     // legTemp->AddEntry((TObject *)0, "Normalized in 2.85 < #it{M}_{#phi#phi} < 2.90 GeV/#it{c}^{2}", "");
-    // legTemp->Draw();
-    // cInvMass->SaveAs(savepath + "/InvariantMassWithoutFit" + suffix + ".png");
+    legTemp->Draw();
+    cInvMass->SaveAs(savepath + "/InvariantMassWithoutFit.png");
 
     TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", BWExpol, FIT_MIN, FIT_MAX, 7);
     fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
@@ -231,10 +232,10 @@ void doublePhiSimpleOpti8()
     fitFunc->SetParameter(1, fInitialCombinedFit->GetParameter(1)); // Mass
     fitFunc->SetParameter(2, fInitialCombinedFit->GetParameter(2)); // Width
 
-    fitFunc->SetParameter(3, fInitialCombinedFit->GetParameter(3));
-    fitFunc->SetParameter(4, fInitialCombinedFit->GetParameter(4));
-    fitFunc->SetParameter(5, fInitialCombinedFit->GetParameter(5));
-    fitFunc->SetParameter(6, fInitialCombinedFit->GetParameter(6));
+    fitFunc->FixParameter(3, fInitialCombinedFit->GetParameter(3));
+    fitFunc->FixParameter(4, fInitialCombinedFit->GetParameter(4));
+    fitFunc->FixParameter(5, fInitialCombinedFit->GetParameter(5));
+    fitFunc->FixParameter(6, fInitialCombinedFit->GetParameter(6));
 
     // fitFunc->FixParameter(3, -299.779);
     // fitFunc->FixParameter(4, 63.05);
@@ -362,13 +363,13 @@ void doublePhiSimpleOpti8()
     legend->AddEntry(fitSignal, "Breit-Wigner", "l");
     legend->Draw();
 
-    latex->DrawLatex(0.2, 0.45, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
-    latex->DrawLatex(0.2, 0.40, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
-    // latex->DrawLatex(0.2, 0.35, Form("N_{sig} = %.1f #pm %.1f", signalYield, signalYieldErr));
-    latex->DrawLatex(0.2, 0.35, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
-    latex->DrawLatex(0.2, 0.30, Form("p-value = %.3e", pValue));
-    latex->DrawLatex(0.2, 0.25, Form("Significance (Z) = %.2f #sigma", significance));
     latex->DrawLatex(0.25, 0.85, "LHC26_pass1_skimmed");
+    latex->DrawLatex(0.2, 0.42, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
+    latex->DrawLatex(0.2, 0.37, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
+    // latex->DrawLatex(0.2, 0.35, Form("N_{sig} = %.1f #pm %.1f", signalYield, signalYieldErr));
+    latex->DrawLatex(0.2, 0.32, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
+    latex->DrawLatex(0.2, 0.27, Form("p-value = %.3e", pValue));
+    latex->DrawLatex(0.2, 0.22, Form("Significance (Z) = %.2f #sigma", significance));
     cInvMass->SaveAs(savepath + "/InvariantMassWithFit" + suffix + ".png");
 
     

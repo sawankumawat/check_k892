@@ -1,13 +1,13 @@
 {
   "doublephimeson": {
     "cfgApplyKaonMomentumCorrection": true,
-    "cfgMomCorrP0Percent": 0.8070297818,
-    "cfgMomCorrP1Percent": 0.4731985587,
-    "cfgMomCorrP2GeV": 1.640496614,
-    "cfgMomCorrP3GeV": 0.2835206394,
-    "cfgMomCorrP4PercentPerGeV": -0.0239206051,
-    "cfgMomCorrP5PercentPerGeV2": 0.003470669042,
-    "cfgMomCorrPtMin": 0.8,
-    "cfgMomCorrPtMax": 20
+    "cfgMomCorrP0Percent": 1.43594321e-11,
+    "cfgMomCorrP1Percent": 1.033027775,
+    "cfgMomCorrP2GeV": 0.9633136922,
+    "cfgMomCorrP3GeV": 0.3668159179,
+    "cfgMomCorrP4PercentPerGeV": 0.03206038126,
+    "cfgMomCorrP5PercentPerGeV2": 1.304111441e-15,
+    "cfgMomCorrPtMin": 0.5,
+    "cfgMomCorrPtMax": 30
   }
 }

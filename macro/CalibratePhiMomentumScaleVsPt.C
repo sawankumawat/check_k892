@@ -1509,13 +1509,11 @@ namespace PhiPtCalibration
 
 void CalibratePhiMomentumScaleVsPt(
     const char *file2026Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_PID2003.root",
-    const char *file2025Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/LHC25/AnalysisResults_LHC25_PID2003.root",
-    // const char *file2026Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_LHC26_PID2003.root",
-    // const char *file2025Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults_LHC25_PID2003.root",
+    const char *file2025Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/LHC25/AnalysisResults25_aiam.root",
     const char *histogramPathOrName = "hPhiMassVsPt",
     const char *outputDirectoryName = "PhiMomentumScaleVsPt",
-    const char *ptBins = "0.8,1,1.2,1.6,2,2.5,3,4,5,6,7,8,9,10,12,14,16,20",
-    long long toyAcceptedEventsPerBin = 150000,
+    const char *ptBins = "0.5,0.8,1.2,1.6,2.0,2.5,3.0,4.0,5.0,6.0,8.0,10.0,12.0,15.0,20.0,30.0",
+    long long toyAcceptedEventsPerBin = 15000, //150000
     double fitLow = 1.000,
     double fitHigh = 1.03899,
     double yMax = 0.8,
@@ -1529,8 +1527,8 @@ void CalibratePhiMomentumScaleVsPt(
     double xShapeMassHigh = 2.8,
     double xPtMin = 9.0,
     double xMass = 2.690,
-    long long phiResolutionToyEventsPerPoint = 50000,
-    long long xResolutionAcceptedEvents = 300000,
+    long long phiResolutionToyEventsPerPoint = 5000, //50000
+    long long xResolutionAcceptedEvents = 30000, //300000
     double xRapidityGenerationMax = 0.8,
     unsigned int xResolutionSeed = 735193U,
     double xDeltaMassMax = 0.005,

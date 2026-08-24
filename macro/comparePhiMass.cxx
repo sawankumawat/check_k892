@@ -7,10 +7,11 @@ T *GetHisto(TFile *f, const std::string &name);
 
 void comparePhiMass()
 {
-    TString savePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests";
-    TFile *f1 = OpenFile((savePath + "/PhiParams26.root").Data());
-    TFile *f2 = OpenFile((savePath + "/PhiParams25.root").Data());
+    TString savePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiInvMass";
+    TFile *f1 = OpenFile((savePath + "/PhiParams26_latest.root").Data());
+    // TFile *f2 = OpenFile((savePath + "/PhiParams25.root").Data());
     // TFile *f2 = OpenFile((savePath + "/PhiParams25_Shifted.root").Data());
+    TFile *f2 = OpenFile((savePath + "/PhiParams25_aiam.root").Data());
 
     TFile *f3 = OpenFile("PhiMomentumScaleVsPt/PhiMomentumScaleVsPt.root");
     TGraphErrors *gPhiMassSBcode2025 = GetHisto<TGraphErrors>(f3, "gPhiMass2025");
@@ -19,7 +20,7 @@ void comparePhiMass()
     TGraphErrors *gMassVsPt1 = GetHisto<TGraphErrors>(f1, "gMassVsPt");
     TGraphErrors *gMassVsPt2 = GetHisto<TGraphErrors>(f2, "gMassVsPt");
 
-    TFile *f4 = OpenFile((savePath + "/PhiParams25_Shifted.root").Data());
+    TFile *f4 = OpenFile((savePath + "/PhiParams25_aiamShifted.root").Data());
     TGraphErrors *gMassVsPt3 = GetHisto<TGraphErrors>(f4, "gMassVsPt");
 
     TCanvas *cMassVsPt = new TCanvas("cMassVsPt", "Mass vs Pt", 720, 720);
@@ -82,7 +83,6 @@ void comparePhiMass()
     legend->Draw();
     cMassVsPt->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiMassShift/PhiMassVsPt_Compare.png");
 
-    double pTBins[13] = {0.5, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 20.0};
     TGraphErrors *gMassShift = new TGraphErrors(gMassVsPt1->GetN());
     for (int i = 0; i < gMassVsPt1->GetN(); i++)
     {
@@ -91,9 +91,8 @@ void comparePhiMass()
         gMassVsPt2->GetPoint(i, x2, y2);
         gMassShift->SetPoint(i, x1, y1 - y2);
         gMassShift->SetPointError(i, 0, sqrt(pow(gMassVsPt1->GetErrorY(i), 2) + pow(gMassVsPt2->GetErrorY(i), 2)));
-        cout << "Pt range: " << pTBins[i] << " - " << pTBins[i + 1]
-             << ", Mass (2026): " << y1 << ", Mass (2025): " << y2
-             << ", Mass Shift (2026-2025): " << y1 - y2 << endl;
+        cout << "Bin " << i << ": Pt = " << x1
+             << ", Mass (2026): " << y1 << ", Mass (2025): " << y2 << endl;
     }
     TCanvas *cMassShift = new TCanvas("cMassShift", "Mass Shift vs Pt", 720, 720);
     SetCanvasStyle(cMassShift, 0.20, 0.03, 0.05, 0.15);

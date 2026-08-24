@@ -68,6 +68,7 @@ void doublePhiTemplateBWExpol3()
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+    TString suffix = "_ExtendedFitRange";
 
     // //=========================================================
     // //============Using processOpti5 data======================
@@ -126,14 +127,14 @@ void doublePhiTemplateBWExpol3()
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass Distribution", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
-    hInvMass->Rebin(12);
+    hInvMass->Rebin(10);
     // hInvMass->Draw("pe");
     // cInvMass->SaveAs(savepath + "/PhiInvMass.png");
 
     // 2. Fix the bin-beating effect by iterating strictly by bin index
     int rebin = 12;
-    int startBin = h3D_full->GetXaxis()->FindBin(2.5 + 0.0001);
-    int endBin = h3D_full->GetXaxis()->FindBin(2.9 - 0.0001);
+    int startBin = h3D_full->GetXaxis()->FindBin(2.41 + 0.0001);
+    int endBin = h3D_full->GetXaxis()->FindBin(2.95 - 0.0001);
     int nBinsInRange = endBin - startBin + 1;
     int totalBins = nBinsInRange / rebin;
 
@@ -307,7 +308,7 @@ void doublePhiTemplateBWExpol3()
     h_N_SS->SetMarkerSize(0.8);
     h_N_SS->GetYaxis()->SetRangeUser(1300, 3750);
     h_N_SS->Draw("pe");
-    cSS->SaveAs(savepath + "/SS_Template.png");
+    cSS->SaveAs(savepath + "/SS_Template" + suffix + ".png");
 
     TCanvas *cNonSS = new TCanvas("cNonSS", "Non-SS Template", 720, 720);
     SetCanvasStyle(cNonSS, 0.15, 0.05, 0.08, 0.12);
@@ -316,7 +317,7 @@ void doublePhiTemplateBWExpol3()
     h_N_nonSS->SetMarkerSize(0.8);
     h_N_nonSS->GetYaxis()->SetRangeUser(1300, 2950);
     h_N_nonSS->Draw("pe");
-    cNonSS->SaveAs(savepath + "/NonSS_Template.png");
+    cNonSS->SaveAs(savepath + "/NonSS_Template" + suffix + ".png");
 
     TCanvas *cTotal = new TCanvas("cTotal", "Total Yield", 720, 720);
     SetCanvasStyle(cTotal, 0.15, 0.05, 0.08, 0.12);
@@ -325,7 +326,7 @@ void doublePhiTemplateBWExpol3()
     h_N_Total->SetMarkerSize(0.8);
     h_N_Total->GetYaxis()->SetRangeUser(2800, 5750);
     h_N_Total->Draw("pe");
-    hInvMass->SetMarkerStyle(21);
+    hInvMass->SetMarkerStyle(25);
     hInvMass->SetMarkerSize(0.8);
     hInvMass->SetMarkerColor(kRed);
     hInvMass->SetLineColor(kRed);
@@ -340,9 +341,9 @@ void doublePhiTemplateBWExpol3()
     legClosure->AddEntry(h_N_Total, "SS + non-SS", "pe");
     legClosure->AddEntry(hInvMass, "Data", "pe");
     legClosure->Draw();
-    cTotal->SaveAs(savepath + "/Total_Yield.png");
+    // cTotal->SaveAs(savepath + "/Total_Yield" + suffix + ".png");
 
-    TFile *fOutput = new TFile(savepath + "/PhiPhiBkgTemplate_BW.root", "RECREATE");
+    TFile *fOutput = new TFile(savepath + Form("/PhiPhiBkgTemplate_BW%s.root", suffix.Data()), "RECREATE");
     h_N_SS->Write("h_N_SS");
     h_N_nonSS->Write("h_N_nonSS");
     fOutput->Close();

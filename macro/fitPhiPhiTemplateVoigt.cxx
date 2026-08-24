@@ -12,7 +12,7 @@ TFile *OpenFile(const string &path);
 template <typename T>
 T *GetHisto(TFile *f, const string &name);
 
-void fitPhiPhiTemplate()
+void fitPhiPhiTemplateVoigt()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
@@ -20,7 +20,7 @@ void fitPhiPhiTemplate()
     // Paths
     TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/PhiPhiBkgTemplate_BW_ExtendedFitRange.root";
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
-    TString suffix = "BWExpol3_extendedFitRange";
+    TString suffix = "VoigtExpol3_extendedFitRange";
     // TString suffix = "Voigt";
     // TString suffix = "pol2";
 
@@ -344,45 +344,45 @@ void fitPhiPhiTemplate()
         h_Subtracted->SetBinError(bin, dataErr);
     }
 
-    // 2. Define Breit-Wigner signal fit function
-    // p[0] = Signal Yield (N_X), p[1] = Mass (M_X), p[2] = Width (Gamma_X)
-    auto BW = [](double *x, double *p) -> double
+    // 2. Define Voigtian function here
+    auto VoigtFunction = [](double *x, double *p) -> double
     {
         double m = x[0];
         double N = p[0];
         double m0 = p[1];
-        double gamma = p[2];
+        double sigma = p[2]; // Gaussian width
+        double gamma = p[3]; // Lorentzian width
 
-        double denominator = (m - m0) * (m - m0) + (gamma * gamma) / 4.0;
-        double numerator = N * gamma / (2 * TMath::Pi());
-        return numerator / denominator;
+        return N * TMath::Voigt(m - m0, sigma, gamma);
     };
 
     // Fit function range focused around the signal peak region
-    TF1 *f_Signal = new TF1("f_Signal", BW, fitLow, fitHigh, 3);
-    f_Signal->SetParNames("N_X", "M_X", "Gamma_X");
+    TF1 *f_Signal = new TF1("f_Signal", VoigtFunction, fitLow, fitHigh, 4);
+    // TF1 *f_Signal = new TF1("f_Signal", VoigtFunction, 2.6, 2.8, 4);
+    f_Signal->SetParNames("N_X", "M_X", "Sigma_X", "Gamma_X");
 
     // Parameter initialization based on PDF slide
     f_Signal->SetParameter(0, 1100.0);       // Yield initial guess
     f_Signal->SetParameter(1, 2.6905);       // M_X initial guess
     f_Signal->SetParLimits(1, 2.650, 2.730); // Mass peak search range
-    f_Signal->SetParameter(2, 0.0269);       // Gamma_X initial guess
-    f_Signal->SetParLimits(2, 0.005, 0.080); // Reasonable width limits
+    f_Signal->FixParameter(2, 0.012);        // Gaussian width
+    f_Signal->SetParameter(3, 0.012);         // Resonance width
+    f_Signal->SetParLimits(3, 0.005, 0.05);  // Reasonance width
     f_Signal->SetLineColor(kMagenta + 2);
     f_Signal->SetLineWidth(2);
 
     // Fit signal peak
     SetHistoQA(h_Subtracted);
     h_Subtracted->GetYaxis()->SetRangeUser(-290, 480);
-    h_Subtracted->Fit(f_Signal, "R0Q");
+    h_Subtracted->Fit(f_Signal, "REN");
 
     // 3. Extract parameters and statistical significance
     double yield = f_Signal->GetParameter(0) / h_Subtracted->GetBinWidth(1); // Normalize yield by bin width
     double yieldErr = f_Signal->GetParError(0) / h_Subtracted->GetBinWidth(1);
     double mass = f_Signal->GetParameter(1);
     double massErr = f_Signal->GetParError(1);
-    double width = f_Signal->GetParameter(2);
-    double widthErr = f_Signal->GetParError(2);
+    double width = f_Signal->GetParameter(3);
+    double widthErr = f_Signal->GetParError(3);
     double significance = yield / yieldErr; // Raw statistical significance
 
     // 4. Plot Step 3 Results
@@ -419,7 +419,7 @@ void fitPhiPhiTemplate()
     legSig2->SetFillStyle(0);
     legSig2->SetTextSize(0.032);
     legSig2->AddEntry(h_Subtracted, "Data - Background", "pe");
-    legSig2->AddEntry(f_Signal, "Breit-Wigner Fit", "l");
+    legSig2->AddEntry(f_Signal, "Voigtian Fit", "l");
     legSig2->Draw();
 
     cSignal->SaveAs(savepath + "/TetraquarkPeakFit=" + suffix + ".png");

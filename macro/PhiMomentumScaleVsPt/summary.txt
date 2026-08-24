@@ -1,6 +1,6 @@
 Phi momentum-scale calibration: 2025 -> 2026
 
-2025 file: /home/sawan/alice/practice/OutputDoublePhi/New/processopti5/LHC25/AnalysisResults_LHC25_PID2003.root
+2025 file: /home/sawan/alice/practice/OutputDoublePhi/New/processopti5/LHC25/AnalysisResults25_aiam.root
 2026 reference file: /home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_PID2003.root
 Histogram: hPhiMassVsPt (x=mass, y=pT)
 Fit: binWidth*[0]*TMath::Voigt(x-[2],[3],[1],4) + pol2, Minuit2/Migrad
@@ -8,7 +8,7 @@ Invariant-mass projection: native binning retained (no Rebin)
 Fixed Lorentzian width: 4.25 MeV/c^2
 Fit range: 1-1.03899 GeV/c^2
 Toy: isotropic phi->K+K-, flat |y_phi|<0.8, kaon pT>0.15 GeV/c, |eta_K|<0.8
-Toy events: 150000 accepted per pT bin
+Toy events: 15000 accepted per pT bin
 
 Definition: pK_corr = (1 + epsilon_corr) pK_2025.
 A positive epsilon_corr increases the 2025 kaon momenta.
@@ -16,31 +16,29 @@ A positive epsilon_corr increases the 2025 kaon momenta.
 Correction parameterization:
 epsilon_corr(%) = p0 + p1/[1+exp(-(pT_phi-p2)/p3)] + p4*pT_phi + p5*pT_phi^2
 status=0, covQual=3, valid=1
-chi2/ndf=14.8607/11, AICc=35.2607
-p0=0.80703+/-0.0140867
-p1=0.473199+/-0.0342752
-p2=1.6405+/-0.0243449
-p3=0.283521+/-0.0302579
-p4=-0.0239206+/-0.0113407
-p5=0.00347067+/-0.000826067
+chi2/ndf=182.539/9, AICc=205.039
+p0=1.43594e-11+/-0.00559274
+p1=1.03303+/-0.0160755
+p2=0.963314+/-0.0147642
+p3=0.366816+/-0.0153177
+p4=0.0320604+/-0.00388307
+p5=1.30411e-15+/-0.000151287
 
-pT 0.8-1 GeV/c: m25=1018.86+/-0.0022394 MeV, m26=1019.3+/-0.00316671 MeV, sigma25=1.12274+/-0.00421963 MeV, sigma26=1.131+/-0.00597691 MeV, epsilon_corr=0.823163+/-0.00735258%
-pT 1-1.2 GeV/c: m25=1018.97+/-0.00212326 MeV, m26=1019.4+/-0.00270966 MeV, sigma25=1.14067+/-0.0039554 MeV, sigma26=1.05902+/-0.00526256 MeV, epsilon_corr=0.84477+/-0.00679168%
-pT 1.2-1.6 GeV/c: m25=1019+/-0.00186086 MeV, m26=1019.45+/-0.00224832 MeV, sigma25=1.11613+/-0.00350962 MeV, sigma26=1.02129+/-0.00442919 MeV, epsilon_corr=0.919943+/-0.00600927%
-pT 1.6-2 GeV/c: m25=1018.97+/-0.00235311 MeV, m26=1019.48+/-0.00296808 MeV, sigma25=1.19462+/-0.00430485 MeV, sigma26=1.04315+/-0.00576171 MeV, epsilon_corr=1.08426+/-0.00812603%
-pT 2-2.5 GeV/c: m25=1019.07+/-0.00230697 MeV, m26=1019.61+/-0.00299976 MeV, sigma25=1.358+/-0.00400148 MeV, sigma26=1.17946+/-0.00549309 MeV, epsilon_corr=1.17197+/-0.0119443%
-pT 2.5-3 GeV/c: m25=1019.15+/-0.00256766 MeV, m26=1019.7+/-0.00314865 MeV, sigma25=1.54136+/-0.00425668 MeV, sigma26=1.29111+/-0.00555193 MeV, epsilon_corr=1.23952+/-0.00917451%
-pT 3-4 GeV/c: m25=1019.21+/-0.00241704 MeV, m26=1019.75+/-0.00257747 MeV, sigma25=1.77479+/-0.0038312 MeV, sigma26=1.47435+/-0.00430541 MeV, epsilon_corr=1.2368+/-0.00807228%
-pT 4-5 GeV/c: m25=1019.27+/-0.0038963 MeV, m26=1019.81+/-0.00289796 MeV, sigma25=2.03533+/-0.00596119 MeV, sigma26=1.69474+/-0.00459127 MeV, epsilon_corr=1.24683+/-0.01131%
-pT 5-6 GeV/c: m25=1019.32+/-0.00623276 MeV, m26=1019.87+/-0.00382918 MeV, sigma25=2.21443+/-0.00939852 MeV, sigma26=1.8794+/-0.00588009 MeV, epsilon_corr=1.26508+/-0.017061%
-pT 6-7 GeV/c: m25=1019.36+/-0.00942528 MeV, m26=1019.9+/-0.0057842 MeV, sigma25=2.41753+/-0.013867 MeV, sigma26=2.03498+/-0.00870892 MeV, epsilon_corr=1.24287+/-0.0258628%
-pT 7-8 GeV/c: m25=1019.39+/-0.0133247 MeV, m26=1019.92+/-0.00835197 MeV, sigma25=2.56364+/-0.0196278 MeV, sigma26=2.18056+/-0.012389 MeV, epsilon_corr=1.23414+/-0.0378971%
-pT 8-9 GeV/c: m25=1019.34+/-0.0177486 MeV, m26=1019.92+/-0.0115467 MeV, sigma25=2.53283+/-0.0260616 MeV, sigma26=2.28867+/-0.0170937 MeV, epsilon_corr=1.34753+/-0.049864%
-pT 9-10 GeV/c: m25=1019.29+/-0.0227661 MeV, m26=1019.94+/-0.0154701 MeV, sigma25=2.67192+/-0.0330713 MeV, sigma26=2.36219+/-0.0228154 MeV, epsilon_corr=1.50031+/-0.0653321%
-pT 10-12 GeV/c: m25=1019.31+/-0.0225726 MeV, m26=1019.91+/-0.0157964 MeV, sigma25=2.72535+/-0.0325467 MeV, sigma26=2.43404+/-0.0230923 MeV, epsilon_corr=1.42806+/-0.0650973%
-pT 12-14 GeV/c: m25=1019.28+/-0.0354178 MeV, m26=1019.92+/-0.0256046 MeV, sigma25=2.82139+/-0.0514587 MeV, sigma26=2.63493+/-0.0378623 MeV, epsilon_corr=1.49542+/-0.103053%
-pT 14-16 GeV/c: m25=1019.22+/-0.0508584 MeV, m26=1019.96+/-0.0382812 MeV, sigma25=2.8197+/-0.075639 MeV, sigma26=2.6841+/-0.0557711 MeV, epsilon_corr=1.74765+/-0.149398%
-pT 16-20 GeV/c: m25=1019.13+/-0.056374 MeV, m26=1019.96+/-0.0421245 MeV, sigma25=2.99352+/-0.0804251 MeV, sigma26=2.97816+/-0.0590742 MeV, epsilon_corr=1.96359+/-0.165291%
+pT 0.5-0.8 GeV/c: m25=1018.79+/-0.00570179 MeV, m26=1018.92+/-0.00519847 MeV, sigma25=1.16579+/-0.0104302 MeV, sigma26=1.2178+/-0.00942643 MeV, epsilon_corr=0.241465+/-0.0140982%
+pT 0.8-1.2 GeV/c: m25=1018.97+/-0.00254127 MeV, m26=1019.36+/-0.0020638 MeV, sigma25=1.08827+/-0.00485784 MeV, sigma26=1.08843+/-0.00396009 MeV, epsilon_corr=0.762912+/-0.0169996%
+pT 1.2-1.6 GeV/c: m25=1019.05+/-0.0029619 MeV, m26=1019.45+/-0.00224832 MeV, sigma25=0.999941+/-0.00590461 MeV, sigma26=1.02129+/-0.00442919 MeV, epsilon_corr=0.817387+/-0.00771378%
+pT 1.6-2 GeV/c: m25=1019.02+/-0.00362098 MeV, m26=1019.48+/-0.00296808 MeV, sigma25=1.03349+/-0.00706263 MeV, sigma26=1.04315+/-0.00576171 MeV, epsilon_corr=0.982767+/-0.0100396%
+pT 2-2.5 GeV/c: m25=1019.12+/-0.00345173 MeV, m26=1019.61+/-0.00299976 MeV, sigma25=1.12535+/-0.00647288 MeV, sigma26=1.17946+/-0.00549309 MeV, epsilon_corr=1.06788+/-0.0101674%
+pT 2.5-3 GeV/c: m25=1019.2+/-0.00376659 MeV, m26=1019.7+/-0.00314865 MeV, sigma25=1.242+/-0.00672928 MeV, sigma26=1.29111+/-0.00555193 MeV, epsilon_corr=1.12954+/-0.0115944%
+pT 3-4 GeV/c: m25=1019.25+/-0.00346809 MeV, m26=1019.75+/-0.00257747 MeV, sigma25=1.41007+/-0.00587641 MeV, sigma26=1.47435+/-0.00430541 MeV, epsilon_corr=1.15584+/-0.0107306%
+pT 4-5 GeV/c: m25=1019.3+/-0.00542488 MeV, m26=1019.81+/-0.00289796 MeV, sigma25=1.61268+/-0.00871265 MeV, sigma26=1.69474+/-0.00459127 MeV, epsilon_corr=1.17416+/-0.0323271%
+pT 5-6 GeV/c: m25=1019.33+/-0.00847409 MeV, m26=1019.87+/-0.00382918 MeV, sigma25=1.78278+/-0.0131917 MeV, sigma26=1.8794+/-0.00588009 MeV, epsilon_corr=1.24222+/-0.0219752%
+pT 6-8 GeV/c: m25=1019.39+/-0.0102853 MeV, m26=1019.9+/-0.00475723 MeV, sigma25=2.0401+/-0.0155413 MeV, sigma26=2.08394+/-0.00712563 MeV, epsilon_corr=1.19686+/-0.0398538%
+pT 8-10 GeV/c: m25=1019.39+/-0.0184312 MeV, m26=1019.92+/-0.00925657 MeV, sigma25=2.24785+/-0.0273397 MeV, sigma26=2.31576+/-0.0136838 MeV, epsilon_corr=1.25562+/-0.0485339%
+pT 10-12 GeV/c: m25=1019.32+/-0.0290445 MeV, m26=1019.91+/-0.0157964 MeV, sigma25=2.37264+/-0.0418918 MeV, sigma26=2.43404+/-0.0230923 MeV, epsilon_corr=1.39373+/-0.078276%
+pT 12-15 GeV/c: m25=1019.3+/-0.0385873 MeV, m26=1019.94+/-0.0228759 MeV, sigma25=2.59399+/-0.0557421 MeV, sigma26=2.6165+/-0.033808 MeV, epsilon_corr=1.49955+/-0.105673%
+pT 15-20 GeV/c: m25=1019.24+/-0.0548929 MeV, m26=1019.95+/-0.0341568 MeV, sigma25=2.70901+/-0.077398 MeV, sigma26=2.9423+/-0.0482974 MeV, epsilon_corr=1.65687+/-0.157745%
+pT 20-30 GeV/c: m25=1019.16+/-0.09345 MeV, m26=1019.77+/-0.0559324 MeV, sigma25=2.8284+/-0.130451 MeV, sigma26=3.11863+/-0.0805567 MeV, epsilon_corr=1.43176+/-0.255346%
 
 X detector-resolution propagation:
 enabled=1
@@ -50,5 +48,5 @@ The THnSparse pT(X) projection is already reconstructed and fully selected. It i
 Reconstructed candidate cut before filling X response: DeltaM_phi=sqrt[(m_phi1-m_PDG)^2+(m_phi2-m_PDG)^2] < 0.005 GeV/c^2. The pT(X) draw is held fixed while regenerating until this cut is satisfied.
 X pole mass=2.69 GeV/c^2, generated with Breit-Wigner Gamma_X=12 MeV/c^2; Gamma_phi=4.25 MeV/c^2.
 For each pT(phi) point, the toy generates a Breit-Wigner phi with this same Gamma_phi, smears the two kaon momenta, fills M(KK)_reco, and fits it with TMath::Voigt using Gamma_phi fixed. The inferred sigma(pK)/pK is accepted only through this Voigt-sigma closure; Gamma_phi is therefore not counted as detector resolution.
-2025: valid=1, accepted=300000, status/covQual=0/3, mean=-0.273933+/-0.030006 MeV/c^2, sigma=15.6124+/-0.0248125 MeV/c^2, RMS=15.7826 MeV/c^2, observedMean=2689.69+/-0.0397683 MeV/c^2, observedVoigtSigma=15.6153+/-0.039408 MeV/c^2, observedVoigtFWHM=43.6082 MeV/c^2
-2026: valid=1, accepted=300000, status/covQual=0/3, mean=-0.132562+/-0.025881 MeV/c^2, sigma=13.4809+/-0.0214888 MeV/c^2, RMS=13.6704 MeV/c^2, observedMean=2689.71+/-0.0358948 MeV/c^2, observedVoigtSigma=13.5396+/-0.0366398 MeV/c^2, observedVoigtFWHM=38.7841 MeV/c^2
+2025: valid=1, accepted=30000, status/covQual=0/3, mean=-0.171761+/-0.0799491 MeV/c^2, sigma=13.1866+/-0.0645661 MeV/c^2, RMS=13.6067 MeV/c^2, observedMean=2689.77+/-0.112384 MeV/c^2, observedVoigtSigma=13.2459+/-0.114604 MeV/c^2, observedVoigtFWHM=38.1031 MeV/c^2
+2026: valid=1, accepted=30000, status/covQual=0/3, mean=-0.139531+/-0.0828202 MeV/c^2, sigma=13.613+/-0.0684975 MeV/c^2, RMS=13.8966 MeV/c^2, observedMean=2689.73+/-0.114407 MeV/c^2, observedVoigtSigma=13.5363+/-0.113921 MeV/c^2, observedVoigtFWHM=38.7763 MeV/c^2

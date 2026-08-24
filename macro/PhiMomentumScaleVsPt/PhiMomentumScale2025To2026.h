@@ -7,10 +7,10 @@
 // Recalculate each kaon energy using the fixed kaon mass afterwards.
 
 namespace PhiMomentumScale2025To2026 {
-constexpr int kNBins = 17;
-constexpr double kPtEdges[kNBins + 1] = {0.8, 1, 1.2, 1.6, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20};
-constexpr double kEpsilon[kNBins] = {0.0082316288136, 0.0084477004712, 0.00919943176938, 0.0108425754669, 0.0117196805635, 0.0123951594009, 0.0123680092232, 0.0124683175364, 0.0126507831441, 0.0124286969418, 0.0123413824165, 0.0134753484815, 0.0150030728106, 0.014280642284, 0.0149542169164, 0.0174764570162, 0.0196359204232};
-constexpr bool kValid[kNBins] = {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true};
+constexpr int kNBins = 15;
+constexpr double kPtEdges[kNBins + 1] = {0.5, 0.8, 1.2, 1.6, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30};
+constexpr double kEpsilon[kNBins] = {0.0024146539379, 0.00762912304405, 0.00817386742107, 0.00982766792836, 0.0106788436324, 0.0112954252224, 0.0115583787246, 0.0117416086153, 0.012422150094, 0.011968584565, 0.0125561781092, 0.0139372556405, 0.014995530318, 0.0165687496159, 0.0143175890856};
+constexpr bool kValid[kNBins] = {true, true, true, true, true, true, true, true, true, true, true, true, true, true, true};
 
 inline double Epsilon(double reconstructedPhiPt)
 {

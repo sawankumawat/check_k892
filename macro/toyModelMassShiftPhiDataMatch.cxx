@@ -20,29 +20,29 @@ void toyModelMassShiftPhiDataMatch()
     // =========================================================
 
     const std::vector<double> ptMin = {
-        0.4, 0.6, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0,
+        0.5, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0,
         4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0};
 
     const std::vector<double> ptMax = {
-        0.6, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0,
-        5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0};
+        0.8, 1.2, 1.6, 2.0, 2.5, 3.0,
+        4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 30.0};
 
-    const std::vector<double> m2025 = {
-        1.01868, 1.01875, 1.01893, 1.01900,
-        1.01898, 1.01907, 1.01915, 1.01921,
-        1.01927, 1.01931, 1.01936, 1.01931,
-        1.01929, 1.01925, 1.01912, 1.01915};
+    // 2026 Mass Values
+    std::vector<double> m2026 = {
+        1.01892, 1.01936, 1.01945, 1.01948, 1.01961,
+        1.0197, 1.01975, 1.01981, 1.01986, 1.0199,
+        1.01991, 1.01992, 1.01994, 1.01998, 1.01978};
 
-    const std::vector<double> m2026 = {
-        1.01822, 1.01897, 1.01936, 1.01945,
-        1.01948, 1.01961, 1.01970, 1.01975,
-        1.01981, 1.01986, 1.01990, 1.01992,
-        1.01991, 1.01995, 1.01994, 1.01975};
+    // 2025 Mass Values
+    std::vector<double> m2025 = {
+        1.01879, 1.01897, 1.01905, 1.01902, 1.01912,
+        1.01919, 1.01925, 1.0193, 1.01933, 1.01939,
+        1.01938, 1.01932, 1.01929, 1.01923, 1.01917};
 
     const int nBins = ptMin.size();
 
     const double mK = 0.493677;
-    const int nEventsPerBin = 1000;
+    const int nEventsPerBin = 5000;
 
     // =========================================================
     // Scan range for epsilon = dp/p
@@ -50,7 +50,7 @@ void toyModelMassShiftPhiDataMatch()
 
     const double epsilonMin = -0.1;
     const double epsilonMax = +0.1;
-    const int nEpsilon = 500;
+    const int nEpsilon = 1000;
 
     TRandom3 rand(12345);
 
@@ -333,6 +333,5 @@ void toyModelMassShiftPhiDataMatch()
     legend->AddEntry(g2026, "2026", "lp");
     legend->AddEntry(gCorrected, "2025 + #epsilon correction", "lp");
     legend->Draw();
-    c2->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiMassClosure.png");
-
+    c2->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiInvMass/PhiMassClosure.png");
 }

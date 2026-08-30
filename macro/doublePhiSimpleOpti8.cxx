@@ -49,28 +49,27 @@ void doublePhiSimpleOpti8()
     gStyle->SetOptStat(0);
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit";
     string suffix = "25_aiamShifted";
+    // string suffix = "25_aiam";
     int rebinFactor = 8;
-    float fitRangeLow = 2.42;
-    float fitRangeHigh = 2.95;
-
-    ////======Pair=========
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processopti5/AnalysisResults.root");
+    float fitRangeLow = 2.41;
+    float fitRangeHigh = 2.96;
 
     ////=====New===========
     ////====2026 data========
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResultsRefit2.root");
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_LHC26_PID2003.root");
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root");
 
     ////======2025 data==========
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsLHC25.root");
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsKaShift2.root");
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults_LHC25_PID2003.root");
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults_LHC25_KaShifted_BhaiyaCode2.root"); // opti9, shifted
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // opti9, shifted
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root"); //opti8, 25 ai+am
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // opti9, shifted
 
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
-    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
     // THnSparseF *hRot = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRotational");
 
     TH1D *hPt = hUnlike->Projection(1, "E");
@@ -80,18 +79,18 @@ void doublePhiSimpleOpti8()
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
 
     int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
-    int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.004 - 0.00001);
+    int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
 
-    int lowChi2 = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
-    int highChi2 = hUnlike->GetAxis(4)->FindBin(25.0 - 0.00001);
+    int lowChi2 = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
+    int highChi2 = hUnlike->GetAxis(3)->FindBin(25.0 - 0.00001);
 
-    int lowFitProb = hUnlike->GetAxis(5)->FindBin(0.3 + 0.00001);
-    int highFitProb = hUnlike->GetAxis(5)->FindBin(2.0 - 0.00001);
+    int lowFitProb = hUnlike->GetAxis(4)->FindBin(0.3 + 0.00001);
+    int highFitProb = hUnlike->GetAxis(4)->FindBin(2.0 - 0.00001);
 
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
     hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
-    // hUnlike->GetAxis(4)->SetRange(lowChi2, highChi2);
-    // hUnlike->GetAxis(5)->SetRange(lowFitProb, highFitProb);
+    hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
+    hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
 
     // hRot->GetAxis(1)->SetRange(lowpT, highpT);
 
@@ -105,15 +104,15 @@ void doublePhiSimpleOpti8()
     int lowDeltaMBkg = hUnlike->GetAxis(2)->FindBin(0.005 + 0.00001);
     int highDeltaMBkg = hUnlike->GetAxis(2)->FindBin(100 - 0.00001);
 
-    int lowChi2Bkg = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
-    int highChi2Bkg = hUnlike->GetAxis(4)->FindBin(30.0 - 0.00001);
+    int lowChi2Bkg = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
+    int highChi2Bkg = hUnlike->GetAxis(3)->FindBin(30.0 - 0.00001);
 
-    int lowFitProbBkg = hUnlike->GetAxis(5)->FindBin(0.0 + 0.00001);
-    int highFitProbBkg = hUnlike->GetAxis(5)->FindBin(2.0 - 0.00001);
+    int lowFitProbBkg = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
+    int highFitProbBkg = hUnlike->GetAxis(4)->FindBin(2.0 - 0.00001);
 
     hUnlike->GetAxis(2)->SetRange(lowDeltaMBkg, highDeltaMBkg);
-    hUnlike->GetAxis(4)->SetRange(lowChi2Bkg, highChi2Bkg);
-    hUnlike->GetAxis(5)->SetRange(lowFitProbBkg, highFitProbBkg);
+    hUnlike->GetAxis(3)->SetRange(lowChi2Bkg, highChi2Bkg);
+    hUnlike->GetAxis(4)->SetRange(lowFitProbBkg, highFitProbBkg);
 
     TH1D *hInvMassBkg = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMassBkg);
@@ -154,6 +153,7 @@ void doublePhiSimpleOpti8()
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
     // hInvMass->GetYaxis()->SetRangeUser(1.4e3, 3.3e3);
+    hInvMass->SetMinimum(hInvMass->GetMinimum() * 0.7);
     hInvMass->Draw("pe");
 
     // TLine *lineat2p65 = new TLine(2.65, 971, 2.65, 2058);
@@ -196,13 +196,13 @@ void doublePhiSimpleOpti8()
     hInvMassBkg->SetMarkerColor(kRed);
     // hInvMassBkg->Draw("HISTe same");
 
-    TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
-    legTemp->SetBorderSize(0);
-    legTemp->SetFillStyle(0);
-    legTemp->SetTextFont(42);
-    legTemp->SetTextSize(0.03);
-    legTemp->AddEntry((TObject *)0, "#Delta#it{M}_{#phi} < 0.005", "");
-    legTemp->AddEntry((TObject *)0, "#it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "");
+    // TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
+    // legTemp->SetBorderSize(0);
+    // legTemp->SetFillStyle(0);
+    // legTemp->SetTextFont(42);
+    // legTemp->SetTextSize(0.03);
+    // legTemp->AddEntry((TObject *)0, "#Delta#it{M}_{#phi} < 0.005", "");
+    // legTemp->AddEntry((TObject *)0, "#it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "");
     // legTemp->AddEntry(hInvMassBkg, "#Delta#it{M}_{#phi} #geq 0.005", "l");
     // legTemp->AddEntry((TObject *)0, "Normalized in 2.85 < #it{M}_{#phi#phi} < 2.90 GeV/#it{c}^{2}", "");
     // legTemp->Draw();
@@ -347,7 +347,6 @@ void doublePhiSimpleOpti8()
 
     // Signal component
     TF1 *fitSignal = new TF1("fitSignal", breitWigner, FIT_MIN, FIT_MAX, 3);
-
     fitSignal->SetParameters(fitFunc->GetParameter(0), fitFunc->GetParameter(1), fitFunc->GetParameter(2));
 
     fitSignal->SetLineColor(kRed);

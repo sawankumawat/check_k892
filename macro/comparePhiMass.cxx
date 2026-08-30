@@ -5,10 +5,12 @@ TFile *OpenFile(const string &path);
 template <typename T>
 T *GetHisto(TFile *f, const std::string &name);
 
+// No difference between opti9 and opti10 for shifting the kaon momentum
+
 void comparePhiMass()
 {
     TString savePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiInvMass";
-    TFile *f1 = OpenFile((savePath + "/PhiParams26_latest.root").Data());
+    TFile *f1 = OpenFile((savePath + "/PhiParams26.root").Data());
     // TFile *f2 = OpenFile((savePath + "/PhiParams25.root").Data());
     // TFile *f2 = OpenFile((savePath + "/PhiParams25_Shifted.root").Data());
     TFile *f2 = OpenFile((savePath + "/PhiParams25_aiam.root").Data());
@@ -20,7 +22,8 @@ void comparePhiMass()
     TGraphErrors *gMassVsPt1 = GetHisto<TGraphErrors>(f1, "gMassVsPt");
     TGraphErrors *gMassVsPt2 = GetHisto<TGraphErrors>(f2, "gMassVsPt");
 
-    TFile *f4 = OpenFile((savePath + "/PhiParams25_aiamShifted.root").Data());
+    // TFile *f4 = OpenFile((savePath + "/PhiParams25_aiamShifted.root").Data());
+    TFile *f4 = OpenFile((savePath + "/PhiParams25_aiamShifted_opti10.root").Data());
     TGraphErrors *gMassVsPt3 = GetHisto<TGraphErrors>(f4, "gMassVsPt");
 
     TCanvas *cMassVsPt = new TCanvas("cMassVsPt", "Mass vs Pt", 720, 720);
@@ -47,11 +50,11 @@ void comparePhiMass()
     // gPhiMassSBcode2025->SetMarkerColor(kMagenta);
     // gPhiMassSBcode2025->SetLineColor(kMagenta);
     // gPhiMassSBcode2025->Draw("p same");
-    // SetGraphErrorStyle(gMassVsPt3);
 
-    gMassVsPt3->SetMarkerColor(kGreen + 2);
-    gMassVsPt3->SetLineColor(kGreen + 2);
-    gMassVsPt3->Draw("pe same");
+    // SetGraphErrorStyle(gMassVsPt3);
+    // gMassVsPt3->SetMarkerColor(kGreen + 2);
+    // gMassVsPt3->SetLineColor(kGreen + 2);
+    // gMassVsPt3->Draw("pe same");
 
     TLine *linePDG = new TLine(0.5, 1.019460, 30, 1.019460);
     linePDG->SetLineColor(kBlack);
@@ -74,7 +77,7 @@ void comparePhiMass()
 
     legend->AddEntry(gMassVsPt1, "LHC26_skimmed", "p");
     legend->AddEntry(gMassVsPt2, "LHC25_skimmed", "p");
-    legend->AddEntry(gMassVsPt3, "LHC25_skimmed (Kaon momentum shifted)", "p");
+    // legend->AddEntry(gMassVsPt3, "LHC25_skimmed (Kaon momentum shifted)", "p");
     legend->AddEntry(linePDG, "PDG Mass", "l");
 
     legend->SetTextFont(42);

@@ -49,7 +49,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    TString outputType = "png"; // pdf, png
+    TString outputType = "pdf"; // pdf, png
     double fitRangeMax = 20.0;
 
     int colors[12];
@@ -128,8 +128,8 @@ void plot_spectra()
         TH1F *hratios[numofmultbins];
         for (int i = 1; i < numofmultbins + 1; i++)
         {
-            hratios[i] = (TH1F *)hmult[i]->Clone(Form("hratio%d", i));
-            hratios[i]->Divide(hmult[0]);
+            hratios[i - 1] = (TH1F *)hmult[i]->Clone(Form("hratio%d", i));
+            hratios[i - 1]->Divide(hmult[0]);
         }
 
         TCanvas *c = new TCanvas("", "", 720, 720);
@@ -152,7 +152,8 @@ void plot_spectra()
             hmult[i]->GetXaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleOffset(1.3);
-            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
+            // hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
+            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 200);
             hmult[i]->SetMinimum(3e-8);
             hmult[i]->SetMarkerStyle(markers[i]);
             hmult[i]->SetLineColor(colors[i]);
@@ -163,9 +164,12 @@ void plot_spectra()
         hmult[0]->SetMarkerSize(1.2);
 
         // TLegend *leg = new TLegend(0.37, 0.75, 0.95, 0.97); // for 4 columns legend
-        TLegend *leg = new TLegend(0.47, 0.7, 0.98, 0.97);
+        TLegend *leg = new TLegend(0.6, 0.55, 0.98, 0.97);
         SetLegendStyle(leg);
-        leg->SetNColumns(3);
+        leg->SetNColumns(2);
+        leg->SetTextFont(42);
+        leg->SetTextSize(0.035);
+        leg->SetHeader("FT0M Multiplicity Event Classes");
         // leg->AddEntry(hmult[0], "0-100%", "lpe");
         for (int i = 1; i < numofmultbins + 1; i++)
         {
@@ -231,9 +235,17 @@ void plot_spectra()
         }
         TLatex lat;
         lat.SetNDC();
-        lat.SetTextSize(0.05);
-        // lat.SetTextFont(42);
-        lat.DrawLatex(0.18, 0.9, "K*(892)^{0}");
+        lat.SetTextSize(0.04);
+        lat.SetTextFont(22);
+        lat.DrawLatex(0.3, 0.91, "ALICE");
+        lat.SetTextFont(42);
+        lat.DrawLatex(0.3, 0.85, "pp #sqrt{#it{s}} = 13.6 TeV");
+        lat.DrawLatex(0.3, 0.79, "|#it{y}| < 0.5");
+        lat.SetTextFont(22);
+        lat.DrawLatex(0.3, 0.73, "K*(892)^{0}");
+        lat.SetTextSize(0.035);
+        lat.SetTextFont(42);
+        lat.DrawLatex(0.18, 0.05, "Uncertainties: stat. (bars), sys. (boxes)");
 
         c->cd(1);
         leg->SetTextSize(0.03);
@@ -241,27 +253,27 @@ void plot_spectra()
 
         c->cd(2);
         gPad->SetLogy(1);
-        hratios[1]->SetMinimum(0.32);
-        hratios[1]->GetYaxis()->SetMoreLogLabels();
-        hratios[1]->GetYaxis()->SetNoExponent();
-        hratios[1]->SetMaximum(8);
-        hratios[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        hratios[1]->GetYaxis()->SetTitle("Ratio to INEL>0");
-        hratios[1]->GetYaxis()->SetNdivisions(535);
+        hratios[0]->SetMinimum(0.1);
+        hratios[0]->GetYaxis()->SetMoreLogLabels();
+        hratios[0]->GetYaxis()->SetNoExponent();
+        hratios[0]->SetMaximum(8);
+        hratios[0]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+        hratios[0]->GetYaxis()->SetTitle("Ratio to INEL>0");
+        hratios[0]->GetYaxis()->SetNdivisions(535);
         // hratios[0]->GetXaxis()->SetRangeUser(0, 25);
 
-        for (int i = 1; i < numofmultbins; i++)
+        for (int i = 1; i < numofmultbins + 1; i++)
         {
-            SetHistoQA(hratios[i]);
-            hratios[i]->GetXaxis()->SetTitleSize(0.045 * pad1Size / pad2Size);
-            hratios[i]->GetYaxis()->SetTitleSize(0.045 * pad1Size / pad2Size);
-            hratios[i]->GetXaxis()->SetLabelSize(0.04 * pad1Size / pad2Size);
-            hratios[i]->GetYaxis()->SetLabelSize(0.04 * pad1Size / pad2Size);
-            hratios[i]->GetYaxis()->SetTitleOffset(0.55);
-            hratios[i]->SetMarkerStyle(markers[i]);
-            hratios[i]->SetLineColor(colors[i]);
-            hratios[i]->SetMarkerColor(colors[i]);
-            hratios[i]->Draw("pe same");
+            SetHistoQA(hratios[i - 1]);
+            hratios[i - 1]->GetXaxis()->SetTitleSize(0.045 * pad1Size / pad2Size);
+            hratios[i - 1]->GetYaxis()->SetTitleSize(0.045 * pad1Size / pad2Size);
+            hratios[i - 1]->GetXaxis()->SetLabelSize(0.04 * pad1Size / pad2Size);
+            hratios[i - 1]->GetYaxis()->SetLabelSize(0.04 * pad1Size / pad2Size);
+            hratios[i - 1]->GetYaxis()->SetTitleOffset(0.55);
+            hratios[i - 1]->SetMarkerStyle(markers[i]);
+            hratios[i - 1]->SetLineColor(colors[i]);
+            hratios[i - 1]->SetMarkerColor(colors[i]);
+            hratios[i - 1]->Draw("pe same");
         }
         TLine *line = new TLine(0, 1, 20, 1);
         line->SetLineStyle(2);
@@ -572,6 +584,25 @@ void plot_spectra()
             gTLevyRun3->Write("gTLevyRun3_stat");
             TString TLevyPath = outputfolder + "/TLevy." + outputType;
             cTLevy->SaveAs(TLevyPath.Data());
+
+            TCanvas *cScaledSpectra = new TCanvas("cScaledSpectra", "cScaledSpectra", 720, 720);
+            SetCanvasStyle(cScaledSpectra, 0.23, 0.03, 0.03, 0.15);
+
+            for (int i = 1; i < numofmultbins + 1; i++)
+            {
+                SetHistoQA(hratios[i - 1]);
+                hratios[i - 1]->GetYaxis()->SetNdivisions(505);
+                hratios[i - 1]->SetMarkerStyle(markers[i]);
+                hratios[i - 1]->SetLineColor(colors[i]);
+                hratios[i - 1]->SetMarkerColor(colors[i]);
+                // hratios[i - 1]->Scale(0.12 / yield[i - 1]);
+                hratios[i - 1]->GetYaxis()->SetRangeUser(0.0, 2.5);
+                hratios[i - 1]->GetYaxis()->SetTitleOffset(1.7);
+                hratios[i - 1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+                hratios[i - 1]->GetYaxis()->SetTitle("Ratio to INEL>0 #times #frac{(dN/dy)_{INEL>0}}{(dN/dy)_{mult}} ");
+                hratios[i - 1]->Draw("pe same");
+            }
+            cScaledSpectra->SaveAs((outputfolder + "/spectraRatio_scaled." + outputType).Data());
         }
     }
 } // End of the code

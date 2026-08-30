@@ -1508,11 +1508,11 @@ namespace PhiPtCalibration
 } // namespace PhiPtCalibration
 
 void CalibratePhiMomentumScaleVsPt(
-    const char *file2026Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_PID2003.root",
-    const char *file2025Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/LHC25/AnalysisResults25_aiam.root",
+    const char *file2026Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root",
+    const char *file2025Name = "/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root",
     const char *histogramPathOrName = "hPhiMassVsPt",
     const char *outputDirectoryName = "PhiMomentumScaleVsPt",
-    const char *ptBins = "0.5,0.8,1.2,1.6,2.0,2.5,3.0,4.0,5.0,6.0,8.0,10.0,12.0,15.0,20.0,30.0",
+    const char *ptBins = "0.5,0.8,1.2,1.6,2.0,2.5,3.0,4.0,5.0,6.0,8.0,10.0,12.0,15.0,20.0",
     long long toyAcceptedEventsPerBin = 15000, //150000
     double fitLow = 1.000,
     double fitHigh = 1.03899,

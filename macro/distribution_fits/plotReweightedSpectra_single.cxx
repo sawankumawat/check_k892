@@ -40,7 +40,7 @@ void plotReweightedSpectra_single()
 
     // gStyle->SetOptFit(1111);
 
-    string path = "/home/sawan/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
+    string path = "/home/sawan/Storage/check_k892/output/glueball/LHC22o_pass7_small/433479/KsKs_Channel/higher-mass-resonances/fits/4rBw_fits/pt_dependent/";
 
     string savePath = path + "/mult_0-100/Spectra/plots";
     TFile *fReweightf0 = new TFile((path + "mult_0-100/Spectra/ReweighFacf0_Default4.root").c_str(), "read");
@@ -335,6 +335,8 @@ void plotReweightedSpectra_single()
     // cout << "Sys. error Low " << hout2->GetBinContent(8) << endl; // Taking only high for now
     // cout << "Low pT extrapolation error " << hout2->GetBinContent(10) << endl;
 
+    TFile *fPrelimResults = new TFile((path + "Spectra/PreliminaryResultsGlue.root").c_str(), "RECREATE");
+
     TCanvas *cCorrectedf0Fit = new TCanvas("cCorrectedf0Fit", "Corrected #it{p}_{T} distribution with fit", 720, 720);
     SetCanvasStyle(cCorrectedf0Fit, 0.18, 0.03, 0.05, 0.14);
     gPad->SetLogy();
@@ -359,6 +361,10 @@ void plotReweightedSpectra_single()
     fitFcnf0->SetLineStyle(2);
     fitFcnf0->SetLineColor(kRed);
     fitFcnf0->Draw("l same");
+
+    fPrelimResults->cd();
+    hf01->Write("f0_1710_Yield_Stat");
+    hf02->Write("f0_1710_Yield_Sys");
 
     // Create legend with physics information
     TLegend *leg = new TLegend(0.62, 0.751, 0.9, 0.9); // to show only legend
@@ -438,6 +444,10 @@ void plotReweightedSpectra_single()
     fitFcnf2->SetLineStyle(2);
     fitFcnf2->SetLineColor(kRed);
     fitFcnf2->Draw("l same");
+
+    fPrelimResults->cd();
+    hf21->Write("f2_1525_Yield_Stat");
+    hf22->Write("f2_1525_Yield_Sys");
 
     // Create legend with physics information
     TLegend *leg2 = new TLegend(0.62, 0.751, 0.9, 0.9);
@@ -731,6 +741,9 @@ void plotReweightedSpectra_single()
     cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_SQM.pdf").c_str());
     // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweightedFullFit.pdf").c_str());
     // cMeanPt->SaveAs((savePath + "/MeanPt_vs_Mass_reweighted.pdf").c_str());
+    fPrelimResults->cd();
+    cMeanPt->Write("MeanPt_vs_Mass");
+    fPrelimResults->Close();
 
     // // Similarly plot the dN/dy/(2J+1) as a function of particle mass
     // vector<vector<float>> dNdyvalues_13TeV = {

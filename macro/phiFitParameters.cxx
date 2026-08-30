@@ -53,19 +53,30 @@ void phiFitParameters()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
-    TString suffix = "25_aiam";
+    // TString suffix = "25_aiam";
+    // TString suffix = "25_aiamShifted_opti10";
+    // TString suffix = "26";
+    TString suffix = "26ai";
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/PhiInvMass";
 
     ////=====New===========
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root"); // 2025 ai+am
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root"); // 2026
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root"); // 2025 ai+am
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // 2025 ai+am Opti9 (Ka momentum shifted)
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti10/LHC25/AnalysisResults25_aiamShifted.root"); // 2025 ai+am Opti10 (Ka momentum shifted)
+
+    ////=============Separate files====================
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/All/AnalysisResults_LHC26ai.root");
 
     // //=========================================
     // //=======Phi Inv mass fit (1D)=============
     // //=========================================
 
     TH3F *hPhiMassVsPt = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMass");
+    // TH3F *hPhiMassVsPt = GetHisto<TH3F>(fInput, "doublephimeson/hPhiMassShifted");
     TH2F *hPhiPhiMass = (TH2F *)hPhiMassVsPt->Project3D("yx");
     TH2F *hPhiMassVsPt2D = GetHisto<TH2F>(fInput, "doublephimeson/hPhiMassVsPt");
+    // TH2F *hPhiMassVsPt2D = GetHisto<TH2F>(fInput, "doublephimeson/hPhiMassVsPtShifted");
 
     TCanvas *cPhiVsPt = new TCanvas("cPhiVsPt", "Phi Mass vs Pt", 1280, 720);
     cPhiVsPt->Divide(4, 4);
@@ -100,11 +111,15 @@ void phiFitParameters()
         fitFcn->SetParameter(0, 5000);          // yield
         fitFcn->SetParLimits(0, 0, 1e6);        // yield
         fitFcn->SetParameter(1, 1.0198);        // mass peak
-        fitFcn->SetParLimits(1, 1.017, 1.026);  // mass peak
+        fitFcn->SetParLimits(1, 1.0175, 1.022);  // mass peak
         fitFcn->SetParameter(2, 0.0012);        //  Gaussian width (Detector resolution)
-        fitFcn->SetParLimits(2, 0.0008, 0.008); // Gaussian width.
+        fitFcn->SetParLimits(2, 0.0008, 0.006); // Gaussian width.
         // fitFcn->SetParameter(3, 0.0042);   //lorentzian width (Resonance width)
         fitFcn->FixParameter(3, 0.0042); // lorentzian width
+
+        // if (ibin == 3)
+        //     fitFcn->SetParLimits(0, 0, 1e3);
+
 
         fitFcn->SetParameter(4, 4e4);        // Pol2 p0
         fitFcn->SetParLimits(4, 1e2, 3e6);   // Pol2 p0
@@ -112,6 +127,12 @@ void phiFitParameters()
         fitFcn->SetParLimits(5, 1e2, 3e7);   // Pol2 p1
         fitFcn->SetParameter(6, -5.0e6);     // Pol2 p2
         fitFcn->SetParLimits(6, -1e9, -1e2); // Pol2 p2
+
+        // if (ibin == 12 || ibin == 13)
+        // {
+        //     hPhi1->Rebin(2);
+        // }
+
 
         hPhi1->Fit("fitfunc", "REBMS");
         TVirtualFitter::SetDefaultFitter("Minuit2");

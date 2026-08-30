@@ -270,7 +270,9 @@ void xTscaling()
     AddPoints(gXT13);
     AddPoints(gXT136);
 
-    TF1 *fitPL = new TF1("fitPL", "[0]*pow(x,[1])*pow(1+x,[2])", 2e-3, 9e-3);
+    cout << "Total points in the combined graph: " << gXTAll->GetN() << endl;
+
+    TF1 *fitPL = new TF1("fitPL", "[0]*pow(x,[1])*pow(1+x,[2])", 1.6e-3, 9e-3);
     fitPL->SetLineColor(kBlack);
     fitPL->SetLineWidth(2);
     fitPL->SetParameters(1.8, -6.0, 5.0);
@@ -279,11 +281,25 @@ void xTscaling()
     fitPL->SetParLimits(2, -1000.0, 1000.0);
     gXTAll->Fit(fitPL, "REBMS");
     fitPL->Draw("same");
+    cout << "Chi2/NDF for power-law fit is " << fitPL->GetChisquare() / fitPL->GetNDF() << endl;
+    cout << "Min x fit range is " << fitPL->GetXmin() << " and max x fit range is " << fitPL->GetXmax() << endl;
+    double pTminFit136 = fitPL->GetXmin() * sqrts136 / 2.0;
+    double pTminFit13 = fitPL->GetXmin() * sqrts13 / 2.0;
+    double pTminFit7 = fitPL->GetXmin() * sqrts7 / 2.0;
+    double pTminFit502 = fitPL->GetXmin() * sqrts502 / 2.0;
+    double pTminFit276 = fitPL->GetXmin() * sqrts276 / 2.0;
+    cout << "Minimum pT for fit range in 13.6 TeV is " << pTminFit136 << " GeV/c" << endl;
+    cout << "Minimum pT for fit range in 13 TeV is " << pTminFit13 << " GeV/c" << endl;
+    cout << "Minimum pT for fit range in 7 TeV is " << pTminFit7 << " GeV/c" << endl;
+    cout << "Minimum pT for fit range in 5.02 TeV is " << pTminFit502 << " GeV/c" << endl;
+    cout << "Minimum pT for fit range in 2.76 TeV is "<< pTminFit276 << " GeV/c" << endl;
 
-    TLegend *leg = new TLegend(0.68, 0.88, 0.93, 0.95);
+    TLegend *leg = new TLegend(0.68, 0.8, 0.93, 0.95);
     SetLegendStyle(leg);
-    leg->SetTextSize(0.045);
+    leg->SetTextSize(0.04);
     leg->AddEntry((TObject *)0, "K*^{0}", "");
+    leg->AddEntry((TObject *)0, "pp INEL", "");
+    leg->AddEntry((TObject *)0, "|y| < 0.5", "");
     leg->Draw();
 
     TLegend *leg2 = new TLegend(0.2, 0.2, 0.73, 0.65);
@@ -297,7 +313,7 @@ void xTscaling()
     leg2->AddEntry(fitPL, "power-law (ax^{b}(1+x)^{c})", "l");
     // leg2->AddEntry((TObject *)0, "", "");
     leg2->Draw();
-    cXT->SaveAs("Plots/xT_scaling.png");
+    cXT->SaveAs("Plots/xT_scaling.pdf");
 }
 
 TGraphErrors *HistToXTGraph(TH1D *hStat, TH1D *hRelSys, double sqrts, double sigmaINEL, double nAverage = 1.0, bool alreadyNormalizedYield = false, float AverageKstar = 1.0)

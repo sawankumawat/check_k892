@@ -10,12 +10,6 @@
 
 using namespace std;
 
-////Initial parameters from template fit
-float mean_CB[] = {0.7875, 0.7527, 0.7678, 0.7684, 0.7686, 0.769, 0.7698, 0.7709, 0.7706, 0.7715, 0.7712, 0.7712, 0.7715, 0.7721};
-float sigma_CB[] = {0.06119, 0.07456, 0.08454, 0.08353, 0.08075, 0.07841, 0.07658, 0.07632, 0.07539, 0.07474, 0.07387, 0.07425, 0.07425, 0.07309};
-float alpha_CB[] = {1.2, 0.8809, 0.5499, 0.5506, 0.6135, 0.7388, 0.8244, 0.8935, 0.9161, 0.9677, 0.9634, 0.9524, 0.9648, 1.031};
-float n_CB[] = {146.8, 139.5, 127.8, 1.23, 0.6261, 0.3242, 0.2302, 0.1739, 0.1594, 0.1275, 0.1449, 0.1551, 0.1463, 0.1128};
-
 void kstar_sparse()
 {
     TStopwatch timer;
@@ -33,7 +27,7 @@ void kstar_sparse()
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
-    const bool multipanel_plots = 1;
+    const bool multipanel_plots = 0;
     const bool save_plots = 1;
     bool isINEL = false;
     bool widthFixed = true; // width fixed to PDG value
@@ -66,23 +60,21 @@ void kstar_sparse()
         return;
     }
 
-    TCanvas *cinv[Npt]; // for output canvases on screen containing fitted signal after subtraction
+    std::vector<TString> badFits;
 
-    for (Int_t ip = 0; ip < Npt; ip++)
-    {
-        TString cName = TString::Format("cinv_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
-        cinv[ip] = new TCanvas(Form("cinv%d", ip), cName.Data(), 10, 10, 720, 720);
-        SetCanvasStyle(cinv[ip], 0.15, 0.05, 0.08, 0.13);
-    }
+    // for (Int_t ip = 0; ip < Npt; ip++)
+    // {
+    //     TString cName = TString::Format("cinv_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
+    //     cinv[ip] = new TCanvas(Form("cinv%d", ip), cName.Data(), 10, 10, 720, 720);
+    //     SetCanvasStyle(cinv[ip], 0.15, 0.05, 0.08, 0.13);
+    // }
 
-    TCanvas *cSigbkg[Npt]; // for output canvases on screen containing signal with bkg(after norm in case of mix)
-
-    for (Int_t ip = 0; ip < Npt; ip++)
-    {
-        TString cNam = TString::Format("cSigbkg_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
-        cSigbkg[ip] = new TCanvas(Form("cSigbkg%d", ip), cNam.Data(), 720, 720);
-        SetCanvasStyle(cSigbkg[ip], 0.15, 0.06, 0.06, 0.13);
-    }
+    // for (Int_t ip = 0; ip < Npt; ip++)
+    // {
+    //     TString cNam = TString::Format("cSigbkg_pt_%2.1f-%2.1f", pT_bins[ip], pT_bins[ip + 1]);
+    //     cSigbkg[ip] = new TCanvas(Form("cSigbkg%d", ip), cNam.Data(), 720, 720);
+    //     SetCanvasStyle(cSigbkg[ip], 0.15, 0.06, 0.06, 0.13);
+    // }
 
     if (multipanel_plots)
     {
@@ -128,8 +120,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -197,8 +189,8 @@ void kstar_sparse()
             // }
         }
 
-        for (int imult = 0; imult < nmultbins + 1; imult++)
-        // for (int imult = 8; imult < 9; imult++)
+        // for (int imult = 0; imult < nmultbins + 1; imult++)
+        for (int imult = 10; imult < 11; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -262,6 +254,13 @@ void kstar_sparse()
 
             std::vector<TCanvas *> c_fitsig, c_sigbkg;
             TString Cenoutputfolder = outputfolder_mult;
+            TCanvas *cinv[Npt];    // for output canvases on screen containing fitted signal after subtraction
+            TCanvas *cSigbkg[Npt]; // for output canvases on screen containing signal with bkg(after norm in case of mix)
+            for (Int_t ip = 0; ip < Npt; ip++)
+            {
+                cinv[ip] = new TCanvas(Form("cinv%d", ip), "", 720, 720);
+                cSigbkg[ip] = new TCanvas(Form("cSigbkg%d", ip), "", 720, 720);
+            }
 
             if (calcInvMass)
             {
@@ -411,16 +410,16 @@ void kstar_sparse()
                     //*****************************************************************************************************************************
                     float normRangeLow = kNormRangepT[ip][0];
                     float normRangeHigh = kNormRangepT[ip][1];
-                    if (sysVars[ivar] == "Norm1")
-                    {
-                        normRangeLow = kNormRangepT_sysVar1[ip][0];
-                        normRangeHigh = kNormRangepT_sysVar1[ip][1];
-                    }
-                    else if (sysVars[ivar] == "Norm2")
-                    {
-                        normRangeLow = kNormRangepT_sysVar2[ip][0];
-                        normRangeHigh = kNormRangepT_sysVar2[ip][1];
-                    }
+                    // if (sysVars[ivar] == "Norm1")
+                    // {
+                    //     normRangeLow = kNormRangepT_sysVar1[ip][0];
+                    //     normRangeHigh = kNormRangepT_sysVar1[ip][1];
+                    // }
+                    // else if (sysVars[ivar] == "Norm2")
+                    // {
+                    //     normRangeLow = kNormRangepT_sysVar2[ip][0];
+                    //     normRangeHigh = kNormRangepT_sysVar2[ip][1];
+                    // }
 
                     if (kResBkg == "MIX" || kResBkg == "ROTATED")
                     {
@@ -455,10 +454,12 @@ void kstar_sparse()
                     //                               Fit function using template
                     //******************************************************************************************//
 
+                    cout << "  pT bin " << ip << " (" << lowpt << " < pT < " << highpt << " GeV/c):" << endl;
+
                     // =====================================================================
                     // Load reflection template
                     // =====================================================================
-                    TString templName = Form("hSigminusTrue_pt_%.1f_%.1f", lowpt, highpt);
+                    TString templName = Form("%d-%d/hSigminusTrue_pt_%.1f_%.1f", multlow, multhigh, lowpt, highpt);
                     TH1D *hReflRaw = (TH1D *)fTemplateFile->Get(templName);
                     if (!hReflRaw)
                     {
@@ -769,7 +770,11 @@ void kstar_sparse()
                     covStatus = fitResult->CovMatrixStatus();
                     cout << "  Fit status: " << fitStatus << "  |  Cov status: " << covStatus << endl;
                     if (fitStatus != 0 || covStatus < 2)
+                    {
                         cout << "  WARNING: Bad fit in pT bin " << ip << endl;
+                        badFits.push_back(Form("Multiplicity: %d-%d %, pT Bin %d (%.1f - %.1f GeV/c)",
+                                               multlow, multhigh, ip, lowpt, highpt));
+                    }
 
                     // =====================================================================
                     // Extract parameters directly as physical integrated counts
@@ -1091,8 +1096,10 @@ void kstar_sparse()
                     }
                     legPars->AddEntry((TObject *)0, Form("#sigma_{res}: %.1f #pm %.1f MeV/c^{2}", sigma_fit * 1000, sigma_err * 1000), "");
                     legPars->AddEntry((TObject *)0, Form("N_{sig}: %.0f #pm %.0f", N_sig, N_sig_err), "");
-                    legPars->AddEntry((TObject *)0, Form("N_{temp}: %.0f", N_temp_fit), "");
-                    legPars->AddEntry((TObject *)0, Form("N_{res}: %.0f", N_res_fit), "");
+                    // legPars->AddEntry((TObject *)0, Form("N_{temp}: %.0f", N_temp_fit), "");
+                    // legPars->AddEntry((TObject *)0, Form("N_{res}: %.0f", N_res_fit), "");
+                    legPars->AddEntry((TObject *)0, Form("Fit Status %d", fitStatus), "");
+                    legPars->AddEntry((TObject *)0, Form("Cov Status %d", covStatus), "");
                     legPars->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f", Chi2Ndf[ip]), "");
                     legPars->Draw();
 
@@ -1276,10 +1283,14 @@ void kstar_sparse()
                     }
                     else
                     {
+                        cSigbkg[ip]->Modified();
+                        cSigbkg[ip]->Update();
+                        gPad->Modified();
+                        gPad->Update();
                         auto c_clone_sig = (TCanvas *)cSigbkg[ip]->Clone(Form("hsigbkg_pt_%d", ip + 1));
                         c_sigbkg.push_back(c_clone_sig);
                         cSigbkg[ip]->SaveAs(Form((Cenoutputfolder + "/hsigbkg_pt%d." + outputtype).Data(), ip + 1));
-                        cSigbkg[ip]->Close();
+                        // cSigbkg[ip]->Close();
                     }
 
                     // delete fSig;
@@ -1411,7 +1422,7 @@ void kstar_sparse()
                     hsigma->Draw("pe");
                     hsigma->Write("sigma");
                     t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-                    // csig->SaveAs((Cenoutputfolder + "/sigma_pt." + outputtype).Data());
+                    csig->SaveAs((Cenoutputfolder + "/sigma_pt." + outputtype).Data());
                     csig->Clear();
 
                     // // // Yield vs pT (integral method)
@@ -1437,7 +1448,7 @@ void kstar_sparse()
                     latYield.SetTextFont(42);
                     latYield.DrawLatexNDC(0.65, 0.83, "pp, INEL");
                     latYield.DrawLatexNDC(0.65, 0.71, "K*(892)^{0}");
-                    csig->SaveAs(outputfolder_mult + "/yield_integral.pdf");
+                    csig->SaveAs(outputfolder_mult + "/yield_integral.png");
                     csig->Clear();
 
                     // Yield vs pT (bin counting method)
@@ -1449,6 +1460,81 @@ void kstar_sparse()
                     hYbincount->Write("yield_bincount");
                     // csig->SaveAs(outputfolder_mult + ("/yield_bincount." + outputtype).c_str());
                     csig->SaveAs(outputfolder_mult + "/yield_bincount.png");
+
+                    // =====================================================================
+                    // Yield Comparison with Ratio Plot
+                    // =====================================================================
+                    csig->Clear();
+
+                    // --- 1. Upper Pad: Yield Spectra ---
+                    TPad *padYield1 = new TPad("padYield1", "padYield1", 0.0, 0.3, 1.0, 1.0);
+                    padYield1->SetBottomMargin(0.0);
+                    padYield1->SetLeftMargin(0.18);
+                    padYield1->SetLogy(1);
+                    padYield1->Draw();
+                    padYield1->cd();
+
+                    hintegral_yield->SetMarkerColor(kRed);
+                    hintegral_yield->SetLineColor(kRed);
+                    hYbincount->SetMarkerColor(kBlue);
+                    hYbincount->SetLineColor(kBlue);
+                    hintegral_yield->SetStats(0);
+                    hYbincount->SetStats(0);
+
+                    hintegral_yield->GetXaxis()->SetLabelSize(0);
+                    hintegral_yield->GetXaxis()->SetTitleSize(0);
+                    hintegral_yield->GetYaxis()->SetTitleSize(0.05);
+                    hintegral_yield->GetYaxis()->SetLabelSize(0.045);
+                    hintegral_yield->GetYaxis()->SetTitleOffset(1.5);
+
+                    hintegral_yield->Draw("pe");
+                    hYbincount->Draw("pe same");
+
+                    TLegend *legcomp = new TLegend(0.45, 0.75, 0.85, 0.88);
+                    SetLegendStyle(legcomp);
+                    legcomp->SetTextSize(0.045);
+                    legcomp->AddEntry(hintegral_yield, "Integral yield", "ep");
+                    legcomp->AddEntry(hYbincount, "Bin-count yield", "ep");
+                    legcomp->Draw();
+
+                    // --- 2. Lower Pad: Ratio (Bin-count / Integral) ---
+                    csig->cd();
+                    TPad *padYield2 = new TPad("padYield2", "padYield2", 0.0, 0.0, 1.0, 0.3);
+                    padYield2->SetTopMargin(0.0);
+                    padYield2->SetBottomMargin(0.35);
+                    padYield2->SetLeftMargin(0.18);
+                    padYield2->Draw();
+                    padYield2->cd();
+
+                    TH1D *hYieldRatio = (TH1D *)hYbincount->Clone("hYieldRatio");
+                    hYieldRatio->Divide(hintegral_yield);
+                    hYieldRatio->SetTitle("");
+                    hYieldRatio->GetYaxis()->SetTitle("Bin-count / Integral");
+                    hYieldRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+
+                    hYieldRatio->GetXaxis()->SetTitleSize(0.13);
+                    hYieldRatio->GetXaxis()->SetLabelSize(0.11);
+                    hYieldRatio->GetXaxis()->SetTitleOffset(1.1);
+                    hYieldRatio->GetYaxis()->SetTitleSize(0.09);
+                    hYieldRatio->GetYaxis()->SetLabelSize(0.08);
+                    hYieldRatio->GetYaxis()->SetTitleOffset(0.8);
+                    hYieldRatio->GetYaxis()->SetNdivisions(505);
+
+                    hYieldRatio->SetMinimum(0.85);
+                    hYieldRatio->SetMaximum(1.15);
+                    hYieldRatio->SetMarkerColor(kBlack);
+                    hYieldRatio->SetLineColor(kBlack);
+                    hYieldRatio->Draw("pe");
+
+                    TLine *lineYR = new TLine(hYieldRatio->GetXaxis()->GetXmin(), 1.0,
+                                              hYieldRatio->GetXaxis()->GetXmax(), 1.0);
+                    lineYR->SetLineColor(kRed);
+                    lineYR->SetLineStyle(2);
+                    lineYR->Draw("same");
+
+                    csig->SaveAs(outputfolder_mult + "/yield_compare.png");
+                    csig->Close();
+
                     csig->Close();
 
                     hsignificance->Clear();
@@ -1460,7 +1546,15 @@ void kstar_sparse()
                 }
                 filecmp->cd();
             }
-        }
+
+            // Delete at the end of the imult loop (outside the pT loop):
+            for (Int_t ip = 0; ip < Npt; ip++)
+            {
+                delete cinv[ip];
+                delete cSigbkg[ip];
+            }
+        } // End of multiplicity loop
+
         cout << "============= End of the code =============" << endl;
         cout << "Data file used: " << kDataFilename.c_str() << endl;
         cout << "Selection used: " << (isINEL ? "INEL" : "INEL > 0") << endl;
@@ -1469,6 +1563,27 @@ void kstar_sparse()
         cout << "Number of pT bins: " << Npt << endl;
         (multipanel_plots) ? cout << "Canvas: " << klowerpad << "x" << kupperpad << " multi-panel" << endl : cout << "Canvas: Single panel plots" << endl;
     }
+
+    // =====================================================================
+    // BAD FITS SUMMARY
+    // =====================================================================
+    cout << "\n==========================================" << endl;
+    cout << "           BAD FITS SUMMARY               " << endl;
+    cout << "==========================================" << endl;
+    if (badFits.empty())
+    {
+        cout << "All fits converged successfully!" << endl;
+    }
+    else
+    {
+        cout << "Total bad fits detected: " << badFits.size() << endl;
+        for (const auto &bad : badFits)
+        {
+            cout << "  - " << bad << endl;
+        }
+    }
+    cout << "==========================================\n"
+         << endl;
 
     // Stop the stopwatch
     timer.Stop();

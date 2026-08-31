@@ -24,17 +24,19 @@ void kstar_sparse()
     // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
     TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
-    const string kResBkg = "MIX";
+    // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    // const string kResBkg = "ROTATED";
+    const string kResBkg = "ROTATED";
     const string kbkg = "pol3";
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
-    bool makeQAplots = false;
-    bool makeallpTplots = true; // make all pT plots
+    bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
-    bool isINEL = true;
+    const bool multipanel_plots = 1;
+    const bool save_plots = 1;
+    bool isINEL = false;
+    bool widthFixed = true; // width fixed to PDG value
 
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
@@ -105,6 +107,14 @@ void kstar_sparse()
         return;
     }
 
+    TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue.root", kResBkg.c_str()), "READ");
+    if (!fTemplateFile || fTemplateFile->IsZombie())
+    {
+        cerr << "ERROR: SignalMinusTrue.root not found!" << endl;
+        return;
+    }
+    cout << "Reflection template file opened successfully." << endl;
+
     // TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa_id21631/eventSelection/hMultiplicity");
     // TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
     string multpath = kfoldername.substr(0, kfoldername.length() - 9);
@@ -118,8 +128,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -227,7 +237,7 @@ void kstar_sparse()
             TFile *filecmp;
             if (ivar == 0)
             {
-                filecmp = new TFile((koutputfolder + resBkgFolder + kbkgFolder + +Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
+                filecmp = new TFile((koutputfolder + resBkgFolder + kbkgFolder + Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
             }
             else
             {
@@ -249,6 +259,9 @@ void kstar_sparse()
             {
                 std::cout << "Folder " << outputfolder_mult << " created successfully." << std::endl;
             }
+
+            std::vector<TCanvas *> c_fitsig, c_sigbkg;
+            TString Cenoutputfolder = outputfolder_mult;
 
             if (calcInvMass)
             {
@@ -425,11 +438,6 @@ void kstar_sparse()
                     }
                     else if (kResBkg == "LIKE")
                     {
-                        // sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normRangeLow), fHistTotal[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                        // bkg_integral = (fHistbkgLS[ip]->Integral(fHistbkgLS[ip]->GetXaxis()->FindBin(normRangeLow), fHistbkgLS[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                        // normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
-                        // hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
-                        // hfbkg->Scale(normfactor);
 
                         hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
                         hfbkg->Rebin(rebin_value);
@@ -443,251 +451,513 @@ void kstar_sparse()
                     ptbinwidth[ip] = pT_bins[ip + 1] - pT_bins[ip];
                     // cout<<"the value of pt bin width is "<<ptbinwidth[ip]<<endl;
 
-                    //****************************************************************************************************
+                    //******************************************************************************************//
+                    //                               Fit function using template
+                    //******************************************************************************************//
 
-                    TF1 *fitFcn, *fitFcn1, *fitFcn2;
-
-                    if (kbkg == "pol2")
+                    // =====================================================================
+                    // Load reflection template
+                    // =====================================================================
+                    TString templName = Form("hSigminusTrue_pt_%.1f_%.1f", lowpt, highpt);
+                    TH1D *hReflRaw = (TH1D *)fTemplateFile->Get(templName);
+                    if (!hReflRaw)
                     {
-                        fitFcn = new TF1("fitfunc", BreitWignerpoly2, lowfitrange, highfitrange, 6);
-                        fitFcn1 = new TF1("fitfunc1", polynomial2, lowfitrange, highfitrange, 3);
+                        cerr << "WARNING: Template '" << templName
+                             << "' not found. Skipping pT bin " << ip << "." << endl;
+                        continue;
+                    }
+
+                    TH1D *hReflection = (TH1D *)hReflRaw->Clone(Form("hReflection_ip%d", ip));
+                    hReflection->Rebin(rebin_value);
+
+                    TCanvas *cRefl = new TCanvas(Form("cRefl_ip%d", ip), "Reflection template", 720, 720);
+                    TH1D *hDatabyReflection = (TH1D *)hfsig->Clone(Form("hDatabyReflection_ip%d", ip));
+                    hDatabyReflection->SetTitle(Form("%.1f < p_{T} (GeV/c) < %.1f; M_{K#pi} (GeV/c^{2}); Data / Reflection template", lowpt, highpt));
+
+                    TH1D *hRefNorm = (TH1D *)hReflection->Clone(Form("hRefNorm_ip%d", ip));
+                    cout << "Ref Norm = " << hDatabyReflection->Integral(hDatabyReflection->GetXaxis()->FindBin(0.7), hDatabyReflection->GetXaxis()->FindBin(0.8)) / (hRefNorm->Integral(hRefNorm->GetXaxis()->FindBin(0.7), hRefNorm->GetXaxis()->FindBin(0.8))) << endl;
+
+                    hRefNorm->Scale(hDatabyReflection->Integral(hDatabyReflection->GetXaxis()->FindBin(0.7), hDatabyReflection->GetXaxis()->FindBin(0.8)) / (hRefNorm->Integral(hRefNorm->GetXaxis()->FindBin(0.7), hRefNorm->GetXaxis()->FindBin(0.8))));
+                    hDatabyReflection->Divide(hRefNorm);
+                    hDatabyReflection->GetXaxis()->SetRangeUser(lowfitrange, highfitrange);
+                    cRefl->cd();
+                    hDatabyReflection->Draw();
+
+                    TLatex latexref;
+                    latexref.SetNDC();
+                    latexref.SetTextSize(0.05);
+                    latexref.SetTextAlign(22);
+                    latexref.DrawLatex(0.5, 0.95, Form("%.1f < p_{T} (GeV/c) < %.1f", lowpt, highpt));
+
+                    // auto c_clone_sigbyref = (TCanvas *)cRefl->Clone(Form("hsigbyref_pt_%d", ip + 1));
+                    // c_sigbyref.push_back(c_clone_sigbyref);
+                    // cRefl->SaveAs(Cenoutputfolder + Form("/hDatabyReflection_ip%d.%s", ip, outputtype.Data()));
+
+                    for (int ib = 1; ib <= hReflection->GetNbinsX(); ib++)
+                    {
+                        if (hReflection->GetBinContent(ib) < 0)
+                        {
+                            hReflection->SetBinContent(ib, 0.0);
+                            hReflection->SetBinError(ib, 0.0);
+                        }
+                    }
+
+                    bool bTemplEmpty = (hReflection->Integral() <= 0);
+                    if (bTemplEmpty)
+                        cerr << "WARNING: Template empty in fit range for pT bin " << ip << endl;
+
+                    // =====================================================================
+                    // Superior Analytical Normalization Setup
+                    // =====================================================================
+                    const double fitLo = lowfitrange;
+                    const double fitHi = highfitrange;
+                    const double leftLo = fitLo;
+                    const double leftHi = 0.82;
+                    const double binWidthFit = hfsig->GetBinWidth(1);
+
+                    int binLo = hReflection->GetXaxis()->FindBin(fitLo + 1e-6);
+                    int binHi = hReflection->GetXaxis()->FindBin(fitHi - 1e-6);
+                    double reflBinWidth = hReflection->GetBinWidth(1);
+                    double reflNorm = std::max(hReflection->Integral(binLo, binHi) * reflBinWidth, 1e-12);
+
+                    double total_in_fit = std::max(1.0, hfsig->Integral(
+                                                            hfsig->GetXaxis()->FindBin(fitLo + 1e-5),
+                                                            hfsig->GetXaxis()->FindBin(fitHi - 1e-5)));
+
+                    // ==================================================================
+                    // Define Universal Residual Background Evaluator Lambda
+                    // ==================================================================
+                    int nBkgPars = 1; // pol1 default
+                    if (kbkg == "pol2")
+                        nBkgPars = 2;
+                    else if (kbkg == "pol3")
+                        nBkgPars = 3;
+                    else if (kbkg == "expol" || kbkg == "pol3Thresh")
+                        nBkgPars = 4;
+
+                    auto evalBkgDensity = [=](double x, const double *par) -> double
+                    {
+                        if (kbkg == "pol1")
+                        {
+                            double t = 2.0 * (x - fitLo) / (fitHi - fitLo) - 1.0;
+                            double chebRaw = 1.0 + par[0] * t;
+                            return chebRaw / (fitHi - fitLo);
+                        }
+                        else if (kbkg == "pol2")
+                        {
+                            double t = 2.0 * (x - fitLo) / (fitHi - fitLo) - 1.0;
+                            double T1 = t, T2 = 2.0 * t * t - 1.0;
+                            double chebRaw = 1.0 + par[0] * T1 + par[1] * T2;
+                            double chebInt = ((fitHi - fitLo) / 2.0) * (2.0 - (2.0 / 3.0) * par[1]);
+                            return chebRaw / std::max(chebInt, 1e-12);
+                        }
+                        else if (kbkg == "pol3")
+                        {
+                            double t = 2.0 * (x - fitLo) / (fitHi - fitLo) - 1.0;
+                            double T1 = t, T2 = 2.0 * t * t - 1.0, T3 = 4.0 * t * t * t - 3.0 * t;
+                            double chebRaw = 1.0 + par[0] * T1 + par[1] * T2 + par[2] * T3;
+                            double chebInt = ((fitHi - fitLo) / 2.0) * (2.0 - (2.0 / 3.0) * par[1]);
+                            return chebRaw / std::max(chebInt, 1e-12);
+                        }
+                        else if (kbkg == "expol")
+                        {
+                            if (x <= 0)
+                                return 0.0;
+                            auto rawExpol = [](double val, const double *p)
+                            {
+                                if (val <= 0)
+                                    return 0.0;
+                                return std::pow(val, p[0]) * std::exp(-p[1] - p[2] * val - p[3] * val * val);
+                            };
+                            double rawVal = rawExpol(x, par);
+                            int nSteps = 40;
+                            double h = (fitHi - fitLo) / nSteps;
+                            double sum = rawExpol(fitLo, par) + rawExpol(fitHi, par);
+                            for (int j = 1; j < nSteps; j++)
+                            {
+                                double xj = fitLo + j * h;
+                                sum += rawExpol(xj, par) * ((j % 2 == 0) ? 2.0 : 4.0);
+                            }
+                            double normInt = (h / 3.0) * sum;
+                            return rawVal / std::max(normInt, 1e-12);
+                        }
+                        else if (kbkg == "pol3Thresh")
+                        {
+                            double m_thresh = massPi + massKa;
+                            if (x < m_thresh)
+                                return 0.0;
+                            double dx = x - m_thresh;
+                            double rawVal = par[0] + par[1] * dx + par[2] * dx * dx + par[3] * dx * dx * dx;
+
+                            auto antideriv = [m_thresh](double val, const double *p)
+                            {
+                                if (val <= m_thresh)
+                                    return 0.0;
+                                double d = val - m_thresh;
+                                return p[0] * d + 0.5 * p[1] * d * d + (1.0 / 3.0) * p[2] * d * d * d + 0.25 * p[3] * d * d * d * d;
+                            };
+                            double normInt = antideriv(fitHi, par) - antideriv(std::max(fitLo, m_thresh), par);
+                            return rawVal / std::max(normInt, 1e-12);
+                        }
+                        double t = 2.0 * (x - fitLo) / (fitHi - fitLo) - 1.0;
+                        return (1.0 + par[0] * t) / (fitHi - fitLo);
+                    };
+
+                    // ==================================================================
+                    // Left-sideband pre-fit
+                    // ==================================================================
+                    TF1 *fLeft = new TF1(Form("fLeft_ip%d", ip), [hReflection, reflNorm, fitLo, fitHi, binWidthFit](double *xx, double *pp) -> double
+                                         {
+                double x = xx[0];
+                double Ncorr = pp[0], Nbkg = pp[1], c1 = pp[2];
+                double corrDensity = hReflection->Interpolate(x) / reflNorm;
+                double t = 2.0 * (x - fitLo) / (fitHi - fitLo) - 1.0;
+                double bkgDensity = (1.0 + c1 * t) / (fitHi - fitLo);
+                return binWidthFit * (Ncorr * corrDensity + Nbkg * bkgDensity); }, leftLo, leftHi, 3);
+                    fLeft->SetParameters(total_in_fit * 0.3, total_in_fit * 0.3, 0.0);
+                    fLeft->SetParLimits(0, 0.0, 1e10);
+                    fLeft->SetParLimits(1, 0.0, 1e10);
+                    fLeft->SetParLimits(2, -1.0, 1.0);
+
+                    hfsig->Fit(fLeft, "R Q N 0");
+                    double N_temp_0 = fLeft->GetParameter(0);
+                    cout << "  -> Left SB pre-fit: N_temp_0 = " << N_temp_0 << " +/- " << fLeft->GetParError(0) << endl;
+                    delete fLeft;
+
+                    // ==================================================================
+                    // Full invariant-mass VOIGTIAN fit
+                    // ==================================================================
+                    double max_corr = total_in_fit;
+
+                    TF1 *fTotal = new TF1(Form("fTotal_ip%d", ip), [hReflection, reflNorm, fitLo, fitHi, binWidthFit, evalBkgDensity](double *xx, double *pp) -> double
+                                          {
+                double x = xx[0];
+                double Nsig = pp[0], mass = pp[1], width_val = pp[2], sigma = pp[3]; // Slot 3: Gaussian sigma
+                double Ncorr = pp[4], Nbkg = pp[5];                   // Shifted up by 1
+
+                double voigtRaw = TMath::Voigt(x - mass, sigma, width_val);
+
+                // Fast Numerical Normalization dynamically valid for all pT (low and high sigma)
+                int nSteps = 40; 
+                double h_step = (fitHi - fitLo) / nSteps;
+                double vInt = TMath::Voigt(fitLo - mass, sigma, width_val) + TMath::Voigt(fitHi - mass, sigma, width_val);
+                for (int j = 1; j < nSteps; j++) {
+                    double xj = fitLo + j * h_step;
+                    vInt += TMath::Voigt(xj - mass, sigma, width_val) * ((j % 2 == 0) ? 2.0 : 4.0);
+                }
+                vInt *= h_step / 3.0;
+                double sigDensity = voigtRaw / std::max(vInt, 1e-12);
+
+                // 2. Unit-Normalized MC Correlated Template Density
+                double corrDensity = 0.0;
+                if (hReflection && hReflection->GetEntries() > 0) {
+                    corrDensity = hReflection->Interpolate(x) / reflNorm;
+                    if (corrDensity < 0) corrDensity = 0.0;
+                }
+
+                // 3. Normalized Residual Background Density (Starts at pp[6])
+                double bkgDensity = evalBkgDensity(x, &pp[6]);
+
+                return binWidthFit * (Nsig * sigDensity + Ncorr * corrDensity + Nbkg * bkgDensity); }, fitLo, fitHi, 6 + nBkgPars); // 6 base params + bkg shape params
+
+                    fTotal->SetParNames("Nsig", "mass", "width", "sigma", "Ncorr", "Nbkg");
+                    fTotal->SetParameter(0, total_in_fit * 0.40);
+                    fTotal->SetParLimits(0, 0.0, total_in_fit);
+                    fTotal->SetParameter(1, masspdg);
+                    fTotal->SetParLimits(1, masspdg - 0.010, masspdg + 0.010);
+
+                    // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
+                    fTotal->SetParameter(2, widthpdg);
+                    if (widthFixed)
+                        fTotal->FixParameter(2, widthpdg);
+                    else
+                        fTotal->SetParLimits(2, widthpdg - 0.005, widthpdg + 0.005);
+                    // For Systematics: comment out FixParameter above and use:
+                    // fTotal->SetParLimits(2, 0.030, 0.070); // Let it float
+                    // OR: fTotal->FixParameter(2, widthpdg * 1.10); // Fix at +10% variation
+                    // ---------------------------------------------------
+
+                    // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
+                    fTotal->SetParameter(3, 0.002);
+                    fTotal->SetParLimits(3, 0.0001, 0.030); // Allow up to 30 MeV for high-pT smearing
+
+                    fTotal->SetParameter(4, std::min(std::max(N_temp_0, 0.0), max_corr));
+                    fTotal->SetParLimits(4, 0.0, 2 * N_temp_0);
+                    fTotal->SetParameter(5, total_in_fit * 0.30);
+                    fTotal->SetParLimits(5, 0.0, total_in_fit);
+
+                    // Dynamically initialize background shape parameters starting at index 6
+                    if (kbkg == "pol1")
+                    {
+                        fTotal->SetParName(6, "c1");
+                        fTotal->SetParameter(6, -0.5);
+                        fTotal->SetParLimits(6, -1.0, 1.0);
+                    }
+                    else if (kbkg == "pol2")
+                    {
+                        fTotal->SetParName(6, "c1");
+                        fTotal->SetParName(7, "c2");
+                        fTotal->SetParameter(6, -0.5);
+                        fTotal->SetParLimits(6, -1.0, 1.0);
+                        fTotal->SetParameter(7, 0.1);
+                        fTotal->SetParLimits(7, -1.0, 1.0);
                     }
                     else if (kbkg == "pol3")
                     {
-                        fitFcn = new TF1("fitfunc", BreitWignerpoly3, lowfitrange, highfitrange, 7);
-                        fitFcn1 = new TF1("fitfunc1", polynomial3, lowfitrange, highfitrange, 4);
+                        fTotal->SetParName(6, "c1");
+                        fTotal->SetParName(7, "c2");
+                        fTotal->SetParName(8, "c3");
+                        fTotal->SetParameter(6, -0.5);
+                        fTotal->SetParLimits(6, -1.0, 1.0);
+                        fTotal->SetParameter(7, 0.1);
+                        fTotal->SetParLimits(7, -1.0, 1.0);
+                        fTotal->SetParameter(8, -0.05);
+                        fTotal->SetParLimits(8, -1.0, 1.0);
                     }
                     else if (kbkg == "expol")
                     {
-                        fitFcn = new TF1("fitfunc", BWExpo, lowfitrange, highfitrange, 7);
-                        fitFcn1 = new TF1("fitfunc1", Expo, lowfitrange, highfitrange, 4);
+                        fTotal->SetParName(6, "p0");
+                        fTotal->SetParName(7, "p1");
+                        fTotal->SetParName(8, "p2");
+                        fTotal->SetParName(9, "p3");
+                        fTotal->SetParameter(6, 1.0);
+                        fTotal->SetParLimits(6, -15.0, 15.0);
+                        fTotal->SetParameter(7, 1.0);
+                        fTotal->SetParLimits(7, -20.0, 20.0);
+                        fTotal->SetParameter(8, 1.0);
+                        fTotal->SetParLimits(8, -15.0, 15.0);
+                        fTotal->SetParameter(9, 0.1);
+                        fTotal->SetParLimits(9, -15.0, 15.0);
                     }
-                    else if (kbkg == "CBpol2")
+                    else if (kbkg == "pol3Thresh")
                     {
-                        fitFcn = new TF1("fitfunc", BWCBpol2, lowfitrange, highfitrange, 11);
-                        fitFcn1 = new TF1("fitfunc1", CBRightpol2, lowfitrange, highfitrange, 8);
+                        fTotal->SetParName(6, "p0");
+                        fTotal->SetParName(7, "p1");
+                        fTotal->SetParName(8, "p2");
+                        fTotal->SetParName(9, "p3");
+                        fTotal->SetParameter(6, 1.0);
+                        fTotal->SetParLimits(6, 0.0, 1000.0);
+                        fTotal->SetParameter(7, 1.0);
+                        fTotal->SetParLimits(7, -50.0, 50.0);
+                        fTotal->SetParameter(8, 0.0);
+                        fTotal->SetParLimits(8, -50.0, 50.0);
+                        fTotal->SetParameter(9, 0.0);
+                        fTotal->SetParLimits(9, -50.0, 50.0);
                     }
-                    else if (kbkg == "CBpol3")
+
+                    if (bTemplEmpty)
+                        fTotal->FixParameter(4, 0.0); // Shifted to Slot 4
+
+                    // Execute fit with RQS options
+                    TFitResultPtr fitResult = hfsig->Fit(fTotal, "R Q S+");
+                    int fitStatus = fitResult;
+                    int covStatus = fitResult->CovMatrixStatus();
+
+                    // Superior Geometric Simplex Fallback Pipeline
+                    if (fitStatus != 0 || covStatus < 2)
                     {
-                        fitFcn = new TF1("fitfunc", BWCBpol3, lowfitrange, highfitrange, 12);
-                        fitFcn1 = new TF1("fitfunc1", CBRightpol3, lowfitrange, highfitrange, 9);
+                        cout << "  Retrying: Simplex -> Migrad (Strategy 2)..." << endl;
+                        ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2", "Simplex");
+                        hfsig->Fit(fTotal, "R Q N");
+                        ROOT::Math::MinimizerOptions::SetDefaultMinimizer("Minuit2", "Migrad");
+                        ROOT::Math::MinimizerOptions::SetDefaultStrategy(2);
+                        fitResult = hfsig->Fit(fTotal, "R Q S");
+                        ROOT::Math::MinimizerOptions::SetDefaultStrategy(1);
                     }
 
-                    fitFcn2 = new TF1("fitFcn2", BW, lowfitrange, highfitrange, 3); // only signal
+                    fitStatus = fitResult;
+                    covStatus = fitResult->CovMatrixStatus();
+                    cout << "  Fit status: " << fitStatus << "  |  Cov status: " << covStatus << endl;
+                    if (fitStatus != 0 || covStatus < 2)
+                        cout << "  WARNING: Bad fit in pT bin " << ip << endl;
 
-                    fitFcn->SetParameter(0, masspdg); // mass
-                    // fitFcn->SetParLimits(0, 0.7, 0.98); // mass limits
-                    // fitFcn->SetParLimits(0, 0.8, 0.98); // mass limits
+                    // =====================================================================
+                    // Extract parameters directly as physical integrated counts
+                    // =====================================================================
+                    double N_sig = fTotal->GetParameter(0);
+                    double N_sig_err = fTotal->GetParError(0);
+                    double mass_fit = fTotal->GetParameter(1);
+                    double mass_err = fTotal->GetParError(1);
+                    double width_fit = fTotal->GetParameter(2);
+                    double width_err = fTotal->GetParError(2);
+                    double sigma_fit = fTotal->GetParameter(3); // Gaussian Sigma
+                    double sigma_err = fTotal->GetParError(3);
+                    double N_temp_fit = fTotal->GetParameter(4); // Shifted to Slot 4
+                    double N_res_fit = fTotal->GetParameter(5);  // Shifted to Slot 5
 
-                    if (imult == 1 && ip < 3)
+                    Mass[ip] = mass_fit;
+                    ErrorMass[ip] = mass_err;
+                    Width[ip] = width_fit;      // Now stores your fitted or varied width!
+                    ErrorWidth[ip] = width_err; // Now stores your width error!
+                    Yield[ip] = N_sig;
+
+                    cout << "  Mass     = " << Mass[ip] << " +/- " << ErrorMass[ip] << " GeV/c^2" << endl;
+                    cout << "  Width    = " << Width[ip] << " +/- " << ErrorWidth[ip] << " GeV/c^2" << endl;
+                    cout << "  Res(Sig) = " << sigma_fit << " +/- " << sigma_err << " GeV/c^2" << endl;
+                    cout << "  N_sig    = " << N_sig << " +/- " << N_sig_err << endl;
+                    cout << "  N_temp   = " << N_temp_fit << endl;
+                    cout << "  N_res    = " << N_res_fit << endl;
+
+                    // =====================================================================
+                    // Chi²/NDF
+                    // =====================================================================
+                    double chi2 = fTotal->GetChisquare();
+                    int ndf = fTotal->GetNDF();
+                    Chi2Ndf[ip] = (ndf > 0) ? chi2 / ndf : 0.0;
+                    hChiSquare->SetBinContent(ip + 1, Chi2Ndf[ip]);
+                    cout << "  chi2/NDF = " << Chi2Ndf[ip] << "  (" << ndf << " NDF)" << endl;
+
+                    // =====================================================================
+                    // Yield integration calculations (Voigtian Corrected)
+                    // =====================================================================
+                    auto templRawIntegral = [&](double lo, double hi) -> double
                     {
-                        fitFcn->SetParLimits(0, 0.885, 0.888); // Mass
-                    }
-                    else if (imult == 1 && ip > Npt - 4)
-                    {
-                        fitFcn->SetParLimits(0, 0.893, 0.9); // Mass
-                    }
-                    else if (imult == nmultbins && ip > Npt - 4)
-                    {
-                        fitFcn->SetParLimits(0, 0.893, 0.9); // Mass
-                    }
-                    else if (imult == 1 && ip == 10)
-                    {
-                        fitFcn->SetParLimits(0, 0.89, 0.91); // Mass
-                    }
-                    else
-                    {
-                        fitFcn->SetParLimits(0, 0.80, 0.98); // Mass
-                    }
+                        int bLo = hReflection->GetXaxis()->FindBin(lo + 1e-6);
+                        int bHi = hReflection->GetXaxis()->FindBin(hi - 1e-6);
+                        return hReflection->Integral(bLo, bHi) * reflBinWidth;
+                    };
 
-                    fitFcn->SetParameter(1, widthpdg); // width
-                    if (sysVars[ivar] != "WidthFree")
-                        fitFcn->FixParameter(1, widthpdg); // width
-                    else
-                        fitFcn->SetParLimits(1, 0.044, 0.054); // width
-                    // fitFcn->SetParLimits(1, prevWidth, prevWidth + 0.003); // For MC closure test in min bias
+                    double m5lo = masspdg - 5 * width_fit, m5hi = masspdg + 5 * width_fit;
+                    double m2lo = masspdg - 2 * width_fit, m2hi = masspdg + 2 * width_fit;
 
-                    fitFcn->SetParameter(2, 10e4);     // yield
-                    fitFcn->SetParLimits(2, 0.0, 1e8); // Yield2
+                    // Numerically integrate the exact fitted Voigtian shape
+                    TF1 fTempVoigt("fTempVoigt", "[0]*TMath::Voigt(x - [1], [3], [2])", 0.0, 2.0);
+                    fTempVoigt.SetParameters(1.0, mass_fit, width_fit, sigma_fit);
 
-                    // // //pol3 parameters
-                    // fitFcn->SetParameter(3, -1e6);
-                    // fitFcn->SetParameter(4, 1e6);
-                    // fitFcn->SetParameter(5, -1e6);
-                    // fitFcn->SetParameter(6, 1e6);
+                    double voigtIntegralFitRange = fTempVoigt.Integral(fitLo, fitHi);
+                    double f_5g = fTempVoigt.Integral(m5lo, m5hi) / std::max(voigtIntegralFitRange, 1e-12);
+                    double f_2g = fTempVoigt.Integral(m2lo, m2hi) / std::max(voigtIntegralFitRange, 1e-12);
 
-                    ////CBpol2 parameters
-                    if (kbkg == "CBpol2" || kbkg == "CBpol3")
-                    {
-                        fitFcn->SetParameter(3, 1);
-                        fitFcn->FixParameter(4, mean_CB[ip]);
-                        fitFcn->FixParameter(5, sigma_CB[ip]);
-                        fitFcn->FixParameter(6, alpha_CB[ip]);
-                        fitFcn->FixParameter(7, n_CB[ip]);
-                        fitFcn->SetParameter(8, 1e7);
-                        fitFcn->SetParameter(9, 1e7);
-                        fitFcn->SetParameter(10, 1e7);
-                        if (kbkg == "CBpol3")
-                            fitFcn->SetParameter(11, 1e7);
-                    }
+                    double N_sig_5g = N_sig * f_5g;
+                    double N_sig_2g = N_sig * f_2g;
 
-                    fitFcn->SetParNames("Mass", "Width", "Yield", "A", "B", "C", "D");
-                    // Redirect standard output to /dev/null
-                    // int old_stdout = dup(1);
-                    // freopen("/dev/null", "w", stdout);
+                    cout << "  Voigtian fractions: +/-5Γ=" << f_5g << "  +/-2Γ=" << f_2g << endl;
 
-                    r = hfsig->Fit(fitFcn, "REBMS0+"); // signal after bkg subtraction
-
-                    prevWidth = fitFcn->GetParameter(1);
-
-                    // Restore standard output
-                    // fflush(stdout);
-                    // dup2(old_stdout, 1);
-                    // close(old_stdout);
-
-                    //****************************************************************************************************************
-
-                    //**Extraction of fitting parameters******************************************************************************
-
-                    Double_t *par = fitFcn->GetParameters();
-
-                    Mass[ip] = fitFcn->GetParameter(0);
-                    Width[ip] = fitFcn->GetParameter(1);
-                    Yield[ip] = fitFcn->GetParameter(2);
-                    poly2[ip] = fitFcn->GetParameter(3);
-                    poly1[ip] = fitFcn->GetParameter(4);
-                    poly0[ip] = fitFcn->GetParameter(5);
-                    if (kbkg == "pol3" || kbkg == "expol")
-                        poly3[ip] = fitFcn->GetParameter(6);
-
-                    fitFcn2->SetParameters(&par[0]);
-                    fitFcn1->SetParameters(&par[3]);
-
-                    ErrorMass[ip] = fitFcn->GetParError(0);
-                    ErrorWidth[ip] = fitFcn->GetParError(1);
-                    ErrorYield[ip] = fitFcn->GetParError(2);
-                    Chi2Ndf[ip] = (fitFcn->GetChisquare()) / (fitFcn->GetNDF());
-
-                    //******************************************************************************************************************
-
-                    //**ERROR BIN COUNTING METHOD CALCULATION*****************************************************************************
-
-                    TF1 *fitFcn2_plusm = new TF1("fitFcn2_plusm", BW, lowfitrange, highfitrange, 3);
-                    TF1 *fitFcn2_minusm = new TF1("fitFcn2_minusm", BW, lowfitrange, highfitrange, 3);
-                    fitFcn2_plusm->FixParameter(0, Mass[ip] + ErrorMass[ip]);
-                    fitFcn2_plusm->FixParameter(1, widthpdg);
-                    fitFcn2_plusm->FixParameter(2, Yield[ip]);
-
-                    fitFcn2_minusm->FixParameter(0, Mass[ip] - ErrorMass[ip]);
-                    fitFcn2_minusm->FixParameter(1, widthpdg);
-                    fitFcn2_minusm->FixParameter(2, Yield[ip]);
-
-                    //*********************************************************************************************************************
-
-                    //**Calculation of significance and storing chi2 and sig in respective histograms*****************************************************
-
-                    bmin = hfsig->GetXaxis()->FindBin(masspdg - 2 * widthpdg);
-                    bmax = hfsig->GetXaxis()->FindBin(masspdg + 2 * widthpdg);
-
-                    significance_num = (fitFcn2->Integral(masspdg - 2 * widthpdg, masspdg + 2 * widthpdg)) / (binwidth_file);
-                    significance_den = TMath::Sqrt(fHistTotal[ip]->Integral(bmin, bmax));
-
-                    ratio = significance_num / significance_den; // significance of signal
-
-                    hsignificance->SetBinContent(ip + 1, ratio);
-                    hChiSquare->SetBinContent(ip + 1, Chi2Ndf[ip]); // storing both significance and chi2 in histogram
-
-                    //*****************************************************************************************************************************************
-
-                    //**Calculation of Yield using bin counting method and storing it in histogram***********************************************************
-
-                    Yield_bincount_hist = hfsig->IntegralAndError(bmin, bmax, hBCError_1);
-                    bkgvalue = fitFcn1->Integral(hfsig->GetBinLowEdge(bmin), hfsig->GetBinLowEdge(bmax + 1));
-                    Integral_BW_withsigma = fitFcn2->Integral(hfsig->GetBinLowEdge(bmin), hfsig->GetBinLowEdge(bmax + 1));
-                    fYield_BinCount = Yield_bincount_hist - (bkgvalue / binwidth_file);
-                    YieldIntegral_BW = fitFcn2->Integral(energylow, energyhigh) / binwidth_file;
-                    Yfraction_cBW = (Integral_BW_withsigma / YieldIntegral_BW);
-
-                    sum_tail_correction = (fitFcn2->Integral(energylow, hfsig->GetBinLowEdge(bmin)) + fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), energyhigh)) / binwidth_file;
-
-                    nlow = (fitFcn2->Integral(energylow, hfsig->GetBinLowEdge(bmin))) / binwidth_file;
-                    nhigh = (fitFcn2->Integral(hfsig->GetBinLowEdge(bmax + 1), energyhigh)) / binwidth_file;
-                    nlow = nlow / (Event * ptbinwidth[ip] * dy * BR);
-                    nhigh = nhigh / (Event * ptbinwidth[ip] * dy * BR);
-
-                    Total_Ybincounting = (sum_tail_correction + fYield_BinCount) / (Event * ptbinwidth[ip] * dy * BR);
-
-                    // cout << "***************************************************************" << endl;
-                    // cout << "****fraction of nlow for bin***********:"
-                    //      << " " << ip << " " << nlow / Total_Ybincounting << endl;
-                    // cout << "****fraction of nhigh for bin***********:"
-                    //      << " " << ip << " " << nhigh / Total_Ybincounting << endl;
-                    // cout << "***************************************************************" << endl;
-                    Tail_correction_plusm = (fitFcn2_plusm->Integral(0.635, hfsig->GetBinLowEdge(bmin)) + (fitFcn2_plusm->Integral(hfsig->GetBinLowEdge(bmax + 1), 5))) / binwidth_file;
-                    Tail_correction_minusm = ((fitFcn2_minusm->Integral(0.635, hfsig->GetBinLowEdge(bmin)) + fitFcn2_minusm->Integral(hfsig->GetBinLowEdge(bmax + 1), 5)) / binwidth_file);
-                    Error_2 = sum_tail_correction - Tail_correction_plusm;
-                    Final_pro_error = TMath::Sqrt(Error_2 * Error_2 + hBCError_1 * hBCError_1) / (Event * ptbinwidth[ip] * dy * BR);
-
-                    cout << "Yield from bin counting is " << Total_Ybincounting << " +/- " << Final_pro_error << endl;
-
-                    ////Uncorrected Yield/////////////////////////////////////////////////////////////////////////////////
-
-                    hYbincount->SetBinContent(ip + 1, Total_Ybincounting);
-                    hYbincount->SetBinError(ip + 1, Final_pro_error);
-                    // cout << "--------Total Value from bin counting----------" << (sum_tail_correction + fYield_BinCount) << endl;
-                    // cout << "--------Value from bin counting----------" << Total_Ybincounting << endl;
-
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                    // Fractional stat error///////////////////////////////////////////////////////////////////////////////
-
-                    hFrac_stat_error->SetBinContent(ip + 1, Final_pro_error / Total_Ybincounting);
-                    // cout << "--------Frac error from bin counting----------" << (Final_pro_error / Total_Ybincounting) << endl;
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                    //****************************************************************************************************************************************
-
-                    //**Calculation for raw pt spectra using function integration and filling it in histogram*********************************************
-
-                    integralsignalfunc[ip] = (fitFcn2->Integral((masspdg - 5 * widthpdg), (masspdg + 5 * widthpdg)));
-                    TMatrixDSym cov = r->GetCovarianceMatrix();
-                    TMatrixDSym cov1;
-                    TMatrixDSym cov2;
-                    cov.GetSub(0, 2, 0, 2, cov1);
-                    cov.GetSub(3, 6, 3, 6, cov2);
-                    Double_t *b = cov1.GetMatrixArray();
-                    Double_t *a = cov2.GetMatrixArray();
-                    Double_t *para = fitFcn->GetParameters();
-                    interror[ip] = fitFcn2->IntegralError((masspdg - 5 * widthpdg), (masspdg + 5 * widthpdg), &para[0], b);
-
-                    yieldcalc = integralsignalfunc[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file); // raw yield calculation
-                    yielderror = interror[ip] / (Event * ptbinwidth[ip] * dy * BR * binwidth_file);          // raw yield error
+                    // =====================================================================
+                    // Raw yield – integral method
+                    // =====================================================================
+                    yieldcalc = N_sig_5g / (Event * ptbinwidth[ip] * dy * BR);
+                    yielderror = (N_sig_err * f_5g) / (Event * ptbinwidth[ip] * dy * BR);
 
                     hintegral_yield->SetBinContent(ip + 1, yieldcalc);
-                    hintegral_yield->SetBinError(ip + 1, yielderror); // filling histogram including error
-                    cout << "Total yield from function integration is " << yieldcalc << " +/- " << yielderror << endl;
-
-                    //**Filling mass and width fitting parameter in histogram*******************************************************************************
-
+                    hintegral_yield->SetBinError(ip + 1, yielderror);
                     hmass->SetBinContent(ip + 1, Mass[ip]);
                     hmass->SetBinError(ip + 1, ErrorMass[ip]);
-
                     hwidth->SetBinContent(ip + 1, Width[ip]);
                     hwidth->SetBinError(ip + 1, ErrorWidth[ip]);
 
-                    //*****************************************************************************************************************************
+                    std::cout << "Yield (Functional integration): " << yieldcalc << " #pm " << yielderror << std::endl;
 
-                    //**Setting plot parameters style*************************************************************************************************
+                    // =====================================================================
+                    // Significance
+                    // =====================================================================
+                    bmin = hfsig->GetXaxis()->FindBin(masspdg - 2 * width_fit);
+                    bmax = hfsig->GetXaxis()->FindBin(masspdg + 2 * width_fit);
+                    significance_num = N_sig_2g;
+                    significance_den = TMath::Sqrt(std::max(1.0, (double)fHistTotal[ip]->Integral(bmin, bmax)));
+                    ratio = significance_num / significance_den;
+                    hsignificance->SetBinContent(ip + 1, ratio);
 
-                    // SetHistoStyle(hfsig, 1, 20, 1, 0.05, 0.045, 0.045, 0.045, 1.13, 1.8);
-                    // SetHistoStyle(fHistTotal[ip], 1, 8, 1.5, 0.05, 0.05, 0.05, 0.05, 1.13, 1.4);
+                    // =====================================================================
+                    // Raw yield – bin-counting method with Snapped Boundaries Fix
+                    // =====================================================================
+                    Yield_bincount_hist = hfsig->IntegralAndError(bmin, bmax, hBCError_1);
+
+                    // --- SNAPPED BOUNDARIES FIX START ---
+                    // IntegralAndError sums WHOLE bins, so the data integral's true range
+                    // is [GetBinLowEdge(bmin), GetBinUpEdge(bmax)] -- not the exact continuous
+                    // masspdg+/-2*width_fit window. We snap the continuous limits to match!
+                    double m2lo_snap = hfsig->GetXaxis()->GetBinLowEdge(bmin);
+                    double m2hi_snap = hfsig->GetXaxis()->GetBinUpEdge(bmax);
+
+                    double corr_f_fit = templRawIntegral(fitLo, fitHi);
+                    double corr_f_2g = templRawIntegral(m2lo_snap, m2hi_snap) / std::max(corr_f_fit, 1e-12);
+
+                    TF1 fTempBkg("fTempBkg", [&](double *xx, double *pp)
+                                 { return evalBkgDensity(xx[0], pp); }, fitLo, fitHi, nBkgPars);
+                    fTempBkg.SetParameters(fTotal->GetParameters() + 6); // Shifted to Offset 6
+
+                    double bkg_f_fit = fTempBkg.Integral(fitLo, fitHi);
+                    double bkg_f_2g = fTempBkg.Integral(m2lo_snap, m2hi_snap) / std::max(bkg_f_fit, 1e-12);
+
+                    // Calculate the snapped Voigtian fraction so tail correction is exact
+                    double f_2g_snap = fTempVoigt.Integral(m2lo_snap, m2hi_snap) / std::max(voigtIntegralFitRange, 1e-12);
+                    double N_sig_2g_snap = N_sig * f_2g_snap;
+
+                    double N_temp_2g = N_temp_fit * corr_f_2g;
+                    double N_res_2g = N_res_fit * bkg_f_2g;
+                    fYield_BinCount = Yield_bincount_hist - N_temp_2g - N_res_2g;
+
+                    double tail_correction = N_sig_5g - N_sig_2g_snap;
+                    Total_Ybincounting = (fYield_BinCount + tail_correction) / (Event * ptbinwidth[ip] * dy * BR);
+                    // --- SNAPPED BOUNDARIES FIX END ---
+
+                    double Final_pro_error = hBCError_1 / (Event * ptbinwidth[ip] * dy * BR);
+
+                    hYbincount->SetBinContent(ip + 1, Total_Ybincounting);
+                    hYbincount->SetBinError(ip + 1, Final_pro_error);
+                    hFrac_stat_error->SetBinContent(ip + 1, (Total_Ybincounting > 0) ? Final_pro_error / Total_Ybincounting : 0.0);
+
+                    std::cout << "Yield (Bin Count): " << Total_Ybincounting << " #pm " << Final_pro_error << std::endl;
+                    hsigma->SetBinContent(ip + 1, sigma_fit);
+                    hsigma->SetBinError(ip + 1, sigma_err);
+
+                    // =====================================================================
+                    // PLOTTING – fitted invariant mass + Ratio Pad
+                    // =====================================================================
+                    if (multipanel_plots == 1)
+                    {
+                        if (ip < kupperpad * klowerpad)
+                        {
+                            cgrid1->cd(ip + 1);
+                        }
+                        else
+                        {
+                            cgrid2->cd(ip + 1 - kupperpad * klowerpad);
+                        }
+                    }
+                    else
+                    {
+                        cinv[ip]->cd();
+                        cinv[ip]->Clear();
+                    }
+
+                    // --- 1. Upper Pad: Main Fit ---
+                    TPad *pad1 = new TPad(Form("pad1_%d", ip), Form("pad1_%d", ip), 0.0, 0.3, 1.0, 1.0);
+                    pad1->SetBottomMargin(0.0);
+                    pad1->SetLeftMargin(0.12);
+                    pad1->SetRightMargin(0.035);
+                    pad1->SetFillStyle(4000);
+                    pad1->Draw();
+                    pad1->cd();
+
+                    if (hfsig->GetFunction(Form("fTotal_ip%d", ip)))
+                    {
+                        hfsig->GetFunction(Form("fTotal_ip%d", ip))->SetBit(TF1::kNotDraw);
+                    }
+
+                    hfsig->SetMarkerStyle(20);
+                    hfsig->SetMarkerColor(kBlack);
+                    hfsig->SetLineColor(kBlack);
+                    hfsig->GetXaxis()->SetRangeUser(kFitRange[ip][0], kFitRange[ip][1]);
+                    hfsig->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/c^{2}", binwidth_file * 1000));
+                    hfsig->GetYaxis()->CenterTitle(1);
+                    hfsig->GetYaxis()->SetMaxDigits(2);
+                    hfsig->GetXaxis()->SetLabelSize(0);
+                    hfsig->GetXaxis()->SetTitleSize(0);
+                    hfsig->GetYaxis()->SetTitleSize(0.055);
+                    hfsig->GetYaxis()->SetLabelSize(0.045);
+                    hfsig->SetStats(0);
+
                     SetHistoQA(hfsig);
                     SetHistoQA(fHistTotal[ip]);
+                    hfsig->SetMarkerSize(0.8);
+                    fHistTotal[ip]->SetMarkerSize(0.8);
 
                     hfsig->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
                     hfsig->GetYaxis()->SetMaxDigits(3);
                     hfsig->GetYaxis()->CenterTitle(1);
-                    hfsig->GetYaxis()->SetTitleOffset(1.45);
+                    hfsig->GetYaxis()->SetTitleOffset(1.1);
                     hfsig->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
                     SetHistoQA(hfbkg);
@@ -697,171 +967,349 @@ void kstar_sparse()
                     // hfsig->GetYaxis()->SetMaxDigits(3);
                     hfbkg->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
 
-                    fitFcn1->SetLineColor(4);
-                    fitFcn1->SetLineStyle(2);
-                    fitFcn1->SetLineWidth(4);
-                    fitFcn2->SetLineColor(6);
-                    fitFcn2->SetLineStyle(2);
-                    fitFcn2->SetLineWidth(4);
-                    fitFcn->SetLineWidth(4);
+                    if (hfsig->GetMaximum() > 0)
+                        hfsig->SetMinimum(-hfsig->GetMaximum() * 0.08);
 
-                    //*******************************************************************************************************************************
-
-                    //**Plot of histograms and graphs*********************************************************************************************
-                    auto chibyndf = fitFcn->GetChisquare() / fitFcn->GetNDF();
-
-                    // inv mass histograms after the background subraction
-                    (multipanel_plots == 1) ? (ip < kupperpad * klowerpad) ? cgrid1->cd(ip + 1) : cgrid2->cd(ip + 1 - kupperpad * klowerpad) : cinv[ip]->cd();
-                    gPad->SetRightMargin(0.015);
-                    gPad->SetLeftMargin(0.15);
-                    gPad->SetBottomMargin(0.15);
-                    // if (ip == 0)
-                    // {
-                    //     hfsig->SetMaximum(hfsig->GetMaximum() * 1.8);
-                    // }
-                    // else if (ip == 1)
-                    //     hfsig->SetMaximum(hfsig->GetMaximum() * 1);
-                    // else if (ip == 2)
-                    //     hfsig->SetMaximum(hfsig->GetMaximum() * 0.9);
-
-                    // else
                     hfsig->SetMaximum(hfsig->GetMaximum() * 1.3);
-                    fitFcn->SetLineWidth(2);
-                    fitFcn1->SetLineWidth(2);
-                    fitFcn2->SetLineWidth(2);
-                    hfsig->GetXaxis()->SetRangeUser(0.7, 1.11);
-                    hfsig->SetMarkerSize(1.0);
-                    // if (ip != 0 && ip != 1 && ip != 2)
-                    if (ip > 15)
-                        hfsig->SetMinimum(0);
-                    hfsig->Draw("e");
-                    fitFcn->Draw("same");
-                    fitFcn1->Draw("same");
-                    fitFcn2->Draw("same");
+                    hfsig->Draw("E");
 
-                    TLegend *pag = new TLegend(0.135, 0.6, 0.345, 0.9);
-                    pag->SetBorderSize(0);
-                    pag->SetTextFont(42);
-                    pag->SetTextSize(0.035);
-                    pag->SetFillStyle(0);
-                    pag->AddEntry((TObject *)0, "ALICE", "");
-                    pag->AddEntry((TObject *)0, "pp, #sqrt{s} = 13.6 TeV", "");
-                    pag->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
-                    pag->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
-                    pag->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
-                    if (!multipanel_plots)
-                        pag->Draw();
+                    pad1->cd();
+                    const int kSmoothNpx = 1000;
+                    fTotal->SetLineColor(kRed);
+                    fTotal->SetLineWidth(2); // fTotal->SetNpx(kSmoothNpx);
+                    fTotal->Draw("SAME");
 
-                    // TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
-                    TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
-                    pag2->SetBorderSize(0);
-                    pag2->SetTextFont(42);
-                    pag2->SetTextSize(0.035);
-                    pag2->SetFillStyle(0);
-                    pag2->AddEntry(fitFcn, "BW+pol3", "l");
-                    pag2->AddEntry(fitFcn1, "BW", "l");
-                    pag2->AddEntry(fitFcn2, "pol3", "l");
-                    pag2->Draw();
-                    if (multipanel_plots)
-                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
+                    // Analytical Component Functions for Plotting
+                    TF1 *fSig = new TF1(Form("fSig_ip%d", ip), [fitLo, fitHi, binWidthFit](double *xx, double *pp) -> double
+                                        {
+                double x = xx[0]; double Nsig_val = pp[0], mass_val = pp[1], width_val = pp[2], sigma_val = pp[3];
+                double voigtRaw = TMath::Voigt(x - mass_val, sigma_val, width_val);
+                int nSteps = 40; 
+                double h_step = (fitHi - fitLo) / nSteps;
+                double vInt = TMath::Voigt(fitLo - mass_val, sigma_val, width_val) + TMath::Voigt(fitHi - mass_val, sigma_val, width_val);
+                for (int j = 1; j < nSteps; j++) {
+                    double xj = fitLo + j * h_step;
+                    vInt += TMath::Voigt(xj - mass_val, sigma_val, width_val) * ((j % 2 == 0) ? 2.0 : 4.0);
+                }
+                vInt *= h_step / 3.0;
+                return binWidthFit * Nsig_val * voigtRaw / std::max(vInt, 1e-12); }, fitLo, fitHi, 4);
+                    fSig->SetParameters(N_sig, mass_fit, width_fit, sigma_fit);
+                    fSig->SetLineColor(kMagenta + 1);
+                    fSig->SetLineStyle(kSolid);
+                    fSig->SetLineWidth(2); // fSig->SetNpx(kSmoothNpx);
+                    fSig->Draw("SAME");
 
-                    double fitprob = fitFcn->GetProb();
-                    // pag->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f", Mass[ip], ErrorMass[ip]), "");
-                    // pag->AddEntry((TObject *)0, Form("Width: %.3f #pm %.3f", Width[ip], ErrorWidth[ip]), "");
-                    // pag->AddEntry((TObject *)0, Form("Yield: %.1e #pm %.1e", yieldcalc * Event, yielderror * Event), "");
-                    // pag->AddEntry((TObject *)0, Form("Probability: %f ", fitprob), "");
-                    // pag->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f ", chibyndf), "");
-                    // pag->Draw();
-                    // t2->DrawLatex(0.26, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
-                    // t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
-                    if (multipanel_plots == 0 && save_plots == 1)
-                        cinv[ip]->SaveAs(Form(outputfolder_mult + ("/hfitsig_pt%d." + outputtype).c_str(), ip + 1));
+                    TF1 *fCorr = new TF1(Form("fCorr_ip%d", ip), [hReflection, reflNorm, binWidthFit](double *xx, double *pp) -> double
+                                         {
+                double x = xx[0]; double Ncorr_val = pp[0];
+                double corrDen = hReflection->Interpolate(x) / reflNorm;
+                return binWidthFit * Ncorr_val * corrDen; }, fitLo, fitHi, 1);
+                    fCorr->SetParameter(0, N_temp_fit);
+                    fCorr->SetLineColor(kGreen + 2);
+                    fCorr->SetLineStyle(kSolid);
+                    fCorr->SetLineWidth(2); // fCorr->SetNpx(kSmoothNpx);
+                    fCorr->Draw("SAME");
+
+                    TF1 *fBkg = new TF1(Form("fBkg_ip%d", ip), [fitLo, fitHi, binWidthFit, evalBkgDensity](double *xx, double *pp) -> double
+                                        {
+                double x = xx[0];
+                double Nbkg_val = pp[0];
+                double bkgDen = evalBkgDensity(x, &pp[1]);
+                return binWidthFit * Nbkg_val * bkgDen; }, fitLo, fitHi, 1 + nBkgPars);
+                    fBkg->SetParameter(0, N_res_fit);
+                    for (int ib = 0; ib < nBkgPars; ++ib)
+                        fBkg->SetParameter(1 + ib, fTotal->GetParameter(6 + ib));
+                    fBkg->SetLineColor(kBlue);
+                    fBkg->SetLineStyle(kSolid);
+                    fBkg->SetLineWidth(2); // fBkg->SetNpx(kSmoothNpx);
+                    fBkg->Draw("SAME");
+
+                    TF1 *fTotalBkg = new TF1(Form("fTotalBkg_ip%d", ip), [hReflection, reflNorm, fitLo, fitHi, binWidthFit, evalBkgDensity](double *xx, double *pp) -> double
+                                             {
+                double x = xx[0];
+                double Ncorr_val = pp[0], Nbkg_val = pp[1];
+                double corrDen = 0.0;
+                if (hReflection && hReflection->GetEntries() > 0) {
+                    corrDen = hReflection->Interpolate(x) / reflNorm;
+                    if (corrDen < 0) corrDen = 0.0;
+                }
+                double bkgDen = evalBkgDensity(x, &pp[2]);
+                return binWidthFit * (Ncorr_val * corrDen + Nbkg_val * bkgDen); }, fitLo, fitHi, 2 + nBkgPars);
+                    fTotalBkg->SetParameter(0, N_temp_fit);
+                    fTotalBkg->SetParameter(1, N_res_fit);
+                    for (int ib = 0; ib < nBkgPars; ++ib)
+                        fTotalBkg->SetParameter(2 + ib, fTotal->GetParameter(6 + ib));
+                    fTotalBkg->SetLineColor(kOrange + 7);
+                    fTotalBkg->SetLineStyle(kDashed);
+                    fTotalBkg->SetLineWidth(2); // fTotalBkg->SetNpx(kSmoothNpx);
+                    fTotalBkg->Draw("SAME");
+
+                    auto mkLine = [](Color_t col, Style_t sty = kSolid, Width_t wid = 2) -> TLine *
+                    {
+                        auto *l = new TLine();
+                        l->SetLineColor(col);
+                        l->SetLineStyle(sty);
+                        l->SetLineWidth(wid);
+                        return l;
+                    };
+
+                    TLegend *legComp = new TLegend(0.13, 0.6, 0.4, 0.91);
+                    legComp->SetBorderSize(0);
+                    legComp->SetFillStyle(0);
+                    legComp->SetTextFont(42);
+                    legComp->SetTextSize(0.045);
+                    legComp->AddEntry(hfsig, "Data", "ep");
+                    legComp->AddEntry(mkLine(kRed), "Total Fit", "l");
+                    legComp->AddEntry(mkLine(kMagenta + 1, kSolid), "Voigtian Sig", "l");
+                    legComp->AddEntry(mkLine(kGreen + 2, kSolid), "MC Template", "l");
+
+                    TString bkgLegendLabel = (kbkg == "expol") ? "Exp. Pol" : (kbkg == "pol3Thresh") ? "Pol3 Thresh"
+                                                                                                     : Form("Cheby %s", kbkg.c_str());
+                    // legComp->AddEntry(mkLine(kBlue, kSolid), Form("Residual Bkg (%s)", bkgLegendLabel.Data()), "l");
+                    legComp->AddEntry(mkLine(kBlue, kSolid), bkgLegendLabel.Data(), "l");
+                    legComp->AddEntry(mkLine(kOrange + 7, kDashed), "Total Bkg (Temp+Res)", "l");
+                    legComp->Draw();
+
+                    TLegend *legPars = new TLegend(0.49, 0.6, 0.93, 0.89);
+                    legPars->SetBorderSize(0);
+                    legPars->SetFillStyle(0);
+                    legPars->SetTextFont(42);
+                    legPars->SetTextSize(0.04);
+                    legPars->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.1e GeV/c^{2}", Mass[ip], ErrorMass[ip]), "");
+
+                    if (widthFixed)
+                    {
+                        legPars->AddEntry((TObject *)0,
+                                          Form("Width: %.1f MeV/c^{2} (fixed)", width_fit * 1000), "");
+                    }
+                    else
+                    {
+                        legPars->AddEntry((TObject *)0,
+                                          Form("Width: %.1f #pm %.1f MeV/c^{2}",
+                                               width_fit * 1000, width_err * 1000),
+                                          "");
+                    }
+                    legPars->AddEntry((TObject *)0, Form("#sigma_{res}: %.1f #pm %.1f MeV/c^{2}", sigma_fit * 1000, sigma_err * 1000), "");
+                    legPars->AddEntry((TObject *)0, Form("N_{sig}: %.0f #pm %.0f", N_sig, N_sig_err), "");
+                    legPars->AddEntry((TObject *)0, Form("N_{temp}: %.0f", N_temp_fit), "");
+                    legPars->AddEntry((TObject *)0, Form("N_{res}: %.0f", N_res_fit), "");
+                    legPars->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f", Chi2Ndf[ip]), "");
+                    legPars->Draw();
+
+                    t2->DrawLatex(0.25, 0.94, Form("#bf{%.1f < #it{p}_{T}(GeV/#it{c}) < %.1f}", pT_bins[ip], pT_bins[ip + 1]));
+
+                    pad1->Update();
+                    pad1->Modified();
+
+                    // --- 2. Lower Pad: Data / Fit Ratio ---
                     if (multipanel_plots == 1)
-                        cinv[ip]->Close();
+                    {
+                        if (ip < kupperpad * klowerpad)
+                        {
+                            cgrid1->cd(ip + 1);
+                        }
+                        else
+                        {
+                            cgrid2->cd(ip + 1 - kupperpad * klowerpad);
+                        }
+                    }
+                    else
+                    {
+                        cinv[ip]->cd();
+                    }
+                    TPad *pad2 = new TPad(Form("pad2_%d", ip), Form("pad2_%d", ip), 0.0, 0.0, 1.0, 0.3);
+                    pad2->SetTopMargin(0.0);
+                    pad2->SetBottomMargin(0.35);
+                    pad2->SetLeftMargin(0.12);
+                    pad2->SetRightMargin(0.035);
+                    pad2->SetFillStyle(4000);
+                    pad2->Draw();
+                    pad2->cd();
 
-                    hfsig->Write(Form("hfsig_pt%d", ip + 1));
+                    TGraphAsymmErrors *gRatio = new TGraphAsymmErrors();
+                    int pt_idx = 0;
+                    for (int ibin = 1; ibin <= hfsig->GetNbinsX(); ibin++)
+                    {
+                        double xp = hfsig->GetBinCenter(ibin);
+                        if (xp < kFitRange[ip][0] || xp > kFitRange[ip][1])
+                            continue;
+                        double yp = hfsig->GetBinContent(ibin);
+                        double yfit = fTotal->Eval(xp);
+                        if (yfit > 0)
+                        {
+                            gRatio->SetPoint(pt_idx, xp, yp / yfit);
+                            gRatio->SetPointError(pt_idx, 0, 0,
+                                                  hfsig->GetBinErrorLow(ibin) / yfit,
+                                                  hfsig->GetBinErrorUp(ibin) / yfit);
+                            pt_idx++;
+                        }
+                    }
 
-                    // inv distribution before the background subtraction
-                    (multipanel_plots == 1) ? (ip < klowerpad * kupperpad) ? cgrid_bkg1->cd(ip + 1) : cgrid_bkg2->cd(ip + 1 - klowerpad * kupperpad) : cSigbkg[ip]->cd();
+                    TH1D *hRatioFrame = new TH1D(Form("hRatioFrame_%d", ip), "", 100, kFitRange[ip][0], kFitRange[ip][1]);
+                    hRatioFrame->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
+                    hRatioFrame->GetYaxis()->SetTitle("Data / Fit");
+                    hRatioFrame->SetStats(0);
+
+                    hRatioFrame->GetXaxis()->SetTitleSize(0.13);
+                    hRatioFrame->GetXaxis()->SetLabelSize(0.11);
+                    hRatioFrame->GetXaxis()->SetTitleOffset(1.05);
+                    hRatioFrame->GetYaxis()->SetTitleSize(0.12);
+                    hRatioFrame->GetYaxis()->SetLabelSize(0.10);
+                    hRatioFrame->GetYaxis()->SetTitleOffset(0.4);
+                    hRatioFrame->GetYaxis()->SetNdivisions(505);
+
+                    hRatioFrame->SetMinimum(0.85);
+                    hRatioFrame->SetMaximum(1.15);
+                    hRatioFrame->Draw("AXIS");
+
+                    gRatio->SetMarkerStyle(20);
+                    gRatio->SetMarkerSize(0.5);
+                    gRatio->SetLineColor(kBlack);
+                    gRatio->SetMarkerColor(kBlack);
+                    gRatio->Draw("P SAME");
+
+                    TLine *lineRatio = new TLine(kFitRange[ip][0], 1.0, kFitRange[ip][1], 1.0);
+                    lineRatio->SetLineColor(kRed);
+                    lineRatio->SetLineStyle(2);
+                    lineRatio->Draw("SAME");
+
+                    // --- Finalize and Save ---
+                    if (multipanel_plots == 1)
+                    {
+                        (ip < kupperpad * klowerpad) ? cgrid1->cd(ip + 1) : cgrid2->cd(ip + 1 - kupperpad * klowerpad);
+                        cgrid1->Modified();
+                        cgrid1->Update();
+                        if (Npt > 9)
+                        {
+                            cgrid2->Modified();
+                            cgrid2->Update();
+                        }
+                    }
+                    else
+                    {
+                        cinv[ip]->cd();
+                        cinv[ip]->Modified();
+                        cinv[ip]->Update();
+                        auto c_clone_fit = (TCanvas *)cinv[ip]->Clone(Form("hfitsig_pt_%d", ip + 1));
+                        c_fitsig.push_back(c_clone_fit);
+                        cinv[ip]->SaveAs(Form((Cenoutputfolder + "/hfitsig_pt%d." + outputtype).Data(), ip + 1));
+                    }
+
+                    // =====================================================================
+                    // PLOTTING – signal + combinatorial background
+                    // =====================================================================
+                    if (multipanel_plots == 1)
+                    {
+                        (ip < klowerpad * kupperpad) ? cgrid_bkg1->cd(ip + 1) : cgrid_bkg2->cd(ip + 1 - klowerpad * kupperpad);
+                    }
+                    else
+                    {
+                        cSigbkg[ip]->cd();
+                        cSigbkg[ip]->Clear();
+                    }
                     TH1F *hbkg_nopeak = (TH1F *)hfbkg->Clone();
                     hbkg_nopeak->SetLineColor(kRed);
                     hbkg_nopeak->SetMarkerColor(kRed);
                     hbkg_nopeak->SetFillColor(kRed);
                     hbkg_nopeak->SetFillStyle(3001);
-                    for (int i = 0; i < hbkg_nopeak->GetNbinsX(); i++)
+                    for (int ib = 0; ib < hbkg_nopeak->GetNbinsX(); ib++)
                     {
-                        if (hbkg_nopeak->GetBinCenter(i + 1) < normRangeLow || hbkg_nopeak->GetBinCenter(i + 1) > normRangeHigh)
-                        {
-                            hbkg_nopeak->SetBinContent(i + 1, -999);
-                        }
+                        double bc = hbkg_nopeak->GetBinCenter(ib + 1);
+                        if (bc < kNormRangepT[ip][0] || bc > kNormRangepT[ip][1])
+                            hbkg_nopeak->SetBinContent(ib + 1, -999);
                     }
-                    gPad->SetRightMargin(0.04);
+                    gPad->SetRightMargin(0.05);
                     gPad->SetLeftMargin(0.15);
-                    gPad->SetBottomMargin(0.15);
-                    // fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.15);
-                    fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.23);
-                    fHistTotal[ip]->SetMarkerSize(1.0);
-                    hfbkg->SetMarkerSize(1.0);
-                    fHistTotal[ip]->GetXaxis()->SetRangeUser(0.7, 1.3);
-                    fHistTotal[ip]->GetXaxis()->SetTitle("M_{K#pi} (Gev/#it{c}^{2})");
-                    fHistTotal[ip]->Draw("pe");
-                    fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts / (%.0f MeV/#it{c}^{2})", binwidth_file * 1000));
+                    gPad->SetTopMargin(0.09);
+                    gPad->SetBottomMargin(0.12);
 
-                    TLatex *ltx = new TLatex(0.27, 0.95, name);
+                    SetHistoStyle(fHistTotal[ip], 1, 8, 1.5, 0.05, 0.05, 0.05, 0.05, 1.13, 1.4);
+                    SetHistoStyle(hfbkg, kRed, 24, 1.5, 0.05, 0.05, 0.05, 0.05, 1.13, 1.4);
+
+                    fHistTotal[ip]->SetMaximum(fHistTotal[ip]->GetMaximum() * 1.15);
+                    fHistTotal[ip]->SetMarkerSize(0.5);
+                    hfbkg->SetMarkerSize(0.5);
+                    fHistTotal[ip]->Draw("E");
+                    fHistTotal[ip]->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/c^{2}", binwidth_file * 1000));
+                    fHistTotal[ip]->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
+                    fHistTotal[ip]->GetXaxis()->SetLabelOffset(0.015);
+                    fHistTotal[ip]->GetYaxis()->SetMaxDigits(3);
+                    fHistTotal[ip]->SetStats(0);
+                    hfbkg->Draw("E same");
+
+                    TLegend *leg112 = new TLegend(0.18, 0.80, 0.50, 0.893, NULL, "brNDC");
+                    leg112->AddEntry(fHistTotal[ip], "Sig+bkg", "p");
+                    SetLegendStyle(leg112);
+                    leg112->SetTextSize(0.035);
+                    if (kResBkg == "MIX")
+                        leg112->AddEntry(hfbkg, "Mixed-event bkg", "p");
+                    else if (kResBkg == "LIKE")
+                        leg112->AddEntry(hfbkg, "Like-sign pairs", "p");
+                    else if (kResBkg == "ROTATED")
+                        leg112->AddEntry(hfbkg, "Rotated unlike-sign pairs", "p");
+                    if (kResBkg == "MIX" || kResBkg == "ROTATED")
+                    {
+                        hbkg_nopeak->Draw("BAR same");
+                        leg112->AddEntry(hbkg_nopeak, "Normalisation range", "f");
+                    }
+                    leg112->SetNColumns(2);
+                    leg112->SetColumnSeparation(0.3);
+                    leg112->Draw();
+
+                    TLatex *ltx = new TLatex(0.27, 0.95,
+                                             Form("%0.1f < #it{p}_{T}(GeV/#it{c}) < %0.1f", pT_bins[ip], pT_bins[ip + 1]));
                     ltx->SetNDC();
                     ltx->SetTextFont(22);
                     ltx->SetTextSize(0.06);
-                    hfbkg->Draw("E same");
-                    fHistTotal[ip]->SetMarkerSize(1.0);
-                    hfbkg->SetMarkerSize(1.0);
-                    if (kResBkg == "MIX" || kResBkg == "ROTATED")
-                        hbkg_nopeak->Draw("BAR same");
-                    // (kResBkg == "MIX") ? leg112->AddEntry(hfbkg, "Mixed-event bkg", "p") : leg112->AddEntry(hfbkg, "Like sign pairs", "p");
                     ltx->Draw();
-                    if (!multipanel_plots)
+
+                    if (multipanel_plots == 1)
                     {
-                        // pag->Draw();
-                        TLegend *pagTemp = new TLegend(0.14, 0.72, 0.35, 0.93);
-                        pagTemp->SetBorderSize(0);
-                        pagTemp->SetTextFont(42);
-                        pagTemp->SetTextSize(0.033);
-                        pagTemp->SetFillStyle(0);
-                        pagTemp->AddEntry((TObject *)0, "ALICE", "");
-                        pagTemp->AddEntry((TObject *)0, "pp, #sqrt{s} = 13.6 TeV", "");
-                        pagTemp->AddEntry((TObject *)0, Form("FT0M, %d-%d%%", multlow, multhigh), "");
-                        // pagTemp->AddEntry((TObject *)0, "K*^{0}#rightarrow K#pi", "");
-                        pagTemp->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T} < %.1f GeV/c", pT_bins[ip], pT_bins[ip + 1]), "");
-                        pagTemp->Draw();
+                        (ip < klowerpad * kupperpad) ? cgrid_bkg1->cd(ip + 1) : cgrid_bkg2->cd(ip + 1 - klowerpad * kupperpad);
+                        cgrid_bkg1->Modified();
+                        cgrid_bkg1->Update();
+                        if (Npt > 9)
+                        {
+                            cgrid_bkg2->Modified();
+                            cgrid_bkg2->Update();
+                        }
+                    }
+                    else
+                    {
+                        auto c_clone_sig = (TCanvas *)cSigbkg[ip]->Clone(Form("hsigbkg_pt_%d", ip + 1));
+                        c_sigbkg.push_back(c_clone_sig);
+                        cSigbkg[ip]->SaveAs(Form((Cenoutputfolder + "/hsigbkg_pt%d." + outputtype).Data(), ip + 1));
+                        cSigbkg[ip]->Close();
                     }
 
-                    TLegend *pag3;
-                    pag3 = (!multipanel_plots) ? new TLegend(0.7, 0.65, 0.9, 0.9) : new TLegend(0.2, 0.7, 0.45, 0.9);
-                    pag3->SetBorderSize(0);
-                    pag3->SetTextFont(42);
-                    pag3->SetTextSize(0.035);
-                    pag3->SetFillStyle(0);
-                    pag3->AddEntry(fHistTotal[ip], "Signal + Bkg", "p");
-                    pag3->AddEntry(hfbkg, "Bkg", "p");
-                    pag3->AddEntry(hbkg_nopeak, "Norm. region", "f");
-                    pag3->Draw();
-
-                    if (multipanel_plots)
-                        t2->DrawLatex(0.27, 0.95, Form("#bf{%.2f < #it{p}_{T} < %.2f GeV/c}", pT_bins[ip], pT_bins[ip + 1]));
-
-                    if (multipanel_plots == 0 && save_plots == 1 && save_bkg_plots == 1)
-                        cSigbkg[ip]->SaveAs(Form(outputfolder_mult + ("/hsigbkg_pt%d." + outputtype).c_str(), ip + 1));
-                    // cSigbkg[ip]->Close();
+                    // delete fSig;
+                    // delete fCorr;
+                    // delete fBkg;
+                    // delete fTotalBkg;
+                    // delete fTotal;
 
                     // ////////////////////////////////////////////////////////////////////////
-
                 } // pt loop ends
+
+                //==============================================
+                //              END OF PT LOOP
+                //==============================================
+
                 if (multipanel_plots == 1 && save_plots == 1)
                 {
+                    cgrid1->Modified();
+                    cgrid1->Update();
+                    cgrid_bkg1->Modified();
+                    cgrid_bkg1->Update();
                     cgrid1->SaveAs(outputfolder_mult + (Form("/grid1_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
                     cgrid_bkg1->SaveAs(outputfolder_mult + (Form("/gridBkg1_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
 
                     if (Npt >= klowerpad * kupperpad)
                     {
+                        cgrid2->Modified();
+                        cgrid2->Update();
+                        cgrid_bkg2->Modified();
+                        cgrid_bkg2->Update();
                         cgrid2->SaveAs(outputfolder_mult + (Form("/grid2_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
                         cgrid_bkg2->SaveAs(outputfolder_mult + (Form("/gridBkg2_mult%d_%d.", multlow, multhigh) + outputtype).c_str());
                     }
@@ -954,12 +1402,24 @@ void kstar_sparse()
                     csig->SaveAs(outputfolder_mult + "/width_pt.png");
                     csig->Clear();
 
+                    ////// Sigma vs pT
+                    hsigma->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+                    hsigma->GetYaxis()->SetTitle("Resolution #sigma_{res} (GeV/c^{2})");
+                    SetHistoQA(hsigma);
+                    hsigma->SetMaximum(hsigma->GetMaximum() * 1.5);
+                    hsigma->SetMinimum(0);
+                    hsigma->Draw("pe");
+                    hsigma->Write("sigma");
+                    t2->DrawLatex(0.28, 0.96, "#bf{K(892)^{0} #rightarrow #pi + K}");
+                    // csig->SaveAs((Cenoutputfolder + "/sigma_pt." + outputtype).Data());
+                    csig->Clear();
+
                     // // // Yield vs pT (integral method)
                     SetHistoQA(hintegral_yield);
                     hintegral_yield->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                     hintegral_yield->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
                     gPad->SetLogy(1);
-                     hintegral_yield->GetYaxis()->SetTitleOffset(1.5);
+                    hintegral_yield->GetYaxis()->SetTitleOffset(1.5);
                     // hintegral_yield->GetXaxis()->SetRangeUser(-0.1, 15.2);
                     hintegral_yield->SetStats(0);
                     hintegral_yield->Draw("pe");
@@ -1020,477 +1480,4 @@ void kstar_sparse()
     // Print the elapsed times
     std::cout << "Real time elapsed: " << realTime << " seconds" << std::endl;
     std::cout << "CPU time used: " << cpuTime << " seconds" << std::endl;
-
-    if (makeQAplots)
-    {
-        gStyle->SetOptStat(0);
-        TH3F *hDCAxy3D = (TH3F *)fInputFile->Get(Form("%s/eventSelection/hDcaxy_cent_pt", multpath.c_str()));
-        TH3F *hDCAz3D = (TH3F *)fInputFile->Get(Form("%s/eventSelection/hDcaz_cent_pt", multpath.c_str()));
-        TH1F *hMult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
-        TH1F *hvz = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hVertexZRec", multpath.c_str()));
-        TH1F *hoccupancy = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hOccupancy", multpath.c_str()));
-        TH1F *hEventCut = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hEventCut", multpath.c_str()));
-        TH1F *htracksData = (TH1F *)fInputFile->Get(Form("%s/eventSelection/tracksCheckData", multpath.c_str()));
-        TH1D *hDCAxy = hDCAxy3D->ProjectionX("hDCAxy", -1, -1, -1, -1);
-        TH1D *hDCAz = hDCAz3D->ProjectionX("hDCAz", -1, -1, -1, -1);
-        if (hDCAxy == nullptr || hDCAz == nullptr || hMult == nullptr || hvz == nullptr || hoccupancy == nullptr || hEventCut == nullptr || htracksData == nullptr)
-        {
-            cerr << "Event selection histograms not found!!!!!!!!!!!!" << endl;
-            return;
-        }
-
-        // For PID QA plots, another separate code is present. In this code, we need to replace TH2F with TH3F to plot PID.
-
-        TH3F *hNsigmaTPCTOFKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Ka_after", multpath.c_str()));
-        TH3F *hNsigmaTPCTOFPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hNsigma_TPC_TOF_Pi_after", multpath.c_str()));
-        TH3F *hNsigmaTPCKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTPCnsigKa_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTPCPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTPCnsigPi_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTOFKaon = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTOFnsigKa_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTOFPion = (TH3F *)fInputFile->Get(Form("%s/hPID/After/hTOFnsigPi_mult_pt", multpath.c_str()));
-        if (hNsigmaTPCTOFKaon == nullptr || hNsigmaTPCTOFPion == nullptr || hNsigmaTPCKaon == nullptr || hNsigmaTPCPion == nullptr || hNsigmaTOFKaon == nullptr || hNsigmaTOFPion == nullptr)
-        {
-            cerr << "PID histograms after selection not found!!!!!!!!!!!!" << endl;
-            return;
-        }
-
-        TH3F *hNsigmaTPCTOFKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Ka_before", multpath.c_str()));
-        TH3F *hNsigmaTPCTOFPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hNsigma_TPC_TOF_Pi_before", multpath.c_str()));
-        TH3F *hNsigmaTPCKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTPCnsigKa_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTPCPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTPCnsigPi_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTOFKaon_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTOFnsigKa_mult_pt", multpath.c_str()));
-        TH3F *hNsigmaTOFPion_before = (TH3F *)fInputFile->Get(Form("%s/hPID/Before/hTOFnsigPi_mult_pt", multpath.c_str()));
-        if (hNsigmaTPCTOFKaon_before == nullptr || hNsigmaTPCTOFPion_before == nullptr || hNsigmaTPCKaon_before == nullptr || hNsigmaTPCPion_before == nullptr || hNsigmaTOFKaon_before == nullptr || hNsigmaTOFPion_before == nullptr)
-        {
-            cerr << "PID histograms before selection not found!!!!!!!!!!!!" << endl;
-            return;
-        }
-
-        outputtype = "pdf";
-
-        TCanvas *cDCAxy = new TCanvas("cDCAxy", "DCAxy", 720, 720);
-        SetCanvasStyle(cDCAxy, 0.14, 0.03, 0.06, 0.14);
-        SetHistoQA(hDCAxy);
-        gPad->SetLogy();
-        hDCAxy->GetXaxis()->SetTitle("DCA_{xy} (cm)");
-        hDCAxy->GetYaxis()->SetTitle("Counts");
-        hDCAxy->Draw();
-        cDCAxy->SaveAs(output_QA_folder + ("/DCAxy." + outputtype).c_str());
-
-        TCanvas *cDCAz = new TCanvas("cDCAz", "DCAz", 720, 720);
-        SetCanvasStyle(cDCAz, 0.14, 0.03, 0.06, 0.14);
-        gPad->SetLogy();
-        SetHistoQA(hDCAz);
-        hDCAz->GetXaxis()->SetTitle("DCA_{z} (cm)");
-        hDCAz->GetYaxis()->SetTitle("Counts");
-        hDCAz->Draw();
-        cDCAz->SaveAs(output_QA_folder + ("/DCAz." + outputtype).c_str());
-
-        gPad->SetLogy(0);
-        TCanvas *cMult = new TCanvas("cMult", "Multiplicity", 720, 720);
-        SetCanvasStyle(cMult, 0.14, 0.03, 0.06, 0.14);
-        SetHistoQA(hMult);
-        // hMult->GetXaxis()->SetTitle("Multiplicity (%)");
-        hMult->GetXaxis()->SetRangeUser(0, 109.5);
-        hMult->GetXaxis()->SetTitle("Multiplicity (%)");
-        hMult->GetYaxis()->SetTitle("Counts");
-        hMult->Draw();
-        cMult->SaveAs(output_QA_folder + ("/Multiplicity." + outputtype).c_str());
-
-        TCanvas *cvz = new TCanvas("cvz", "Vertex Z", 720, 720);
-        SetCanvasStyle(cvz, 0.14, 0.03, 0.06, 0.14);
-        SetHistoQA(hvz);
-        hvz->GetXaxis()->SetTitle("Vertex Z (cm)");
-        hvz->GetYaxis()->SetTitle("Counts");
-        hvz->Draw();
-        cvz->SaveAs(output_QA_folder + ("/VertexZ." + outputtype).c_str());
-
-        TCanvas *cOccupancy = new TCanvas("cOccupancy", "Occupancy", 720, 720);
-        SetCanvasStyle(cOccupancy, 0.14, 0.03, 0.06, 0.14);
-        gPad->SetLogy(1);
-        SetHistoQA(hoccupancy);
-        hoccupancy->GetXaxis()->SetTitle("Occupancy");
-        hoccupancy->GetYaxis()->SetTitle("Counts");
-        hoccupancy->GetXaxis()->SetRangeUser(0, 2200);
-        hoccupancy->GetXaxis()->SetNdivisions(505);
-        hoccupancy->Draw();
-        cOccupancy->SaveAs(output_QA_folder + ("/Occupancy." + outputtype).c_str());
-
-        TCanvas *cTracksData = new TCanvas("cTracksData", "Tracks Data", 1440, 720);
-        SetCanvasStyle(cTracksData, 0.1, 0.03, 0.06, 0.16);
-        SetHistoQA(htracksData);
-        // gPad->SetLogy(1);
-        gPad->SetGrid(1, 0);
-        htracksData->SetTitle("Tracks Data");
-        htracksData->GetYaxis()->SetTitle("Counts");
-        htracksData->GetYaxis()->SetTitleOffset(0.8);
-        htracksData->GetXaxis()->SetRangeUser(0, 8);
-        // htracksData->SetMaximum(htracksData->GetMaximum() * 10);
-        htracksData->Draw();
-        cTracksData->SaveAs(output_QA_folder + ("/TracksData." + outputtype).c_str());
-
-        TCanvas *cEventCut = new TCanvas("cEventCut", "Event Cut", 720, 720);
-        SetCanvasStyle(cEventCut, 0.1, 0.05, 0.06, 0.17);
-        SetHistoQA(hEventCut);
-        gPad->SetGrid(1, 0);
-        // gPad->SetLogy(1);
-        hEventCut->GetXaxis()->SetBinLabel(4, "INEL > 0");
-        hEventCut->SetBinContent(4, hEventCut->GetBinContent(9));
-        hEventCut->SetTitle("Event selections (Data)");
-        hEventCut->GetYaxis()->SetTitle("Counts");
-        hEventCut->GetXaxis()->SetRangeUser(0, 4);
-        hEventCut->SetMinimum(0);
-        hEventCut->SetMaximum(hEventCut->GetBinContent(1) * 1.2);
-        hEventCut->Draw();
-        double firstBin = hEventCut->GetBinContent(1);
-
-        TLatex latex;
-        latex.SetTextSize(0.03);
-        latex.SetTextAlign(22); // centered
-
-        for (int i = 1; i <= 4; i++)
-        {
-
-            double content = hEventCut->GetBinContent(i);
-
-            double percent = 0;
-            if (firstBin > 0)
-                percent = (content / firstBin) * 100.0;
-
-            TString label = Form("%.1f%%", percent);
-
-            double x = hEventCut->GetBinCenter(i);
-            double y = content * 1.05; // slightly above bin
-
-            latex.DrawLatex(x, y, label);
-        }
-        cEventCut->SaveAs(output_QA_folder + ("/EventCut." + outputtype).c_str());
-
-        //===============PID plots==========================
-        // Plots to make. 2D plots TPCKa, TPCPi, TOFKa, TOFPi as a function of pT. Then 2D plot of TPC vs TOF of Ka and Pi at different pT ranges.
-
-        double pTrangesForTPCandTOF[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
-        vector<vector<int>> multRangesForTPCandTOF = {{0, 1}, {1, 5}, {10, 20}, {30, 40}, {50, 70}, {70, 100}};
-        TH2F *h2DTPCKaon = (TH2F *)hNsigmaTPCKaon->Project3D("xz");
-        TH2F *h2DTPCPion = (TH2F *)hNsigmaTPCPion->Project3D("xz");
-        TH2F *h2DTOFKaon = (TH2F *)hNsigmaTOFKaon->Project3D("xz");
-        TH2F *h2DTOFPion = (TH2F *)hNsigmaTOFPion->Project3D("xz");
-        TH2 *h2DNsigmaTPCTOFKaon[6];
-        TH2 *h2DNsigmaTPCTOFPion[6];
-        TH1F *h1DNsigmaTPCKaon[6];
-        TH1F *h1DNsigmaTPCPion[6];
-        TH1F *h1DNsigmaTOFKaon[6];
-        TH1F *h1DNsigmaTOFPion[6];
-        TH1F *h1DNsigmaTPCKaon_pt[6];
-        TH1F *h1DNsigmaTPCPion_pt[6];
-        TH1F *h1DNsigmaTOFKaon_pt[6];
-        TH1F *h1DNsigmaTOFPion_pt[6];
-
-        for (int i = 0; i < 6; i++)
-        {
-            int lowBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i] + 0.001);
-            int highBinpT_z = hNsigmaTPCTOFKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i + 1] - 0.001);
-
-            hNsigmaTPCTOFKaon->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
-            hNsigmaTPCTOFPion->GetZaxis()->SetRange(lowBinpT_z, highBinpT_z);
-
-            h2DNsigmaTPCTOFKaon[i] = (TH2 *)hNsigmaTPCTOFKaon->Project3D("xy");
-            h2DNsigmaTPCTOFPion[i] = (TH2 *)hNsigmaTPCTOFPion->Project3D("xy");
-
-            // ✅ Rename AFTER creation (otherwise all histograms will be same)
-            h2DNsigmaTPCTOFKaon[i]->SetName(Form("xy_Ka_%d", i));
-            h2DNsigmaTPCTOFPion[i]->SetName(Form("xy_Pi_%d", i));
-
-            // Now lets make 1D projections with limit on multiplicity ranges
-            int lowBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][0] + 0.001);
-            int highBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multRangesForTPCandTOF[i][1] - 0.001);
-            int lowBinpT = hNsigmaTPCKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i] + 0.001);
-            int highBinpT = hNsigmaTPCKaon->GetZaxis()->FindBin(pTrangesForTPCandTOF[i + 1] - 0.001);
-
-            h1DNsigmaTPCKaon[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
-            h1DNsigmaTPCPion[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
-            h1DNsigmaTOFKaon[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_%d", i), lowBinMult, highBinMult, -1, -1);
-            h1DNsigmaTOFPion[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_%d", i), lowBinMult, highBinMult, -1, -1);
-
-            h1DNsigmaTPCKaon_pt[i] = (TH1F *)hNsigmaTPCKaon->ProjectionX(Form("h1D_TPC_Ka_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
-            h1DNsigmaTPCPion_pt[i] = (TH1F *)hNsigmaTPCPion->ProjectionX(Form("h1D_TPC_Pi_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
-            h1DNsigmaTOFKaon_pt[i] = (TH1F *)hNsigmaTOFKaon->ProjectionX(Form("h1D_TOF_Ka_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
-            h1DNsigmaTOFPion_pt[i] = (TH1F *)hNsigmaTOFPion->ProjectionX(Form("h1D_TOF_Pi_pt_%d", i), lowBinMult, highBinMult, lowBinpT, highBinpT);
-        }
-
-        TCanvas *cNsigmaTPCKaon = new TCanvas("cNsigmaTPCKaon", "Nsigma TPC Kaon", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(h2DTPCKaon);
-        // gPad->SetLogz(1);
-        h2DTPCKaon->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        h2DTPCKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        h2DTPCKaon->GetYaxis()->SetRangeUser(-3, 3);
-        h2DTPCKaon->GetXaxis()->SetRangeUser(0, 5);
-        h2DTPCKaon->Draw("colz");
-        cNsigmaTPCKaon->SaveAs(output_QA_folder + ("/NsigmaTPCKaon2D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCPion = new TCanvas("cNsigmaTPCPion", "Nsigma TPC Pion", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(h2DTPCPion);
-        // gPad->SetLogz(1);
-        h2DTPCPion->GetYaxis()->SetTitle("n#sigma_{TPC}");
-        h2DTPCPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        h2DTPCPion->GetYaxis()->SetRangeUser(-3, 3);
-        h2DTPCPion->GetXaxis()->SetRangeUser(0, 5);
-        h2DTPCPion->Draw("colz");
-        cNsigmaTPCPion->SaveAs(output_QA_folder + ("/NsigmaTPCPion2D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTOFKaon = new TCanvas("cNsigmaTOFKaon", "Nsigma TOF Kaon", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(h2DTOFKaon);
-        // gPad->SetLogz(1);
-        h2DTOFKaon->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        h2DTOFKaon->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        h2DTOFKaon->GetYaxis()->SetRangeUser(-3, 3);
-        h2DTOFKaon->GetXaxis()->SetRangeUser(0, 5);
-        h2DTOFKaon->Draw("colz");
-        cNsigmaTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTOFKaon2D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTOFPion = new TCanvas("cNsigmaTOFPion", "Nsigma TOF Pion", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion, 0.14, 0.15, 0.06, 0.14);
-        SetHistoQA2D(h2DTOFPion);
-        // gPad->SetLogz(1);
-        h2DTOFPion->GetYaxis()->SetTitle("n#sigma_{TOF}");
-        h2DTOFPion->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-        h2DTOFPion->GetYaxis()->SetRangeUser(-3, 3);
-        h2DTOFPion->GetXaxis()->SetRangeUser(0, 5);
-        h2DTOFPion->Draw("colz");
-        cNsigmaTOFPion->SaveAs(output_QA_folder + ("/NsigmaTOFPion2D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCTOFKaon = new TCanvas("cNsigmaTPCTOFKaon", "Nsigma TPC vs TOF Kaon", 1080, 720);
-        TCanvas *cNsigmaTPCTOFPion = new TCanvas("cNsigmaTPCTOFPion", "Nsigma TPC vs TOF Pion", 1080, 720);
-        SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
-        SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
-        cNsigmaTPCTOFKaon->Divide(3, 2);
-        cNsigmaTPCTOFPion->Divide(3, 2);
-
-        TLatex latPID;
-        latPID.SetNDC();
-        latPID.SetTextFont(42);
-        latPID.SetTextSize(0.06);
-
-        for (int i = 0; i < 6; i++)
-        {
-            cNsigmaTPCTOFKaon->cd(i + 1);
-            gPad->SetLeftMargin(0.15);
-            gPad->SetRightMargin(0.15);
-            gPad->SetBottomMargin(0.13);
-            gPad->SetTopMargin(0.06);
-            SetCanvasStyle(cNsigmaTPCTOFKaon, 0.14, 0.15, 0.06, 0.14);
-            SetHistoQA2D(h2DNsigmaTPCTOFKaon[i]);
-            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
-            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
-            h2DNsigmaTPCTOFKaon[i]->GetYaxis()->SetRangeUser(-3, 3);
-            h2DNsigmaTPCTOFKaon[i]->GetXaxis()->SetRangeUser(-3, 3);
-            h2DNsigmaTPCTOFKaon[i]->Draw("colz");
-            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
-            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(1)<<", mean TOF nSigma: "<<h2DNsigmaTPCTOFKaon[i]->GetMean(2)<<endl;
-
-            cNsigmaTPCTOFPion->cd(i + 1);
-            gPad->SetLeftMargin(0.15);
-            gPad->SetRightMargin(0.15);
-            gPad->SetBottomMargin(0.13);
-            gPad->SetTopMargin(0.06);
-            SetCanvasStyle(cNsigmaTPCTOFPion, 0.14, 0.15, 0.06, 0.14);
-            SetHistoQA2D(h2DNsigmaTPCTOFPion[i]);
-            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetTitle("n#sigma_{TOF}");
-            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC}");
-            h2DNsigmaTPCTOFPion[i]->GetYaxis()->SetRangeUser(-3, 3);
-            h2DNsigmaTPCTOFPion[i]->GetXaxis()->SetRangeUser(-3, 3);
-            h2DNsigmaTPCTOFPion[i]->Draw("colz");
-            latPID.DrawLatex(0.2, 0.85, Form("p_{T}: %.1f-%.1f GeV/c", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]));
-        }
-
-        cNsigmaTPCTOFKaon->SaveAs(output_QA_folder + ("/NsigmaTPCTOFKaon_2D." + outputtype).c_str());
-        cNsigmaTPCTOFPion->SaveAs(output_QA_folder + ("/NsigmaTPCTOFPion_2D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCKaon_1D = new TCanvas("cNsigmaTPCKaon_1D", "Nsigma TPC Kaon 1D", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_1D, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTPCKaon_1D->SetGrid(1, 1);
-        TLegend *leg1DPID = new TLegend(0.17, 0.82, 0.6, 0.92);
-        leg1DPID->SetNColumns(3);
-        leg1DPID->SetTextSize(0.028);
-        leg1DPID->SetFillStyle(0);
-        leg1DPID->SetBorderSize(0);
-        leg1DPID->SetTextFont(42);
-
-        for (int i = 0; i < 6; i++)
-        {
-            SetHistoQA(h1DNsigmaTPCKaon[i]);
-            h1DNsigmaTPCKaon[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTPCKaon[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
-            h1DNsigmaTPCKaon[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCKaon[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTPCKaon[i]->SetMaximum(h1DNsigmaTPCKaon[i]->GetMaximum() * 4.7);
-            h1DNsigmaTPCKaon[i]->Draw("p same");
-            leg1DPID->AddEntry(h1DNsigmaTPCKaon[i], Form("%d-%d%%", multRangesForTPCandTOF[i][0], multRangesForTPCandTOF[i][1]), "p");
-            // cout<<"pT range: "<<pTrangesForTPCandTOF[i]<<"-"<<pTrangesForTPCandTOF[i + 1]<<" GeV/c, mean TPC nSigma: "<<h1DNsigmaTPCKaon[i]->GetMean()<<endl;
-        }
-        leg1DPID->Draw();
-        TLine *lineTPCKaon = new TLine(0, 0, 0, h1DNsigmaTPCKaon[0]->GetMaximum());
-        lineTPCKaon->SetLineStyle(2);
-        lineTPCKaon->SetLineColor(2);
-        lineTPCKaon->Draw();
-        cNsigmaTPCKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_1D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCPion_1D = new TCanvas("cNsigmaTPCPion_1D", "Nsigma TPC Pion 1D", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_1D, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTPCPion_1D->SetGrid(1, 1);
-        for (int i = 0; i < 6; i++)
-        {
-            SetHistoQA(h1DNsigmaTPCPion[i]);
-            h1DNsigmaTPCPion[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTPCPion[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
-            h1DNsigmaTPCPion[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCPion[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTPCPion[i]->SetMaximum(h1DNsigmaTPCPion[i]->GetMaximum() * 4.7);
-            h1DNsigmaTPCPion[i]->Draw("p same");
-        }
-        leg1DPID->Draw();
-        TLine *lineTPCPion = new TLine(0, 0, 0, h1DNsigmaTPCPion[0]->GetMaximum());
-        lineTPCPion->SetLineStyle(2);
-        lineTPCPion->SetLineColor(2);
-        lineTPCPion->Draw();
-        cNsigmaTPCPion_1D->SaveAs(output_QA_folder + ("/NsigmaTPCPion_1D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTOFKaon_1D = new TCanvas("cNsigmaTOFKaon_1D", "Nsigma TOF Kaon 1D", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_1D, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTOFKaon_1D->SetGrid(1, 1);
-        for (int i = 0; i < 6; i++)
-        {
-            SetHistoQA(h1DNsigmaTOFKaon[i]);
-            h1DNsigmaTOFKaon[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTOFKaon[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
-            h1DNsigmaTOFKaon[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFKaon[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTOFKaon[i]->SetMaximum(h1DNsigmaTOFKaon[i]->GetMaximum() * 4.7);
-            h1DNsigmaTOFKaon[i]->Draw("p same");
-        }
-        leg1DPID->Draw();
-        TLine *lineTOFKaon = new TLine(0, 0, 0, h1DNsigmaTOFKaon[0]->GetMaximum());
-        lineTOFKaon->SetLineStyle(2);
-        lineTOFKaon->SetLineColor(2);
-        lineTOFKaon->Draw();
-        cNsigmaTOFKaon_1D->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_1D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTOFPion_1D = new TCanvas("cNsigmaTOFPion_1D", "Nsigma TOF Pion 1D", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_1D, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTOFPion_1D->SetGrid(1, 1);
-        for (int i = 0; i < 6; i++)
-        {
-            SetHistoQA(h1DNsigmaTOFPion[i]);
-            h1DNsigmaTOFPion[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTOFPion[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
-            h1DNsigmaTOFPion[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFPion[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTOFPion[i]->SetMaximum(h1DNsigmaTOFPion[i]->GetMaximum() * 4.7);
-            h1DNsigmaTOFPion[i]->Draw("p same");
-        }
-        leg1DPID->Draw();
-        TLine *lineTOFPion = new TLine(0, 0, 0, h1DNsigmaTOFPion[0]->GetMaximum());
-        lineTOFPion->SetLineStyle(2);
-        lineTOFPion->SetLineColor(2);
-        lineTOFPion->Draw();
-        cNsigmaTOFPion_1D->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D." + outputtype).c_str());
-
-        TCanvas *cNsigmaTPCKaon_1D_pt = new TCanvas("cNsigmaTPCKaon_1D_pt", "Nsigma TPC Kaon 1D pT", 720, 720);
-        SetCanvasStyle(cNsigmaTPCKaon_1D_pt, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTPCKaon_1D_pt->SetGrid(1, 1);
-
-        TCanvas *cNsigmaTPCPion_1D_pt = new TCanvas("cNsigmaTPCPion_1D_pt", "Nsigma TPC Pion 1D pT", 720, 720);
-        SetCanvasStyle(cNsigmaTPCPion_1D_pt, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTPCPion_1D_pt->SetGrid(1, 1);
-
-        TCanvas *cNsigmaTOFKaon_1D_pt = new TCanvas("cNsigmaTOFKaon_1D_pt", "Nsigma TOF Kaon 1D pT", 720, 720);
-        SetCanvasStyle(cNsigmaTOFKaon_1D_pt, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTOFKaon_1D_pt->SetGrid(1, 1);
-
-        TCanvas *cNsigmaTOFPion_1D_pt = new TCanvas("cNsigmaTOFPion_1D_pt", "Nsigma TOF Pion 1D pT", 720, 720);
-        SetCanvasStyle(cNsigmaTOFPion_1D_pt, 0.14, 0.05, 0.06, 0.14);
-        cNsigmaTOFPion_1D_pt->SetGrid(1, 1);
-
-        TLegend *leg1DPID_pt = new TLegend(0.17, 0.82, 0.8, 0.92);
-        leg1DPID_pt->SetNColumns(3);
-        leg1DPID_pt->SetTextSize(0.028);
-        leg1DPID_pt->SetFillStyle(0);
-        leg1DPID_pt->SetBorderSize(0);
-        leg1DPID_pt->SetTextFont(42);
-        leg1DPID_pt->SetHeader("#it{p}_{T} ranges");
-
-        for (int i = 0; i < 6; i++)
-        {
-            cNsigmaTPCKaon_1D_pt->cd();
-            SetHistoQA(h1DNsigmaTPCKaon_pt[i]);
-            h1DNsigmaTPCKaon_pt[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTPCKaon_pt[i]->GetXaxis()->SetTitle("n#sigma_{TPC} K^{#pm}");
-            h1DNsigmaTPCKaon_pt[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCKaon_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTPCKaon_pt[i]->SetMaximum(h1DNsigmaTPCKaon_pt[i]->GetMaximum() * 25);
-            h1DNsigmaTPCKaon_pt[i]->Draw("p same");
-            leg1DPID_pt->AddEntry(h1DNsigmaTPCKaon_pt[i], Form("%.1f-%.1f", pTrangesForTPCandTOF[i], pTrangesForTPCandTOF[i + 1]), "p");
-
-            cNsigmaTPCPion_1D_pt->cd();
-            SetHistoQA(h1DNsigmaTPCPion_pt[i]);
-            h1DNsigmaTPCPion_pt[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTPCPion_pt[i]->GetXaxis()->SetTitle("n#sigma_{TPC} #pi^{#pm}");
-            h1DNsigmaTPCPion_pt[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTPCPion_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTPCPion_pt[i]->SetMaximum(h1DNsigmaTPCPion_pt[i]->GetMaximum() * 3);
-            h1DNsigmaTPCPion_pt[i]->Draw("p same");
-
-            cNsigmaTOFKaon_1D_pt->cd();
-            SetHistoQA(h1DNsigmaTOFKaon_pt[i]);
-            h1DNsigmaTOFKaon_pt[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTOFKaon_pt[i]->GetXaxis()->SetTitle("n#sigma_{TOF} K^{#pm}");
-            h1DNsigmaTOFKaon_pt[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFKaon_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTOFKaon_pt[i]->SetMaximum(h1DNsigmaTOFKaon_pt[i]->GetMaximum() * 70);
-            h1DNsigmaTOFKaon_pt[i]->Draw("p same");
-
-            cNsigmaTOFPion_1D_pt->cd();
-            SetHistoQA(h1DNsigmaTOFPion_pt[i]);
-            h1DNsigmaTOFPion_pt[i]->SetMarkerColor(colors[i]);
-            h1DNsigmaTOFPion_pt[i]->GetXaxis()->SetTitle("n#sigma_{TOF} #pi^{#pm}");
-            h1DNsigmaTOFPion_pt[i]->GetYaxis()->SetTitle("Counts");
-            h1DNsigmaTOFPion_pt[i]->GetXaxis()->SetRangeUser(-3.0, 3.0);
-            h1DNsigmaTOFPion_pt[i]->SetMaximum(h1DNsigmaTOFPion_pt[i]->GetMaximum() * 13);
-            h1DNsigmaTOFPion_pt[i]->Draw("p same");
-        }
-
-        cNsigmaTPCKaon_1D_pt->cd();
-        leg1DPID_pt->Draw();
-        TLine *lineTPCKaon_pt = new TLine(0, 0, 0, h1DNsigmaTPCKaon_pt[0]->GetMaximum());
-        lineTPCKaon_pt->SetLineStyle(2);
-        lineTPCKaon_pt->SetLineColor(2);
-        lineTPCKaon_pt->Draw();
-        cNsigmaTPCKaon_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTPCKaon_1D_pt." + outputtype).c_str());
-
-        cNsigmaTPCPion_1D_pt->cd();
-        leg1DPID_pt->Draw();
-        TLine *lineTPCPion_pt = new TLine(0, 0, 0, h1DNsigmaTPCPion_pt[0]->GetMaximum());
-        lineTPCPion_pt->SetLineStyle(2);
-        lineTPCPion_pt->SetLineColor(2);
-        lineTPCPion_pt->Draw();
-        cNsigmaTPCPion_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTPCPion_1D_pt." + outputtype).c_str());
-
-        cNsigmaTOFKaon_1D_pt->cd();
-        leg1DPID_pt->Draw();
-        TLine *lineTOFKaon_pt = new TLine(0, 0, 0, h1DNsigmaTOFKaon_pt[0]->GetMaximum());
-        lineTOFKaon_pt->SetLineStyle(2);
-        lineTOFKaon_pt->SetLineColor(2);
-        lineTOFKaon_pt->Draw();
-        cNsigmaTOFKaon_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTOFKaon_1D_pt." + outputtype).c_str());
-
-        cNsigmaTOFPion_1D_pt->cd();
-        leg1DPID_pt->Draw();
-        TLine *lineTOFPion_pt = new TLine(0, 0, 0, h1DNsigmaTOFPion_pt[0]->GetMaximum());
-        lineTOFPion_pt->SetLineStyle(2);
-        lineTOFPion_pt->SetLineColor(2);
-        lineTOFPion_pt->Draw();
-        cNsigmaTOFPion_1D_pt->SaveAs(output_QA_folder + ("/NsigmaTOFPion_1D_pt." + outputtype).c_str());
-    }
 }

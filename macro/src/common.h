@@ -1,8 +1,6 @@
 
 // The variables that can be chaged are here ****************************************************
 const string kParticle = "kstar/";
-const bool multipanel_plots = 1;
-const bool save_plots = 1;
 // const string kfoldername_temp = "kstarqa_id21631/hInvMass";
 const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-kstar892analysis";
@@ -71,7 +69,6 @@ const string kDataset_temp = "LHC22o_pass7/";
 
 #ifdef DATASET_LHC220_pass7
 
-
 //*****************************After SQM***************************************
 //==========2023 data===========
 // const string kDataFilename_temp2 = "660453.root"; // (with All checks as above)
@@ -108,7 +105,8 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "679906.root"; // (Sys. train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
 // const string kDataFilename_temp2 = "697595.root"; // INEL only
 // const string kDataFilename_temp2 = "707551.root"; // INEL only (upto 100 GeV pT range)
-const string kDataFilename_temp2 = "708297.root"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV)
+// const string kDataFilename_temp2 = "708297.root"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV)
+const string kDataFilename_temp2 = "725720.root"; // INEL>0, latest train with systematics
 
 #endif
 
@@ -128,8 +126,8 @@ const int kcanvaswidth = 1440;
 const int kcanvasheight = 1080;
 const int kcanvasdivide[2] = {klowerpad, kupperpad};
 
-float masspdg = 0.896;   // in GeV/c^2
-float widthpdg = 0.0487; // in 1 sigma GeV/c^2
+float masspdg = 0.89556; // in GeV/c^2
+float widthpdg = 0.0471; // in 1 sigma GeV/c^2
 
 ////////////////////////////////////////////////////////////////////////////////////
 //                                                                                //

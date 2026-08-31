@@ -5,51 +5,189 @@
 const double massPi = 0.13957039;
 const double massKa = 0.493677;
 
-Double_t BW(Double_t *x, Double_t *par)
+Double_t MassDepRelativisticBW(double *x, double *par)
 {
-    return ((0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]));
+    Double_t m = x[0];    // invariant mass (fit variable)
+    Double_t m0 = par[0]; // pole mass of K*0
+    Double_t g0 = par[1]; // width at pole mass (Γ0)
+
+    // daughter masses: K*0 → K π
+    Double_t mK = 0.493677; // charged kaon mass (GeV/c^2)
+    Double_t mP = 0.139570; // charged pion mass (GeV/c^2)
+
+    auto q = [&](Double_t M)
+    {
+        if (M < mK + mP)
+            return 0.0;
+        return 0.5 / M * sqrt((M * M - pow(mK + mP, 2)) * (M * M - pow(mK - mP, 2)));
+    };
+
+    Double_t q_m = q(m);   // breakup momentum at mass m
+    Double_t q_m0 = q(m0); // breakup momentum at pole mass
+
+    // Mass-dependent width (P-wave)
+    Double_t Gamma_m = g0 * pow(q_m / q_m0, 3) * (m0 / m);
+
+    return par[2] * m * m0 * Gamma_m / (pow(m * m - m0 * m0, 2) + pow(m0 * Gamma_m, 2));
 }
 
-Double_t polynomial2(Double_t *x, Double_t *par)
+Double_t MassDepRelativisticBWpol3(double *x, double *par)
 {
-    double poly2 = par[0] + par[1] * x[0] + par[2] * x[0] * x[0];
-    return (poly2);
-}
+    Double_t m = x[0];    // invariant mass (fit variable)
+    Double_t m0 = par[0]; // pole mass of K*0
+    Double_t g0 = par[1]; // width at pole mass (Γ0)
 
-Double_t polynomial3(Double_t *x, Double_t *par)
-{
-    double poly3 = par[0] + par[1] * x[0] + par[2] * x[0] * x[0] + par[3] * x[0] * x[0] * x[0];
-    return (poly3);
+    // daughter masses: K*0 → K π
+    Double_t mK = 0.493677; // charged kaon mass (GeV/c^2)
+    Double_t mP = 0.139570; // charged pion mass (GeV/c^2)
+
+    auto q = [&](Double_t M)
+    {
+        if (M < mK + mP)
+            return 0.0;
+        return 0.5 / M * sqrt((M * M - pow(mK + mP, 2)) * (M * M - pow(mK - mP, 2)));
+    };
+
+    Double_t q_m = q(m);   // breakup momentum at mass m
+    Double_t q_m0 = q(m0); // breakup momentum at pole mass
+
+    // Mass-dependent width (P-wave)
+    Double_t Gamma_m = g0 * pow(q_m / q_m0, 3) * (m0 / m);
+
+    double BW = par[2] * m * m0 * Gamma_m / (pow(m * m - m0 * m0, 2) + pow(m0 * Gamma_m, 2));
+    double poly3 = par[6] + par[5] * x[0] + par[4] * x[0] * x[0] + par[3] * x[0] * x[0] * x[0];
+    return BW + poly3;
 }
 
 Double_t BreitWignerpoly3(Double_t *x, Double_t *par)
 {
-    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
-
-    double poly3 = par[3] + par[4] * x[0] + par[5] * x[0] * x[0] + par[6] * x[0] * x[0] * x[0];
-
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
+    double poly3 = par[6] + par[5] * (x[0] - (massPi + massKa)) + par[4] * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa)) + par[3] * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa));
     return (BW + poly3);
 }
 
-Double_t BreitWignerpoly2(Double_t *x, Double_t *par)
+Double_t polynomial3(Double_t *x, Double_t *par)
 {
-    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is invariant mass, 1 is width, 2 is the yield
-    double poly2 = par[3] + par[4] * x[0] + par[5] * x[0] * x[0];
-    return (BW + poly2);
+    double poly3 = par[3] + par[2] * (x[0] - (massPi + massKa)) + par[1] * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa)) + par[0] * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa)) * (x[0] - (massPi + massKa));
+    return (poly3);
+}
+
+Double_t ResidualBG(Double_t *x, Double_t *par)
+{
+    /* const double Mth = 0.633;
+
+    if (x[0] <= Mth) return 0.0;
+
+    double dm = x[0] - Mth;
+
+    return par[0] * pow(dm, par[1]) * exp(-par[2]*dm - par[3]*dm*dm); */
+    return par[0] + par[1] * x[0] + par[2] * (2 * x[0] * x[0] - 1) + par[3] * (4 * x[0] * x[0] * x[0] - 3 * x[0]);
+}
+
+Double_t BreitWignerResBGCheck(Double_t *x, Double_t *par)
+{
+    const double Mth = 0.633;
+
+    if (x[0] <= Mth)
+        return 0.0;
+
+    double dm = x[0] - Mth;
+
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
+    // double rb = par[3] * pow(dm, par[4]) * exp(-par[5]*dm - par[6]*dm*dm);
+    Double_t bg =
+        par[3] + par[4] * x[0] + par[5] * (2 * x[0] * x[0] - 1) + par[6] * (4 * x[0] * x[0] * x[0] - 3 * x[0]);
+    return (BW + bg);
+}
+
+Double_t ResidualCheck(Double_t *x, Double_t *par)
+{
+    return par[0] * pow((x[0] - (massPi + massKa)), par[1]) * exp(-par[2] * pow((x[0] - (massPi + massKa)), 2 * par[1]));
+}
+
+Double_t BreitWignerResCheck(Double_t *x, Double_t *par)
+{
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
+    double rb = par[3] * pow((x[0] - (massPi + massKa)), par[4]) * exp(-par[5] * pow((x[0] - (massPi + massKa)), 2 * par[4]));
+
+    return (BW + rb);
+}
+
+Double_t BreitWignerpoly2Reflection(Double_t *x, Double_t *par)
+{
+    // =====================================================
+    // K*0 Breit-Wigner
+    // =====================================================
+
+    double BW =
+        (0.5 * par[2] * par[1] / TMath::Pi()) /
+        ((x[0] - par[0]) * (x[0] - par[0]) +
+         0.25 * par[1] * par[1]);
+
+    // =====================================================
+    // Cubic polynomial background
+    // =====================================================
+
+    double poly2 =
+        par[5] + par[4] * x[0] + par[3] * x[0] * x[0];
+
+    // =====================================================
+    // Crystal Ball reflection
+    // =====================================================
+
+    double reflection =
+        par[6] *
+        ROOT::Math::crystalball_function(
+            x[0],
+            par[7], // alpha
+            par[8], // n
+            par[9], // sigma
+            par[10] // mean
+        );
+
+    return BW + poly2 + reflection;
+}
+
+Double_t BreitWignerpoly3Reflection(Double_t *x, Double_t *par)
+{
+    // =====================================================
+    // K*0 Breit-Wigner
+    // =====================================================
+
+    double BW =
+        (0.5 * par[2] * par[1] / TMath::Pi()) /
+        ((x[0] - par[0]) * (x[0] - par[0]) +
+         0.25 * par[1] * par[1]);
+
+    // =====================================================
+    // Cubic polynomial background
+    // =====================================================
+
+    double poly3 =
+        par[6] + par[5] * x[0] + par[4] * x[0] * x[0] + par[3] * x[0] * x[0] * x[0];
+
+    // =====================================================
+    // Crystal Ball reflection
+    // =====================================================
+
+    double reflection =
+        par[7] *
+        ROOT::Math::crystalball_function(
+            x[0],
+            par[8],  // alpha
+            par[9],  // n
+            par[10], // sigma
+            par[11]  // mean
+        );
+
+    return BW + poly3 + reflection;
 }
 
 Double_t voigtpol2(Double_t *x, Double_t *par)
 {
     double vgt = par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3], 4);
-    double poly2 = par[4] + par[5] * x[0] + par[6] * x[0] * x[0];
+    double poly2 = par[6] + par[5] * x[0] + par[4] * x[0] * x[0];
     return (vgt + poly2);
-}
-
-Double_t voigtpol3(Double_t *x, Double_t *par)
-{
-    double vgt = par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3], 4);
-    double poly3 = par[4] + par[5] * x[0] + par[6] * x[0] * x[0] + par[7] * x[0] * x[0] * x[0];
-    return (vgt + poly3);
 }
 
 Double_t voigt(Double_t *x, Double_t *par)
@@ -57,10 +195,42 @@ Double_t voigt(Double_t *x, Double_t *par)
     return (par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3]));
 }
 
-Double_t phi_bkg(Double_t *x, Double_t *par)
+Double_t voigt_phi(Double_t *x, Double_t *par)
+{
+    double vgt = (par[0] * TMath::Voigt(x[0] - par[1], par[2], par[3]));
+    double srv = (par[6] + par[5] * x[0] + par[4] * x[0] * x[0]);
+    return (vgt + srv);
+}
+
+/* Double_t phi_bkg(Double_t *x, Double_t *par)
 {
     double srv = (par[6] + par[5] * x[0] + par[4] * x[0] * x[0]);
     return (srv);
+} */
+
+Double_t phi_bkg(Double_t *x, Double_t *par)
+{
+    double srv = (par[0] + par[1] * x[0] + par[2] * x[0] * x[0] + par[3] * sqrt(x[0] - 0.633));
+    return (srv);
+}
+
+Double_t BreitWignerwoBGSub(Double_t *x, Double_t *par)
+{
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter is BW mass, 1 is width, 2 is the yield. x[0] is the invariant mass
+    double bkg = (par[6] + par[5] * x[0] + par[4] * x[0] * x[0] + par[3] * sqrt(x[0] - 0.633));
+    return (BW + bkg);
+}
+
+Double_t BreitWignerpoly2(Double_t *x, Double_t *par)
+{
+    double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is invariant mass, 1 is width, 2 is the yield
+    double poly2 = par[5] + par[4] * x[0] + par[3] * x[0] * x[0];
+    return (BW + poly2);
+}
+
+Double_t BW(Double_t *x, Double_t *par)
+{
+    return (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]); // parameter 0 is invariant mass, 1 is width, 2 is the yield
 }
 
 Double_t BreitWignerpoly1(Double_t *x, Double_t *par)
@@ -71,6 +241,12 @@ Double_t BreitWignerpoly1(Double_t *x, Double_t *par)
     return (BW + poly1);
 }
 
+Double_t polynomial2(Double_t *x, Double_t *par)
+{
+    double poly2 = par[2] + par[1] * x[0] + par[0] * x[0] * x[0];
+    return (poly2);
+}
+
 Double_t polynomial1(Double_t *x, Double_t *par)
 {
     return (par[0] + par[1] * x[0]);
@@ -79,14 +255,14 @@ Double_t polynomial1(Double_t *x, Double_t *par)
 Double_t BWExpo(Double_t *x, Double_t *par)
 {
     double BW = (0.5 * par[2] * par[1] / TMath::Pi()) / ((x[0] - par[0]) * (x[0] - par[0]) + 0.25 * par[1] * par[1]);
-    double expo = (pow((x[0] - 0.63718), par[3])) * exp(-par[4] - x[0] * par[5] - x[0] * x[0] * par[6]);
+    double expo = (pow((x[0] - (massPi + massKa)), par[3])) * exp(-par[4] - x[0] * par[5] - x[0] * x[0] * par[6]);
     return (BW + expo);
 }
 
 Double_t Expo(Double_t *x, Double_t *par)
 {
     // return ((x[0]- 0.63718)**par[3])*exp(par[0] + x[0]*par[1] + x[0]*x[0]*par[2]);
-    double expo = (pow((x[0] - 0.63267), par[0])) * exp(-par[3] - x[0] * par[2] - x[0] * x[0] * par[1]);
+    double expo = (pow((x[0] - (massPi + massKa)), par[0])) * exp(-par[1] - x[0] * par[2] - x[0] * x[0] * par[3]);
     return (expo);
 }
 
@@ -195,46 +371,6 @@ Double_t CrystalBall(double *x, double *par)
     return y1;
 }
 
-Double_t CrystalBallRight(double *x, double *par)
-{
-    // par[0] normalization
-    // par[1] mean of gaussian
-    // par[2] sigma of gaussian
-    // par[3] alpha
-    // par[4] n
-
-    double t = (x[0] - par[1]) / par[2];
-    double absAlpha_L = fabs(par[3]);
-    double n = par[4];
-    double y1 = 0;
-
-    if (t > absAlpha_L) // changed: < -absAlpha_L  →  > absAlpha_L for tail on right side
-    {
-        double a = exp(-0.5 * absAlpha_L * absAlpha_L) * TMath::Power(n / absAlpha_L, n);
-        double b = (n / absAlpha_L) - absAlpha_L;
-        y1 = par[0] * (a / TMath::Power(b + t, n)); // changed: (b - t)  →  (b + t)
-    }
-    else if (t <= absAlpha_L) // changed: >= -absAlpha_L  →  <= absAlpha_L
-    {
-        y1 = par[0] * exp(-0.5 * t * t);
-    }
-    return y1;
-}
-
-Double_t CBRightpol2(double *x, double *par)
-{
-    double CB = CrystalBallRight(x, &par[0]);
-    double pol2 = par[5] + par[6] * x[0] + par[7] * x[0] * x[0];
-    return (CB + pol2);
-}
-
-Double_t CBRightpol3(double *x, double *par)
-{
-    double CB = CrystalBallRight(x, &par[0]);
-    double pol3 = par[5] + par[6] * x[0] + par[7] * x[0] * x[0] + par[8] * x[0] * x[0] * x[0];
-    return (CB + pol3);
-}
-
 Double_t DoubleCrystalBall(Double_t *x, Double_t *par)
 {
     // par[0] normalization
@@ -298,22 +434,6 @@ Double_t DoubleCrystalBallpol3(double *x, double *par)
     double DCB = DoubleCrystalBall(x, &par[0]);
     double pol3 = par[10] + par[9] * x[0] + par[8] * x[0] * x[0] + par[7] * x[0] * x[0] * x[0];
     return (DCB + pol3);
-}
-
-Double_t BWCBpol2(double *x, double *par)
-{
-    double BW = RelativisticBW(x, &par[0]);
-    double CB = CrystalBallRight(x, &par[3]);
-    double pol2 = par[10] + par[9] * x[0] + par[8] * x[0] * x[0];
-    return (BW + CB + pol2);
-}
-
-Double_t BWCBpol3(double *x, double *par)
-{
-    double BW = RelativisticBW(x, &par[0]);
-    double CB = CrystalBallRight(x, &par[3]);
-    double pol3 = par[11] + par[10] * x[0] + par[9] * x[0] * x[0] + par[8] * x[0] * x[0] * x[0];
-    return (BW + CB + pol3);
 }
 
 Double_t Boltzman(double *x, double *par)

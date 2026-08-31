@@ -1,14 +1,15 @@
-#include "common.h"
 #include "fitting_range.h"
-// Histograms initialization
 
+float masspdg = 0.89556; // in GeV/c^2
+float widthpdg = 0.0471; // in 1 sigma GeV/c^2
+
+// Histograms initialization
 TH1F *hYieldpar = new TH1F("hYieldpar", "hYieldpar", Npt, pT_bins);                   // for ptspectra from fitting parameter directly
 TH1F *hintegral_yield = new TH1F("hintegral_yield", "hintegral_yield", Npt, pT_bins); // pt spectra from function integration
 TH1F *hChiSquare = new TH1F("hChiSquare", "hChiSquare", Npt, pT_bins);                // for chisquare
 TH1F *hsignificance = new TH1F("hsignificance", "hsignificance", Npt, pT_bins);       // for significance of signal
 TH1F *hmass = new TH1F("hmass", "hmass", Npt, pT_bins);                               // for mass from fit
 TH1F *hwidth = new TH1F("hwidth", "hwidth", Npt, pT_bins);                            // for width from fit
-TH1F *hsigma = new TH1F("hsigma", "hsigma", Npt, pT_bins);                            // for resolution from fit
 TH1F *hYbincount = new TH1F("hYbincount", "hYbincount", Npt, pT_bins);                // Yield calculation using bin counting method
 TH1F *hFrac_stat_error = new TH1F("hFrac_stat_error", "hFrac_stat_error", Npt, pT_bins);
 TH1F *herrormass = new TH1F("herrormass", "", Npt, 0.5, 16);   // for error band in mass
@@ -29,13 +30,11 @@ TH1D *fHistTotal[Npt];                                    // for sig+bg
 TH1D *fHistTotal_anti[Npt];                               // for sig+bg_anti
 TH1D *fHistBkg[Npt];                                      // for mixedbg
 TH1D *fHistbkgLS[Npt];                                    // for like sign
-TH1D *fHistbkgLSPP[Npt];                                  // for like sign
-TH1D *fHistbkgLSMM[Npt];                                  // for like sign
 TH1D *fHistbkgLS_anti[Npt];                               // for like sign_anti
-TH1D *fHistRotated1D[Npt];                                // for rotated bkg
+TH1D *fHistRotated1D[Npt];                                  // for rotated bkg
 TH1D *fHistlike[Npt];                                     // for resultant like bg
-TH1D *histPP[Npt];                                        // for like pp bg
-TH1D *histMM[Npt];                                        // for like mm bg
+TH1D *fHistbkgPP[Npt];                                        // for like pp bg
+TH1D *fHistbkgMM[Npt];                                        // for like mm bg
 TH1D *hfbkg;                                              // for normalised mixed bkg
 char name[100];                                           // for giving name to canvases and histograms
 Double_t lowpt, highpt;                                   // for extracting pt from the above defined pt array
@@ -74,3 +73,4 @@ Double_t Yield_bincount_hist;
 //**Canvas definitions and initialisations********************************************************************************
 
 //***************************************************************************************************
+

@@ -33,24 +33,25 @@ void openTH1D(TH1D *&hist, TFile *file, const string &histPath)
     }
 }
 
-void systematics()
+void systematics_sigExt()
 {
     // 1.         Default                         (1)
     // 2.         Norm variation                  (2)
     // 3.         Fit variation                   (2)
-    // 4.         Rotatinal bkg                   (1)
+    // 4.         Like-sign bkg                   (1)
     // 5.         pol2                            (1)
     // 6.         Bin counting                    (1)
     // 7.         WidthFree                       (1) //Upto here only we will calculate for all multiplicities
     // 8.         DCA variations                  (2)
     // 9.         PV contributor                  (1)
-    // 10.        PID variations                  (2)// Currently using 1
+    // 10.        PID variations                  (2) // Currently using 1
     // 11.        Material Budget                 (2)
     // 12.        Hadronic cross section          (1)
 
     int lineColors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
-    string basePathSigExt = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
+    string basePathSigExt = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
+    string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
     string basePathCommon = "../output/kstar/LHC22o_pass7/";
     string pathPIDAndMultEst = "679906/";
     string pathTrackSel = "679906/";
@@ -66,10 +67,54 @@ void systematics()
     TH1D *hSpectraDefault0100;
     TFile *SysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/SysUncert.root").c_str(), "RECREATE");
 
-    for (int imult = 0; imult < nmultbins; imult++)
+    ////For signal extraction variations
+    vector<string> normVars = {"Norm1", "Norm2"};
+    vector<string> fitRangeVars = {"FitRange1", "FitRange2"};
+    vector<string> CombinatorialBkgVars = {"LIKE"};
+    vector<string> ResidualBkgVars = {"pol2"};
+    vector<string> BinCounting = {"BinCounting"};
+    vector<string> widthVars = {"WidthFree"};
+    int totalSizeSigExt = normVars.size() + fitRangeVars.size() + CombinatorialBkgVars.size() + ResidualBkgVars.size() + BinCounting.size() + widthVars.size();
+
+    // -------------------------------------------------------------
+    // Pre-calculate Combinatorial Bkg Uncertainty for Minimum Bias (0-100%)
+    // -------------------------------------------------------------
+    TFile *fMB_Default = nullptr;
+    TH1D *hMB_DefaultSpectra = nullptr;
+    openTFile(fMB_Default, basePathSigExt + "ROTATED/corrected_spectra_0_100.root");
+    openTH1D(hMB_DefaultSpectra, fMB_Default, "mult_0-100/corrected_spectra_Integral_final");
+
+    vector<TH1 *> MB_CombinatorialBkgVariationHists;
+    for (size_t i = 0; i < CombinatorialBkgVars.size(); i++)
     {
-        int multLow = mult_classes[imult];
-        int multHigh = mult_classes[imult + 1];
+        TFile *fMB_Comb = nullptr;
+        TH1D *hMB_CombSpectra = nullptr;
+        openTFile(fMB_Comb, basePathSigExt + CombinatorialBkgVars[i] + "/corrected_spectra_0_100.root");
+        openTH1D(hMB_CombSpectra, fMB_Comb, "mult_0-100/corrected_spectra_Integral_final");
+        MB_CombinatorialBkgVariationHists.push_back(hMB_CombSpectra);
+    }
+
+    HistogramOperations operationsInitial;
+
+    // Calculate the fixed Minimum Bias relative uncertainty for Combinatorial Background
+    TH1D *hRelUncertCombinatorialBkgVars_MB = operationsInitial.RelativeUncertainty(hMB_DefaultSpectra, MB_CombinatorialBkgVariationHists);
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
+
+    for (int imult = 0; imult < nmultbins + 1; imult++)
+    {
+        int multLow, multHigh;
+
+        if (imult == 0)
+        {
+            multLow = 0;
+            multHigh = 100;
+        }
+        else
+        {
+            multLow = mult_classes[imult - 1];
+            multHigh = mult_classes[imult];
+        }
 
         TString savePath = (basePathSigExt + Form("SystematicsPlots/mult_%d-%d/", multLow, multHigh)).c_str();
         if (gSystem->mkdir(savePath, kTRUE))
@@ -80,29 +125,10 @@ void systematics()
         // Build mult-range strings used in filenames and histogram paths
         string multRangeUnderscore = to_string(multLow) + "_" + to_string(multHigh);
         string multRangeDash = to_string(multLow) + "-" + to_string(multHigh);
+        string correctedFileNameDefault = string("ROTATED/corrected_spectra_") + multRangeUnderscore + ".root";
         string correctedFileName = string("corrected_spectra_") + multRangeUnderscore + ".root";
         string multDir = string("mult_") + multRangeDash + "/";
-
-        ////For signal extraction variations
-        vector<string> normVars = {"Norm1", "Norm2"};
-        vector<string> fitRangeVars = {"FitRange1", "FitRange2"};
-        vector<string> CombinatorialBkgVars = {"ROTATED"};
-        vector<string> ResidualBkgVars = {"pol2"};
-        vector<string> BinCounting = {"BinCounting"};
-        vector<string> widthVars = {"WidthFree"};
-        int totalSizeSigExt = normVars.size() + fitRangeVars.size() + CombinatorialBkgVars.size() + ResidualBkgVars.size() + BinCounting.size() + widthVars.size();
-
-        //// For track selections variations
-        vector<string> DCAvars = {"DCAvar1", "DCAvar2"};
-        vector<string> PVcontributorVars = {"NoPVContributor"};
-        int totalSizeTrackSel = DCAvars.size() + PVcontributorVars.size();
-
-        //// For PID variations
-        // vector<string> PIDVars = {"TPC1p5_combined2", "TPC2p5_combined3p5"};
-        vector<string> PIDVars = {"TPC2p5_combined3p5"};
-
-        //// Material budget variations
-        vector<string> materialBudgetVars = {"MaterialBudgetMinus10", "MaterialBudgetPlus10"};
+        cout << "Multiplicity directory: " << multDir << endl;
 
         TFile *fDefault;
         TFile *fnormVars[normVars.size()];
@@ -111,10 +137,6 @@ void systematics()
         TFile *fResidualBkgVars[ResidualBkgVars.size()];
         TFile *fBinCounting[BinCounting.size()];
         TFile *fwidthVars[widthVars.size()];
-        TFile *fDCAvars[DCAvars.size()];
-        TFile *fPVcontributorVars[PVcontributorVars.size()];
-        TFile *fPIDVars[PIDVars.size()];
-        TFile *fmaterialBudgetVars[materialBudgetVars.size()];
 
         TH1D *hSpectraDefault, *hEfficiency_Default;
         TH1D *hSpectraNormVars[normVars.size()];
@@ -123,15 +145,11 @@ void systematics()
         TH1D *hSpectraResidualBkgVars[ResidualBkgVars.size()];
         TH1D *hSpectraBinCounting[BinCounting.size()];
         TH1D *hSpectraWidthVars[widthVars.size()];
-        TH1D *hSpectraDCAvars[DCAvars.size()];
-        TH1D *hSpectraPVcontributorVars[PVcontributorVars.size()];
-        TH1D *hSpectraPIDVars[PIDVars.size()];
-        TH1D *hSpectraMaterialBudgetVars[materialBudgetVars.size()];
 
-        openTFile(fDefault, basePathSigExt + correctedFileName);
+        openTFile(fDefault, basePathSigExt + correctedFileNameDefault);
         openTH1D(hSpectraDefault, fDefault, (multDir + "corrected_spectra_Integral_final").c_str());
         openTH1D(hEfficiency_Default, fDefault, (multDir + "heff").c_str());
-        openTFile(fDefault0100, basePathSigExt + "corrected_spectra_0_100.root");
+        openTFile(fDefault0100, basePathSigExt + "ROTATED/corrected_spectra_0_100.root");
         openTH1D(hSpectraDefault0100, fDefault0100, "mult_0-100/corrected_spectra_Integral_final");
 
         // Signal extraction
@@ -152,7 +170,7 @@ void systematics()
         }
         for (int i = 0; i < ResidualBkgVars.size(); i++)
         {
-            openTFile(fResidualBkgVars[i], basePathSigExt + ResidualBkgVars[i] + "/" + correctedFileName);
+            openTFile(fResidualBkgVars[i], basePathSigExtpol2 + ResidualBkgVars[i] + "/" + correctedFileName);
             openTH1D(hSpectraResidualBkgVars[i], fResidualBkgVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
         }
         for (int i = 0; i < BinCounting.size(); i++)
@@ -164,32 +182,6 @@ void systematics()
         {
             openTFile(fwidthVars[i], basePathSigExt + widthVars[i] + "/" + correctedFileName);
             openTH1D(hSpectraWidthVars[i], fwidthVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
-        }
-
-        // Track selection
-        for (int i = 0; i < DCAvars.size(); i++)
-        {
-            openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/" + correctedFileName);
-            openTH1D(hSpectraDCAvars[i], fDCAvars[i], (multDir + "corrected_spectra_Integral_final").c_str());
-        }
-        for (int i = 0; i < PVcontributorVars.size(); i++)
-        {
-            openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/" + correctedFileName);
-            openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
-        }
-
-        // PID
-        for (int i = 0; i < PIDVars.size(); i++)
-        {
-            openTFile(fPIDVars[i], basePathPIDAndMultEst + PIDVars[i] + "/hInvMass/" + correctedFileName);
-            openTH1D(hSpectraPIDVars[i], fPIDVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
-        }
-
-        // Material budget
-        for (int i = 0; i < materialBudgetVars.size(); i++)
-        {
-            openTFile(fmaterialBudgetVars[i], basePathSigExt + materialBudgetVars[i] + "/corrected_spectra_0_100.root");
-            openTH1D(hSpectraMaterialBudgetVars[i], fmaterialBudgetVars[i], "mult_0_100/heff");
         }
 
         vector<TH1 *> NormVariationHists;
@@ -222,26 +214,6 @@ void systematics()
         {
             WidthVariationHists.push_back(hSpectraWidthVars[i]);
         }
-        vector<TH1 *> DCAVariationHists;
-        for (int i = 0; i < DCAvars.size(); i++)
-        {
-            DCAVariationHists.push_back(hSpectraDCAvars[i]);
-        }
-        vector<TH1 *> PVContributorVariationHists;
-        for (int i = 0; i < PVcontributorVars.size(); i++)
-        {
-            PVContributorVariationHists.push_back(hSpectraPVcontributorVars[i]);
-        }
-        vector<TH1 *> PIDVariationHists;
-        for (int i = 0; i < PIDVars.size(); i++)
-        {
-            PIDVariationHists.push_back(hSpectraPIDVars[i]);
-        }
-        vector<TH1 *> MaterialBudgetVariationHists;
-        for (int i = 0; i < materialBudgetVars.size(); i++)
-        {
-            MaterialBudgetVariationHists.push_back(hSpectraMaterialBudgetVars[i]);
-        }
 
         vector<size_t> AllVarSizes = {
             NormVariationHists.size(),
@@ -249,10 +221,7 @@ void systematics()
             CombinatorialBkgVariationHists.size(),
             ResidualBkgVariationHists.size(),
             BinCountingVariationHists.size(),
-            WidthVariationHists.size(),
-            DCAVariationHists.size(),
-            PVContributorVariationHists.size(),
-            PIDVariationHists.size()};
+            WidthVariationHists.size()};
         int totalCombinations = AllVarSizes.size();
         cout << "Total number of systematic sources are " << totalCombinations << endl;
 
@@ -269,10 +238,7 @@ void systematics()
             CombinatorialBkgVariationHists,
             ResidualBkgVariationHists,
             BinCountingVariationHists,
-            WidthVariationHists,
-            DCAVariationHists,
-            PVContributorVariationHists,
-            PIDVariationHists};
+            WidthVariationHists};
 
         vector<vector<string>> AllVariationNames = {
             normVars,
@@ -280,11 +246,7 @@ void systematics()
             CombinatorialBkgVars,
             ResidualBkgVars,
             BinCounting,
-            widthVars,
-            DCAvars,
-            PVcontributorVars,
-            PIDVars,
-            materialBudgetVars};
+            widthVars};
 
         vector<TH1 *> VarRatios[AllVariationsSize];
         vector<TH1 *> histBarlow[AllVariationsSize];
@@ -298,12 +260,12 @@ void systematics()
         {
             for (size_t j = 0; j < AllVariationHists[i].size(); j++)
             {
-                if (i == AllVariationHists.size() - 1)
-                {
-                    VarRatios[i].push_back(operations.CalculateRatio(hSpectraDefault0100, AllVariationHists[i][j]));
-                    histBarlow[i].push_back(operations.barlowcheck(hSpectraDefault0100, AllVariationHists[i][j], checkbar));
-                }
-                else
+                // if (i == AllVariationHists.size() - 1)
+                // {
+                //     VarRatios[i].push_back(operations.CalculateRatio(hSpectraDefault0100, AllVariationHists[i][j]));
+                //     histBarlow[i].push_back(operations.barlowcheck(hSpectraDefault0100, AllVariationHists[i][j], checkbar));
+                // }
+                // else
                 {
                     VarRatios[i].push_back(operations.CalculateRatio(hSpectraDefault, AllVariationHists[i][j]));
                     histBarlow[i].push_back(operations.barlowcheck(hSpectraDefault, AllVariationHists[i][j], checkbar));
@@ -316,10 +278,10 @@ void systematics()
 
         TCanvas *cPlotBarlowAll = new TCanvas("", "Barlow Checks", 1080, 720);
         SetCanvasStyle(cPlotBarlowAll, 0.15, 0.03, 0.06, 0.15);
-        cPlotBarlowAll->Divide(4, 4);
+        cPlotBarlowAll->Divide(3, 3);
         TCanvas *cRatioAll = new TCanvas("", "Spectra ratio (Variation / Default)", 1080, 720);
         SetCanvasStyle(cRatioAll, 0.15, 0.03, 0.06, 0.15);
-        cRatioAll->Divide(4, 4);
+        cRatioAll->Divide(3, 3);
         counter = 0;
         TLatex latBarlow;
         latBarlow.SetNDC();
@@ -364,7 +326,8 @@ void systematics()
                 latBarlow.DrawLatex(0.1, 0.42, Form("|n|<2: %.2f%%", deltaR2 * 100));
 
                 cRatioAll->cd(counter + 1);
-                gPad->SetLeftMargin(0.09);
+                gPad->SetGridx();
+                gPad->SetLeftMargin(0.15);
                 gPad->SetBottomMargin(0.14);
                 gPad->SetRightMargin(0.03);
                 gPad->SetTopMargin(0.1);
@@ -372,6 +335,7 @@ void systematics()
                 VarRatios[i][j]->GetXaxis()->SetLabelSize(0.06);
                 VarRatios[i][j]->GetYaxis()->SetLabelSize(0.06);
                 VarRatios[i][j]->GetYaxis()->SetTitle("Variation / Default");
+                VarRatios[i][j]->GetYaxis()->SetTitleOffset(1.6);
                 VarRatios[i][j]->SetTitle(Form("%s", AllVariationNames[i][j].c_str()));
                 VarRatios[i][j]->SetStats(0);
                 VarRatios[i][j]->SetMaximum(VarRatios[i][j]->GetMaximum() * 1.02);
@@ -387,29 +351,22 @@ void systematics()
         }
         TH1D *hRelUncertNormVars = operations.RelativeUncertainty(hSpectraDefault, NormVariationHists);
         TH1D *hRelUncertFitRangeVars = operations.RelativeUncertainty(hSpectraDefault, FitRangeVariationHists);
-        TH1D *hRelUncertCombinatorialBkgVars = operations.RelativeUncertainty(hSpectraDefault, CombinatorialBkgVariationHists);
+        // TH1D *hRelUncertCombinatorialBkgVars = operations.RelativeUncertainty(hSpectraDefault, CombinatorialBkgVariationHists);
+        TH1D *hRelUncertCombinatorialBkgVars = (TH1D *)hRelUncertCombinatorialBkgVars_MB->Clone(Form("hRelUncertCombinatorialBkgVars_mult_%d_%d", multLow, multHigh));
         TH1D *hRelUncertResidualBkgVars = operations.RelativeUncertainty(hSpectraDefault, ResidualBkgVariationHists);
         TH1D *hRelUncertBinCounting = operations.RelativeUncertainty(hSpectraDefault, BinCountingVariationHists);
         TH1D *hRelUncertWidthVars = operations.RelativeUncertainty(hSpectraDefault, WidthVariationHists);
-        TH1D *hRelUncertDCAvars = operations.RelativeUncertainty(hSpectraDefault, DCAVariationHists);
-        TH1D *hRelUncertPVcontributorVars = operations.RelativeUncertainty(hSpectraDefault, PVContributorVariationHists);
-        TH1D *hRelUncertPIDVars = operations.RelativeUncertainty(hSpectraDefault, PIDVariationHists);
-        TH1D *hRelUncertMaterialBudgetVars = operations.RelativeUncertainty(hEfficiency_Default, MaterialBudgetVariationHists);
 
         TCanvas *cRelUncert = new TCanvas("", "Relative Uncertainties", 1080, 720);
         SetCanvasStyle(cRelUncert, 0.15, 0.03, 0.06, 0.15);
-        cRelUncert->Divide(4, 3);
+        cRelUncert->Divide(3, 2);
         vector<TH1D *> relUncertHists = {
             (TH1D *)hRelUncertNormVars->Clone("hRelUncertNormVars_clone"),
             (TH1D *)hRelUncertFitRangeVars->Clone("hRelUncertFitRangeVars_clone"),
             (TH1D *)hRelUncertCombinatorialBkgVars->Clone("hRelUncertCombinatorialBkgVars_clone"),
             (TH1D *)hRelUncertResidualBkgVars->Clone("hRelUncertResidualBkgVars_clone"),
             (TH1D *)hRelUncertBinCounting->Clone("hRelUncertBinCounting_clone"),
-            (TH1D *)hRelUncertWidthVars->Clone("hRelUncertWidthVars_clone"),
-            (TH1D *)hRelUncertDCAvars->Clone("hRelUncertDCAvars_clone"),
-            (TH1D *)hRelUncertPVcontributorVars->Clone("hRelUncertPVcontributorVars_clone"),
-            (TH1D *)hRelUncertPIDVars->Clone("hRelUncertPIDVars_clone"),
-            (TH1D *)hRelUncertMaterialBudgetVars->Clone("hRelUncertMaterialBudgetVars_clone")};
+            (TH1D *)hRelUncertWidthVars->Clone("hRelUncertWidthVars_clone")};
 
         vector<string> relUncertNames = {
             "Norm. Range",
@@ -417,86 +374,35 @@ void systematics()
             "Combinatorial Bkg",
             "Residual Bkg",
             "Yield Extraction",
-            "Width Variation",
-            "DCA Selection",
-            "PV Contributor",
-            "PID Selection",
-            "Material Budget"};
+            "Width Variation"};
 
         for (size_t i = 0; i < relUncertHists.size(); i++)
         {
             cRelUncert->cd(i + 1);
-            gPad->SetLeftMargin(0.09);
+            gPad->SetLeftMargin(0.15);
             gPad->SetBottomMargin(0.14);
             gPad->SetRightMargin(0.03);
-            gPad->SetTopMargin(0.1);
+            gPad->SetTopMargin(0.15);
             SetHistoQA(relUncertHists[i]);
             relUncertHists[i]->GetXaxis()->SetLabelSize(0.06);
             relUncertHists[i]->GetYaxis()->SetLabelSize(0.06);
-            relUncertHists[i]->GetYaxis()->SetTitle("Relative Uncertainty");
+            // relUncertHists[i]->GetYaxis()->SetTitle("Relative Uncertainty");
+            relUncertHists[i]->GetYaxis()->SetTitle("");
             relUncertHists[i]->SetTitle(Form("%s", relUncertNames[i].c_str()));
             relUncertHists[i]->SetStats(0);
+            // relUncertHists[i]->GetYaxis()->SetMaxDigits(3);
             relUncertHists[i]->SetMaximum(relUncertHists[i]->GetMaximum() * 1.05);
             relUncertHists[i]->Draw("HIST");
         }
 
         vector<TH1D *> vecSignalExt = {hRelUncertNormVars, hRelUncertFitRangeVars, hRelUncertCombinatorialBkgVars, hRelUncertResidualBkgVars, hRelUncertWidthVars}; // Bin counting excluded as it passed Barlow
-        vector<TH1D *> vecTrackSel = {hRelUncertDCAvars, hRelUncertPVcontributorVars};
-        vector<TH1D *> vecPID = {hRelUncertPIDVars};
-        vector<TH1D *> vecMaterialBudget = {hRelUncertMaterialBudgetVars};
-        // TH1D *hITSTPCMatchingRelUncert = (TH1D *)hRelUncertMaterialBudgetVars->Clone("hITSTPCMatchingRelUncert");
-        // for (int ibin = 1; ibin <= hITSTPCMatchingRelUncert->GetNbinsX(); ibin++)
-        // {
-        //     hITSTPCMatchingRelUncert->SetBinContent(ibin, 0.02); // Taking 2% relative uncertainty.
-        // }
-        // vector<TH1D *> vecITSTPCMatching = {hITSTPCMatchingRelUncert};
-
-        TH1D *hHadronicInteractionRelUncert = (TH1D *)hRelUncertMaterialBudgetVars->Clone("hHadronicInteractionRelUncert");
-
-        float pTValues[] = {0.4046, 0.7965, 1.201, 1.606, 1.997, 4.008};
-        float relUncertHI[] = {0.02713, 0.02373, 0.01916, 0.01979, 0.02042, 0.01182};
-
-        int nValues = sizeof(pTValues) / sizeof(float);
-
-        // First set everything to zero
-        for (int ibin = 1; ibin <= hHadronicInteractionRelUncert->GetNbinsX(); ibin++)
-        {
-            hHadronicInteractionRelUncert->SetBinContent(ibin, 0.);
-        }
-
-        // Fill only matching pT bins
-        for (int ibin = 1; ibin <= hHadronicInteractionRelUncert->GetNbinsX(); ibin++)
-        {
-            double binCenter = hHadronicInteractionRelUncert->GetBinCenter(ibin);
-
-            for (int i = 0; i < nValues; i++)
-            {
-                if (fabs(binCenter - pTValues[i]) < 0.2) // tolerance
-                {
-                    hHadronicInteractionRelUncert->SetBinContent(ibin, relUncertHI[i]);
-                    break;
-                }
-            }
-        }
-        vector<TH1D *> vecHadronicInteraction = {hHadronicInteractionRelUncert};
 
         TH1D *hSignalExtTotalSys = operations.sigma(vecSignalExt);
-        TH1D *hTrackSelTotalSys = operations.sigma(vecTrackSel);
-        TH1D *hPIDTotalSys = operations.sigma(vecPID);
-        TH1D *hMaterialBudgetTotalSys = operations.sigma(vecMaterialBudget);
-        // TH1D *hITSTPCMatchingTotalSys = operations.sigma(vecITSTPCMatching);
-        TH1D *hHadronicInteractionTotalSys = operations.sigma(vecHadronicInteraction);
-
-        // vector<TH1D *> vecTotal = {hSignalExtTotalSys, hTrackSelTotalSys, hPIDTotalSys, hMaterialBudgetTotalSys, hITSTPCMatchingTotalSys, hHadronicInteractionTotalSys};
-        vector<TH1D *> vecTotal = {hSignalExtTotalSys, hTrackSelTotalSys, hPIDTotalSys, hMaterialBudgetTotalSys, hHadronicInteractionTotalSys};
-        TH1D *hTotalSys = operations.sigma(vecTotal);
-
         TH1D *hSignalExtTotalSysClone = (TH1D *)hSignalExtTotalSys->Clone();
-        TH1D *hTrackSelTotalSysClone = (TH1D *)hTrackSelTotalSys->Clone();
 
         string SigExtNames[] = {"Norm. range", "Fit Range", "Combinatorial Bkg", "Residual Bkg", "Width fix/free"};
 
-        TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 720, 720);
+        TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 1080, 720);
         SetCanvasStyle(cSigExtAll, 0.14, 0.03, 0.06, 0.13);
         TLegend *legSigExt = new TLegend(0.17, 0.6, 0.5, 0.88);
         legSigExt->SetBorderSize(0);
@@ -510,7 +416,7 @@ void systematics()
             SetHistoQA(vecSignalExt[i]);
             vecSignalExt[i]->GetYaxis()->SetTitle("Relative Uncertainty");
             vecSignalExt[i]->SetStats(0);
-            vecSignalExt[i]->SetMaximum(0.305);
+            vecSignalExt[i]->SetMaximum(0.21);
             vecSignalExt[i]->SetMinimum(0);
             vecSignalExt[i]->SetLineColor(lineColors[i]);
             vecSignalExt[i]->Draw("HIST SAME");
@@ -522,113 +428,14 @@ void systematics()
         legSigExt->AddEntry(hSignalExtTotalSysClone, "Total", "l");
         legSigExt->Draw();
 
-        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 720, 720);
-        SetCanvasStyle(cTrackSelAll, 0.14, 0.03, 0.06, 0.13);
-        TLegend *legTrackSel = new TLegend(0.17, 0.6, 0.5, 0.88);
-        legTrackSel->SetBorderSize(0);
-        legTrackSel->SetFillStyle(0);
-        legTrackSel->SetTextSize(0.03);
-        legTrackSel->SetTextFont(42);
-        legTrackSel->SetHeader("Track Selection");
-        legTrackSel->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
-        for (int i = 0; i < vecTrackSel.size(); i++)
-        {
-            SetHistoQA(vecTrackSel[i]);
-            vecTrackSel[i]->GetYaxis()->SetTitle("Relative Uncertainty");
-            vecTrackSel[i]->SetStats(0);
-            vecTrackSel[i]->SetMaximum(0.105);
-            vecTrackSel[i]->SetMinimum(0);
-            vecTrackSel[i]->SetLineColor(lineColors[i]);
-            vecTrackSel[i]->Draw("HIST SAME");
-            legTrackSel->AddEntry(vecTrackSel[i], Form("%s", AllVariationNames[i + 6][0].c_str()), "l");
-        }
-        SetHistoQA(hTrackSelTotalSysClone);
-        hTrackSelTotalSysClone->SetLineColor(kBlack);
-        hTrackSelTotalSysClone->SetLineWidth(3);
-        hTrackSelTotalSysClone->Draw("HIST SAME");
-        legTrackSel->AddEntry(hTrackSelTotalSysClone, "Total", "l");
-        legTrackSel->Draw();
-
-        TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 720, 720);
-        SetCanvasStyle(cTotalSys, 0.14, 0.03, 0.06, 0.13);
-        TLegend *legTotal = new TLegend(0.17, 0.6, 0.5, 0.88);
-        legTotal->SetBorderSize(0);
-        legTotal->SetFillStyle(0);
-        legTotal->SetTextSize(0.03);
-        legTotal->SetTextFont(42);
-        legTotal->SetHeader("Total Systematic");
-        legTotal->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
-        for (int i = 0; i < vecTotal.size(); i++)
-        {
-            SetHistoQA(vecTotal[i]);
-            vecTotal[i]->GetYaxis()->SetTitle("Relative Uncertainty");
-            vecTotal[i]->SetStats(0);
-            vecTotal[i]->SetMaximum(0.305);
-            vecTotal[i]->SetMinimum(0);
-            vecTotal[i]->SetLineColor(lineColors[i]);
-            vecTotal[i]->Draw("HIST SAME");
-            if (i == 0)
-                legTotal->AddEntry(vecTotal[i], "Signal Extraction", "l");
-            else if (i == 1)
-                legTotal->AddEntry(vecTotal[i], "Track Selection", "l");
-            else if (i == 2)
-                legTotal->AddEntry(vecTotal[i], "PID", "l");
-            // else if (i == 3)
-            //     legTotal->AddEntry(vecTotal[i], "Multiplicity Estimator", "l");
-            else if (i == 3)
-                legTotal->AddEntry(vecTotal[i], "Material Budget", "l");
-            // else if (i == 5)
-            //     legTotal->AddEntry(vecTotal[i], "ITS-TPC Matching", "l");
-            else if (i == 4)
-                legTotal->AddEntry(vecTotal[i], "Hadronic Interaction", "l");
-        }
-        hTotalSys->SetLineColor(kBlack);
-        hTotalSys->SetLineWidth(3);
-        hTotalSys->Draw("HIST SAME");
-        legTotal->AddEntry(hTotalSys, "Total", "l");
-        legTotal->Draw();
-
         // smoothing procedure on separate sources
         int Iterations = 2;
         TH1D *hSignalExtTotalSysSmoothed = operations.smooth(hSignalExtTotalSys, Iterations);
-        TH1D *hTrackSelTotalSysSmoothed = operations.smooth(hTrackSelTotalSys, Iterations);
-        TH1D *hPIDTotalSysSmoothed = operations.smooth(hPIDTotalSys, Iterations);
-        // TH1D *hMultEstTotalSysSmoothed = operations.smooth(hMultEstTotalSys, Iterations);
-        TH1D *hMaterialBudgetTotalSysSmoothed = operations.smooth(hMaterialBudgetTotalSys, Iterations);
-        // TH1D *hITSTPCMatchingTotalSysSmoothed = operations.smooth(hITSTPCMatchingTotalSys, Iterations);
-        TH1D *hHadronicInteractionTotalSysSmoothed = operations.smooth(hHadronicInteractionTotalSys, Iterations);
-
-        // vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMultEstTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hITSTPCMatchingTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
-        vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
-        TH1D *hTotalSysSmoothed = operations.smooth(hTotalSys);
-
-        TCanvas *cSmoothedTotalSys = new TCanvas("", "Smoothed Total Systematic Uncertainties", 720, 720);
-        SetCanvasStyle(cSmoothedTotalSys, 0.14, 0.03, 0.06, 0.13);
-        for (int i = 0; i < smoothedTotalVec.size(); i++)
-        {
-            SetHistoQA(smoothedTotalVec[i]);
-            smoothedTotalVec[i]->GetYaxis()->SetTitle("Relative Uncertainty");
-            smoothedTotalVec[i]->SetStats(0);
-            smoothedTotalVec[i]->SetMaximum(0.305);
-            smoothedTotalVec[i]->SetMinimum(0);
-            smoothedTotalVec[i]->SetLineColor(lineColors[i]);
-            smoothedTotalVec[i]->SetLineWidth(2);
-            smoothedTotalVec[i]->Draw("HIST SAME");
-        }
-        hTotalSysSmoothed->SetLineColor(kBlack);
-        hTotalSysSmoothed->SetLineWidth(3);
-        hTotalSysSmoothed->Draw("HIST SAME");
-        legTotal->Draw();
-        SysUncertainties->cd();
-        hTotalSysSmoothed->Write(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
 
         // Save all the plots
         cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations.png");
         cRatioAll->SaveAs(savePath + "Ratio_AllVariations.png");
         cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources.png");
         cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics.png");
-        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics.png");
-        cTotalSys->SaveAs(savePath + "TotalSystematics.png");
-        cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics.png");
     }
 }

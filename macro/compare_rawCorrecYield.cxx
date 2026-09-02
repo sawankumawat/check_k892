@@ -28,12 +28,12 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 }
 void compare_rawCorrecYield()
 {
-    bool isCorrectedYield = true;
+    bool isCorrectedYield = false;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
-    string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480447/kstarqa/hInvMass"; // 2022 data
-    string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/480657/kstarqa/hInvMass"; // 2023 data
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa/hInvMass/ROTATED"; // Default2
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
@@ -42,17 +42,6 @@ void compare_rawCorrecYield()
     // string path3 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23z/kstarqa/hInvMass";         // 2023 (450 kHz) data
     // string path4 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/LHC23ls/kstarqa/hInvMass"; // 2023 (650 kHz) data
     TString outputPath = path2;
-
-    TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + "/corrected_spectra.root").c_str(), "read") : new TFile((path1 + "/yield.root").c_str(), "read");
-    TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + "/corrected_spectra.root").c_str(), "read") : new TFile((path2 + "/yield.root").c_str(), "read");
-    // TFile *fspectra3 = (isCorrectedYield) ? new TFile((path3 + "/corrected_spectra.root").c_str(), "read") : new TFile((path3 + "/yield.root").c_str(), "read");
-    // TFile *fspectra4 = (isCorrectedYield) ? new TFile((path4 + "/corrected_spectra.root").c_str(), "read") : new TFile((path4 + "/yield.root").c_str(), "read");
-
-    if (fspectra1->IsZombie() || fspectra2->IsZombie())
-    {
-        cout << "Error: files not found" << endl;
-        return;
-    }
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
@@ -68,9 +57,19 @@ void compare_rawCorrecYield()
     // TH1F *hefficiency4[numofmultbins + 1];
 
     for (int imult = 0; imult < numofmultbins + 1; imult++)
+    // for (int imult = 0; imult < 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
+
+        TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path1 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
+        TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path2 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
+
+        if (fspectra1->IsZombie() || fspectra2->IsZombie())
+        {
+            cout << "Error: files not found" << endl;
+            return;
+        }
 
         hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
@@ -98,7 +97,7 @@ void compare_rawCorrecYield()
         // hratio2->Divide(hmult1[imult]);
         // hratio3->Divide(hmult1[imult]);
 
-        TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
+        TCanvas *c1 = new TCanvas(Form("c1_mult_%.0f-%.0f", multlow, multhigh), "c1", 720, 720);
         SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
         double pad1Size, pad2Size;
         canvas_style(c1, pad1Size, pad2Size);
@@ -180,7 +179,7 @@ void compare_rawCorrecYield()
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
         // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
-        hratio1->GetYaxis()->SetRangeUser(0.78, 1.49);
+        hratio1->GetYaxis()->SetRangeUser(0.95, 1.05);
         hratio1->Draw("p");
         // SetHistoQA(hratio2);
         // hratio2->SetMarkerStyle(21);

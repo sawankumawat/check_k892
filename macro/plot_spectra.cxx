@@ -51,6 +51,7 @@ void plot_spectra()
     gStyle->SetOptStat(0);
     TString outputType = "pdf"; // pdf, png
     double fitRangeMax = 20.0;
+    bool systematicsExist = false;
 
     int colors[12];
     int nPaletteColors = TColor::GetNumberOfColors();
@@ -64,24 +65,33 @@ void plot_spectra()
     //==============================Pt-dependent PID=======================
     // string path = "../output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
     // string path = "../output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
-    TFile *fSysUncert = new TFile("../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
-    if (fSysUncert->IsZombie())
+    TFile *fSysUncert;
+    if (systematicsExist)
     {
-        cout << "Systematic uncertainty file not found" << endl;
-        return;
+        fSysUncert = new TFile("../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
+        if (fSysUncert->IsZombie())
+        {
+            cout << "Systematic uncertainty file not found" << endl;
+            return;
+        }
     }
-    TH1D *hTotalSysSmoothed = (TH1D *)fSysUncert->Get("hTotalSysSmoothed_0_100"); // Temporary assigning same to all multiplicity classes
-    if (hTotalSysSmoothed == nullptr)
+
+    TH1D *hTotalSysSmoothed;
+    if (systematicsExist)
     {
-        cout << "Histogram hTotalSysSmoothed_0_100 not found in the systematic uncertainty file" << endl;
-        return;
+        hTotalSysSmoothed = (TH1D *)fSysUncert->Get("hTotalSysSmoothed_0_100"); // Temporary assigning same to all multiplicity classes
+        if (hTotalSysSmoothed == nullptr)
+        {
+            cout << "Histogram hTotalSysSmoothed_0_100 not found in the systematic uncertainty file" << endl;
+            return;
+        }
     }
 
     // for (int ivar = 0; ivar < nSysVars; ivar++)
     {
         //================================After SQM=======================
-        string path = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
-        // string path = "../output/kstar/LHC22o_pass7/682963/kstarqa_NoPVContributor/hInvMass"; // 2024 data
+        // string path = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
+        string path = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // 2024 data
         // path = path + "/" + sysVars[ivar];
         TString pathLevyFits = path + "/LevyFits";
         if (gSystem->mkdir(pathLevyFits, kTRUE))
@@ -89,13 +99,6 @@ void plot_spectra()
             std::cout << "Folder " << pathLevyFits << " created successfully." << std::endl;
         }
 
-        TFile *fspectra = (plotOnlyRaw) ? new TFile((path + "/yield.root").c_str(), "read") : new TFile((path + "/corrected_spectra.root").c_str(), "read");
-
-        if (fspectra->IsZombie())
-        {
-            cout << "File not found" << endl;
-            return;
-        }
         int markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 47};
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
 
@@ -103,7 +106,19 @@ void plot_spectra()
         TH1F *hmult[numofmultbins + 1];
         TH1F *hmultClone[numofmultbins + 1];
 
-        hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral_final");
+        // TFile *fspectra = (plotOnlyRaw) ? new TFile((path + "/yield.root").c_str(), "read") : new TFile((path + "/corrected_spectra.root").c_str(), "read");
+        // if (fspectra->IsZombie())
+        // {
+        //     cout << "Spectra file not found" << endl;
+        //     return;
+        // }
+
+        TFile *fspectraMinBias = (plotOnlyRaw) ? new TFile((path + Form("/yield_0_100.root")).c_str(), "read") : new TFile((path + Form("/corrected_spectra_0_100.root")).c_str(), "read");
+
+        hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectraMinBias->Get("mult_0-100/yield_integral") : (TH1F *)fspectraMinBias->Get("mult_0-100/corrected_spectra_BinCount_final");
+
+        // hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral_final");
+
         hmultClone[0] = (TH1F *)hmult[0]->Clone("hmultClone0");
         if (hmult[0] == nullptr)
         {
@@ -113,7 +128,14 @@ void plot_spectra()
 
         for (int i = 1; i < numofmultbins + 1; i++)
         {
-            // hmult[i] = (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral", mult_classes[i - 1], mult_classes[i]));
+            TFile *fspectra = (plotOnlyRaw) ? new TFile((path + Form("/yield_%d_%d.root", (int)mult_classes[i - 1], (int)mult_classes[i])).c_str(), "read") : new TFile((path + Form("/corrected_spectra_%d_%d.root", (int)mult_classes[i - 1], (int)mult_classes[i])).c_str(), "read");
+
+            if (fspectra->IsZombie())
+            {
+                cout << "File not found" << endl;
+                return;
+            }
+
             hmult[i] = (plotOnlyRaw) ? (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/yield_integral", mult_classes[i - 1], mult_classes[i])) : (TH1F *)fspectra->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", mult_classes[i - 1], mult_classes[i]));
 
             if (hmult[i] == nullptr)
@@ -188,7 +210,8 @@ void plot_spectra()
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
-                    double systemerr = (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i));
+
+                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
                     h2->SetBinError(i, systemerr);
                 }
                 /*************meanpT*****************byresonance*******************package*************************/
@@ -305,7 +328,7 @@ void plot_spectra()
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
-                    double systemerr = (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i));
+                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
                     h2->SetBinError(i, systemerr);
                 }
                 /*************meanpT*****************byresonance*******************package*************************/

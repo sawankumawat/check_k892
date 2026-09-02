@@ -20,9 +20,12 @@ void kstar_sparse()
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    const string kResBkg = "ROTATED";
-    const string kbkg = "pol3";
-    string outputtype = "png";     // pdf, eps
+    string kResBkg = "ROTATED";
+
+    string kbkg = "pol3";
+    // string kbkg = "pol2";
+
+    string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
@@ -31,6 +34,9 @@ void kstar_sparse()
     const bool save_plots = 1;
     bool isINEL = false;
     bool widthFixed = true; // width fixed to PDG value
+
+    double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535};
+    // double ResolutionMCtrue[] = {0.009, 0.0057, 0.0065543, 0.0034, 0.0032, 0.0030, 0.0037, 0.0011, 0.00014, 0.00032, 0.0003, 0.0007, 0.0033, 0.0042, 0.0048, 0.0054, 0.0061, 0.0063, 0.0069, 0.0075, 0.0099, 0.011, 0.012};
 
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
@@ -99,7 +105,7 @@ void kstar_sparse()
         return;
     }
 
-    TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue.root", kResBkg.c_str()), "READ");
+    TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
     if (!fTemplateFile || fTemplateFile->IsZombie())
     {
         cerr << "ERROR: SignalMinusTrue.root not found!" << endl;
@@ -158,9 +164,9 @@ void kstar_sparse()
     }
 
     for (int ivar = 0; ivar < nSysVars; ivar++)
-    // for (int ivar = 1; ivar < 2; ivar++)
+    // for (int ivar = 5; ivar < 6; ivar++)
     {
-        if (nSysVars > 1 && (kResBkg != "MIX" || kbkg != "pol3"))
+        if (nSysVars > 1 && (kResBkg != "ROTATED" || kbkg != "pol3"))
         {
             cerr << "Error: Systematic variations are only implemented for MIX background." << endl;
             return;
@@ -189,26 +195,22 @@ void kstar_sparse()
             // }
         }
 
-        // for (int imult = 0; imult < nmultbins + 1; imult++)
-        for (int imult = 10; imult < 11; imult++)
+        for (int imult = 0; imult < nmultbins + 1; imult++)
+        // for (int imult = 10; imult < 11; imult++)
         {
             if (isINEL && imult != 0)
                 break;
 
-            // basic checks
-            if (kNormRangepT.size() < Npt || kFitRange.size() < Npt || kRebin.size() < Npt)
+            if (kNormRangepT.size() < Npt || kRebin.size() < Npt)
             {
-                cerr << "Error: kNormRangepT, kFitRange, or kRebin arrays are not initialized for all pT bins." << endl;
+                cerr << "Error: kNormRangepT or kRebin arrays are not initialized for all pT bins." << endl;
                 return;
             }
-            if (kNormRangepT.size() != kFitRange.size() || kNormRangepT.size() != kRebin.size())
+
+            if (kFitRange.size() <= imult || kFitRange[imult].size() < Npt)
             {
-                cout << "!!!!!!!!!!!!!!!Warning !!!!!!!!!!" << endl;
-                cout << "!!!!!!!!!!!!!!!Warning !!!!!!!!!!" << endl;
-                cout << "Error: kNormRangepT, kFitRange, and kRebin arrays must have the same size." << endl;
-                cout << "!!!!!!!!!!!!!!!Warning !!!!!!!!!!" << endl;
-                cout << "!!!!!!!!!!!!!!!Warning !!!!!!!!!!" << endl;
-                // return;
+                cerr << "Error: kFitRange is not initialized for all multiplicity/pT bins." << endl;
+                return;
             }
             //**************Invariant mass histograms for sig+bkg and mixed event bg******************
             int multlow, multhigh;
@@ -288,10 +290,11 @@ void kstar_sparse()
                 for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
                 {
                     rebin_value = kRebin[ip][imult]; // rebinning value for the multiplicity bin
-                    // rebin_value = 2; // for medium dataset (temporarily set to 4)
+                                                     // rebin_value = 2; // for medium dataset (temporarily set to 4)
 
-                    double lowfitrange = kFitRange[ip][0];
-                    double highfitrange = kFitRange[ip][1];
+                    double lowfitrange = kFitRange[imult][ip][0];
+                    double highfitrange = kFitRange[imult][ip][1];
+
                     if (sysVars[ivar] == "FitRange1")
                     {
                         lowfitrange -= 0.02;
@@ -410,23 +413,24 @@ void kstar_sparse()
                     //*****************************************************************************************************************************
                     float normRangeLow = kNormRangepT[ip][0];
                     float normRangeHigh = kNormRangepT[ip][1];
-                    // if (sysVars[ivar] == "Norm1")
-                    // {
-                    //     normRangeLow = kNormRangepT_sysVar1[ip][0];
-                    //     normRangeHigh = kNormRangepT_sysVar1[ip][1];
-                    // }
-                    // else if (sysVars[ivar] == "Norm2")
-                    // {
-                    //     normRangeLow = kNormRangepT_sysVar2[ip][0];
-                    //     normRangeHigh = kNormRangepT_sysVar2[ip][1];
-                    // }
+
+                    if (sysVars[ivar] == "Norm1")
+                    {
+                        normRangeLow = 1.15;
+                        normRangeHigh = 1.20;
+                    }
+                    else if (sysVars[ivar] == "Norm2")
+                    {
+                        normRangeLow = 1.24;
+                        normRangeHigh = 1.29;
+                    }
 
                     if (kResBkg == "MIX" || kResBkg == "ROTATED")
                     {
                         TH1D *bkgclonetemp = (kResBkg == "MIX") ? (TH1D *)fHistBkg[ip]->Clone() : (TH1D *)fHistRotated1D[ip]->Clone();
 
-                        sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normRangeLow), fHistTotal[ip]->GetXaxis()->FindBin(normRangeHigh)));
-                        bkg_integral = (bkgclonetemp->Integral(bkgclonetemp->GetXaxis()->FindBin(normRangeLow), bkgclonetemp->GetXaxis()->FindBin(normRangeHigh)));
+                        sigbkg_integral = (fHistTotal[ip]->Integral(fHistTotal[ip]->GetXaxis()->FindBin(normRangeLow + 1e-5), fHistTotal[ip]->GetXaxis()->FindBin(normRangeHigh - 1e-5)));
+                        bkg_integral = (bkgclonetemp->Integral(bkgclonetemp->GetXaxis()->FindBin(normRangeLow + 1e-5), bkgclonetemp->GetXaxis()->FindBin(normRangeHigh - 1e-5)));
                         normfactor = sigbkg_integral / bkg_integral; // scaling factor for mixed bkg
                         cout << "\n\n normalization factor " << 1 / normfactor << "\n\n";
                         hfbkg = (TH1D *)bkgclonetemp->Clone();
@@ -469,16 +473,38 @@ void kstar_sparse()
                     }
 
                     TH1D *hReflection = (TH1D *)hReflRaw->Clone(Form("hReflection_ip%d", ip));
+
+                    // if (kResBkg == "LIKE" && (imult == 1 || imult == 2 || imult == 3))
+                    //     hReflection->Rebin(rebin_value * 2);
+                    // else
                     hReflection->Rebin(rebin_value);
+
+                    ////No difference is seen even if there is bin mismath error. So I have commented it out.
+                    // TH1D *hReflection_truncated = new TH1D("hReflection_truncated", "Truncated Reflection Template", 300, 0.7, 1.3);
+                    // for (int i = 1; i <= 300; ++i)
+                    // {
+                    //     hReflection_truncated->SetBinContent(i, hReflection->GetBinContent(i));
+                    //     hReflection_truncated->SetBinError(i, hReflection->GetBinError(i));
+                    // }
+                    // hReflection_truncated->Rebin(rebin_value);
 
                     TCanvas *cRefl = new TCanvas(Form("cRefl_ip%d", ip), "Reflection template", 720, 720);
                     TH1D *hDatabyReflection = (TH1D *)hfsig->Clone(Form("hDatabyReflection_ip%d", ip));
                     hDatabyReflection->SetTitle(Form("%.1f < p_{T} (GeV/c) < %.1f; M_{K#pi} (GeV/c^{2}); Data / Reflection template", lowpt, highpt));
 
                     TH1D *hRefNorm = (TH1D *)hReflection->Clone(Form("hRefNorm_ip%d", ip));
+                    // TH1D *hRefNorm = (TH1D *)hReflection_truncated->Clone(Form("hRefNorm_ip%d", ip));
+
                     cout << "Ref Norm = " << hDatabyReflection->Integral(hDatabyReflection->GetXaxis()->FindBin(0.7), hDatabyReflection->GetXaxis()->FindBin(0.8)) / (hRefNorm->Integral(hRefNorm->GetXaxis()->FindBin(0.7), hRefNorm->GetXaxis()->FindBin(0.8))) << endl;
 
                     hRefNorm->Scale(hDatabyReflection->Integral(hDatabyReflection->GetXaxis()->FindBin(0.7), hDatabyReflection->GetXaxis()->FindBin(0.8)) / (hRefNorm->Integral(hRefNorm->GetXaxis()->FindBin(0.7), hRefNorm->GetXaxis()->FindBin(0.8))));
+
+                    // if (hDatabyReflection->GetNbinsX() != hReflection_truncated->GetNbinsX())
+                    // {
+                    //     cerr << "ERROR: Bin mismatch between data and reflection template for pT bin " << ip << endl;
+                    //     cout << "Number of bins in data: " << hDatabyReflection->GetNbinsX() << ", Number of bins in template: " << hReflection_truncated->GetNbinsX() << endl;
+                    // }
+
                     hDatabyReflection->Divide(hRefNorm);
                     hDatabyReflection->GetXaxis()->SetRangeUser(lowfitrange, highfitrange);
                     cRefl->cd();
@@ -667,20 +693,35 @@ void kstar_sparse()
                     fTotal->SetParameter(1, masspdg);
                     fTotal->SetParLimits(1, masspdg - 0.010, masspdg + 0.010);
 
+                    if (sysVars[ivar] == "WidthFree")
+                    {
+                        widthFixed = false;
+                    }
+                    else
+                    {
+                        widthFixed = true;
+                    }
+
                     // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
                     fTotal->SetParameter(2, widthpdg);
                     if (widthFixed)
                         fTotal->FixParameter(2, widthpdg);
                     else
                         fTotal->SetParLimits(2, widthpdg - 0.005, widthpdg + 0.005);
-                    // For Systematics: comment out FixParameter above and use:
-                    // fTotal->SetParLimits(2, 0.030, 0.070); // Let it float
-                    // OR: fTotal->FixParameter(2, widthpdg * 1.10); // Fix at +10% variation
-                    // ---------------------------------------------------
+
+                    if (ivar == 5 && ip == pt_end - 1 && imult == 10)
+                        fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
 
                     // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
-                    fTotal->SetParameter(3, 0.002);
-                    fTotal->SetParLimits(3, 0.0001, 0.030); // Allow up to 30 MeV for high-pT smearing
+                    if (widthFixed)
+                    {
+                        fTotal->SetParameter(3, 0.002);
+                        fTotal->SetParLimits(3, 0.00005, 0.030); // Allow up to 30 MeV for high-pT smearing
+                    }
+                    else
+                    {
+                        fTotal->FixParameter(3, ResolutionMCtrue[ip]); // Fix to MC resolution
+                    }
 
                     fTotal->SetParameter(4, std::min(std::max(N_temp_0, 0.0), max_corr));
                     fTotal->SetParLimits(4, 0.0, 2 * N_temp_0);
@@ -944,7 +985,7 @@ void kstar_sparse()
                     hfsig->SetMarkerStyle(20);
                     hfsig->SetMarkerColor(kBlack);
                     hfsig->SetLineColor(kBlack);
-                    hfsig->GetXaxis()->SetRangeUser(kFitRange[ip][0], kFitRange[ip][1]);
+                    hfsig->GetXaxis()->SetRangeUser(lowfitrange, highfitrange);
                     hfsig->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/c^{2}", binwidth_file * 1000));
                     hfsig->GetYaxis()->CenterTitle(1);
                     hfsig->GetYaxis()->SetMaxDigits(2);
@@ -1094,7 +1135,7 @@ void kstar_sparse()
                                                width_fit * 1000, width_err * 1000),
                                           "");
                     }
-                    legPars->AddEntry((TObject *)0, Form("#sigma_{res}: %.1f #pm %.1f MeV/c^{2}", sigma_fit * 1000, sigma_err * 1000), "");
+                    legPars->AddEntry((TObject *)0, Form("#sigma_{res}: %.4f #pm %.4f MeV/c^{2}", sigma_fit * 1000, sigma_err * 1000), "");
                     legPars->AddEntry((TObject *)0, Form("N_{sig}: %.0f #pm %.0f", N_sig, N_sig_err), "");
                     // legPars->AddEntry((TObject *)0, Form("N_{temp}: %.0f", N_temp_fit), "");
                     // legPars->AddEntry((TObject *)0, Form("N_{res}: %.0f", N_res_fit), "");
@@ -1138,7 +1179,7 @@ void kstar_sparse()
                     for (int ibin = 1; ibin <= hfsig->GetNbinsX(); ibin++)
                     {
                         double xp = hfsig->GetBinCenter(ibin);
-                        if (xp < kFitRange[ip][0] || xp > kFitRange[ip][1])
+                        if (xp < lowfitrange || xp > highfitrange)
                             continue;
                         double yp = hfsig->GetBinContent(ibin);
                         double yfit = fTotal->Eval(xp);
@@ -1152,7 +1193,7 @@ void kstar_sparse()
                         }
                     }
 
-                    TH1D *hRatioFrame = new TH1D(Form("hRatioFrame_%d", ip), "", 100, kFitRange[ip][0], kFitRange[ip][1]);
+                    TH1D *hRatioFrame = new TH1D(Form("hRatioFrame_%d", ip), "", 100, lowfitrange, highfitrange);
                     hRatioFrame->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
                     hRatioFrame->GetYaxis()->SetTitle("Data / Fit");
                     hRatioFrame->SetStats(0);
@@ -1175,7 +1216,7 @@ void kstar_sparse()
                     gRatio->SetMarkerColor(kBlack);
                     gRatio->Draw("P SAME");
 
-                    TLine *lineRatio = new TLine(kFitRange[ip][0], 1.0, kFitRange[ip][1], 1.0);
+                    TLine *lineRatio = new TLine(lowfitrange, 1.0, highfitrange, 1.0);
                     lineRatio->SetLineColor(kRed);
                     lineRatio->SetLineStyle(2);
                     lineRatio->Draw("SAME");

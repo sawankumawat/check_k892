@@ -16,15 +16,22 @@ void buildTemplate()
 
     //*************************** change here ***************************************
     // const string kResBkg = "MIX";
-    // const string kResBkg = "LIKE";
-    const string kResBkg = "ROTATED";
-    TString outputtype = "png";
+    const string kResBkg = "LIKE";
+    // const string kResBkg = "ROTATED";
+    TString outputtype = "pdf";
     const float txtsize = 0.045; // text size in the plots
-    TString kvariation = "";
     bool isINEL = false;
+
+    const TString kvariation = "";
+    // const TString kvariation = "_TPC1p5_combined2";
+    // const TString kvariation = "_TPC2p5_combined3p5";
+    // const TString kvariation = "_DCAvar1";
+    // const TString kvariation = "_DCAvar2";
+    // const TString kvariation = "_NoPVContributor";
     //********************************************************************************
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     t2->SetNDC();
@@ -34,25 +41,26 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    TFile *fInputFile = new TFile("../746556.root", "Read");
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read");
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/746556.root", "Read");
     if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
         return;
     }
 
-    TH1F *hcent = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
+    TH1F *hcent = (TH1F *)fInputFile->Get(Form("kstarqa%s/eventSelection/hMultiplicity", kvariation.Data()));
     if (hcent == nullptr)
     {
         cerr << "Histogram not found" << endl;
         return;
     }
 
-    const string recpath = "kstarqa/hInvMass/h3KstarMassRec";
+    const string recpath = Form("kstarqa%s/hInvMass/h3KstarMassRec", kvariation.Data());
     THnSparseF *hRec = (THnSparseF *)fInputFile->Get(recpath.c_str());
 
     //**Invariant mass histograms for sig+bkg and mixed event bg*****************************************
-    auto fDirectory = (TDirectoryFile *)fInputFile->Get("kstarqa/hInvMass");
+    auto fDirectory = (TDirectoryFile *)fInputFile->Get(Form("kstarqa%s/hInvMass", kvariation.Data()));
     THnSparseF *fHistLikeMM = (THnSparseF *)fDirectory->Get("h3KstarInvMasslikeSignMM");
     THnSparseF *fHistLikePP = (THnSparseF *)fDirectory->Get("h3KstarInvMasslikeSignPP");
     THnSparseF *fHistUnlike = (THnSparseF *)fDirectory->Get("h3KstarInvMassUnlikeSign");
@@ -65,7 +73,7 @@ void buildTemplate()
         return;
     }
 
-    TFile *outPutSigMinusTrue = new TFile(Form("template/%s/SignalMinusTrue.root", kResBkg.c_str()), "RECREATE");
+    TFile *outPutSigMinusTrue = new TFile(Form("template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {
@@ -85,7 +93,8 @@ void buildTemplate()
 
         //*************************Create folders********************************************
         TString centRange = Form("%d_%d", multlow, multhigh);
-        TString Cenoutputfolder = Form("template/%s/%d-%d%%", kResBkg.c_str(), multlow, multhigh);
+        // TString Cenoutputfolder = Form("template/%s/%d-%d%%", kResBkg.c_str(), multlow, multhigh);
+        TString Cenoutputfolder = Form("template/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh);
 
         if (gSystem->mkdir(Cenoutputfolder, kTRUE))
         {

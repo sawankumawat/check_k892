@@ -9,13 +9,13 @@ void efficiency()
 {
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "pdf"; // pdf, eps
-    bool isINEL = true;
-    const string kResBkg = "MIX";
+    string outputtype = "png"; // pdf, eps
+    bool isINEL = false;
+    // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    // const string kResBkg = "ROTATED";
-    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
-    TString sysVars[] = {""};
+    const string kResBkg = "ROTATED";
+    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    // TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
@@ -29,11 +29,11 @@ void efficiency()
     string common_data_path = "../output/kstar/LHC22o_pass7/";
     string common_MC_path = "../mc/LHC24f3c/";
 
-    for (int ivar = 0; ivar < nSysVars; ivar++)
-    // for (int ivar = 1; ivar < 2; ivar++)
+    // for (int ivar = 0; ivar < nSysVars; ivar++)
+    for (int ivar = 5; ivar < 6; ivar++)
     {
 
-        if (ivar > 1 && kResBkg != "MIX")
+        if (ivar > 1 && kResBkg != "ROTATED")
         {
             cerr << "Error: Systematic variations are only implemented for MIX background." << endl;
             return;
@@ -70,6 +70,10 @@ void efficiency()
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
         string data_path = "749276/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
+        if (ivar == 6)
+        {
+            data_path = "749276/kstarqa/hInvMass/ROTATED";
+        }
 
         TString outputfolder;
         if (ivar == 0)
@@ -124,7 +128,8 @@ void efficiency()
         // string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5, DCAvar1, DCAvar2, NoPVContributor)
         // string MCpath = "697699.root"; // Only INEL
         // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
-        string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
+        // string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
+        string MCpath = "750013.root"; // INEL>0, latest train with systematics
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())

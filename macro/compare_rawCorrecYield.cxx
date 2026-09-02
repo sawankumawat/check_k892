@@ -28,12 +28,12 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 }
 void compare_rawCorrecYield()
 {
-    bool isCorrectedYield = false;
+    bool isCorrectedYield = true;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
-    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa/hInvMass/ROTATED"; // Default2
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa/hInvMass/ROTATED"; // Default1
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa_TPC2p5_combined3p5/hInvMass/ROTATED"; // Default2
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
@@ -56,8 +56,8 @@ void compare_rawCorrecYield()
     // TH1F *hefficiency3[numofmultbins + 1];
     // TH1F *hefficiency4[numofmultbins + 1];
 
-    for (int imult = 0; imult < numofmultbins + 1; imult++)
-    // for (int imult = 0; imult < 1; imult++)
+    // for (int imult = 0; imult < numofmultbins + 1; imult++)
+    for (int imult = 0; imult < 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
@@ -135,8 +135,8 @@ void compare_rawCorrecYield()
         TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
         SetLegendStyle(leg);
         leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-        leg->AddEntry(hmult1[imult], "2023 data", "lpe");
-        leg->AddEntry(hmult2[imult], "2024 data", "lpe");
+        leg->AddEntry(hmult1[imult], "Default", "lpe");
+        leg->AddEntry(hmult2[imult], "Variation", "lpe");
         // leg->AddEntry(hmult3[imult], "2024 data", "lpe");
         // leg->AddEntry(hmult1[imult], "Mixed-event", "lpe");
         // leg->AddEntry(hmult2[imult], "Rotated pairs", "lpe");
@@ -160,6 +160,7 @@ void compare_rawCorrecYield()
         }
 
         SetHistoQA(hratio1);
+        gPad->SetGridy(1);
         hratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
         hratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -170,7 +171,7 @@ void compare_rawCorrecYield()
         hratio1->SetLineColor(kBlue);
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
-        hratio1->GetYaxis()->SetTitle("Ratio to 2023");
+        hratio1->GetYaxis()->SetTitle("Var/Def");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
@@ -179,7 +180,8 @@ void compare_rawCorrecYield()
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
         // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
         hratio1->GetXaxis()->SetRangeUser(0, 10);
-        hratio1->GetYaxis()->SetRangeUser(0.95, 1.05);
+        // hratio1->GetYaxis()->SetRangeUser(0.98, 1.11);
+        hratio1->GetYaxis()->SetRangeUser(0.93, 1.04);
         hratio1->Draw("p");
         // SetHistoQA(hratio2);
         // hratio2->SetMarkerStyle(21);

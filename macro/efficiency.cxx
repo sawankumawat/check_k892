@@ -14,8 +14,8 @@ void efficiency()
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     const string kResBkg = "ROTATED";
-    TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
-    // TString sysVars[] = {""};
+    // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
@@ -29,8 +29,8 @@ void efficiency()
     string common_data_path = "../output/kstar/LHC22o_pass7/";
     string common_MC_path = "../mc/LHC24f3c/";
 
-    // for (int ivar = 0; ivar < nSysVars; ivar++)
-    for (int ivar = 5; ivar < 6; ivar++)
+    for (int ivar = 0; ivar < nSysVars; ivar++)
+    // for (int ivar = 5; ivar < 6; ivar++)
     {
 
         if (ivar > 1 && kResBkg != "ROTATED")
@@ -69,7 +69,9 @@ void efficiency()
         // string data_path = "697595/kstarqa/hInvMass"; // INEL only
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
-        string data_path = "749276/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
+        // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
+        string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
+
         if (ivar == 6)
         {
             data_path = "749276/kstarqa/hInvMass/ROTATED";
@@ -204,8 +206,8 @@ void efficiency()
             // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
 
             vector<double> nChParticlesFromMult;
-            int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
-            // int multLoopEnd = 1;
+            // int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+            int multLoopEnd = 1;
             int multlow, multhigh;
 
             // TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");

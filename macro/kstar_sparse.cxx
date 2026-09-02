@@ -126,8 +126,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -196,7 +196,7 @@ void kstar_sparse()
         }
 
         for (int imult = 0; imult < nmultbins + 1; imult++)
-        // for (int imult = 10; imult < 11; imult++)
+        // for (int imult = 0; imult < 1; imult++)
         {
             if (isINEL && imult != 0)
                 break;

@@ -70,7 +70,8 @@ void efficiency()
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
         // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
-        string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
+        // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
+        string data_path = "751768/kstarqa_NoPVContributor/hInvMass"; // INELgt0 (All available variations)
 
         if (ivar == 6)
         {
@@ -148,8 +149,8 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa/hInvMass";
-        const string recpath = "kstarqa/hInvMass";
+        const string genpath = "kstarqa_NoPVContributor/hInvMass";
+        const string recpath = "kstarqa_NoPVContributor/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins

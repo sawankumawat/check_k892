@@ -30,6 +30,11 @@ double CalculateRValueAndBarlowSigma(double Y_var_mult, double err_var_mult,
     double relA_mult_sq = std::abs(std::pow(err_var_mult / Y_var_mult, 2) - std::pow(err_def_mult / Y_def_mult, 2));
     double relA_MB_sq = std::abs(std::pow(err_var_MB / Y_var_MB, 2) - std::pow(err_def_MB / Y_def_MB, 2));
 
+    if ((relA_mult_sq + relA_MB_sq) < 0)
+    {
+        cout << "Error: Negative value under square root for Barlow's sigma calculation. Setting sigma_R to 0." << std::endl;
+    }
+
     double sigma_R = R * std::sqrt(relA_mult_sq + relA_MB_sq);
 
     // Test Barlow's condition: |R - 1| > sigma_R
@@ -60,7 +65,8 @@ void uncorrelatedSystematics()
 {
     int lineColors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
-    string basePathSigExt = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
+    string basePathSigExt = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
+    string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
     string basePathCommon = "../output/kstar/LHC22o_pass7/";
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
@@ -70,15 +76,15 @@ void uncorrelatedSystematics()
     int nNewpTbins = sizeof(newpTbins) / sizeof(newpTbins[0]) - 1;
 
     // Load 0-100% Minimum Bias (MB) Default spectrum
-    TFile *fDefault0100 = nullptr;
-    TH1D *hSpectraDefault0100 = nullptr;
-    openTFile(fDefault0100, basePathSigExt + "corrected_spectra_0_100.root");
-    openTH1D(hSpectraDefault0100, fDefault0100, "mult_0-100/corrected_spectra_Integral_final");
-    TH1D *hDefMB_rebinned = RebinHistogram(hSpectraDefault0100, newpTbins, nNewpTbins, "hDefMB_rebinned");
+    TFile *fMB_Default = nullptr;
+    TH1D *hMB_DefaultSpectra = nullptr;
+    openTFile(fMB_Default, basePathSigExt + "ROTATED/corrected_spectra_0_100.root");
+    openTH1D(hMB_DefaultSpectra, fMB_Default, "mult_0-100/corrected_spectra_Integral_final");
+    TH1D *hDefMB_rebinned = RebinHistogram(hMB_DefaultSpectra, newpTbins, nNewpTbins, "hDefMB_rebinned");
 
     vector<string> normVars = {"Norm1", "Norm2"};
     vector<string> fitRangeVars = {"FitRange1", "FitRange2"};
-    vector<string> CombinatorialBkgVars = {"ROTATED"};
+    vector<string> CombinatorialBkgVars = {"LIKE"};
     vector<string> ResidualBkgVars = {"pol2"};
     vector<string> BinCounting = {"BinCounting"};
     vector<string> widthVars = {"WidthFree"};
@@ -115,7 +121,7 @@ void uncorrelatedSystematics()
     for (size_t i = 0; i < ResidualBkgVars.size(); i++)
     {
         TFile *f;
-        openTFile(f, basePathSigExt + ResidualBkgVars[i] + "/corrected_spectra_0_100.root");
+        openTFile(f, basePathSigExtpol2 + ResidualBkgVars[i] + "/corrected_spectra_0_100.root");
         TH1D *h;
         openTH1D(h, f, "mult_0-100/corrected_spectra_Integral_final");
         hPolMB[i] = RebinHistogram(h, newpTbins, nNewpTbins, Form("hPolMB_%zu", i));
@@ -142,7 +148,7 @@ void uncorrelatedSystematics()
         int multLow = mult_classes[imult];
         int multHigh = mult_classes[imult + 1];
 
-        TString savePath = (basePathSigExt + Form("SystematicsPlots/mult_%d-%d/", multLow, multHigh)).c_str();
+        TString savePath = (basePathSigExt + Form("SystematicsPlots/Uncorrelated/mult_%d-%d/", multLow, multHigh)).c_str();
         if (gSystem->mkdir(savePath, kTRUE))
         {
             std::cout << "Folder " << savePath << " created successfully." << std::endl;
@@ -151,18 +157,19 @@ void uncorrelatedSystematics()
         string multRangeUnderscore = to_string(multLow) + "_" + to_string(multHigh);
         string multRangeDash = to_string(multLow) + "-" + to_string(multHigh);
         string correctedFileName = string("corrected_spectra_") + multRangeUnderscore + ".root";
+        string correctedFileNameDefault = string("ROTATED/corrected_spectra_") + multRangeUnderscore + ".root";
         string multDir = string("mult_") + multRangeDash + "/";
-
-        TFile *fDefault;
-        TH1D *hSpectraDefault;
-        openTFile(fDefault, basePathSigExt + correctedFileName);
-        openTH1D(hSpectraDefault, fDefault, (multDir + "corrected_spectra_Integral_final").c_str());
-        TH1D *hDefMult_rebinned = RebinHistogram(hSpectraDefault, newpTbins, nNewpTbins, "hDefMult_rebinned");
 
         // Load multiplicity-specific variations
         std::vector<TH1D *> hNormMult(normVars.size()), hFitMult(fitRangeVars.size()),
-            hRotMult(CombinatorialBkgVars.size()), hPolMult(ResidualBkgVars.size()),
+            hCombBkgMult(CombinatorialBkgVars.size()), hPolMult(ResidualBkgVars.size()),
             hBCMult(BinCounting.size()), hWidthMult(widthVars.size());
+
+        TFile *fDefault;
+        TH1D *hSpectraDefault;
+        openTFile(fDefault, basePathSigExt + correctedFileNameDefault);
+        openTH1D(hSpectraDefault, fDefault, (multDir + "corrected_spectra_Integral_final").c_str());
+        TH1D *hDefMult_rebinned = RebinHistogram(hSpectraDefault, newpTbins, nNewpTbins, "hDefMult_rebinned");
 
         for (size_t i = 0; i < normVars.size(); i++)
         {
@@ -186,12 +193,12 @@ void uncorrelatedSystematics()
             openTFile(f, basePathSigExt + CombinatorialBkgVars[i] + "/" + correctedFileName);
             TH1D *h;
             openTH1D(h, f, (multDir + "corrected_spectra_Integral_final").c_str());
-            hRotMult[i] = RebinHistogram(h, newpTbins, nNewpTbins, Form("hRotMult_%zu", i));
+            hCombBkgMult[i] = RebinHistogram(h, newpTbins, nNewpTbins, Form("hCombBkgMult_%zu", i));
         }
         for (size_t i = 0; i < ResidualBkgVars.size(); i++)
         {
             TFile *f;
-            openTFile(f, basePathSigExt + ResidualBkgVars[i] + "/" + correctedFileName);
+            openTFile(f, basePathSigExtpol2 + ResidualBkgVars[i] + "/" + correctedFileName);
             TH1D *h;
             openTH1D(h, f, (multDir + "corrected_spectra_Integral_final").c_str());
             hPolMult[i] = RebinHistogram(h, newpTbins, nNewpTbins, Form("hPolMult_%zu", i));
@@ -244,15 +251,17 @@ void uncorrelatedSystematics()
             // Calculate grouped RMS for each category
             double rmsNorm = evaluateCategory(hNormMult, hNormMB);
             double rmsFit = evaluateCategory(hFitMult, hFitMB);
-            double rmsRot = evaluateCategory(hRotMult, hRotMB);
+            // double rmsCombBkg = evaluateCategory(hCombBkgMult, hRotMB);
             double rmsPol = evaluateCategory(hPolMult, hPolMB);
             double rmsBC = evaluateCategory(hBCMult, hBCMB);
             double rmsWidth = evaluateCategory(hWidthMult, hWidthMB);
 
             // Total relative uncorrelated uncertainty in merged pT bin ipt
-            relUncorrInMergedBin[ipt] = std::sqrt(rmsNorm * rmsNorm + rmsFit * rmsFit +
-                                                  rmsRot * rmsRot + rmsPol * rmsPol +
-                                                  rmsBC * rmsBC + rmsWidth * rmsWidth);
+            // relUncorrInMergedBin[ipt] = std::sqrt(rmsNorm * rmsNorm + rmsFit * rmsFit +
+            //                                       rmsCombBkg * rmsCombBkg + rmsPol * rmsPol +
+            //                                       rmsBC * rmsBC + rmsWidth * rmsWidth);
+
+            relUncorrInMergedBin[ipt] = std::sqrt(rmsNorm * rmsNorm + rmsFit * rmsFit + rmsPol * rmsPol + rmsBC * rmsBC + rmsWidth * rmsWidth);
         }
 
         // 2. Propagate back to original fine pT bins

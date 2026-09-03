@@ -32,8 +32,8 @@ void compare_rawCorrecYield()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
-    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa/hInvMass/ROTATED"; // Default1
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/750862/kstarqa_TPC2p5_combined3p5/hInvMass/ROTATED"; // Default2
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/751768/kstarqa_NoPVContributor/hInvMass/ROTATED"; // Default2
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data

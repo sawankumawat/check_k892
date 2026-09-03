@@ -3,10 +3,6 @@
 #include "src/initializations.h"
 #include "SystematicHelper/helper.cxx"
 
-//// Variations
-// Train: 679906 (Default, FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
-// Train2: 682963 (Default, DCAvar1, DCAvar2, NoPVContributor)
-
 void openTFile(TFile *&file, const string &path)
 {
     file = new TFile(path.c_str(), "READ");
@@ -33,7 +29,7 @@ void openTH1D(TH1D *&hist, TFile *file, const string &histPath)
     }
 }
 
-void systematics_sigExt()
+void systematics_New()
 {
     // 1.         Default                         (1)
     // 2.         Norm variation                  (2)
@@ -54,7 +50,7 @@ void systematics_sigExt()
     string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
     string basePathCommon = "../output/kstar/LHC22o_pass7/";
     string pathPIDAndMultEst = "750862/";
-    string pathTrackSel = "750862/";
+    string pathTrackSel = "751768/";
     string basePathTrackSel = basePathCommon + pathTrackSel + "kstarqa_";
     string basePathPIDAndMultEst = basePathCommon + pathPIDAndMultEst + "kstarqa_";
 
@@ -62,8 +58,6 @@ void systematics_sigExt()
     // float mult_classes[] = {0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
-    TFile *fDefault0100;
-    TH1D *hSpectraDefault0100;
     TFile *SysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/SysUncert.root").c_str(), "RECREATE");
 
     ////For signal extraction variations
@@ -187,25 +181,25 @@ void systematics_sigExt()
             openTH1D(hSpectraWidthVars[i], fwidthVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
         }
 
-        // //// Track selection
-        // for (int i = 0; i < DCAvars.size(); i++)
-        // {
-        //     // openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/" + correctedFileName);
-        //     // openTH1D(hSpectraDCAvars[i], fDCAvars[i], (multDir + "corrected_spectra_Integral_final").c_str());
+        //// Track selection
+        for (int i = 0; i < DCAvars.size(); i++)
+        {
+            // openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/" + correctedFileName);
+            // openTH1D(hSpectraDCAvars[i], fDCAvars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
-        //     // Using only MB for DCA variation.
-        //     openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/corrected_spectra_0_100.root");
-        //     openTH1D(hSpectraDCAvars[i], fDCAvars[i], "mult_0-100/corrected_spectra_Integral_final");
-        // }
-        // for (int i = 0; i < PVcontributorVars.size(); i++)
-        // {
-        //     // openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/" + correctedFileName);
-        //     // openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
+            // Using only MB for DCA variation.
+            openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
+            openTH1D(hSpectraDCAvars[i], fDCAvars[i], "mult_0-100/corrected_spectra_Integral_final");
+        }
+        for (int i = 0; i < PVcontributorVars.size(); i++)
+        {
+            // openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/" + correctedFileName);
+            // openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
-        //     // Using only MB for PV contributor variation.
-        //     openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/corrected_spectra_0_100.root");
-        //     openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], "mult_0-100/corrected_spectra_Integral_final");
-        // }
+            // Using only MB for PV contributor variation.
+            openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
+            openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], "mult_0-100/corrected_spectra_Integral_final");
+        }
 
         // PID
         for (int i = 0; i < PIDVars.size(); i++)
@@ -277,17 +271,6 @@ void systematics_sigExt()
             MaterialBudgetVariationHists.push_back(hSpectraMaterialBudgetVars[i]);
         }
 
-        // vector<size_t> AllVarSizes = {
-        //     NormVariationHists.size(),
-        //     FitRangeVariationHists.size(),
-        //     CombinatorialBkgVariationHists.size(),
-        //     ResidualBkgVariationHists.size(),
-        //     BinCountingVariationHists.size(),
-        //     WidthVariationHists.size(),
-        //     DCAVariationHists.size(),
-        //     PVContributorVariationHists.size(),
-        //     PIDVariationHists.size()};
-
         vector<size_t> AllVarSizes = {
             NormVariationHists.size(),
             FitRangeVariationHists.size(),
@@ -295,6 +278,8 @@ void systematics_sigExt()
             ResidualBkgVariationHists.size(),
             BinCountingVariationHists.size(),
             WidthVariationHists.size(),
+            DCAVariationHists.size(),
+            PVContributorVariationHists.size(),
             PIDVariationHists.size()};
 
         int totalCombinations = AllVarSizes.size();
@@ -307,17 +292,6 @@ void systematics_sigExt()
         }
         cout << "Total number of variations are " << AllVariationsSize << endl;
 
-        // vector<vector<TH1 *>> AllVariationHists = {
-        //     NormVariationHists,
-        //     FitRangeVariationHists,
-        //     CombinatorialBkgVariationHists,
-        //     ResidualBkgVariationHists,
-        //     BinCountingVariationHists,
-        //     WidthVariationHists,
-        //     DCAVariationHists,
-        //     PVContributorVariationHists,
-        //     PIDVariationHists};
-
         vector<vector<TH1 *>> AllVariationHists = {
             NormVariationHists,
             FitRangeVariationHists,
@@ -325,19 +299,9 @@ void systematics_sigExt()
             ResidualBkgVariationHists,
             BinCountingVariationHists,
             WidthVariationHists,
+            DCAVariationHists,
+            PVContributorVariationHists,
             PIDVariationHists};
-
-        // vector<vector<string>> AllVariationNames = {
-        //     normVars,
-        //     fitRangeVars,
-        //     CombinatorialBkgVars,
-        //     ResidualBkgVars,
-        //     BinCounting,
-        //     widthVars,
-        //     DCAvars,
-        //     PVcontributorVars,
-        //     PIDVars,
-        //     materialBudgetVars};
 
         vector<vector<string>> AllVariationNames = {
             normVars,
@@ -346,6 +310,8 @@ void systematics_sigExt()
             ResidualBkgVars,
             BinCounting,
             widthVars,
+            DCAvars,
+            PVcontributorVars,
             PIDVars,
             materialBudgetVars};
 
@@ -379,10 +345,10 @@ void systematics_sigExt()
 
         TCanvas *cPlotBarlowAll = new TCanvas("", "Barlow Checks", 1080, 720);
         SetCanvasStyle(cPlotBarlowAll, 0.15, 0.03, 0.06, 0.15);
-        cPlotBarlowAll->Divide(4, 3);
+        cPlotBarlowAll->Divide(4, 4);
         TCanvas *cRatioAll = new TCanvas("", "Spectra ratio (Variation / Default)", 1080, 720);
         SetCanvasStyle(cRatioAll, 0.15, 0.03, 0.06, 0.15);
-        cRatioAll->Divide(4, 3);
+        cRatioAll->Divide(4, 4);
         counter = 0;
         TLatex latBarlow;
         latBarlow.SetNDC();
@@ -457,15 +423,15 @@ void systematics_sigExt()
         TH1D *hRelUncertBinCounting = operations.RelativeUncertainty(hSpectraDefault, BinCountingVariationHists);
         TH1D *hRelUncertWidthVars = operations.RelativeUncertainty(hSpectraDefault, WidthVariationHists);
 
-        // TH1D *hRelUncertDCAvars = operations.RelativeUncertainty(hMB_DefaultSpectra, DCAVariationHists);
-        // TH1D *hRelUncertPVcontributorVars = operations.RelativeUncertainty(hMB_DefaultSpectra, PVContributorVariationHists);
+        TH1D *hRelUncertDCAvars = operations.RelativeUncertainty(hMB_DefaultSpectra, DCAVariationHists);
+        TH1D *hRelUncertPVcontributorVars = operations.RelativeUncertainty(hMB_DefaultSpectra, PVContributorVariationHists);
 
         TH1D *hRelUncertPIDVars = operations.RelativeUncertainty(hMB_DefaultSpectra, PIDVariationHists);
         TH1D *hRelUncertMaterialBudgetVars = operations.RelativeUncertainty(hSpectraMaterialBudgetVars[0], MaterialBudgetVariationHists);
 
         TCanvas *cRelUncert = new TCanvas("", "Relative Uncertainties", 1080, 720);
         SetCanvasStyle(cRelUncert, 0.15, 0.03, 0.06, 0.15);
-        cRelUncert->Divide(3, 3);
+        cRelUncert->Divide(4, 3);
         vector<TH1D *> relUncertHists = {
             (TH1D *)hRelUncertNormVars->Clone("hRelUncertNormVars_clone"),
             (TH1D *)hRelUncertFitRangeVars->Clone("hRelUncertFitRangeVars_clone"),
@@ -473,22 +439,10 @@ void systematics_sigExt()
             (TH1D *)hRelUncertResidualBkgVars->Clone("hRelUncertResidualBkgVars_clone"),
             (TH1D *)hRelUncertBinCounting->Clone("hRelUncertBinCounting_clone"),
             (TH1D *)hRelUncertWidthVars->Clone("hRelUncertWidthVars_clone"),
-            // (TH1D *)hRelUncertDCAvars->Clone("hRelUncertDCAvars_clone"),
-            // (TH1D *)hRelUncertPVcontributorVars->Clone("hRelUncertPVcontributorVars_clone"),
+            (TH1D *)hRelUncertDCAvars->Clone("hRelUncertDCAvars_clone"),
+            (TH1D *)hRelUncertPVcontributorVars->Clone("hRelUncertPVcontributorVars_clone"),
             (TH1D *)hRelUncertPIDVars->Clone("hRelUncertPIDVars_clone"),
             (TH1D *)hRelUncertMaterialBudgetVars->Clone("hRelUncertMaterialBudgetVars_clone")};
-
-        // vector<string> relUncertNames = {
-        //     "Norm. Range",
-        //     "Fit Range",
-        //     "Combinatorial Bkg",
-        //     "Residual Bkg",
-        //     "Yield Extraction",
-        //     "Width Variation",
-        //     "DCA Selection",
-        //     "PV Contributor",
-        //     "PID Selection",
-        //     "Material Budget"};
 
         vector<string> relUncertNames = {
             "Norm. Range",
@@ -497,6 +451,8 @@ void systematics_sigExt()
             "Residual Bkg",
             "Yield Extraction",
             "Width Variation",
+            "DCA Selection",
+            "PV Contributor",
             "PID Selection",
             "Material Budget"};
 
@@ -520,7 +476,7 @@ void systematics_sigExt()
         }
 
         vector<TH1D *> vecSignalExt = {hRelUncertNormVars, hRelUncertFitRangeVars, hRelUncertCombinatorialBkgVars, hRelUncertResidualBkgVars, hRelUncertWidthVars}; // Bin counting excluded as it passed Barlow
-        // vector<TH1D *> vecTrackSel = {hRelUncertDCAvars, hRelUncertPVcontributorVars};
+        vector<TH1D *> vecTrackSel = {hRelUncertDCAvars, hRelUncertPVcontributorVars};
         vector<TH1D *> vecPID = {hRelUncertPIDVars};
         vector<TH1D *> vecMaterialBudget = {hRelUncertMaterialBudgetVars};
 
@@ -554,17 +510,16 @@ void systematics_sigExt()
         vector<TH1D *> vecHadronicInteraction = {hHadronicInteractionRelUncert};
 
         TH1D *hSignalExtTotalSys = operations.sigma(vecSignalExt);
-        // TH1D *hTrackSelTotalSys = operations.sigma(vecTrackSel);
+        TH1D *hTrackSelTotalSys = operations.sigma(vecTrackSel);
         TH1D *hPIDTotalSys = operations.sigma(vecPID);
         TH1D *hMaterialBudgetTotalSys = operations.sigma(vecMaterialBudget);
         TH1D *hHadronicInteractionTotalSys = operations.sigma(vecHadronicInteraction);
 
-        // vector<TH1D *> vecTotal = {hSignalExtTotalSys, hTrackSelTotalSys, hPIDTotalSys, hMaterialBudgetTotalSys, hHadronicInteractionTotalSys};
-        vector<TH1D *> vecTotal = {hSignalExtTotalSys, hPIDTotalSys, hMaterialBudgetTotalSys, hHadronicInteractionTotalSys};
+        vector<TH1D *> vecTotal = {hSignalExtTotalSys, hTrackSelTotalSys, hPIDTotalSys, hMaterialBudgetTotalSys, hHadronicInteractionTotalSys};
         TH1D *hTotalSys = operations.sigma(vecTotal);
 
         TH1D *hSignalExtTotalSysClone = (TH1D *)hSignalExtTotalSys->Clone();
-        // TH1D *hTrackSelTotalSysClone = (TH1D *)hTrackSelTotalSys->Clone();
+        TH1D *hTrackSelTotalSysClone = (TH1D *)hTrackSelTotalSys->Clone();
 
         string SigExtNames[] = {"Norm. range", "Fit Range", "Combinatorial Bkg", "Residual Bkg", "Width fix/free"};
 
@@ -594,32 +549,32 @@ void systematics_sigExt()
         legSigExt->AddEntry(hSignalExtTotalSysClone, "Total", "l");
         legSigExt->Draw();
 
-        // TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 720, 720);
-        // SetCanvasStyle(cTrackSelAll, 0.14, 0.03, 0.06, 0.13);
-        // TLegend *legTrackSel = new TLegend(0.17, 0.6, 0.5, 0.88);
-        // legTrackSel->SetBorderSize(0);
-        // legTrackSel->SetFillStyle(0);
-        // legTrackSel->SetTextSize(0.03);
-        // legTrackSel->SetTextFont(42);
-        // legTrackSel->SetHeader("Track Selection");
-        // legTrackSel->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
-        // for (int i = 0; i < vecTrackSel.size(); i++)
-        // {
-        //     SetHistoQA(vecTrackSel[i]);
-        //     vecTrackSel[i]->GetYaxis()->SetTitle("Relative Uncertainty");
-        //     vecTrackSel[i]->SetStats(0);
-        //     vecTrackSel[i]->SetMaximum(0.105);
-        //     vecTrackSel[i]->SetMinimum(0);
-        //     vecTrackSel[i]->SetLineColor(lineColors[i]);
-        //     vecTrackSel[i]->Draw("HIST SAME");
-        //     legTrackSel->AddEntry(vecTrackSel[i], Form("%s", AllVariationNames[i + 6][0].c_str()), "l");
-        // }
-        // SetHistoQA(hTrackSelTotalSysClone);
-        // hTrackSelTotalSysClone->SetLineColor(kBlack);
-        // hTrackSelTotalSysClone->SetLineWidth(3);
-        // hTrackSelTotalSysClone->Draw("HIST SAME");
-        // legTrackSel->AddEntry(hTrackSelTotalSysClone, "Total", "l");
-        // legTrackSel->Draw();
+        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 720, 720);
+        SetCanvasStyle(cTrackSelAll, 0.14, 0.03, 0.06, 0.13);
+        TLegend *legTrackSel = new TLegend(0.17, 0.6, 0.5, 0.88);
+        legTrackSel->SetBorderSize(0);
+        legTrackSel->SetFillStyle(0);
+        legTrackSel->SetTextSize(0.03);
+        legTrackSel->SetTextFont(42);
+        legTrackSel->SetHeader("Track Selection");
+        legTrackSel->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
+        for (int i = 0; i < vecTrackSel.size(); i++)
+        {
+            SetHistoQA(vecTrackSel[i]);
+            vecTrackSel[i]->GetYaxis()->SetTitle("Relative Uncertainty");
+            vecTrackSel[i]->SetStats(0);
+            vecTrackSel[i]->SetMaximum(0.105);
+            vecTrackSel[i]->SetMinimum(0);
+            vecTrackSel[i]->SetLineColor(lineColors[i]);
+            vecTrackSel[i]->Draw("HIST SAME");
+            legTrackSel->AddEntry(vecTrackSel[i], Form("%s", AllVariationNames[i + 6][0].c_str()), "l");
+        }
+        SetHistoQA(hTrackSelTotalSysClone);
+        hTrackSelTotalSysClone->SetLineColor(kBlack);
+        hTrackSelTotalSysClone->SetLineWidth(3);
+        hTrackSelTotalSysClone->Draw("HIST SAME");
+        legTrackSel->AddEntry(hTrackSelTotalSysClone, "Total", "l");
+        legTrackSel->Draw();
 
         TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 720, 720);
         SetCanvasStyle(cTotalSys, 0.14, 0.03, 0.06, 0.13);
@@ -641,13 +596,13 @@ void systematics_sigExt()
             vecTotal[i]->Draw("HIST SAME");
             if (i == 0)
                 legTotal->AddEntry(vecTotal[i], "Signal Extraction", "l");
-            // else if (i == 1)
-            //     legTotal->AddEntry(vecTotal[i], "Track Selection", "l");
             else if (i == 1)
-                legTotal->AddEntry(vecTotal[i], "PID", "l");
+                legTotal->AddEntry(vecTotal[i], "Track Selection", "l");
             else if (i == 2)
-                legTotal->AddEntry(vecTotal[i], "Material Budget", "l");
+                legTotal->AddEntry(vecTotal[i], "PID", "l");
             else if (i == 3)
+                legTotal->AddEntry(vecTotal[i], "Material Budget", "l");
+            else if (i == 4)
                 legTotal->AddEntry(vecTotal[i], "Hadronic Interaction", "l");
         }
         hTotalSys->SetLineColor(kBlack);
@@ -659,14 +614,12 @@ void systematics_sigExt()
         // smoothing procedure on separate sources
         int Iterations = 2;
         TH1D *hSignalExtTotalSysSmoothed = operations.smooth(hSignalExtTotalSys, Iterations);
-        // TH1D *hTrackSelTotalSysSmoothed = operations.smooth(hTrackSelTotalSys, Iterations);
+        TH1D *hTrackSelTotalSysSmoothed = operations.smooth(hTrackSelTotalSys, Iterations);
         TH1D *hPIDTotalSysSmoothed = operations.smooth(hPIDTotalSys, Iterations);
         TH1D *hMaterialBudgetTotalSysSmoothed = operations.smooth(hMaterialBudgetTotalSys, Iterations);
         TH1D *hHadronicInteractionTotalSysSmoothed = operations.smooth(hHadronicInteractionTotalSys, Iterations);
 
-        // vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
-
-        vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
+        vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
 
         TH1D *hTotalSysSmoothed = operations.smooth(hTotalSys);
 
@@ -695,7 +648,7 @@ void systematics_sigExt()
         cRatioAll->SaveAs(savePath + "Ratio_AllVariations.png");
         cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources.png");
         cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics.png");
-        // cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics.png");
+        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics.png");
         cTotalSys->SaveAs(savePath + "TotalSystematics.png");
         cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics.png");
     }

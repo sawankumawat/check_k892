@@ -608,6 +608,8 @@ void systematics_New()
         hTotalSys->SetLineColor(kBlack);
         hTotalSys->SetLineWidth(3);
         hTotalSys->Draw("HIST SAME");
+        SysUncertainties->cd();
+        hTotalSys->Write(Form("hTotalSys_%d_%d", multLow, multHigh));
         legTotal->AddEntry(hTotalSys, "Total", "l");
         legTotal->Draw();
 
@@ -618,6 +620,10 @@ void systematics_New()
         TH1D *hPIDTotalSysSmoothed = operations.smooth(hPIDTotalSys, Iterations);
         TH1D *hMaterialBudgetTotalSysSmoothed = operations.smooth(hMaterialBudgetTotalSys, Iterations);
         TH1D *hHadronicInteractionTotalSysSmoothed = operations.smooth(hHadronicInteractionTotalSys, Iterations);
+
+        hSignalExtTotalSysSmoothed->Write(Form("hSignalExtTotalSysSmoothed_%d_%d", multLow, multHigh));
+        hTrackSelTotalSysSmoothed->Write(Form("hTrackSelTotalSysSmoothed_%d_%d", multLow, multHigh));
+        hPIDTotalSysSmoothed->Write(Form("hPIDTotalSysSmoothed_%d_%d", multLow, multHigh));
 
         vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
 

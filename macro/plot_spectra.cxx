@@ -51,7 +51,7 @@ void plot_spectra()
     gStyle->SetOptStat(0);
     TString outputType = "pdf"; // pdf, png
     double fitRangeMax = 20.0;
-    bool systematicsExist = false;
+    bool systematicsExist = true;
 
     int colors[12];
     int nPaletteColors = TColor::GetNumberOfColors();
@@ -61,20 +61,8 @@ void plot_spectra()
         int index = i * (nPaletteColors - 1) / 11;
         colors[i] = TColor::GetColorPalette(index);
     }
-
-    //==============================Pt-dependent PID=======================
-    // string path = "../output/kstar/LHC22o_pass7/586976/kstarqa_NoRCT/hInvMass"; // 2023 data
-    // string path = "../output/kstar/LHC22o_pass7/586385/kstarqa/hInvMass"; // 2024 data
-    TFile *fSysUncert;
-    if (systematicsExist)
-    {
-        fSysUncert = new TFile("../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
-        if (fSysUncert->IsZombie())
-        {
-            cout << "Systematic uncertainty file not found" << endl;
-            return;
-        }
-    }
+    
+    TFile *fSysUncert = new TFile("")
 
     TH1D *hTotalSysSmoothed;
     if (systematicsExist)

@@ -28,6 +28,9 @@ void dndy_meanpt()
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int totalMultBins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
+    vector<double> Vecdndy_uncorr;
+    vector<double> Vecmeanpt_uncorr;
+
     for (int imult = 0; imult < totalMultBins; imult++)
     {
         int multLow = mult_classes[imult];
@@ -83,10 +86,26 @@ void dndy_meanpt()
         double dn_uncorr = TMath::Sqrt(dndy_uncorr);
         double meanpt_unc = TMath::Sqrt(meanpt_unc2);
 
+        Vecdndy_uncorr.push_back(dn_uncorr);
+        Vecmeanpt_uncorr.push_back(meanpt_unc);
+
         cout << "\nRESULTS FOR yield " << multLow << "-" << multHigh << endl;
         cout << "dN/dy value and uncorrelated uncertainty = " << TotalYield << " ± " << dn_uncorr << endl;
         cout << "<pT> value and uncorrelated uncertainty = " << meanpt << " ± " << meanpt_unc << endl;
     }
+
+    cout << "Uncorrelated uncertainties for dN/dy " << endl;
+    for (auto &val : Vecdndy_uncorr)
+    {
+        cout << val << ", ";
+    }
+    cout << endl;
+    cout << "Uncorrelated uncertainties for <pT> " << endl;
+    for (auto &val : Vecmeanpt_uncorr)
+    {
+        cout << val << ", ";
+    }
+    cout << endl;
 }
 
 TH1D *GetHisto(TFile *f, const string &name)

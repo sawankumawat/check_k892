@@ -6,7 +6,7 @@ TFile *OpenFile(const string &path);
 template <typename T>
 T *GetHisto(TFile *f, const std::string &name);
 
-void doublePhiSimpleOpti6()
+void doublePhiOpti6()
 {
     ////=====Pair=========
     TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/Pair/processPairOpti6/AnalysisResults.root");

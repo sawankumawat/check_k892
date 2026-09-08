@@ -42,7 +42,7 @@ Double_t VoigtExpol(Double_t *x, Double_t *par)
     return (vgt + poly3);
 }
 
-void doublePhiSimpleOpti8Voigt()
+void doublePhiOpti8Voigt()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);

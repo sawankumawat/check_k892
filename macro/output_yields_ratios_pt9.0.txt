@@ -1,0 +1,11 @@
+
+========== YIELDS & RATIOS IN [2.65 - 2.75 GeV] ==========
+Signal Yield                       : 1318.33
+Total Background (SS + non-SS)     : 36904.9
+Uncorrelated Background (non-SS)   : 17282.4
+Correlated Background (SS)         : 19622.6
+----------------------------------------------------------------------
+Signal / Total Background          : 0.0357223
+Signal / Uncorrelated Background   : 0.0762817
+======================================================================
+

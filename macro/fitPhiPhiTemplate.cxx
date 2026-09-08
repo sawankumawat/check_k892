@@ -18,21 +18,35 @@ void fitPhiPhiTemplate()
     gStyle->SetOptStat(0);
 
     // Paths
-    TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/PhiPhiBkgTemplate_BW_ExtendedFitRange.root";
-    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
-    TString suffix = "BWExpol3_extendedFitRange";
+    // TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/PhiPhiBkgTemplate_BW_ExtendedFitRange2.root";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+
+    // TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25/PhiPhiBkgTemplate_BW_ExtendedFitRangeLHC25.root";
+    // // TString inFilePath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25/PhiPhiBkgTemplate_Voigt_25.root";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25";
+    // TString suffix = "BEExpol3";
+
+    double ptCut = 6.0;
+    TString suffix = Form("_pt%.1f", ptCut);
+
+    TString inFilePath = Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025/PhiPhiBkgTemplate_BW%s.root", suffix.Data());
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025";
+
+    // TString suffix = "BWExpol3_extendedFitRange";
     // TString suffix = "Voigt";
     // TString suffix = "pol2";
 
     double fitLow = 2.41;
     double fitHigh = 2.95;
 
-    // Open input ROOT file
+    // Open template input ROOT file
     TFile *fInput = OpenFile(inFilePath.Data());
 
     // Retrieve the templates
     TH1D *h_N_SS = GetHisto<TH1D>(fInput, "h_N_SS");
     TH1D *h_N_nonSS = GetHisto<TH1D>(fInput, "h_N_nonSS");
+    TH1D *h_N_BBOnly = GetHisto<TH1D>(fInput, "h_N_BBOnly");
+    TH1D *h_N_SB = GetHisto<TH1D>(fInput, "h_N_SB");
 
     // Exclusion region bounds for the signal window
     double excLow = 2.650;
@@ -198,11 +212,15 @@ void fitPhiPhiTemplate()
     // hInvMass->Rebin(8);
     // hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
 
-    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiRefitted");
-    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
+    // TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiRefitted");
 
-    int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
+    ////============2025 data========
+    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiShifted");
+
+    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
+    int lowpT = hUnlike->GetAxis(1)->FindBin(ptCut + 0.001);
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
 
     int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
@@ -266,6 +284,9 @@ void fitPhiPhiTemplate()
     h_Data_NoPeak->Fit(f_TotalBkg_Sideband, "R0Q");
     int parameter1 = f_TotalBkg_Sideband->GetParameter(0);
     int parameter2 = f_TotalBkg_Sideband->GetParameter(1);
+
+    // Force the SS component to retain its physical strength
+    // f_TotalBkg_Sideband->SetParLimits(0, 0.1, 25); // Bound scale_SS so it doesn't drop too low
     h_Data->Fit(f_TotalBkg_Sideband, "R0Q");
 
     TF1 *f_TotalBkg_Full = new TF1("f_TotalBkg_Full", total_bkg_full_func, fitLow, fitHigh, 2);
@@ -291,8 +312,11 @@ void fitPhiPhiTemplate()
     SetCanvasStyle(cBkgFit, 0.15, 0.03, 0.05, 0.15);
     h_Data->SetMarkerStyle(20);
     SetHistoQA(h_Data);
-    h_Data->SetMinimum(480);
-    h_Data->SetMaximum(5300);
+    // h_Data->SetMinimum(480);
+    // h_Data->SetMaximum(5300);
+    // h_Data->GetYaxis()->SetRangeUser(-0.1e3, 1.3e3);
+    h_Data->SetMinimum(0);
+    h_Data->SetMaximum(h_Data->GetMaximum() * 1.5);
     h_Data->GetXaxis()->SetTitle("M_{#phi#phi} (GeV/#it{c}^{2})");
     h_Data->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", h_Data->GetBinWidth(1) * 1000));
     h_Data->Draw("PE");
@@ -315,7 +339,7 @@ void fitPhiPhiTemplate()
     cBkgFit->SaveAs(savepath + "/Bkg_Fit=" + suffix + ".png");
 
     // Save fitted background models for Step 3 signal extraction
-    TFile *fOut = new TFile(savepath + "/Step1_Step2_Background_Results.root", "RECREATE");
+    TFile *fOut = new TFile(savepath + Form("/FitResults%s.root", suffix.Data()), "RECREATE");
     f_TotalBkg_Full->Write("f_TotalBkg_Full");
     f_SS_Component->Write("f_SS_Component");
     f_nonSS_Component->Write("f_nonSS_Component");
@@ -366,14 +390,17 @@ void fitPhiPhiTemplate()
     f_Signal->SetParameter(0, 1100.0);       // Yield initial guess
     f_Signal->SetParameter(1, 2.6905);       // M_X initial guess
     f_Signal->SetParLimits(1, 2.650, 2.730); // Mass peak search range
-    f_Signal->SetParameter(2, 0.0269);       // Gamma_X initial guess
+    f_Signal->SetParameter(2, 0.022);        // Gamma_X initial guess
     f_Signal->SetParLimits(2, 0.005, 0.080); // Reasonable width limits
     f_Signal->SetLineColor(kMagenta + 2);
     f_Signal->SetLineWidth(2);
 
     // Fit signal peak
     SetHistoQA(h_Subtracted);
-    h_Subtracted->GetYaxis()->SetRangeUser(-290, 480);
+    // h_Subtracted->GetYaxis()->SetRangeUser(-290, 480);
+    // h_Subtracted->GetYaxis()->SetRangeUser(-190, 260);
+    // h_Subtracted->GetYaxis()->SetRangeUser(-1100, 1700); //26 data for all pt cuts
+    h_Subtracted->GetYaxis()->SetRangeUser(-150, 310);
     h_Subtracted->Fit(f_Signal, "R0Q");
 
     // 3. Extract parameters and statistical significance
@@ -411,7 +438,7 @@ void fitPhiPhiTemplate()
     legSig->AddEntry((TObject *)0, Form("N_{X} = %.1f #pm %.1f", yield, yieldErr), "");
     legSig->AddEntry((TObject *)0, Form("M_{X} = %.4f #pm %.4f", mass, massErr), "");
     legSig->AddEntry((TObject *)0, Form("#Gamma_{X} = %.4f #pm %.4f", width, widthErr), "");
-    legSig->AddEntry((TObject *)0, Form("Stat. Significance = %.2f", significance), "");
+    legSig->AddEntry((TObject *)0, Form("Stat. Significance = %.2f#sigma", significance), "");
     legSig->Draw();
 
     TLegend *legSig2 = new TLegend(0.55, 0.78, 0.88, 0.91);
@@ -431,6 +458,132 @@ void fitPhiPhiTemplate()
     std::cout << "Width (Gamma_X): " << width << " +/- " << widthErr << " GeV/c^2" << std::endl;
     std::cout << "Significance   : " << significance << std::endl;
     std::cout << "========================================" << std::endl;
+
+    // // =========================================================================
+    // // STEP 4: Calculate Yield Ratios in Window [2.65 - 2.75 GeV]
+    // // =========================================================================
+
+    double ratioLow = 2.63;
+    double ratioHigh = 2.73;
+
+    // 1. Signal Yield (Integral of fitted Breit-Wigner / bin width)
+    double binWidthSignal = h_Subtracted->GetBinWidth(1);
+    double signalYield = f_Signal->Integral(ratioLow, ratioHigh) / binWidthSignal;
+
+    // 2. Integrals of continuous fitted background curves / bin width
+    double binWidthData = h_Data->GetBinWidth(1);
+    double totalBkgYield = f_TotalBkg_Full->Integral(ratioLow, ratioHigh) / binWidthData;
+    double uncorrelatedYield = f_nonSS_Component->Integral(ratioLow, ratioHigh) / binWidthData; // non-SS
+    double correlatedYield = f_SS_Component->Integral(ratioLow, ratioHigh) / binWidthData;      // SS
+
+    cout << "SS Component yield " << correlatedYield << endl;
+    cout << "non-SS Component yield " << uncorrelatedYield << endl;
+    cout << "Total Background yield " << totalBkgYield << endl;
+    cout << "SS + non-SS yield " << correlatedYield + uncorrelatedYield << endl; // checking for closure
+
+    // 3. Compute Ratios
+    double ratio_Sig_TotalBkg = (totalBkgYield > 0) ? (signalYield / totalBkgYield) : 0.0;
+    double ratio_Sig_UncorrelatedBkg = (uncorrelatedYield > 0) ? (signalYield / uncorrelatedYield) : 0.0;
+    double ratio_Sig_CorrelatedBkg = (correlatedYield > 0) ? (signalYield / correlatedYield) : 0.0;
+
+    // Output requested Ratios to Terminal
+    std::cout << "\n========== YIELDS & RATIOS IN [" << ratioLow << " - " << ratioHigh << " GeV] ==========" << std::endl;
+    std::cout << "Signal Yield                       : " << signalYield << std::endl;
+    std::cout << "Total Background (SS + non-SS)     : " << totalBkgYield << std::endl;
+    std::cout << "Uncorrelated Background (non-SS)   : " << uncorrelatedYield << std::endl;
+    std::cout << "Correlated Background (SS)         : " << correlatedYield << std::endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+    std::cout << "Signal / Total Background          : " << ratio_Sig_TotalBkg << std::endl;
+    std::cout << "Signal / Uncorrelated Background   : " << ratio_Sig_UncorrelatedBkg << std::endl;
+    std::cout << "Signal / Correlated Background     : " << ratio_Sig_CorrelatedBkg << std::endl;
+    std::cout << "======================================================================\n"
+              << std::endl;
+
+    // Write this output in a .txt file
+    std::ofstream outFile;
+    outFile.open(Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025/YieldRatios_pt%.1f.txt", ptCut));
+
+    outFile << "\n========== YIELDS & RATIOS IN [" << ratioLow << " - " << ratioHigh << " GeV] ==========" << std::endl;
+    outFile << "pT Cut                             : " << ptCut << " GeV/c" << std::endl;
+    outFile << "Signal Yield                       : " << signalYield << std::endl;
+    outFile << "Total Background (SS + non-SS)     : " << totalBkgYield << std::endl;
+    outFile << "Uncorrelated Background (non-SS)   : " << uncorrelatedYield << std::endl;
+    outFile << "Correlated Background (SS)         : " << correlatedYield << std::endl;
+    outFile << "----------------------------------------------------------------------" << std::endl;
+    outFile << "Signal / Total Background          : " << ratio_Sig_TotalBkg << std::endl;
+    outFile << "Signal / Uncorrelated Background   : " << ratio_Sig_UncorrelatedBkg << std::endl;
+    outFile << "Signal / Correlated Background     : " << ratio_Sig_CorrelatedBkg << std::endl;
+    outFile << "======================================================================\n"
+            << std::endl;
+    outFile.close();
+
+    // // 2. Continuous Integrals of Fit Functions for Total Bkg, SS Bkg, and non-SS Bkg
+    // double binWidthData = h_Data->GetBinWidth(1);
+    // double totalBkg = f_TotalBkg_Full->Integral(ratioLow, ratioHigh) / binWidthData;
+    // double ssBkg = f_SS_Component->Integral(ratioLow, ratioHigh) / binWidthData;
+    // double nonSSBkg = f_nonSS_Component->Integral(ratioLow, ratioHigh) / binWidthData;
+
+    // // 3. Fraction of non-SS Bkg belonging to BB and (SB+BS) from raw template histograms
+    // auto integrateHistoRange = [](TH1D *h, double low, double high) -> double
+    // {
+    //     if (!h)
+    //         return 0.0;
+    //     double sum = 0.0;
+    //     for (int i = 1; i <= h->GetNbinsX(); ++i)
+    //     {
+    //         double center = h->GetBinCenter(i);
+    //         if (center >= low && center <= high)
+    //         {
+    //             sum += h->GetBinContent(i);
+    //         }
+    //     }
+    //     return sum;
+    // };
+
+    // double rawBB = integrateHistoRange(h_N_BBOnly, ratioLow, ratioHigh);
+    // double rawSB = integrateHistoRange(h_N_SB, ratioLow, ratioHigh);
+    // double rawNonSS = rawBB + rawSB;
+
+    // double fracBB = (rawNonSS > 0) ? (rawBB / rawNonSS) : 0.0;
+    // double fracSB = (rawNonSS > 0) ? (rawSB / rawNonSS) : 0.0;
+
+    // // 4. Split nonSSBkg dynamically according to raw template fractions
+    // double yieldBB = nonSSBkg * fracBB;
+    // double yieldSB = nonSSBkg * fracSB;
+
+    // // 5. Compute Ratios
+    // double ratio_Sig_TotalBkg = (totalBkg > 0) ? (signalYield / totalBkg) : 0.0;
+    // double ratio_Sig_SS = (ssBkg > 0) ? (signalYield / ssBkg) : 0.0;
+    // double ratio_Sig_BB = (yieldBB > 0) ? (signalYield / yieldBB) : 0.0;
+    // double ratio_Sig_SB = (yieldSB > 0) ? (signalYield / yieldSB) : 0.0;
+
+    // // Inverse Ratios (Bkg / Signal) to check exact sum equality
+    // double inv_TotalBkg = (signalYield > 0) ? (totalBkg / signalYield) : 0.0;
+    // double inv_SS = (signalYield > 0) ? (ssBkg / signalYield) : 0.0;
+    // double inv_BB = (signalYield > 0) ? (yieldBB / signalYield) : 0.0;
+    // double inv_SB = (signalYield > 0) ? (yieldSB / signalYield) : 0.0;
+
+    // // Output Ratios to Terminal
+    // std::cout << "\n========== YIELD RATIOS IN [" << ratioLow << " - " << ratioHigh << " GeV] ==========" << std::endl;
+    // std::cout << "Signal Yield          : " << signalYield << std::endl;
+    // std::cout << "Total Background      : " << totalBkg << " (SS: " << ssBkg << " + non-SS: " << nonSSBkg << ")" << std::endl;
+    // std::cout << "  - SS Bkg            : " << ssBkg << std::endl;
+    // std::cout << "  - BB Bkg            : " << yieldBB << std::endl;
+    // std::cout << "  - (SB + BS) Bkg     : " << yieldSB << std::endl;
+    // std::cout << "--------------------------------------------------------" << std::endl;
+    // std::cout << "Signal / Total Bkg    : " << ratio_Sig_TotalBkg << std::endl;
+    // std::cout << "Signal / SS           : " << ratio_Sig_SS << std::endl;
+    // std::cout << "Signal / BB           : " << ratio_Sig_BB << std::endl;
+    // std::cout << "Signal / (SB + BS)    : " << ratio_Sig_SB << std::endl;
+    // std::cout << "--------------------------------------------------------" << std::endl;
+    // std::cout << "VERIFICATION CHECK (Bkg / Signal):" << std::endl;
+    // std::cout << "Total Bkg / Signal    : " << inv_TotalBkg << std::endl;
+    // std::cout << "Sum of Components     : " << (inv_SS + inv_BB + inv_SB) << std::endl;
+    // std::cout << "  - SS / Signal       : " << inv_SS << std::endl;
+    // std::cout << "  - BB / Signal       : " << inv_BB << std::endl;
+    // std::cout << "  - (SB+BS) / Signal  : " << inv_SB << std::endl;
+    // std::cout << "========================================================\n"
+    //           << std::endl;
 
     std::cout << "Code completed successfully!" << std::endl;
 }

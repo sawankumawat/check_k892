@@ -14,6 +14,7 @@
 
 #include "src/style.h"
 #include "src/fitfunc.h"
+using namespace std;
 
 TFile *OpenFile(const string &path);
 template <typename T>
@@ -77,47 +78,71 @@ void doublePhiTemplateVoigt()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
-    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25";
 
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_MorePhiBins.root");
+    TString suffix = "_25";
 
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassDoublePhi");
+    ////============2026 data========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
 
+    ////============2025 data========
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+
+    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
     int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
 
-    int lowDeltaM = hUnlike->GetAxis(6)->FindBin(0.0 + 0.00001);
-    int highDeltaM = hUnlike->GetAxis(6)->FindBin(0.005 - 0.00001);
+    int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
+    int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
+    int lowChi2 = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
+    int highChi2 = hUnlike->GetAxis(3)->FindBin(25.0 - 0.00001);
+
+    int lowFitProb = hUnlike->GetAxis(4)->FindBin(0.3 + 0.00001);
+    int highFitProb = hUnlike->GetAxis(4)->FindBin(2.0 - 0.00001);
 
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
-    TH3D *h3D_full = hUnlike->Projection(0, 4, 5, "E");
+    TH3D *h3D_full = hUnlike->Projection(0, 5, 6, "E");
 
-    hUnlike->GetAxis(6)->SetRange(lowDeltaM, highDeltaM); // Uncommented: essential for DeltaM selection
-    TH3D *h3D_cut = hUnlike->Projection(0, 4, 5, "E");
+    hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
+    // hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
+    hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
+    TH3D *h3D_cut = hUnlike->Projection(0, 5, 6, "E");
 
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass Distribution", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
     hInvMass->Rebin(8);
-    hInvMass->Draw("pe");
-    cInvMass->SaveAs(savepath + "/PhiInvMass.png");
+    // hInvMass->Draw("pe");
+    // cInvMass->SaveAs(savepath + "/PhiInvMass.png");
 
-    hUnlike->GetAxis(1)->SetRange(0, -1); // Reset pT range for further analysis
+    // hUnlike->GetAxis(1)->SetRange(0, -1); // Reset pT range for further analysis
 
     // 2. Fix the bin-beating effect by iterating strictly by bin index
     int rebin = 10;
-    int startBin = h3D_full->GetXaxis()->FindBin(2.5 + 0.0001);
-    int endBin = h3D_full->GetXaxis()->FindBin(2.9 - 0.0001);
+    int startBin = h3D_full->GetXaxis()->FindBin(2.41 + 0.0001);
+    int endBin = h3D_full->GetXaxis()->FindBin(2.95 - 0.0001);
     int nBinsInRange = endBin - startBin + 1;
     int totalBins = nBinsInRange / rebin;
-    // totalBins = 1; // For testing, set to 1. Remove this line for full analysis.
+    // totalBins = 1; // For testing, set to 1 to get the bkg and signal paraemters to be fixed for differential bins
+
+    double startBinValue = h3D_full->GetXaxis()->GetBinLowEdge(startBin);
+    double endBinValue = h3D_full->GetXaxis()->GetBinUpEdge(endBin);
+
+    cout << "Start bin " << startBin << " with value " << startBinValue << endl;
+    cout << "End bin " << endBin << " with value " << endBinValue << endl;
+    cout << "Total bins in range: " << nBinsInRange << endl;
+    cout << "Total bins after rebinning: " << totalBins << endl;
 
     // ================================================
     // 1D Histograms for SS and Non-SS Yields
     // ================================================
-    TH1D *h_N_SS = new TH1D("h_N_SS", "SS Template (True #phi#phi Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{SS}", totalBins, 2.5, 2.9);
-    TH1D *h_N_nonSS = new TH1D("h_N_nonSS", "Non-SS Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{nonSS}", totalBins, 2.5, 2.9);
-    TH1D *h_N_Total = new TH1D("h_N_Total", "Total Yield;#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{Total}", totalBins, 2.5, 2.9);
+    TH1D *h_N_SS = new TH1D("h_N_SS", "SS Template (True #phi#phi Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{SS}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_nonSS = new TH1D("h_N_nonSS", "Non-SS Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{nonSS}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_Total = new TH1D("h_N_Total", "Total Yield;#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{Total}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_BBOnly = new TH1D("h_N_BBOnly", "BB Only Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{BBOnly}", totalBins, startBinValue, endBinValue);
 
     for (int ibin = 0; ibin < totalBins; ibin++)
     {
@@ -148,15 +173,17 @@ void doublePhiTemplateVoigt()
         f2D->SetParameter(5, 0.0012);  // Resolution
         f2D->FixParameter(6, 0.0043);  // Width
 
-        // f2D->SetParameter(7,  166.3); //  p0
-        // f2D->SetParameter(8, 68.4); //  p1
-        // f2D->SetParameter(9, 12.4); //  p2
-        // f2D->SetParameter(10, -77.2); //  p3
+        ////2025 datas
+        f2D->FixParameter(7, 251.3);  //  p0
+        f2D->FixParameter(8, 109.4);   //  p1
+        f2D->FixParameter(9, 13.8);   //  p2
+        f2D->FixParameter(10, -118.2); //  p3
 
-        f2D->FixParameter(7, 166.3);  // p0
-        f2D->FixParameter(8, 68.4);   // p1
-        f2D->FixParameter(9, 12.4);   // p2
-        f2D->FixParameter(10, -77.2); // p3
+        ////2026 data
+        // f2D->FixParameter(7, 166.3);  // p0
+        // f2D->FixParameter(8, 68.4);   // p1
+        // f2D->FixParameter(9, 12.4);   // p2
+        // f2D->FixParameter(10, -77.2); // p3
 
         f2D->SetNpx(1000); // Reduced for speed, increase if fit drawing looks jagged
         f2D->SetNpy(1000);
@@ -206,6 +233,7 @@ void doublePhiTemplateVoigt()
         // =========================================================================
         double yieldSS_cut = 0.0;
         double yieldNonSS_cut = 0.0;
+        double yieldBBOnly = 0.0;
 
         for (int ix = 1; ix <= h2D_cut->GetNbinsX(); ++ix)
         {
@@ -236,9 +264,11 @@ void doublePhiTemplateVoigt()
 
                 double totalF = valSS + valSB + valBS + valBB;
                 double P_SS = (totalF > 0) ? (valSS / totalF) : 0.0;
+                double P_BB = (totalF > 0) ? (valBB / totalF) : 0.0;
 
                 yieldSS_cut += n_k * P_SS;
                 yieldNonSS_cut += n_k * (1.0 - P_SS);
+                yieldBBOnly += n_k * P_BB;
             }
         }
 
@@ -246,6 +276,7 @@ void doublePhiTemplateVoigt()
         h_N_SS->SetBinContent(ibin + 1, yieldSS_cut);
         h_N_nonSS->SetBinContent(ibin + 1, yieldNonSS_cut);
         h_N_Total->SetBinContent(ibin + 1, yieldSS_cut + yieldNonSS_cut);
+        h_N_BBOnly->SetBinContent(ibin + 1, yieldBBOnly);
         cout << "Signal component (SS) yield in bin " << ibin << ": " << yieldSS_cut << endl;
         cout << "Background component (Non-SS) yield in bin " << ibin << ": " << yieldNonSS_cut << endl;
 
@@ -276,7 +307,7 @@ void doublePhiTemplateVoigt()
     h_N_SS->SetMarkerStyle(20);
     h_N_SS->SetMarkerSize(0.8);
     h_N_SS->Draw("pe");
-    cSS->SaveAs(savepath + "/SS_Template_Voigt.png");
+    cSS->SaveAs(savepath + Form("/SS_Template_Voigt%s.png", suffix.Data()));
 
     TCanvas *cNonSS = new TCanvas("cNonSS", "Non-SS Template", 720, 720);
     SetCanvasStyle(cNonSS, 0.15, 0.05, 0.08, 0.12);
@@ -285,17 +316,35 @@ void doublePhiTemplateVoigt()
     h_N_nonSS->SetMarkerSize(0.8);
     h_N_nonSS->GetYaxis()->SetRangeUser(1000, 2300);
     h_N_nonSS->Draw("pe");
-    cNonSS->SaveAs(savepath + "/NonSS_Template_Voigt.png");
+    cNonSS->SaveAs(savepath + Form("/NonSS_Template_Voigt%s.png", suffix.Data()));
 
     TCanvas *cTotal = new TCanvas("cTotal", "Total Yield", 720, 720);
     SetCanvasStyle(cTotal, 0.15, 0.05, 0.08, 0.12);
     SetHistoQA(h_N_Total);
     h_N_Total->SetMarkerStyle(20);
     h_N_Total->SetMarkerSize(0.8);
+    // h_N_Total->GetYaxis()->SetRangeUser(2800, 5750);
+    h_N_Total->SetMaximum(h_N_Total->GetMaximum() * 1.5);
+    h_N_Total->SetMinimum(h_N_Total->GetMinimum() * 0.2);
     h_N_Total->Draw("pe");
-    cTotal->SaveAs(savepath + "/Total_Yield_Voigt.png");
+    hInvMass->SetMarkerStyle(25);
+    hInvMass->SetMarkerSize(0.8);
+    hInvMass->SetMarkerColor(kRed);
+    hInvMass->SetLineColor(kRed);
+    hInvMass->Draw("pe SAME");
 
-    TFile *fOutput = new TFile(savepath + "/PhiPhiBkgTemplate_Voigt.root", "RECREATE");
+    TLegend *legClosure = new TLegend(0.5, 0.75, 0.9, 0.9);
+    legClosure->SetBorderSize(0);
+    legClosure->SetFillStyle(0);
+    legClosure->SetTextSize(0.035);
+    legClosure->SetTextFont(42);
+    legClosure->SetHeader("Closure Test");
+    legClosure->AddEntry(h_N_Total, "SS + non-SS", "pe");
+    legClosure->AddEntry(hInvMass, "Data", "pe");
+    legClosure->Draw();
+    cTotal->SaveAs(savepath + Form("/Total_Yield_Voigt%s.png", suffix.Data()));
+
+    TFile *fOutput = new TFile(savepath + Form("/PhiPhiBkgTemplate_Voigt%s.root", suffix.Data()), "RECREATE");
     h_N_SS->Write("h_N_SS");
     h_N_nonSS->Write("h_N_nonSS");
     fOutput->Close();

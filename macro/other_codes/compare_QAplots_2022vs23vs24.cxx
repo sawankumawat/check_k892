@@ -123,7 +123,7 @@ void compare_QAplots()
     lineverticalx0->SetLineColor(2);
     lineverticalx0->SetLineWidth(2);
     lineverticalx0->Draw();
-    cNsigmaTOFKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_neg.png"));
+    // cNsigmaTOFKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_neg.png"));
 
     TCanvas *cNsigmaTOFPion_neg = new TCanvas("cNsigmaTOFPion_neg", "Nsigma TOF Pion Neg", 720, 720);
     SetCanvasStyle(cNsigmaTOFPion_neg, 0.14, 0.05, 0.06, 0.14);
@@ -143,7 +143,7 @@ void compare_QAplots()
     lineverticalx0->SetY2(hNsigmaTOFPion_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
     legend->Draw();
-    cNsigmaTOFPion_neg->SaveAs(outputPath + ("/compare_NsigmaTOFPion_neg.png"));
+    // cNsigmaTOFPion_neg->SaveAs(outputPath + ("/compare_NsigmaTOFPion_neg.png"));
 
     TCanvas *cNsigmaTOFKaon_pos = new TCanvas("cNsigmaTOFKaon_pos", "Nsigma TOF Kaon Pos", 720, 720);
     SetCanvasStyle(cNsigmaTOFKaon_pos, 0.14, 0.05, 0.06, 0.14);
@@ -161,7 +161,7 @@ void compare_QAplots()
     hNsigmaTOFKaon_pos3->Draw("HIST same");
     legend->Draw();
     lineverticalx0->Draw();
-    cNsigmaTOFKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_pos.png"));
+    // cNsigmaTOFKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTOFKaon_pos.png"));
 
     TCanvas *cNsigmaTOFPion_pos = new TCanvas("cNsigmaTOFPion_pos", "Nsigma TOF Pion Pos", 720, 720);
     SetCanvasStyle(cNsigmaTOFPion_pos, 0.14, 0.05, 0.06, 0.14);
@@ -181,7 +181,7 @@ void compare_QAplots()
     lineverticalx0->SetY1(1.3 * hNsigmaTOFPion_pos1->GetMaximum());
     lineverticalx0->SetY2(hNsigmaTOFPion_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
-    cNsigmaTOFPion_pos->SaveAs(outputPath + ("/compare_NsigmaTOFPion_pos.png"));
+    // cNsigmaTOFPion_pos->SaveAs(outputPath + ("/compare_NsigmaTOFPion_pos.png"));
 
     TCanvas *cNsigmaTPCKaon_neg = new TCanvas("cNsigmaTPCKaon_neg", "Nsigma TPC Kaon Neg", 720, 720);
     SetCanvasStyle(cNsigmaTPCKaon_neg, 0.14, 0.05, 0.06, 0.14);
@@ -201,7 +201,7 @@ void compare_QAplots()
     lineverticalx0->SetY1(1.3 * hNsigmaTPCKaon_neg1->GetMaximum());
     lineverticalx0->SetY2(hNsigmaTPCKaon_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
-    cNsigmaTPCKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_neg.png"));
+    // cNsigmaTPCKaon_neg->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_neg.png"));
 
     TCanvas *cNsigmaTPCPion_neg = new TCanvas("cNsigmaTPCPion_neg", "Nsigma TPC Pion Neg", 720, 720);
     SetCanvasStyle(cNsigmaTPCPion_neg, 0.14, 0.05, 0.06, 0.14);
@@ -221,7 +221,7 @@ void compare_QAplots()
     lineverticalx0->SetY1(1.3 * hNsigmaTPCPion_neg1->GetMaximum());
     lineverticalx0->SetY2(hNsigmaTPCPion_neg1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
-    cNsigmaTPCPion_neg->SaveAs(outputPath + ("/compare_NsigmaTPCPion_neg.png"));
+    // cNsigmaTPCPion_neg->SaveAs(outputPath + ("/compare_NsigmaTPCPion_neg.png"));
 
     TCanvas *cNsigmaTPCKaon_pos = new TCanvas("cNsigmaTPCKaon_pos", "Nsigma TPC Kaon Pos", 720, 720);
     SetCanvasStyle(cNsigmaTPCKaon_pos, 0.14, 0.05, 0.06, 0.14);
@@ -241,7 +241,7 @@ void compare_QAplots()
     lineverticalx0->SetY1(1.3 * hNsigmaTPCKaon_pos1->GetMaximum());
     lineverticalx0->SetY2(hNsigmaTPCKaon_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
-    cNsigmaTPCKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_pos.png"));
+    // cNsigmaTPCKaon_pos->SaveAs(outputPath + ("/compare_NsigmaTPCKaon_pos.png"));
 
     TCanvas *cNsigmaTPCPion_pos = new TCanvas("cNsigmaTPCPion_pos", "Nsigma TPC Pion Pos", 720, 720);
     SetCanvasStyle(cNsigmaTPCPion_pos, 0.14, 0.05, 0.06, 0.14);
@@ -262,5 +262,5 @@ void compare_QAplots()
     lineverticalx0->SetY1(1.3 * hNsigmaTPCPion_pos1->GetMaximum());
     lineverticalx0->SetY2(hNsigmaTPCPion_pos1->GetYaxis()->GetXmin());
     lineverticalx0->Draw();
-    cNsigmaTPCPion_pos->SaveAs(outputPath + ("/compare_NsigmaTPCPion_pos.png"));
+    // cNsigmaTPCPion_pos->SaveAs(outputPath + ("/compare_NsigmaTPCPion_pos.png"));
 }

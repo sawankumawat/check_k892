@@ -48,6 +48,7 @@ void systematics_New()
 
     string basePathSigExt = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
     string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
+    string basePathNormVariations = "../output/kstar/LHC22o_pass7/751768/kstarqa/hInvMass/";
     string basePathCommon = "../output/kstar/LHC22o_pass7/";
     string pathPIDAndMultEst = "750862/";
     string pathTrackSel = "751768/";
@@ -148,7 +149,7 @@ void systematics_New()
         // Signal extraction
         for (int i = 0; i < normVars.size(); i++)
         {
-            openTFile(fnormVars[i], basePathSigExt + normVars[i] + "/" + correctedFileName);
+            openTFile(fnormVars[i], basePathNormVariations + normVars[i] + "/" + correctedFileName);
             openTH1D(hSpectraNormVars[i], fnormVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
         }
         for (int i = 0; i < fitRangeVars.size(); i++)
@@ -525,10 +526,10 @@ void systematics_New()
 
         TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 1080, 720);
         SetCanvasStyle(cSigExtAll, 0.14, 0.03, 0.06, 0.13);
-        TLegend *legSigExt = new TLegend(0.17, 0.6, 0.5, 0.88);
+        TLegend *legSigExt = new TLegend(0.55, 0.5, 0.91, 0.88);
         legSigExt->SetBorderSize(0);
         legSigExt->SetFillStyle(0);
-        legSigExt->SetTextSize(0.03);
+        legSigExt->SetTextSize(0.035);
         legSigExt->SetTextFont(42);
         legSigExt->SetHeader("Signal Extraction");
         legSigExt->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
@@ -537,7 +538,7 @@ void systematics_New()
             SetHistoQA(vecSignalExt[i]);
             vecSignalExt[i]->GetYaxis()->SetTitle("Relative Uncertainty");
             vecSignalExt[i]->SetStats(0);
-            vecSignalExt[i]->SetMaximum(0.21);
+            vecSignalExt[i]->SetMaximum(0.17);
             vecSignalExt[i]->SetMinimum(0);
             vecSignalExt[i]->SetLineColor(lineColors[i]);
             vecSignalExt[i]->Draw("HIST SAME");
@@ -549,9 +550,18 @@ void systematics_New()
         legSigExt->AddEntry(hSignalExtTotalSysClone, "Total", "l");
         legSigExt->Draw();
 
-        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 720, 720);
+        TLatex latSys;
+        latSys.SetNDC();
+        latSys.SetTextFont(42);
+        latSys.SetTextSize(0.04);
+        latSys.DrawLatex(0.20, 0.88, "ALICE");
+        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
+        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
+
+        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 1080, 720);
         SetCanvasStyle(cTrackSelAll, 0.14, 0.03, 0.06, 0.13);
-        TLegend *legTrackSel = new TLegend(0.17, 0.6, 0.5, 0.88);
+        TLegend *legTrackSel = new TLegend(0.55, 0.5, 0.91, 0.88);
         legTrackSel->SetBorderSize(0);
         legTrackSel->SetFillStyle(0);
         legTrackSel->SetTextSize(0.03);
@@ -576,21 +586,26 @@ void systematics_New()
         legTrackSel->AddEntry(hTrackSelTotalSysClone, "Total", "l");
         legTrackSel->Draw();
 
-        TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 720, 720);
+        latSys.DrawLatex(0.20, 0.88, "ALICE");
+        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
+        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
+
+        TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 1080, 720);
         SetCanvasStyle(cTotalSys, 0.14, 0.03, 0.06, 0.13);
-        TLegend *legTotal = new TLegend(0.17, 0.6, 0.5, 0.88);
+        TLegend *legTotal = new TLegend(0.55, 0.54, 0.91, 0.92);
         legTotal->SetBorderSize(0);
         legTotal->SetFillStyle(0);
-        legTotal->SetTextSize(0.03);
+        legTotal->SetTextSize(0.035);
         legTotal->SetTextFont(42);
-        legTotal->SetHeader("Total Systematic");
+        legTotal->SetHeader("Total Systematic Uncertainties");
         legTotal->AddEntry((TObject *)0, Form("Multiplicity: %d-%d", multLow, multHigh), "");
         for (int i = 0; i < vecTotal.size(); i++)
         {
             SetHistoQA(vecTotal[i]);
             vecTotal[i]->GetYaxis()->SetTitle("Relative Uncertainty");
             vecTotal[i]->SetStats(0);
-            vecTotal[i]->SetMaximum(0.305);
+            vecTotal[i]->SetMaximum(0.185);
             vecTotal[i]->SetMinimum(0);
             vecTotal[i]->SetLineColor(lineColors[i]);
             vecTotal[i]->Draw("HIST SAME");
@@ -613,6 +628,11 @@ void systematics_New()
         legTotal->AddEntry(hTotalSys, "Total", "l");
         legTotal->Draw();
 
+        latSys.DrawLatex(0.20, 0.88, "ALICE");
+        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
+        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
+
         // smoothing procedure on separate sources
         int Iterations = 2;
         TH1D *hSignalExtTotalSysSmoothed = operations.smooth(hSignalExtTotalSys, Iterations);
@@ -624,6 +644,8 @@ void systematics_New()
         hSignalExtTotalSysSmoothed->Write(Form("hSignalExtTotalSysSmoothed_%d_%d", multLow, multHigh));
         hTrackSelTotalSysSmoothed->Write(Form("hTrackSelTotalSysSmoothed_%d_%d", multLow, multHigh));
         hPIDTotalSysSmoothed->Write(Form("hPIDTotalSysSmoothed_%d_%d", multLow, multHigh));
+        hMaterialBudgetTotalSysSmoothed->Write(Form("hMaterialBudgetTotalSysSmoothed_%d_%d", multLow, multHigh));
+        hHadronicInteractionTotalSysSmoothed->Write(Form("hHadronicInteractionTotalSysSmoothed_%d_%d", multLow, multHigh));
 
         vector<TH1D *> smoothedTotalVec = {hSignalExtTotalSysSmoothed, hTrackSelTotalSysSmoothed, hPIDTotalSysSmoothed, hMaterialBudgetTotalSysSmoothed, hHadronicInteractionTotalSysSmoothed};
 

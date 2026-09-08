@@ -67,8 +67,14 @@ void doublePhiTemplateBWExpol3()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
-    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
-    TString suffix = "_ExtendedFitRange";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25";
+
+    double ptCut = 6.0;
+    TString suffix = Form("_pt%.1f", ptCut);
+    // TString suffix = "_ExtendedFitRange2";
+    // TString suffix = "_ExtendedFitRangeLHC25";
 
     // //=========================================================
     // //============Using processOpti5 data======================
@@ -100,16 +106,20 @@ void doublePhiTemplateBWExpol3()
     //============Using processOpti8 data======================
     //=========================================================
 
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
-    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
+    // //============2026 data========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
 
-    int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
+    ////============2025 data========
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+
+    // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
+    int lowpT = hUnlike->GetAxis(1)->FindBin(ptCut + 0.001);
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
 
     int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
     int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
-
     int lowChi2 = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
     int highChi2 = hUnlike->GetAxis(3)->FindBin(25.0 - 0.00001);
 
@@ -118,10 +128,10 @@ void doublePhiTemplateBWExpol3()
 
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
     TH3D *h3D_full = hUnlike->Projection(0, 5, 6, "E");
-    
+
     hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
     // hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
-    hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
+    // hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
     TH3D *h3D_cut = hUnlike->Projection(0, 5, 6, "E");
 
     TH1D *hInvMass = hUnlike->Projection(0, "E");
@@ -137,6 +147,7 @@ void doublePhiTemplateBWExpol3()
     int endBin = h3D_full->GetXaxis()->FindBin(2.95 - 0.0001);
     int nBinsInRange = endBin - startBin + 1;
     int totalBins = nBinsInRange / rebin;
+    // totalBins = 1; // To get the value of background parameters which will be fixed for differential bins
 
     double startBinValue = h3D_full->GetXaxis()->GetBinLowEdge(startBin);
     double endBinValue = h3D_full->GetXaxis()->GetBinUpEdge(endBin);
@@ -152,6 +163,9 @@ void doublePhiTemplateBWExpol3()
     TH1D *h_N_SS = new TH1D("h_N_SS", "SS Template (True #phi#phi Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{SS}", totalBins, startBinValue, endBinValue);
     TH1D *h_N_nonSS = new TH1D("h_N_nonSS", "Non-SS Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{nonSS}", totalBins, startBinValue, endBinValue);
     TH1D *h_N_Total = new TH1D("h_N_Total", "Total Yield;#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{Total}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_BBOnly = new TH1D("h_N_BBOnly", "BB Only Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{BBOnly}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_SB = new TH1D("h_N_SB", "SB + BS Template (Background Yield);#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{SB+BS}", totalBins, startBinValue, endBinValue);
+    TH1D *h_N_SBDirect = new TH1D("h_N_SBDirect", "SB + BS Template (Background Yield) Direct Calculation;#it{M}_{#phi#phi} (GeV/#it{c}^{2});selected N_{SB+BS}", totalBins, startBinValue, endBinValue);
 
     for (int ibin = 0; ibin < totalBins; ibin++)
     {
@@ -183,18 +197,73 @@ void doublePhiTemplateBWExpol3()
         // f2D->SetParLimits(2, 0, 1e9);
         // f2D->SetParLimits(3, 0, 1e9);
 
-        f2D->FixParameter(4, 1.01983);  // Mass peak
-        f2D->FixParameter(5, 0.007077); // Width
+        // // 2026 dataset
+        // f2D->FixParameter(4, 1.01983);  // Mass peak
+        // f2D->FixParameter(5, 0.007077); // Width
 
-        // f2D->SetParameter(6,  166.3); // Pol2 p0
-        // f2D->SetParameter(7, 68.4); // Pol2 p1
-        // f2D->SetParameter(8, 12.4); // Pol2 p2
-        // f2D->SetParameter(9, -77.2); // Pol2 p3
+        // // 2026 dataset (pT cut 9 GeV/c)
+        // f2D->FixParameter(6, 166.3); // Pol2 p0
+        // f2D->FixParameter(7, 68.4);  // Pol2 p1
+        // f2D->FixParameter(8, 12.4);  // Pol2 p2
+        // f2D->FixParameter(9, -77.2); // Pol2 p3
 
-        f2D->FixParameter(6, 166.3); // Pol2 p0
-        f2D->FixParameter(7, 68.4);  // Pol2 p1
-        f2D->FixParameter(8, 12.4);  // Pol2 p2
-        f2D->FixParameter(9, -77.2); // Pol2 p3
+        // // 2026 dataset (pT cut 6 GeV/c)
+        // f2D->FixParameter(6, 23.9); // Pol2 p0
+        // f2D->FixParameter(7, 10.8);  // Pol2 p1
+        // f2D->FixParameter(8, 4.2);  // Pol2 p2
+        // f2D->FixParameter(9, -8.2); // Pol2 p3
+
+        // // 2026 dataset (pT cut 7 GeV/c)
+        // f2D->FixParameter(6, 41.6); // Pol2 p0
+        // f2D->FixParameter(7, 19.6);  // Pol2 p1
+        // f2D->FixParameter(8, 6.0);  // Pol2 p2
+        // f2D->FixParameter(9, -17.9); // Pol2 p3
+
+        // // 2026 dataset (pT cut 8 GeV/c)
+        // f2D->FixParameter(6, 43.6);  // Pol2 p0
+        // f2D->FixParameter(7, 19.6);  // Pol2 p1
+        // f2D->FixParameter(8, 5.0);   // Pol2 p2
+        // f2D->FixParameter(9, -18.0); // Pol2 p3
+
+        // // 2026 dataset (pT cut 10 GeV/c)
+        // f2D->FixParameter(6, 119.2);  // Pol2 p0
+        // f2D->FixParameter(7, 48.6);  // Pol2 p1
+        // f2D->FixParameter(8, 17.0);   // Pol2 p2
+        // f2D->FixParameter(9, -56.0); // Pol2 p3
+
+        ////2025 dataset
+        f2D->FixParameter(4, 1.01983); // LHC25
+        f2D->FixParameter(5, 0.0058);  // Width
+
+        // ////2025 dataset (pT > 10 GeV/c)
+        // f2D->FixParameter(6, 15.1);  // Pol2 p0
+        // f2D->FixParameter(7, 11.6);  // Pol2 p1
+        // f2D->FixParameter(8, 0.67);  // Pol2 p2
+        // f2D->FixParameter(9, -5.9); // Pol2 p3
+
+        // ////2025 dataset (pT > 9 GeV/c)
+        // f2D->FixParameter(6, 204.6);  // Pol2 p0
+        // f2D->FixParameter(7, 86.7);  // Pol2 p1
+        // f2D->FixParameter(8, 16.8);  // Pol2 p2
+        // f2D->FixParameter(9, -98.6); // Pol2 p3
+
+        // ////2025 dataset (pT > 8 GeV/c)
+        // f2D->FixParameter(6, 321.6); // Pol2 p0
+        // f2D->FixParameter(7, 133.7);  // Pol2 p1
+        // f2D->FixParameter(8, 24.8);  // Pol2 p2
+        // f2D->FixParameter(9, -153.6); // Pol2 p3
+
+        // ////2025 dataset (pT > 7 GeV/c)
+        // f2D->FixParameter(6, 262.1); // Pol2 p0
+        // f2D->FixParameter(7, 109.7);  // Pol2 p1
+        // f2D->FixParameter(8, 23.5);  // Pol2 p2
+        // f2D->FixParameter(9, -126.6); // Pol2 p3
+
+        ////2025 dataset (pT > 6 GeV/c)
+        f2D->FixParameter(6, 226.1);  // Pol2 p0
+        f2D->FixParameter(7, 90.7);  // Pol2 p1
+        f2D->FixParameter(8, 22.5);   // Pol2 p2
+        f2D->FixParameter(9, -108.6); // Pol2 p3
 
         f2D->SetNpx(1000); // Reduced for speed, increase if fit drawing looks jagged
         f2D->SetNpy(1000);
@@ -217,6 +286,8 @@ void doublePhiTemplateBWExpol3()
         cout << "Fit status        : " << fitStatus << endl;
         cout << "Covariance quality: " << covQual << endl;
         cout << "Fit valid         : " << boolalpha << fitValid << endl;
+        cout << "Mass peak   : " << f2D->GetParameter(4) << " +/- " << f2D->GetParError(4) << endl;
+        cout << "Width       : " << f2D->GetParameter(5) << " +/- " << f2D->GetParError(5) << endl;
         cout << "N_SS        : " << f2D->GetParameter(0) << " +/- " << f2D->GetParError(0) << endl;
         cout << "N_SB     : " << f2D->GetParameter(1) << " +/- " << f2D->GetParError(1) << endl;
         cout << "N_BS     : " << f2D->GetParameter(2) << " +/- " << f2D->GetParError(2) << endl;
@@ -243,6 +314,9 @@ void doublePhiTemplateBWExpol3()
         // =========================================================================
         double yieldSS_cut = 0.0;
         double yieldNonSS_cut = 0.0;
+        double yieldBBOnly = 0.0;
+        double yieldSB = 0.0;
+        double yieldSBDirect = 0.0;
 
         for (int ix = 1; ix <= h2D_cut->GetNbinsX(); ++ix)
         {
@@ -267,9 +341,14 @@ void doublePhiTemplateBWExpol3()
 
                 double totalF = valSS + valSB + valBS + valBB;
                 double P_SS = (totalF > 0) ? (valSS / totalF) : 0.0;
+                double P_BB = (totalF > 0) ? (valBB / totalF) : 0.0;
+                double P_SB = (totalF > 0) ? ((valSB + valBS) / totalF) : 0.0;
 
                 yieldSS_cut += n_k * P_SS;
                 yieldNonSS_cut += n_k * (1.0 - P_SS);
+                yieldBBOnly += n_k * P_BB;
+                yieldSB += n_k * (1.0 - P_SS - P_BB); // This is the yield from SB and BS components
+                yieldSBDirect += n_k * P_SB;          // This is the yield from SB and BS components directly calculated
             }
         }
 
@@ -277,6 +356,9 @@ void doublePhiTemplateBWExpol3()
         h_N_SS->SetBinContent(ibin + 1, yieldSS_cut);
         h_N_nonSS->SetBinContent(ibin + 1, yieldNonSS_cut);
         h_N_Total->SetBinContent(ibin + 1, yieldSS_cut + yieldNonSS_cut);
+        h_N_BBOnly->SetBinContent(ibin + 1, yieldBBOnly);
+        h_N_SB->SetBinContent(ibin + 1, yieldSB);
+        h_N_SBDirect->SetBinContent(ibin + 1, yieldSBDirect);
         cout << "Signal component (SS) yield in bin " << ibin << ": " << yieldSS_cut << endl;
         cout << "Background component (Non-SS) yield in bin " << ibin << ": " << yieldNonSS_cut << endl;
 
@@ -306,7 +388,9 @@ void doublePhiTemplateBWExpol3()
     SetHistoQA(h_N_SS);
     h_N_SS->SetMarkerStyle(20);
     h_N_SS->SetMarkerSize(0.8);
-    h_N_SS->GetYaxis()->SetRangeUser(1300, 3750);
+    // h_N_SS->GetYaxis()->SetRangeUser(1300, 3750);
+    h_N_SS->SetMaximum(h_N_SS->GetMaximum() * 1.5);
+    h_N_SS->SetMinimum(h_N_SS->GetMinimum() * 0.2);
     h_N_SS->Draw("pe");
     cSS->SaveAs(savepath + "/SS_Template" + suffix + ".png");
 
@@ -315,7 +399,9 @@ void doublePhiTemplateBWExpol3()
     SetHistoQA(h_N_nonSS);
     h_N_nonSS->SetMarkerStyle(20);
     h_N_nonSS->SetMarkerSize(0.8);
-    h_N_nonSS->GetYaxis()->SetRangeUser(1300, 2950);
+    // h_N_nonSS->GetYaxis()->SetRangeUser(1300, 2950);
+    h_N_nonSS->SetMaximum(h_N_nonSS->GetMaximum() * 1.5);
+    h_N_nonSS->SetMinimum(h_N_nonSS->GetMinimum() * 0.2);
     h_N_nonSS->Draw("pe");
     cNonSS->SaveAs(savepath + "/NonSS_Template" + suffix + ".png");
 
@@ -324,7 +410,9 @@ void doublePhiTemplateBWExpol3()
     SetHistoQA(h_N_Total);
     h_N_Total->SetMarkerStyle(20);
     h_N_Total->SetMarkerSize(0.8);
-    h_N_Total->GetYaxis()->SetRangeUser(2800, 5750);
+    // h_N_Total->GetYaxis()->SetRangeUser(2800, 5750);
+    h_N_Total->SetMaximum(h_N_Total->GetMaximum() * 1.5);
+    h_N_Total->SetMinimum(h_N_Total->GetMinimum() * 0.2);
     h_N_Total->Draw("pe");
     hInvMass->SetMarkerStyle(25);
     hInvMass->SetMarkerSize(0.8);
@@ -341,11 +429,18 @@ void doublePhiTemplateBWExpol3()
     legClosure->AddEntry(h_N_Total, "SS + non-SS", "pe");
     legClosure->AddEntry(hInvMass, "Data", "pe");
     legClosure->Draw();
-    // cTotal->SaveAs(savepath + "/Total_Yield" + suffix + ".png");
+    cTotal->SaveAs(savepath + "/Total_Yield" + suffix + ".png");
+
+    SetHistoQA(h_N_BBOnly);
+    SetHistoQA(h_N_SB);
+    SetHistoQA(h_N_SBDirect);
 
     TFile *fOutput = new TFile(savepath + Form("/PhiPhiBkgTemplate_BW%s.root", suffix.Data()), "RECREATE");
     h_N_SS->Write("h_N_SS");
     h_N_nonSS->Write("h_N_nonSS");
+    h_N_BBOnly->Write("h_N_BBOnly");
+    h_N_SB->Write("h_N_SB");
+    // h_N_SBDirect->Write("h_N_SBDirect"); // Exaclty same as h_N_SB, so not saving to avoid redundancy
     fOutput->Close();
 }
 

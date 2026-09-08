@@ -69,9 +69,9 @@ void efficiency()
         // string data_path = "697595/kstarqa/hInvMass"; // INEL only
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
-        // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
+        string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
-        string data_path = "751768/kstarqa_NoPVContributor/hInvMass"; // INELgt0 (All available variations)
+        // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
 
         if (ivar == 6)
         {
@@ -149,8 +149,8 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa_NoPVContributor/hInvMass";
-        const string recpath = "kstarqa_NoPVContributor/hInvMass";
+        const string genpath = "kstarqa/hInvMass";
+        const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -207,8 +207,8 @@ void efficiency()
             // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
 
             vector<double> nChParticlesFromMult;
-            // int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
-            int multLoopEnd = 1;
+            int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+            // int multLoopEnd = 1;
             int multlow, multhigh;
 
             // TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
@@ -484,19 +484,19 @@ void efficiency()
             TCanvas *cefficiency = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cefficiency, 0.16, 0.06, 0.01, 0.14);
             double pad1Size, pad2Size;
-            // canvas_style(cefficiency, pad1Size, pad2Size);
-            // cefficiency->cd(1);
+            canvas_style(cefficiency, pad1Size, pad2Size);
+            cefficiency->cd(1);
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 SetHistoQA(heff[imult]);
                 heff[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                 heff[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-                // heff[imult]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-                // heff[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-                // heff[imult]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-                // heff[imult]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-                // heff[imult]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
-                heff[imult]->SetMaximum(0.65);
+                heff[imult]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+                heff[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+                heff[imult]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+                heff[imult]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+                heff[imult]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
+                heff[imult]->SetMaximum(0.95);
                 heff[imult]->SetMarkerStyle(markers[imult]);
                 heff[imult]->SetMarkerSize(1.2);
                 heff[imult]->Draw("pe same PLC PMC");
@@ -513,40 +513,49 @@ void efficiency()
             line->SetLineColor(kBlack);
             line->SetLineWidth(2);
             // line->Draw();
-            TLegend *legall = new TLegend(0.20, 0.8, 0.92, 0.92);
-            legall->SetTextSize(0.03);
-            legall->SetNColumns(5);
+            TLegend *legall = new TLegend(0.5, 0.65, 0.92, 0.92);
+            legall->SetTextSize(0.035);
+            legall->SetNColumns(3);
             legall->SetFillStyle(0);
             legall->SetBorderSize(0);
-            // legall->AddEntry(heff[0], "0-100%", "p");
-            legall->AddEntry(heff[0], "pp, INEL", "p");
+            legall->AddEntry(heff[0], "0-100%", "p");
+            // legall->AddEntry(heff[0], "pp, INEL", "p");
             for (int imult = 1; imult < multLoopEnd; imult++)
             {
                 legall->AddEntry(heff[imult], Form("%.0f-%.0f%%", mult_classes[imult - 1], mult_classes[imult]), "p");
             }
             legall->Draw();
 
-            // cefficiency->cd(2);
-            // gPad->SetGridy(1);
-            // for (int imult = 1; imult < multLoopEnd; imult++)
-            // {
-            //     TH1F *hRatio1 = (TH1F *)heff[imult]->Clone(Form("hRatio1_%d", imult));
-            //     SetHistoQA(hRatio1);
-            //     hRatio1->Divide(heff[0]);
-            //     hRatio1->GetYaxis()->SetTitleSize(0.03 / pad2Size);
-            //     hRatio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-            //     hRatio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-            //     hRatio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-            //     hRatio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-            //     hRatio1->GetYaxis()->SetTitle("Ratio to 0-100%");
-            //     hRatio1->GetYaxis()->SetTitleOffset(2.1 * pad2Size);
-            //     hRatio1->SetMarkerStyle(20);
-            //     hRatio1->SetMarkerSize(1.0);
-            //     hRatio1->GetYaxis()->SetNdivisions(505);
-            //     hRatio1->GetYaxis()->SetRangeUser(0.69, 1.29);
-            //     hRatio1->Draw("ep same PLC PMC");
-            // }
+            TLatex *latexMC = new TLatex();
+            latexMC->SetTextSize(0.04);
+            latexMC->SetTextFont(42);
+            latexMC->SetNDC();
+            latexMC->DrawLatex(0.23, 0.89, "ALICE");
+            latexMC->DrawLatex(0.23, 0.83, "pp #sqrt{#it{s}} = 13.6 TeV");
+            latexMC->DrawLatex(0.23, 0.77, "|y| < 0.5");
+            latexMC->DrawLatex(0.23, 0.70, "K*(892)^{0}");
 
+
+            cefficiency->cd(2);
+            gPad->SetGridy(1);
+            for (int imult = 1; imult < multLoopEnd; imult++)
+            {
+                TH1F *hRatio1 = (TH1F *)heff[imult]->Clone(Form("hRatio1_%d", imult));
+                SetHistoQA(hRatio1);
+                hRatio1->Divide(heff[0]);
+                hRatio1->GetYaxis()->SetTitleSize(0.025 / pad2Size);
+                hRatio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+                hRatio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+                hRatio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+                hRatio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+                hRatio1->GetYaxis()->SetTitle("Ratio to min. bias");
+                hRatio1->GetYaxis()->SetTitleOffset(2.5 * pad2Size);
+                hRatio1->SetMarkerStyle(20);
+                hRatio1->SetMarkerSize(1.0);
+                hRatio1->GetYaxis()->SetNdivisions(505);
+                hRatio1->GetYaxis()->SetRangeUser(0.69, 1.29);
+                hRatio1->Draw("ep same PLC PMC");
+            }
             cefficiency->SaveAs(outputfolder + "/efficiency_all_mult." + outputtype);
 
             // Generate colors
@@ -596,8 +605,12 @@ void efficiency()
 
             TCanvas *cSignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
-            legall->Clear();
-            legall->AddEntry((TObject *)0, "pp, INEL", "");
+            TLegend *legall2 = new TLegend(0.45, 0.68, 0.92, 0.96);
+            legall2->SetTextSize(0.026);
+            legall2->SetNColumns(3);
+            legall2->SetFillStyle(0);
+            legall2->SetBorderSize(0);
+            // legall2->AddEntry((TObject *)0, "pp, INEL", "");
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 if (imult == 0)
@@ -615,28 +628,35 @@ void efficiency()
                 hSignalLoss[imult]->GetYaxis()->SetTitle("Event and signal loss");
                 hSignalLoss[imult]->GetYaxis()->SetTitleOffset(1.6);
                 hSignalLoss[imult]->SetStats(0);
-                hSignalLoss[imult]->SetMaximum(0.92);
-                hSignalLoss[imult]->SetMinimum(0.42);
+                hSignalLoss[imult]->SetMaximum(1.38);
+                hSignalLoss[imult]->SetMinimum(0.0);
                 hSignalLoss[imult]->SetMarkerStyle(markers[imult]);
                 hSignalLoss[imult]->SetMarkerSize(1.2);
                 hSignalLoss[imult]->SetLineColor(colors[imult]);
                 hSignalLoss[imult]->SetMarkerColor(colors[imult]);
-                hSignalLoss[imult]->Draw("pe same");
+                hSignalLoss[imult]->Draw("pe same PLC PMC");
                 heventloss[imult]->SetLineStyle(2);
                 heventloss[imult]->SetLineWidth(2);
                 heventloss[imult]->SetLineColor(colors[imult]);
-                heventloss[imult]->Draw("l same");
-                // legall->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
-                legall->AddEntry(hSignalLoss[imult], "Signal Loss", "p");
+                heventloss[imult]->Draw("l same PLC PMC");
+                legall2->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                // legall2->AddEntry(hSignalLoss[imult], "Signal Loss", "p");
             }
-            legall->AddEntry(heventloss[0], "Event Loss", "l");
-            legall->Draw();
-            cSignalLoss->SaveAs(outputfolder + "/signal_loss_all_mult." + outputtype);
+            legall2->AddEntry(heventloss[0], "Event Loss", "l");
+            legall2->Draw();
+            latexMC->SetTextSize(0.03);
+            latexMC->DrawLatex(0.23, 0.90, "ALICE");
+            latexMC->DrawLatex(0.23, 0.84, "pp #sqrt{#it{s}} = 13.6 TeV");
+            latexMC->DrawLatex(0.23, 0.78, "|y| < 0.5");
+            latexMC->DrawLatex(0.23, 0.71, "K*(892)^{0}");
+            cSignalLoss->SaveAs(outputfolder + "/EventandSignalLoss." + outputtype);
 
             TCanvas *cEventBySignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cEventBySignalLoss, 0.16, 0.06, 0.01, 0.14);
+            gPad->SetGridy(1);
+            gPad->SetGridx(1);
             legall->Clear();
-            legall->AddEntry((TObject *)0, "pp, INEL", "");
+            // legall->AddEntry((TObject *)0, "pp, INEL", "");
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 if (imult == 0)
@@ -655,14 +675,15 @@ void efficiency()
                 hRatioEvBySig[imult]->GetYaxis()->SetTitleOffset(1.6);
                 hRatioEvBySig[imult]->SetStats(0);
                 // hRatioEvBySig[imult]->SetMaximum(1.25);
-                hRatioEvBySig[imult]->SetMaximum(0.92);
-                hRatioEvBySig[imult]->SetMinimum(0.6);
+                hRatioEvBySig[imult]->SetMaximum(1.08);
+                hRatioEvBySig[imult]->SetMinimum(0.8);
                 hRatioEvBySig[imult]->SetMarkerStyle(markers[imult]);
-                hRatioEvBySig[imult]->SetMarkerSize(1.2);
+                hRatioEvBySig[imult]->SetMarkerSize(1.0);
                 hRatioEvBySig[imult]->SetMarkerColor(colors[imult]);
                 hRatioEvBySig[imult]->SetLineColor(colors[imult]);
+                hRatioEvBySig[imult]->GetYaxis()->SetNdivisions(515);
                 hRatioEvBySig[imult]->Draw("pe same");
-                // legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
             }
             legall->Draw();
             cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss." + outputtype);

@@ -8,10 +8,20 @@ T *GetHisto(TFile *f, const std::string &name);
 
 Double_t expPol3(Double_t *x, Double_t *par)
 {
-    return (pow(x[0], par[0])) * TMath::Exp(
-                                     par[1] * x[0] +
-                                     par[2] * x[0] * x[0] +
-                                     par[3] * x[0] * x[0] * x[0]);
+    const double phiMass = 1.019461;
+    const double threshold = 2.0 * phiMass;
+
+    // const double xShifted = x[0] - threshold;
+    const double xShifted = x[0];
+
+    // Actual shifted fit range
+    const double xmin = 0.0;
+    // const double xmax = 3.0 - threshold;
+    const double xmax = 3.0;
+
+    const double t = 2.0 * (xShifted - xmin) / (xmax - xmin) - 1.0;
+
+    return par[0] + par[1] * t + par[2] * (2.0 * t * t - 1.0) + par[3] * (4.0 * t * t * t - 3.0 * t);
 }
 
 Double_t breitWigner(Double_t *x, Double_t *par)
@@ -36,41 +46,27 @@ Double_t BWExpol(Double_t *x, Double_t *par)
     return breitWigner(x, par) + expPol3(x, &par[3]);
 }
 
-Double_t VoigtExpol(Double_t *x, Double_t *par)
-{
-    double vgt = voigtFunction(x, par);
-    double poly3 = expPol3(x, &par[4]);
-    return (vgt + poly3);
-}
-
-void doublePhiSimpleOpti8()
+void doublePhiOpti8_Chebyshev()
 {
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit";
-    string suffix = "25_aiamShifted";
+    // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise";
     // string suffix = "25_aiam";
+    string suffix = "26afai";
+    // string suffix = "26ac";
+    // string suffix = "26adaeag";
     int rebinFactor = 8;
     float fitRangeLow = 2.41;
-    float fitRangeHigh = 2.96;
+    float fitRangeHigh = 2.95;
 
     ////=====New===========
     ////====2026 data========
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResultsRefit2.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_LHC26_PID2003.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root");
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root");
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // LHC25,opti9, shifted
 
-    ////======2025 data==========
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsLHC25.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResultsKaShift2.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults_LHC25_PID2003.root");
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults_LHC25_KaShifted_BhaiyaCode2.root"); // opti9, shifted
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/LHC25/AnalysisResults25_aiam.root"); //opti8, 25 ai+am
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // opti9, shifted
-
-    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
-    // THnSparseF *hRot = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRotational");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
 
     TH1D *hPt = hUnlike->Projection(1, "E");
     TH1D *hDeltaM = hUnlike->Projection(2, "E");
@@ -92,36 +88,12 @@ void doublePhiSimpleOpti8()
     hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
     hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
 
-    // hRot->GetAxis(1)->SetRange(lowpT, highpT);
-
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
     hInvMass->Rebin(rebinFactor);
     hInvMass->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
-
-    int lowDeltaMBkg = hUnlike->GetAxis(2)->FindBin(0.005 + 0.00001);
-    int highDeltaMBkg = hUnlike->GetAxis(2)->FindBin(100 - 0.00001);
-
-    int lowChi2Bkg = hUnlike->GetAxis(3)->FindBin(0.0 + 0.00001);
-    int highChi2Bkg = hUnlike->GetAxis(3)->FindBin(30.0 - 0.00001);
-
-    int lowFitProbBkg = hUnlike->GetAxis(4)->FindBin(0.0 + 0.00001);
-    int highFitProbBkg = hUnlike->GetAxis(4)->FindBin(2.0 - 0.00001);
-
-    hUnlike->GetAxis(2)->SetRange(lowDeltaMBkg, highDeltaMBkg);
-    hUnlike->GetAxis(3)->SetRange(lowChi2Bkg, highChi2Bkg);
-    hUnlike->GetAxis(4)->SetRange(lowFitProbBkg, highFitProbBkg);
-
-    TH1D *hInvMassBkg = hUnlike->Projection(0, "E");
-    SetHistoQA(hInvMassBkg);
-    hInvMassBkg->Rebin(rebinFactor);
-    hInvMassBkg->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh);
-
-    // TH1D *h1DRot = hRot->Projection(0, "E");
-    // h1DRot->Rebin(rebinFactor);
-    // SetHistoQA(h1DRot);
 
     TH1D *hBkg = (TH1D *)hInvMass->Clone("hBkg");
     hBkg->Reset();
@@ -147,66 +119,18 @@ void doublePhiSimpleOpti8()
 
     TF1 *fitBkg = new TF1("fitBkg", expPol3, FIT_MIN, FIT_MAX, 4);
     fitBkg->SetParNames("p0", "p1", "p2", "p3");
-    fitBkg->SetParameters(-2.7e2, 64.0, 40.0, -6.5);
+    fitBkg->SetParameters(1.0, 1.0, 1.0, 1.0);
     hBkg->Fit(fitBkg, "REBM");
 
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
-    // hInvMass->GetYaxis()->SetRangeUser(1.4e3, 3.3e3);
     hInvMass->SetMinimum(hInvMass->GetMinimum() * 0.7);
     hInvMass->Draw("pe");
-
-    // TLine *lineat2p65 = new TLine(2.65, 971, 2.65, 2058);
-    // lineat2p65->SetLineColor(kRed);
-    // lineat2p65->SetLineStyle(2);
-    // lineat2p65->SetLineWidth(2);
-    // lineat2p65->Draw();
 
     TLatex *latex = new TLatex();
     latex->SetNDC();
     latex->SetTextFont(22);
     latex->SetTextSize(0.03);
-
-    // TLatex *latex2 = new TLatex();
-    // latex2->SetNDC();
-    // latex2->SetTextFont(42);
-    // latex2->SetTextSize(0.03);
-    // latex2->DrawLatex(0.55, 0.9, "LHC25_skimmed");
-    // latex2->DrawLatex(0.55, 0.85, "Before Kaon Momentum shift");
-
-    // // Normalize the rotational background
-    // int lowNormBin = h1DRot->GetXaxis()->FindBin(2.85 + 0.00001);
-    // int highNormBin = h1DRot->GetXaxis()->FindBin(2.9 - 0.00001);
-    // double SigCounts = hInvMass->Integral(lowNormBin, highNormBin);
-    // double RotCounts = h1DRot->Integral(lowNormBin, highNormBin);
-    // double scaleFactor = SigCounts / RotCounts;
-    // h1DRot->Scale(scaleFactor);
-    // h1DRot->SetLineColor(kRed);
-    // h1DRot->SetMarkerColor(kRed);
-    // h1DRot->Draw("pe same");
-
-    // // Normalize the background from deltaM>0.005
-    int lowNormBin = hInvMassBkg->GetXaxis()->FindBin(2.85 + 0.00001);
-    int highNormBin = hInvMassBkg->GetXaxis()->FindBin(2.90 - 0.00001);
-    double SigCounts = hInvMass->Integral(lowNormBin, highNormBin);
-    double BkgCounts = hInvMassBkg->Integral(lowNormBin, highNormBin);
-    double scaleFactor = SigCounts / BkgCounts;
-    hInvMassBkg->Scale(scaleFactor);
-    hInvMassBkg->SetLineColor(kRed);
-    hInvMassBkg->SetMarkerColor(kRed);
-    // hInvMassBkg->Draw("HISTe same");
-
-    // TLegend *legTemp = new TLegend(0.35, 0.75, 0.9, 0.92);
-    // legTemp->SetBorderSize(0);
-    // legTemp->SetFillStyle(0);
-    // legTemp->SetTextFont(42);
-    // legTemp->SetTextSize(0.03);
-    // legTemp->AddEntry((TObject *)0, "#Delta#it{M}_{#phi} < 0.005", "");
-    // legTemp->AddEntry((TObject *)0, "#it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "");
-    // legTemp->AddEntry(hInvMassBkg, "#Delta#it{M}_{#phi} #geq 0.005", "l");
-    // legTemp->AddEntry((TObject *)0, "Normalized in 2.85 < #it{M}_{#phi#phi} < 2.90 GeV/#it{c}^{2}", "");
-    // legTemp->Draw();
-    // cInvMass->SaveAs(savepath + "/InvariantMassWithoutFit.png");
 
     TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", BWExpol, FIT_MIN, FIT_MAX, 7);
     fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
@@ -242,11 +166,6 @@ void doublePhiSimpleOpti8()
     fitFunc->FixParameter(5, fInitialCombinedFit->GetParameter(5));
     fitFunc->FixParameter(6, fInitialCombinedFit->GetParameter(6));
 
-    // fitFunc->FixParameter(3, -299.779);
-    // fitFunc->FixParameter(4, 63.05);
-    // fitFunc->FixParameter(5, 37.87);
-    // fitFunc->FixParameter(6, -7.178);
-
     fitFunc->SetParLimits(0, 0.0, 1.0e6);
     fitFunc->SetParLimits(1, 2.65, 2.75);
     fitFunc->SetParLimits(2, 0.01, 0.15);
@@ -259,8 +178,8 @@ void doublePhiSimpleOpti8()
         return;
     }
 
-    double signalYield = fitFunc->GetParameter(0);
-    double signalYieldErr = fitFunc->GetParError(0);
+    double signalYield = fitFunc->GetParameter(0) / hInvMass->GetBinWidth(1);
+    double signalYieldErr = fitFunc->GetParError(0) / hInvMass->GetBinWidth(1);
     double massFit = fitFunc->GetParameter(1);
     double massErr = fitFunc->GetParError(1);
     double widthFit = fitFunc->GetParameter(2);
@@ -302,16 +221,6 @@ void doublePhiSimpleOpti8()
 
     double significance = TMath::Sqrt(q0);
 
-    //============================================================
-    // p-value
-    //
-    // For a one-sided discovery test:
-    // p0 = 0.5 * erfc(Z/sqrt(2))
-    //
-    // The factor 0.5 accounts for the physical boundary
-    // S >= 0 in the asymptotic Cowan et al. treatment.
-    //============================================================
-
     double pValue = 0.5 * TMath::Erfc(significance / TMath::Sqrt(2.0));
 
     cout << endl;
@@ -340,7 +249,6 @@ void doublePhiSimpleOpti8()
     TF1 *fitBkgFinal = new TF1("fitBkgFinal", expPol3, FIT_MIN, FIT_MAX, 4);
 
     fitBkgFinal->SetParameters(fitFunc->GetParameter(3), fitFunc->GetParameter(4), fitFunc->GetParameter(5), fitFunc->GetParameter(6));
-
     fitBkgFinal->SetLineColor(kBlue);
     fitBkgFinal->SetLineStyle(2);
     fitBkgFinal->Draw("same");
@@ -353,7 +261,7 @@ void doublePhiSimpleOpti8()
     fitSignal->SetLineStyle(2);
     fitSignal->Draw("same");
     cout << "Signal in +-3sigma is " << fitSignal->Integral(massFit - 10 * widthFit, massFit + 10 * widthFit) << endl;
-    cout << "bkg p0 " << fitBkgFinal->GetParameter(0) << " p1 " << fitBkgFinal->GetParameter(1) << " p2 " << fitBkgFinal->GetParameter(2) << " p3 " << fitBkgFinal->GetParameter(3) << endl;
+    cout << "bkg p0 " << fitBkgFinal->GetParameter(0) << " p1 " << fitBkgFinal->GetParameter(1) << " p2 " << fitBkgFinal->GetParameter(2) << endl;
 
     TLegend *legend = new TLegend(0.53, 0.72, 0.9, 0.92);
     legend->SetBorderSize(0);
@@ -362,19 +270,17 @@ void doublePhiSimpleOpti8()
     legend->SetTextSize(0.03);
     legend->AddEntry(hInvMass, "#Delta M < 0.005, #it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}", "pe");
     // legend->AddEntry(hInvMassBkg, "#Delta M > 0.005", "pe");
-    legend->AddEntry(fitFunc, "BW + expol3", "l");
-    legend->AddEntry(fitBkgFinal, "expol3 (bkg)", "l");
-    legend->AddEntry(fitSignal, "Breit-Wigner", "l");
+    legend->AddEntry(fitFunc, "BW + T_{3}", "l");
+    legend->AddEntry(fitBkgFinal, "Chebyshev-3 (bkg.)", "l");
+    legend->AddEntry(fitSignal, "Breit-Wigner (signal)", "l");
     legend->Draw();
 
-    latex->DrawLatex(0.25, 0.85, "LHC25(am+ai)_skimmed");
     latex->DrawLatex(0.2, 0.42, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
     latex->DrawLatex(0.2, 0.37, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
-    // latex->DrawLatex(0.2, 0.35, Form("N_{sig} = %.1f #pm %.1f", signalYield, signalYieldErr));
     latex->DrawLatex(0.2, 0.32, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
     latex->DrawLatex(0.2, 0.27, Form("p-value = %.3e", pValue));
     latex->DrawLatex(0.2, 0.22, Form("Significance (Z) = %.2f #sigma", significance));
-    cInvMass->SaveAs(savepath + "/InvariantMassWithFit" + suffix + ".png");
+    // cInvMass->SaveAs(savepath + "/InvariantMassWithFit_Chebyshev.png");
 }
 
 //==============End of the main code==================

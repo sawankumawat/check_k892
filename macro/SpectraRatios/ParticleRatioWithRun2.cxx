@@ -59,7 +59,7 @@ void RestrictModelXaxis(TGraphErrors *gr, double xMin, double xMax);
 void ParticleRatioWithRun2()
 {
     bool isSavePlots = false;
-    string KstarPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/";
+    string KstarPath = "../../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
     TFile *fKstar = OpenFile(KstarPath + "Results.root");
 
     TFile *fPion = OpenFile("PiKp_Run3_Results/Sawan/Pi_results.root");
@@ -80,8 +80,12 @@ void ParticleRatioWithRun2()
     TFile *fRho = OpenFile("Rho_Run3_Results/Sawan/ResultsRho.root");
     TFile *fKshortRun3 = OpenFile("K0s_Run3_Results/Sawan/ResultsK0s.root");
 
+    // ALICE Run2 results
+    TFile *fpp13TeV = OpenFile("ConversionCodes/pp13TeVALICE.root");
+    TFile *fpp7TeV = OpenFile("ConversionCodes/pp7TeVALICE.root");
+
     TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3];
-    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3];
+    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3];
 
     TGraphErrors *gMPtKshortRun3[3], *gMYieldKshortRun3[3];
 
@@ -99,6 +103,9 @@ void ParticleRatioWithRun2()
 
         gMPtKstar[i] = GetGraph(fKstar, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", suffix.c_str()));
+
+        gKstar_MeanpT_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanpT%s", suffix.c_str()));
+        gKstar_Yield_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanYield%s", suffix.c_str()));
 
         gMPtPion[i] = GetGraph(fPion, Form("gMeanpTRun3%s", suffix.c_str()));
         gMPtKaon[i] = GetGraph(fKaon, Form("gMeanpTRun3%s", suffix.c_str()));
@@ -155,22 +162,11 @@ void ParticleRatioWithRun2()
         gMYieldKshortRun3[i] = GetGraph(fKshortRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
     }
 
-    // ALICE Run2 results
-    TFile *fpp13TeV = new TFile("ConversionCodes/pp13TeVALICE.root", "read");
-    TFile *fpp7TeV = new TFile("ConversionCodes/pp7TeVALICE.root", "read");
-    if (fpp13TeV->IsZombie() || fpp7TeV->IsZombie())
-    {
-        cout << "Error: ALICE reference files not found" << endl;
-        return;
-    }
-
-    TGraphErrors *gKstar_MeanpT_13TeV[2], *gKstar_Yield_13TeV[2], *gKstarKshortRatio_13TeV[2], *gPhiKshortRatio_13TeV[2], *gPhiPiRatio_13TeV[2], *gKstarKaRatio_13TeV[2], *gKstarPiRatio_13TeV[2], *gPhiKaRatio_13TeV[2], *gPhiPrRatio_13TeV[2], *gPhiLambdaRatio_13TeV[2];
+    TGraphErrors *gKstarKshortRatio_13TeV[2], *gPhiKshortRatio_13TeV[2], *gPhiPiRatio_13TeV[2], *gKstarKaRatio_13TeV[2], *gKstarPiRatio_13TeV[2], *gPhiKaRatio_13TeV[2], *gPhiPrRatio_13TeV[2], *gPhiLambdaRatio_13TeV[2];
     TGraphErrors *gKstarPiRatio_7TeV[2], *gPhiPiRatio_7TeV[2];
 
     for (int i = 0; i < 2; i++)
     {
-        gKstar_MeanpT_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanpT%s", (i == 0) ? "_stat" : "_sys"));
-        gKstar_Yield_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanYield%s", (i == 0) ? "_stat" : "_sys"));
         gKstarKshortRatio_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_KshortRatio%s", (i == 0) ? "_stat" : "_sys"));
         gPhiKshortRatio_13TeV[i] = GetGraph(fpp13TeV, Form("gPhi_KshortRatio%s", (i == 0) ? "_stat" : "_sys"));
         gPhiPiRatio_13TeV[i] = GetGraph(fpp13TeV, Form("gPhi_PiRatio%s", (i == 0) ? "_stat" : "_sys"));
@@ -508,6 +504,9 @@ void ParticleRatioWithRun2()
     gMYieldKstar[1]->SetLineColor(kRed + 1);
     gMYieldKstar[1]->SetLineWidth(3);
     gMYieldKstar[1]->Draw("5 same");
+    gMYieldKstar[2]->SetFillStyle(1001);
+    gMYieldKstar[2]->SetFillColorAlpha(kRed + 1, 0.3);
+    gMYieldKstar[2]->Draw("E2 same");
     gKstar_Yield_13TeV[0]->SetMarkerStyle(21);
     gKstar_Yield_13TeV[0]->SetMarkerColor(kBlue + 1);
     gKstar_Yield_13TeV[0]->SetLineColor(kBlue + 1);
@@ -517,6 +516,9 @@ void ParticleRatioWithRun2()
     gKstar_Yield_13TeV[1]->SetFillStyle(0);
     gKstar_Yield_13TeV[1]->SetLineWidth(3);
     gKstar_Yield_13TeV[1]->Draw("5 same");
+    gKstar_Yield_13TeV[2]->SetFillStyle(1001);
+    gKstar_Yield_13TeV[2]->SetFillColorAlpha(kBlue + 1, 0.3);
+    gKstar_Yield_13TeV[2]->Draw("E2 same");
 
     // cout << "\n==============================================================\n";
     // cout << " Mult      Run3 syst(%)      Run2 syst(%)\n";
@@ -632,6 +634,12 @@ void ParticleRatioWithRun2()
     latex.DrawLatex(0.22, 0.9, "ALICE");
     latex.DrawLatex(0.22, 0.84, "K* (892)^{0}");
     latex.DrawLatex(0.22, 0.78, "|y| < 0.5");
+    latex.SetTextSize(0.035);
+    latex.SetTextFont(22);
+    latex.DrawLatex(0.47, 0.3, "Uncertainties:");
+    latex.SetTextFont(42);
+    latex.DrawLatex(0.47, 0.25, "stat. (bars), total sys. (open box)");
+    latex.DrawLatex(0.47, 0.2, "uncorr. sys. (shaded box)");
     // if (isSavePlots)
     {
         cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.pdf");
@@ -651,11 +659,16 @@ void ParticleRatioWithRun2()
     gMPtKstar[0]->SetMarkerColor(kRed);
     gMPtKstar[0]->SetLineColor(kRed);
     gMPtKstar[0]->SetLineWidth(3);
+    gMPtKstar[0]->GetYaxis()->SetTitleOffset(1.3);
     gMPtKstar[0]->Draw("APE");
     gMPtKstar[1]->SetFillStyle(0);
     gMPtKstar[1]->SetLineColor(kRed);
     gMPtKstar[1]->SetLineWidth(3);
     gMPtKstar[1]->Draw("5 same");
+    gMPtKstar[2]->SetFillStyle(1001);
+    gMPtKstar[2]->SetFillColorAlpha(kRed, 0.3);
+    gMPtKstar[2]->Draw("E2 same");
+
     gKstar_MeanpT_13TeV[0]->SetMarkerStyle(21);
     gKstar_MeanpT_13TeV[0]->SetMarkerColor(kBlue);
     gKstar_MeanpT_13TeV[0]->SetLineColor(kBlue);
@@ -665,6 +678,9 @@ void ParticleRatioWithRun2()
     gKstar_MeanpT_13TeV[1]->SetFillStyle(0);
     gKstar_MeanpT_13TeV[1]->SetLineWidth(3);
     gKstar_MeanpT_13TeV[1]->Draw("5 same");
+    gKstar_MeanpT_13TeV[2]->SetFillStyle(1001);
+    gKstar_MeanpT_13TeV[2]->SetFillColorAlpha(kBlue, 0.3);
+    gKstar_MeanpT_13TeV[2]->Draw("E2 same");
 
     gEPOS_MeanPt[9][kITY0][kKstar_epos]->SetLineStyle(6);
     // gEPOS_MeanPt[9][kITY0][kKstar_epos]->Draw("C same");
@@ -1922,11 +1938,14 @@ void ParticleRatioWithRun2()
     gRatioKstarKaon[0]->GetXaxis()->SetLimits(0, 27);
     gRatioKstarKaon[0]->SetMarkerColor(kRed);
     gRatioKstarKaon[0]->SetLineColor(kRed);
-    gRatioKstarKaon[0]->GetYaxis()->SetNdivisions(505); 
+    gRatioKstarKaon[0]->GetYaxis()->SetNdivisions(505);
     gRatioKstarKaon[0]->Draw("APE");
     gRatioKstarKaon[1]->SetFillStyle(0);
     gRatioKstarKaon[1]->SetLineColor(kRed);
     gRatioKstarKaon[1]->Draw("5 same");
+    gRatioKstarKaon[2]->SetFillStyle(1001);
+    gRatioKstarKaon[2]->SetFillColorAlpha(kRed, 0.35);
+    gRatioKstarKaon[2]->Draw("E2 same");
 
     gKstarKaRatio_13TeV[0]->SetMarkerStyle(21);
     gKstarKaRatio_13TeV[0]->SetMarkerColor(kBlue);
@@ -1945,16 +1964,22 @@ void ParticleRatioWithRun2()
     gKstarKaRatio_UrQMDOnSmooth->SetLineWidth(3);
     gKstarKaRatio_UrQMDOnSmooth->Draw("LX same");
 
+    ////Calculation of suppression significance between HM and LM for K*0/Kaon ratio
     int totalPointsKstarKaonRatio = gRatioKstarKaon[0]->GetN();
-    double xLM, xHM, yHM, yLM, yHMError, yLMError, yHMStatError, yLMStatError;
+    double xLM, xHM, yHM, yLM, yHMError, yLMError, yHMStatError, yLMStatError, yLMUncorr, yHMUncorr;
     gRatioKstarKaon[1]->GetPoint(totalPointsKstarKaonRatio - 1, xLM, yLM);
     gRatioKstarKaon[1]->GetPoint(0, xHM, yHM);
     yLMError = gRatioKstarKaon[1]->GetErrorY(totalPointsKstarKaonRatio - 1);
     yHMError = gRatioKstarKaon[1]->GetErrorY(0);
     yLMStatError = gRatioKstarKaon[0]->GetErrorY(totalPointsKstarKaonRatio - 1);
     yHMStatError = gRatioKstarKaon[0]->GetErrorY(0);
+    yLMUncorr = gRatioKstarKaon[2]->GetErrorY(totalPointsKstarKaonRatio - 1);
+    yHMUncorr = gRatioKstarKaon[2]->GetErrorY(0);
+
     double sigmaDiffHM_LM = abs(yHM - yLM) / sqrt(pow(yHMError, 2) + pow(yLMError, 2) + pow(yHMStatError, 2) + pow(yLMStatError, 2));
+    double sigmaDiffHM_LM_uncorr = abs(yHM - yLM) / sqrt(pow(yHMUncorr, 2) + pow(yLMUncorr, 2));
     cout << "K*0/Kaon ratio difference between HM and LM: " << sigmaDiffHM_LM << " sigma" << endl;
+    cout << "K*0/Kaon ratio difference between HM and LM (uncorrelated): " << sigmaDiffHM_LM_uncorr << " sigma" << endl;
 
     // K* is (K* + anit_K*)/2 but K = (K^+ + K^-), so we need to divide the denoimator by 2 as well.
     TGraphErrors *gRatioKstarKa_IST9 = MakeRatio(gEPOS_Yield[9][kITY0][kKstar_epos], gMYieldKaonEPOS_IST0, true, 1.0);
@@ -2030,6 +2055,10 @@ void ParticleRatioWithRun2()
     gRatioKstarPion[1]->SetFillStyle(0);
     gRatioKstarPion[1]->SetLineColor(kRed);
     gRatioKstarPion[1]->Draw("5 same");
+    gRatioKstarPion[2]->SetFillStyle(1001);
+    gRatioKstarPion[2]->SetFillColorAlpha(kRed, 0.35);
+    gRatioKstarPion[2]->Draw("E2 same");
+
     gKstarPiRatio_13TeV[0]->SetMarkerStyle(21);
     gKstarPiRatio_13TeV[0]->SetMarkerColor(kBlue);
     gKstarPiRatio_13TeV[0]->SetLineColor(kBlue);
@@ -2112,6 +2141,25 @@ void ParticleRatioWithRun2()
     gRatioKstarKshort[1]->SetFillStyle(0);
     gRatioKstarKshort[1]->SetLineColor(kRed);
     gRatioKstarKshort[1]->Draw("5 same");
+    gRatioKstarKshort[2]->SetFillStyle(1001);
+    gRatioKstarKshort[2]->SetFillColorAlpha(kRed, 0.35);
+    gRatioKstarKshort[2]->Draw("E2 same");
+
+    ////Calculation of suppression significance between HM and LM for K*0/Kshort ratio
+    int totalPointsKstarKshortRatio = gRatioKstarKshort[0]->GetN();
+    double xLM_KstarKshort, xHM_KstarKshort, yHM_KstarKshort, yLM_KstarKshort, yHMError_KstarKshort, yLMError_KstarKshort, yHMStatError_KstarKshort, yLMStatError_KstarKshort, yLMUncorr_KstarKshort, yHMUncorr_KstarKshort;
+    gRatioKstarKshort[1]->GetPoint(totalPointsKstarKshortRatio - 1, xLM_KstarKshort, yLM_KstarKshort);
+    gRatioKstarKshort[1]->GetPoint(0, xHM_KstarKshort, yHM_KstarKshort);
+    yLMError_KstarKshort = gRatioKstarKshort[1]->GetErrorY(totalPointsKstarKshortRatio - 1);
+    yHMError_KstarKshort = gRatioKstarKshort[1]->GetErrorY(0);
+    yLMStatError_KstarKshort = gRatioKstarKshort[0]->GetErrorY(totalPointsKstarKshortRatio - 1);
+    yHMStatError_KstarKshort = gRatioKstarKshort[0]->GetErrorY(0);
+    yLMUncorr_KstarKshort = gRatioKstarKshort[2]->GetErrorY(totalPointsKstarKshortRatio - 1);
+    yHMUncorr_KstarKshort = gRatioKstarKshort[2]->GetErrorY(0);
+    double sigmaDiffHM_LM_KstarKshort = abs(yHM_KstarKshort - yLM_KstarKshort) / sqrt(pow(yHMError_KstarKshort, 2) + pow(yLMError_KstarKshort, 2) + pow(yHMStatError_KstarKshort, 2) + pow(yLMStatError_KstarKshort, 2));
+    double sigmaDiffHM_LM_uncorr_KstarKshort = abs(yHM_KstarKshort - yLM_KstarKshort) / sqrt(pow(yHMUncorr_KstarKshort, 2) + pow(yLMUncorr_KstarKshort, 2));
+    cout << "K*0/Kshort ratio difference between HM and LM: " << sigmaDiffHM_LM_KstarKshort << " sigma" << endl;
+    cout << "K*0/Kshort ratio difference between HM and LM (uncorrelated): " << sigmaDiffHM_LM_uncorr_KstarKshort << " sigma" << endl;
 
     gKstarK0sRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
     gKstarK0sRatio_UrQMDOffSmooth->SetLineStyle(2);
@@ -2134,7 +2182,7 @@ void ParticleRatioWithRun2()
     SetLegendStyle(legendRatio4);
     legendRatio4->SetTextSize(0.04);
     legendRatio4->AddEntry(gRatioKstarKshort[0], "K*^{0}/K_{S}^{0}", "p");
-    legendRatio4->Draw();   
+    legendRatio4->Draw();
     legendRatio2->Draw();
 
     // if (isSavePlots)
@@ -2148,8 +2196,8 @@ void ParticleRatioWithRun2()
     TCanvas *cYieldLMRatio = new TCanvas("cYieldLMRatio", "cYieldLMRatio", 720, 720);
     SetCanvasStyle(cYieldLMRatio, 0.15, 0.03, 0.03, 0.15);
 
-    TGraphErrors **gYieldKstarKaLMRatio = DivideByMult(gRatioKstarKaon, -1, 0.5, 2);
-    TGraphErrors **gYieldKstarPiLMRatio = DivideByMult(gRatioKstarPion, -1, 0.5, 2);
+    TGraphErrors **gYieldKstarKaLMRatio = DivideByMult(gRatioKstarKaon, -1, 0.5, 3);
+    TGraphErrors **gYieldKstarPiLMRatio = DivideByMult(gRatioKstarPion, -1, 0.5, 3);
 
     // int totalPoints = gYieldKstarKaLMRatio[1]->GetN();
     // for (int j = 0; j < totalPoints - 1; j++)
@@ -2171,12 +2219,17 @@ void ParticleRatioWithRun2()
     gYieldKstarKaLMRatio[0]->SetMarkerStyle(20);
     gYieldKstarKaLMRatio[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
     gYieldKstarKaLMRatio[0]->GetYaxis()->SetTitle("Y/Y_{LM}");
+    gYieldKstarKaLMRatio[0]->SetFillStyle(0);
+    gYieldKstarKaLMRatio[1]->SetFillStyle(0);
     gYieldKstarKaLMRatio[0]->Draw("APE");
+    gYieldKstarKaLMRatio[1]->SetLineColor(kRed);
     gYieldKstarKaLMRatio[1]->Draw("5 same");
 
     gYieldKstarPiLMRatio[0]->SetMarkerColor(kGreen + 2);
     gYieldKstarPiLMRatio[0]->SetLineColor(kGreen + 2);
     gYieldKstarPiLMRatio[0]->SetMarkerStyle(21);
+    gYieldKstarPiLMRatio[0]->SetFillStyle(0);
+    gYieldKstarPiLMRatio[1]->SetFillStyle(0);
     gYieldKstarPiLMRatio[0]->Draw("PE same");
     gYieldKstarPiLMRatio[1]->SetLineColor(kGreen + 2);
     gYieldKstarPiLMRatio[1]->SetFillStyle(0);
@@ -2208,7 +2261,7 @@ void ParticleRatioWithRun2()
 
     // gEPOS_KstarKaLMRatio_IST9->Draw("l same");
     // gEPOS_KstarKaLMRatio_IST9_ITY80->Draw("l same");
-    // gEPOS_KstarPiLMRatio_IST9->Draw("l same"); 
+    // gEPOS_KstarPiLMRatio_IST9->Draw("l same");
     // gEPOS_KstarPiLMRatio_IST9_ITY80->Draw("l same");
 
     gEPOSNew_KstarKaLMRatio_UrQMDOff->SetLineColor(kGreen - 2);
@@ -2289,415 +2342,415 @@ void ParticleRatioWithRun2()
         cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.pdf");
     }
 
-    //======================================================================
-    // ==YieldRatio (Mult/LM): Kstar, ChKstar, Lambda1520, XiStar, Phi, Rho==
-    //======================================================================
-    TCanvas *cYieldLMRatio2 = new TCanvas("cYieldLMRatio2", "cYieldLMRatio2", 720, 720);
-    SetCanvasStyle(cYieldLMRatio2, 0.15, 0.03, 0.03, 0.15);
-    // canvas_style(cYieldLMRatio2);
-    // cYieldLMRatio2->cd(1);
+    // //======================================================================
+    // // ==YieldRatio (Mult/LM): Kstar, ChKstar, Lambda1520, XiStar, Phi, Rho==
+    // //======================================================================
+    // TCanvas *cYieldLMRatio2 = new TCanvas("cYieldLMRatio2", "cYieldLMRatio2", 720, 720);
+    // SetCanvasStyle(cYieldLMRatio2, 0.15, 0.03, 0.03, 0.15);
+    // // canvas_style(cYieldLMRatio2);
+    // // cYieldLMRatio2->cd(1);
 
-    TGraphErrors **gYieldKstarLMRatio = DivideByMult(gMYieldKstar, -1.0, 0.5, 2);
-    // TGraphErrors **gYieldKstarRun2LMRatio = DivideByMult(gMYieldKstarRun2, -1.0, 0.5, 3);
-    TGraphErrors **gYieldChKstarLMRatio = DivideByMult(gMYieldChKstarRun2, -1.0, 0.5, 3);
-    TGraphErrors **gYieldXiStarLMRatio = DivideByMult(gMYieldXiStarRun2, -1.0, 0.5, 3);
-    TGraphErrors **gYieldPhiLMRatio = DivideByMult(gMYieldPhiRun2, -1.0, 0.5, 3);
-    TGraphErrors **gYieldSigmaLMRatio = DivideByMult(gMYieldSigmaRun2, -1.0, 0.5, 3);
-    TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 3); // Run2
+    // TGraphErrors **gYieldKstarLMRatio = DivideByMult(gMYieldKstar, -1.0, 0.5, 3);
+    // // TGraphErrors **gYieldKstarRun2LMRatio = DivideByMult(gMYieldKstarRun2, -1.0, 0.5, 3);
+    // TGraphErrors **gYieldChKstarLMRatio = DivideByMult(gMYieldChKstarRun2, -1.0, 0.5, 3);
+    // TGraphErrors **gYieldXiStarLMRatio = DivideByMult(gMYieldXiStarRun2, -1.0, 0.5, 3);
+    // TGraphErrors **gYieldPhiLMRatio = DivideByMult(gMYieldPhiRun2, -1.0, 0.5, 3);
+    // TGraphErrors **gYieldSigmaLMRatio = DivideByMult(gMYieldSigmaRun2, -1.0, 0.5, 3);
+    // TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 3); // Run2
 
-    // These are from run3
-    // TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 2);
-    TGraphErrors **gYieldRhoLMRatio = DivideByMult(gMYieldRho, -1.0, 0.5, 2);
+    // // These are from run3
+    // // TGraphErrors **gYieldLambda1520LMRatio = DivideByMult(gMYieldLambda1520, -1.0, 0.5, 2);
+    // TGraphErrors **gYieldRhoLMRatio = DivideByMult(gMYieldRho, -1.0, 0.5, 3);
 
-    gYieldKstarLMRatio[0]->SetMaximum(21.5);
-    gYieldKstarLMRatio[0]->SetMinimum(0.0);
-    gYieldKstarLMRatio[0]->SetMarkerColor(kRed);
-    gYieldKstarLMRatio[0]->SetLineColor(kRed);
-    gYieldKstarLMRatio[0]->SetMarkerStyle(20);
-    gYieldKstarLMRatio[0]->GetXaxis()->SetLimits(0, 27);
-    gYieldKstarLMRatio[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gYieldKstarLMRatio[0]->GetYaxis()->SetTitle("Y/Y_{LM}");
-    // pad1Size = 0.7, pad2Size = 0.3;
-    // gYieldKstarLMRatio[0]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
-    // gYieldKstarLMRatio[0]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    // gYieldKstarLMRatio[0]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    // gYieldKstarLMRatio[0]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    // gYieldKstarLMRatio[0]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
-    gYieldKstarLMRatio[0]->Draw("APE");
-    gYieldKstarLMRatio[1]->SetLineColor(kRed);
-    gYieldKstarLMRatio[1]->SetFillStyle(0);
-    gYieldKstarLMRatio[1]->Draw("5 same");
-    gYieldChKstarLMRatio[0]->SetMarkerColor(kBlue);
-    gYieldChKstarLMRatio[0]->SetLineColor(kBlue);
-    gYieldChKstarLMRatio[0]->SetMarkerStyle(21);
-    gYieldChKstarLMRatio[0]->Draw("PE same");
-    gYieldChKstarLMRatio[1]->SetLineColor(kBlue);
-    gYieldChKstarLMRatio[1]->SetFillStyle(0);
-    gYieldChKstarLMRatio[1]->Draw("5 same");
-    gYieldXiStarLMRatio[0]->SetMarkerColor(kBrown);
-    gYieldXiStarLMRatio[0]->SetLineColor(kBrown);
-    gYieldXiStarLMRatio[0]->SetMarkerStyle(22);
-    gYieldXiStarLMRatio[0]->Draw("PE same");
-    gYieldXiStarLMRatio[1]->SetLineColor(kBrown);
-    gYieldXiStarLMRatio[1]->SetFillStyle(0);
-    gYieldXiStarLMRatio[1]->Draw("5 same");
-    gYieldLambda1520LMRatio[0]->SetMarkerColor(kGreen + 2);
-    gYieldLambda1520LMRatio[0]->SetLineColor(kGreen + 2);
-    gYieldLambda1520LMRatio[0]->SetMarkerStyle(22);
-    gYieldLambda1520LMRatio[0]->Draw("PE same");
-    gYieldLambda1520LMRatio[1]->SetLineColor(kGreen + 2);
-    gYieldLambda1520LMRatio[1]->SetFillStyle(0);
-    gYieldLambda1520LMRatio[1]->Draw("5 same");
-    gYieldPhiLMRatio[0]->SetMarkerColor(kMagenta);
-    gYieldPhiLMRatio[0]->SetLineColor(kMagenta);
-    gYieldPhiLMRatio[0]->SetMarkerStyle(47);
-    gYieldPhiLMRatio[0]->Draw("PE same");
-    gYieldPhiLMRatio[1]->SetLineColor(kMagenta);
-    gYieldPhiLMRatio[1]->SetFillStyle(0);
-    gYieldPhiLMRatio[1]->Draw("5 same");
-    // gYieldRhoLMRatio[0]->SetMarkerColor(kCyan + 1);
-    // gYieldRhoLMRatio[0]->SetLineColor(kCyan + 1);
-    // gYieldRhoLMRatio[0]->SetMarkerStyle(25);
-    // gYieldRhoLMRatio[0]->Draw("PE same");
-    // gYieldRhoLMRatio[1]->SetLineColor(kCyan + 1);
-    // gYieldRhoLMRatio[1]->SetFillStyle(0);
-    // gYieldRhoLMRatio[1]->Draw("5 same");
-    gYieldSigmaLMRatio[0]->SetMarkerColor(kAzure + 1);
-    gYieldSigmaLMRatio[0]->SetLineColor(kAzure + 1);
-    gYieldSigmaLMRatio[0]->SetMarkerStyle(26);
-    gYieldSigmaLMRatio[0]->Draw("PE same");
-    gYieldSigmaLMRatio[1]->SetLineColor(kAzure + 1);
-    gYieldSigmaLMRatio[1]->SetFillStyle(0);
-    gYieldSigmaLMRatio[1]->Draw("5 same");
+    // gYieldKstarLMRatio[0]->SetMaximum(21.5);
+    // gYieldKstarLMRatio[0]->SetMinimum(0.0);
+    // gYieldKstarLMRatio[0]->SetMarkerColor(kRed);
+    // gYieldKstarLMRatio[0]->SetLineColor(kRed);
+    // gYieldKstarLMRatio[0]->SetMarkerStyle(20);
+    // gYieldKstarLMRatio[0]->GetXaxis()->SetLimits(0, 27);
+    // gYieldKstarLMRatio[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gYieldKstarLMRatio[0]->GetYaxis()->SetTitle("Y/Y_{LM}");
+    // // pad1Size = 0.7, pad2Size = 0.3;
+    // // gYieldKstarLMRatio[0]->GetXaxis()->SetTitleSize(0.04 / pad1Size);
+    // // gYieldKstarLMRatio[0]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    // // gYieldKstarLMRatio[0]->GetXaxis()->SetLabelSize(0.04 / pad1Size);
+    // // gYieldKstarLMRatio[0]->GetYaxis()->SetLabelSize(0.04 / pad1Size);
+    // // gYieldKstarLMRatio[0]->GetYaxis()->SetTitleOffset(1.7 * pad1Size);
+    // gYieldKstarLMRatio[0]->Draw("APE");
+    // gYieldKstarLMRatio[1]->SetLineColor(kRed);
+    // gYieldKstarLMRatio[1]->SetFillStyle(0);
+    // gYieldKstarLMRatio[1]->Draw("5 same");
+    // gYieldChKstarLMRatio[0]->SetMarkerColor(kBlue);
+    // gYieldChKstarLMRatio[0]->SetLineColor(kBlue);
+    // gYieldChKstarLMRatio[0]->SetMarkerStyle(21);
+    // gYieldChKstarLMRatio[0]->Draw("PE same");
+    // gYieldChKstarLMRatio[1]->SetLineColor(kBlue);
+    // gYieldChKstarLMRatio[1]->SetFillStyle(0);
+    // gYieldChKstarLMRatio[1]->Draw("5 same");
+    // gYieldXiStarLMRatio[0]->SetMarkerColor(kBrown);
+    // gYieldXiStarLMRatio[0]->SetLineColor(kBrown);
+    // gYieldXiStarLMRatio[0]->SetMarkerStyle(22);
+    // gYieldXiStarLMRatio[0]->Draw("PE same");
+    // gYieldXiStarLMRatio[1]->SetLineColor(kBrown);
+    // gYieldXiStarLMRatio[1]->SetFillStyle(0);
+    // gYieldXiStarLMRatio[1]->Draw("5 same");
+    // gYieldLambda1520LMRatio[0]->SetMarkerColor(kGreen + 2);
+    // gYieldLambda1520LMRatio[0]->SetLineColor(kGreen + 2);
+    // gYieldLambda1520LMRatio[0]->SetMarkerStyle(22);
+    // gYieldLambda1520LMRatio[0]->Draw("PE same");
+    // gYieldLambda1520LMRatio[1]->SetLineColor(kGreen + 2);
+    // gYieldLambda1520LMRatio[1]->SetFillStyle(0);
+    // gYieldLambda1520LMRatio[1]->Draw("5 same");
+    // gYieldPhiLMRatio[0]->SetMarkerColor(kMagenta);
+    // gYieldPhiLMRatio[0]->SetLineColor(kMagenta);
+    // gYieldPhiLMRatio[0]->SetMarkerStyle(47);
+    // gYieldPhiLMRatio[0]->Draw("PE same");
+    // gYieldPhiLMRatio[1]->SetLineColor(kMagenta);
+    // gYieldPhiLMRatio[1]->SetFillStyle(0);
+    // gYieldPhiLMRatio[1]->Draw("5 same");
+    // // gYieldRhoLMRatio[0]->SetMarkerColor(kCyan + 1);
+    // // gYieldRhoLMRatio[0]->SetLineColor(kCyan + 1);
+    // // gYieldRhoLMRatio[0]->SetMarkerStyle(25);
+    // // gYieldRhoLMRatio[0]->Draw("PE same");
+    // // gYieldRhoLMRatio[1]->SetLineColor(kCyan + 1);
+    // // gYieldRhoLMRatio[1]->SetFillStyle(0);
+    // // gYieldRhoLMRatio[1]->Draw("5 same");
+    // gYieldSigmaLMRatio[0]->SetMarkerColor(kAzure + 1);
+    // gYieldSigmaLMRatio[0]->SetLineColor(kAzure + 1);
+    // gYieldSigmaLMRatio[0]->SetMarkerStyle(26);
+    // gYieldSigmaLMRatio[0]->Draw("PE same");
+    // gYieldSigmaLMRatio[1]->SetLineColor(kAzure + 1);
+    // gYieldSigmaLMRatio[1]->SetFillStyle(0);
+    // gYieldSigmaLMRatio[1]->Draw("5 same");
 
-    TLegend *legendYieldLMRatio3 = new TLegend(0.2, 0.78, 0.6, 0.9);
-    SetLegendStyle(legendYieldLMRatio3);
-    // legendYieldLMRatio3->SetTextSize(0.027 / pad1Size);
-    legendYieldLMRatio3->SetTextSize(0.027);
-    legendYieldLMRatio3->SetNColumns(3);
-    // legendYieldLMRatio3->AddEntry(gYieldRhoLMRatio[0], "#rho", "P");
-    legendYieldLMRatio3->AddEntry(gYieldKstarLMRatio[0], "K*^{0}", "P");
-    legendYieldLMRatio3->AddEntry(gYieldChKstarLMRatio[0], "K*^{#pm}", "P");
-    legendYieldLMRatio3->AddEntry(gYieldSigmaLMRatio[0], "#Sigma(1385)", "P");
-    legendYieldLMRatio3->AddEntry(gYieldLambda1520LMRatio[0], "#Lambda(1520)", "P");
-    legendYieldLMRatio3->AddEntry(gYieldXiStarLMRatio[0], "#Xi(1530)", "P");
-    legendYieldLMRatio3->AddEntry(gYieldPhiLMRatio[0], "#phi", "P");
-    legendYieldLMRatio3->Draw();
+    // TLegend *legendYieldLMRatio3 = new TLegend(0.2, 0.78, 0.6, 0.9);
+    // SetLegendStyle(legendYieldLMRatio3);
+    // // legendYieldLMRatio3->SetTextSize(0.027 / pad1Size);
+    // legendYieldLMRatio3->SetTextSize(0.027);
+    // legendYieldLMRatio3->SetNColumns(3);
+    // // legendYieldLMRatio3->AddEntry(gYieldRhoLMRatio[0], "#rho", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldKstarLMRatio[0], "K*^{0}", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldChKstarLMRatio[0], "K*^{#pm}", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldSigmaLMRatio[0], "#Sigma(1385)", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldLambda1520LMRatio[0], "#Lambda(1520)", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldXiStarLMRatio[0], "#Xi(1530)", "P");
+    // legendYieldLMRatio3->AddEntry(gYieldPhiLMRatio[0], "#phi", "P");
+    // legendYieldLMRatio3->Draw();
 
-    // cYieldLMRatio2->cd(2);
-    // // These are run2, so will use run2 kstar
-    // TGraphErrors **gRatio2ChKstarKstar = MakeRatioUncorr(gYieldChKstarLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
-    // // TGraphErrors **gRatio2XiStarKstar = MakeRatioUncorr(gYieldXiStarLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
-    // // TGraphErrors **gRatio2PhiKstar = MakeRatioUncorr(gYieldPhiLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
-    // // // These are run3, so will use run3 kstar
-    // // TGraphErrors **gRatio2Lambda1520Kstar = MakeRatioUncorr(gYieldLambda1520LMRatio, gYieldKstarLMRatio, 1.0, 2);
-    // // TGraphErrors **gRatio2RhoKstar = MakeRatioUncorr(gYieldRhoLMRatio, gYieldKstarLMRatio, 1.0, 2);
+    // // cYieldLMRatio2->cd(2);
+    // // // These are run2, so will use run2 kstar
+    // // TGraphErrors **gRatio2ChKstarKstar = MakeRatioUncorr(gYieldChKstarLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
+    // // // TGraphErrors **gRatio2XiStarKstar = MakeRatioUncorr(gYieldXiStarLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
+    // // // TGraphErrors **gRatio2PhiKstar = MakeRatioUncorr(gYieldPhiLMRatio, gYieldKstarRun2LMRatio, 1.0, 2);
+    // // // // These are run3, so will use run3 kstar
+    // // // TGraphErrors **gRatio2Lambda1520Kstar = MakeRatioUncorr(gYieldLambda1520LMRatio, gYieldKstarLMRatio, 1.0, 2);
+    // // // TGraphErrors **gRatio2RhoKstar = MakeRatioUncorr(gYieldRhoLMRatio, gYieldKstarLMRatio, 1.0, 2);
 
-    // gRatio2ChKstarKstar[0]->SetMaximum(2.58);
-    // gRatio2ChKstarKstar[0]->SetMinimum(0.65);
-    // gRatio2ChKstarKstar[0]->GetYaxis()->SetNdivisions(505);
-    // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitle("Ratio to K*^{0}");
-    // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitleSize(0.04 / pad2Size);
-    // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitleSize(0.04 / pad2Size);
-    // gRatio2ChKstarKstar[0]->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    // gRatio2ChKstarKstar[0]->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitleOffset(1.7 * pad2Size);
-    // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitleOffset(1.15);
-    // gRatio2ChKstarKstar[0]->SetMarkerColor(kBlue);
-    // gRatio2ChKstarKstar[0]->SetLineColor(kBlue);
-    // gRatio2ChKstarKstar[0]->SetMarkerStyle(21);
-    // gRatio2ChKstarKstar[0]->Draw("APE");
-    // gRatio2ChKstarKstar[1]->SetLineColor(kBlue);
-    // gRatio2ChKstarKstar[1]->SetFillStyle(0);
-    // gRatio2ChKstarKstar[1]->Draw("5 same");
-    // // gRatio2XiStarKstar[0]->SetMarkerColor(kOrange - 2);
-    // // gRatio2XiStarKstar[0]->SetLineColor(kOrange - 2);
-    // // gRatio2XiStarKstar[0]->SetMarkerStyle(22);
-    // // gRatio2XiStarKstar[0]->Draw("PE same");
-    // // gRatio2XiStarKstar[1]->SetLineColor(kOrange - 2);
-    // // gRatio2XiStarKstar[1]->SetFillStyle(0);
-    // // gRatio2XiStarKstar[1]->Draw("5 same");
-    // // gRatio2Lambda1520Kstar[0]->SetMarkerColor(kGreen + 2);
-    // // gRatio2Lambda1520Kstar[0]->SetLineColor(kGreen + 2);
-    // // gRatio2Lambda1520Kstar[0]->SetMarkerStyle(22);
-    // // gRatio2Lambda1520Kstar[0]->Draw("PE same");
-    // // gRatio2Lambda1520Kstar[1]->SetLineColor(kGreen + 2);
-    // // gRatio2Lambda1520Kstar[1]->SetFillStyle(0);
-    // // gRatio2Lambda1520Kstar[1]->Draw("5 same");
-    // // gRatio2PhiKstar[0]->SetMarkerColor(kMagenta);
-    // // gRatio2PhiKstar[0]->SetLineColor(kMagenta);
-    // // gRatio2PhiKstar[0]->SetMarkerStyle(47);
-    // // gRatio2PhiKstar[0]->Draw("PE same");
-    // // gRatio2PhiKstar[1]->SetLineColor(kMagenta);
-    // // gRatio2PhiKstar[1]->SetFillStyle(0);
-    // // gRatio2PhiKstar[1]->Draw("5 same");
-    // // gRatio2RhoKstar[0]->SetMarkerColor(kCyan + 1);
-    // // gRatio2RhoKstar[0]->SetLineColor(kCyan + 1);
-    // // gRatio2RhoKstar[0]->SetMarkerStyle(25);
-    // // gRatio2RhoKstar[0]->Draw("PE same");
-    // // gRatio2RhoKstar[1]->SetLineColor(kCyan + 1);
-    // // gRatio2RhoKstar[1]->SetFillStyle(0);
-    // // gRatio2RhoKstar[1]->Draw("5 same");
+    // // gRatio2ChKstarKstar[0]->SetMaximum(2.58);
+    // // gRatio2ChKstarKstar[0]->SetMinimum(0.65);
+    // // gRatio2ChKstarKstar[0]->GetYaxis()->SetNdivisions(505);
+    // // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitle("Ratio to K*^{0}");
+    // // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitleSize(0.04 / pad2Size);
+    // // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitleSize(0.04 / pad2Size);
+    // // gRatio2ChKstarKstar[0]->GetXaxis()->SetLabelSize(0.04 / pad2Size);
+    // // gRatio2ChKstarKstar[0]->GetYaxis()->SetLabelSize(0.04 / pad2Size);
+    // // gRatio2ChKstarKstar[0]->GetYaxis()->SetTitleOffset(1.7 * pad2Size);
+    // // gRatio2ChKstarKstar[0]->GetXaxis()->SetTitleOffset(1.15);
+    // // gRatio2ChKstarKstar[0]->SetMarkerColor(kBlue);
+    // // gRatio2ChKstarKstar[0]->SetLineColor(kBlue);
+    // // gRatio2ChKstarKstar[0]->SetMarkerStyle(21);
+    // // gRatio2ChKstarKstar[0]->Draw("APE");
+    // // gRatio2ChKstarKstar[1]->SetLineColor(kBlue);
+    // // gRatio2ChKstarKstar[1]->SetFillStyle(0);
+    // // gRatio2ChKstarKstar[1]->Draw("5 same");
+    // // // gRatio2XiStarKstar[0]->SetMarkerColor(kOrange - 2);
+    // // // gRatio2XiStarKstar[0]->SetLineColor(kOrange - 2);
+    // // // gRatio2XiStarKstar[0]->SetMarkerStyle(22);
+    // // // gRatio2XiStarKstar[0]->Draw("PE same");
+    // // // gRatio2XiStarKstar[1]->SetLineColor(kOrange - 2);
+    // // // gRatio2XiStarKstar[1]->SetFillStyle(0);
+    // // // gRatio2XiStarKstar[1]->Draw("5 same");
+    // // // gRatio2Lambda1520Kstar[0]->SetMarkerColor(kGreen + 2);
+    // // // gRatio2Lambda1520Kstar[0]->SetLineColor(kGreen + 2);
+    // // // gRatio2Lambda1520Kstar[0]->SetMarkerStyle(22);
+    // // // gRatio2Lambda1520Kstar[0]->Draw("PE same");
+    // // // gRatio2Lambda1520Kstar[1]->SetLineColor(kGreen + 2);
+    // // // gRatio2Lambda1520Kstar[1]->SetFillStyle(0);
+    // // // gRatio2Lambda1520Kstar[1]->Draw("5 same");
+    // // // gRatio2PhiKstar[0]->SetMarkerColor(kMagenta);
+    // // // gRatio2PhiKstar[0]->SetLineColor(kMagenta);
+    // // // gRatio2PhiKstar[0]->SetMarkerStyle(47);
+    // // // gRatio2PhiKstar[0]->Draw("PE same");
+    // // // gRatio2PhiKstar[1]->SetLineColor(kMagenta);
+    // // // gRatio2PhiKstar[1]->SetFillStyle(0);
+    // // // gRatio2PhiKstar[1]->Draw("5 same");
+    // // // gRatio2RhoKstar[0]->SetMarkerColor(kCyan + 1);
+    // // // gRatio2RhoKstar[0]->SetLineColor(kCyan + 1);
+    // // // gRatio2RhoKstar[0]->SetMarkerStyle(25);
+    // // // gRatio2RhoKstar[0]->Draw("PE same");
+    // // // gRatio2RhoKstar[1]->SetLineColor(kCyan + 1);
+    // // // gRatio2RhoKstar[1]->SetFillStyle(0);
+    // // // gRatio2RhoKstar[1]->Draw("5 same");
 
-    // TLine *line = new TLine(gRatio2ChKstarKstar[0]->GetXaxis()->GetXmin(), 1.0, gRatio2ChKstarKstar[0]->GetXaxis()->GetXmax(), 1.0);
-    // line->SetLineStyle(2);
-    // line->SetLineColor(kRed);
-    // line->SetLineWidth(2);
-    // line->Draw("same");
-    if (isSavePlots)
-    {
-        cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.pdf");
-    }
+    // // TLine *line = new TLine(gRatio2ChKstarKstar[0]->GetXaxis()->GetXmin(), 1.0, gRatio2ChKstarKstar[0]->GetXaxis()->GetXmax(), 1.0);
+    // // line->SetLineStyle(2);
+    // // line->SetLineColor(kRed);
+    // // line->SetLineWidth(2);
+    // // line->Draw("same");
+    // if (isSavePlots)
+    // {
+    //     cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.pdf");
+    // }
 
-    //======================================================================
-    // ==Yield Ratio (HM/LM) vs lifetime: Kstar, ChKstar, Sigma, XiStar, Phi
-    //======================================================================
-    TCanvas *cYieldLifetime = new TCanvas("cYieldLifetime", "cYieldLifetime", 720, 720);
-    SetCanvasStyle(cYieldLifetime, 0.15, 0.03, 0.03, 0.15);
+    // //======================================================================
+    // // ==Yield Ratio (HM/LM) vs lifetime: Kstar, ChKstar, Sigma, XiStar, Phi
+    // //======================================================================
+    // TCanvas *cYieldLifetime = new TCanvas("cYieldLifetime", "cYieldLifetime", 720, 720);
+    // SetCanvasStyle(cYieldLifetime, 0.15, 0.03, 0.03, 0.15);
 
-    // K*+-, K*0, Sigma(1385), Lambda(1520), XiStar, Phi
-    float lifetime[6] = {3.9, 4.2, 5.25, 12.6, 22.0, 46.2};
+    // // K*+-, K*0, Sigma(1385), Lambda(1520), XiStar, Phi
+    // float lifetime[6] = {3.9, 4.2, 5.25, 12.6, 22.0, 46.2};
 
-    TGraphErrors *gYieldVsLifetime[2];
-    for (int i = 0; i < 2; i++)
-    {
-        gYieldVsLifetime[i] = new TGraphErrors(6);
-    }
+    // TGraphErrors *gYieldVsLifetime[2];
+    // for (int i = 0; i < 2; i++)
+    // {
+    //     gYieldVsLifetime[i] = new TGraphErrors(6);
+    // }
 
-    //------------------------------------------------------------------
-    // Fill graphs
-    //------------------------------------------------------------------
-    for (int j = 0; j < 2; j++)
-    {
-        gYieldVsLifetime[j]->SetPoint(0, lifetime[0], gYieldChKstarLMRatio[j]->GetY()[gYieldChKstarLMRatio[j]->GetN() - 1]);
-        gYieldVsLifetime[j]->SetPointError(0, 0.3, gYieldChKstarLMRatio[j]->GetErrorY(gYieldChKstarLMRatio[j]->GetN() - 1));
+    // //------------------------------------------------------------------
+    // // Fill graphs
+    // //------------------------------------------------------------------
+    // for (int j = 0; j < 2; j++)
+    // {
+    //     gYieldVsLifetime[j]->SetPoint(0, lifetime[0], gYieldChKstarLMRatio[j]->GetY()[gYieldChKstarLMRatio[j]->GetN() - 1]);
+    //     gYieldVsLifetime[j]->SetPointError(0, 0.3, gYieldChKstarLMRatio[j]->GetErrorY(gYieldChKstarLMRatio[j]->GetN() - 1));
 
-        gYieldVsLifetime[j]->SetPoint(1, lifetime[1], gYieldKstarLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(1, 0.3, gYieldKstarLMRatio[j]->GetErrorY(0));
+    //     gYieldVsLifetime[j]->SetPoint(1, lifetime[1], gYieldKstarLMRatio[j]->GetY()[0]);
+    //     gYieldVsLifetime[j]->SetPointError(1, 0.3, gYieldKstarLMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(2, lifetime[2], gYieldSigmaLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(2, 0.3, gYieldSigmaLMRatio[j]->GetErrorY(0));
+    //     gYieldVsLifetime[j]->SetPoint(2, lifetime[2], gYieldSigmaLMRatio[j]->GetY()[0]);
+    //     gYieldVsLifetime[j]->SetPointError(2, 0.3, gYieldSigmaLMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(3, lifetime[3], gYieldLambda1520LMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(3, 0.3, gYieldLambda1520LMRatio[j]->GetErrorY(0));
+    //     gYieldVsLifetime[j]->SetPoint(3, lifetime[3], gYieldLambda1520LMRatio[j]->GetY()[0]);
+    //     gYieldVsLifetime[j]->SetPointError(3, 0.3, gYieldLambda1520LMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(4, lifetime[4], gYieldXiStarLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(4, 0.3, gYieldXiStarLMRatio[j]->GetErrorY(0));
+    //     gYieldVsLifetime[j]->SetPoint(4, lifetime[4], gYieldXiStarLMRatio[j]->GetY()[0]);
+    //     gYieldVsLifetime[j]->SetPointError(4, 0.3, gYieldXiStarLMRatio[j]->GetErrorY(0));
 
-        gYieldVsLifetime[j]->SetPoint(5, lifetime[5], gYieldPhiLMRatio[j]->GetY()[0]);
-        gYieldVsLifetime[j]->SetPointError(5, 0.3, gYieldPhiLMRatio[j]->GetErrorY(0));
-    }
+    //     gYieldVsLifetime[j]->SetPoint(5, lifetime[5], gYieldPhiLMRatio[j]->GetY()[0]);
+    //     gYieldVsLifetime[j]->SetPointError(5, 0.3, gYieldPhiLMRatio[j]->GetErrorY(0));
+    // }
 
-    //------------------------------------------------------------------
-    // Draw only axes from the first graph
-    //------------------------------------------------------------------
-    SetGraphErrorStyle(gYieldVsLifetime[0]);
+    // //------------------------------------------------------------------
+    // // Draw only axes from the first graph
+    // //------------------------------------------------------------------
+    // SetGraphErrorStyle(gYieldVsLifetime[0]);
 
-    gYieldVsLifetime[0]->SetMinimum(3.5);
-    gYieldVsLifetime[0]->SetMaximum(21.5);
+    // gYieldVsLifetime[0]->SetMinimum(3.5);
+    // gYieldVsLifetime[0]->SetMaximum(21.5);
 
-    gYieldVsLifetime[0]->SetMarkerSize(0);
-    gYieldVsLifetime[0]->SetLineColor(0);
+    // gYieldVsLifetime[0]->SetMarkerSize(0);
+    // gYieldVsLifetime[0]->SetLineColor(0);
 
-    gYieldVsLifetime[0]->GetXaxis()->SetTitle("Lifetime (fm/c)");
-    gYieldVsLifetime[0]->GetYaxis()->SetTitle("Y_{HM}/Y_{LM}");
+    // gYieldVsLifetime[0]->GetXaxis()->SetTitle("Lifetime (fm/c)");
+    // gYieldVsLifetime[0]->GetYaxis()->SetTitle("Y_{HM}/Y_{LM}");
 
-    gYieldVsLifetime[0]->Draw("AP");
+    // gYieldVsLifetime[0]->Draw("AP");
 
-    //------------------------------------------------------------------
-    // Particle styles
-    //------------------------------------------------------------------
-    Color_t colors[6] = {
-        kRed + 1,
-        kBlue + 1,
-        kAzure + 7,
-        kGreen + 2,
-        kBrown,
-        kMagenta};
+    // //------------------------------------------------------------------
+    // // Particle styles
+    // //------------------------------------------------------------------
+    // Color_t colors[6] = {
+    //     kRed + 1,
+    //     kBlue + 1,
+    //     kAzure + 7,
+    //     kGreen + 2,
+    //     kBrown,
+    //     kMagenta};
 
-    Style_t markers[6] = {
-        20, // K*±
-        21, // K*0
-        22, // Sigma
-        25, // Lambda1520
-        23, // Xi*
-        33  // Phi
-    };
+    // Style_t markers[6] = {
+    //     20, // K*±
+    //     21, // K*0
+    //     22, // Sigma
+    //     25, // Lambda1520
+    //     23, // Xi*
+    //     33  // Phi
+    // };
 
-    const char *names[6] = {
-        "K^{*#pm}",
-        "K^{*0}",
-        "#Sigma(1385)",
-        "#Lambda(1520)",
-        "#Xi^{*}",
-        "#phi"};
+    // const char *names[6] = {
+    //     "K^{*#pm}",
+    //     "K^{*0}",
+    //     "#Sigma(1385)",
+    //     "#Lambda(1520)",
+    //     "#Xi^{*}",
+    //     "#phi"};
 
-    //------------------------------------------------------------------
-    // Create one graph per particle
-    //------------------------------------------------------------------
-    TGraphErrors *gParticleStat[6];
-    TGraphErrors *gParticleSyst[6];
+    // //------------------------------------------------------------------
+    // // Create one graph per particle
+    // //------------------------------------------------------------------
+    // TGraphErrors *gParticleStat[6];
+    // TGraphErrors *gParticleSyst[6];
 
-    for (int i = 0; i < 6; i++)
-    {
-        double xStat, yStat;
-        double xSyst, ySyst;
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     double xStat, yStat;
+    //     double xSyst, ySyst;
 
-        gYieldVsLifetime[0]->GetPoint(i, xStat, yStat);
-        gYieldVsLifetime[1]->GetPoint(i, xSyst, ySyst);
+    //     gYieldVsLifetime[0]->GetPoint(i, xStat, yStat);
+    //     gYieldVsLifetime[1]->GetPoint(i, xSyst, ySyst);
 
-        gParticleStat[i] = new TGraphErrors(1);
-        gParticleSyst[i] = new TGraphErrors(1);
+    //     gParticleStat[i] = new TGraphErrors(1);
+    //     gParticleSyst[i] = new TGraphErrors(1);
 
-        // Statistical
-        gParticleStat[i]->SetPoint(0, xStat, yStat);
-        gParticleStat[i]->SetPointError(0, gYieldVsLifetime[0]->GetErrorX(i), gYieldVsLifetime[0]->GetErrorY(i));
+    //     // Statistical
+    //     gParticleStat[i]->SetPoint(0, xStat, yStat);
+    //     gParticleStat[i]->SetPointError(0, gYieldVsLifetime[0]->GetErrorX(i), gYieldVsLifetime[0]->GetErrorY(i));
 
-        // Systematic
-        gParticleSyst[i]->SetPoint(0, xSyst, ySyst);
-        gParticleSyst[i]->SetPointError(0, gYieldVsLifetime[1]->GetErrorX(i), gYieldVsLifetime[1]->GetErrorY(i));
+    //     // Systematic
+    //     gParticleSyst[i]->SetPoint(0, xSyst, ySyst);
+    //     gParticleSyst[i]->SetPointError(0, gYieldVsLifetime[1]->GetErrorX(i), gYieldVsLifetime[1]->GetErrorY(i));
 
-        //-----------------------------
-        // Systematic band
-        //-----------------------------
-        gParticleSyst[i]->SetFillColorAlpha(colors[i], 0.25);
-        gParticleSyst[i]->SetLineColor(colors[i]);
-        gParticleSyst[i]->SetMarkerSize(0);
+    //     //-----------------------------
+    //     // Systematic band
+    //     //-----------------------------
+    //     gParticleSyst[i]->SetFillColorAlpha(colors[i], 0.25);
+    //     gParticleSyst[i]->SetLineColor(colors[i]);
+    //     gParticleSyst[i]->SetMarkerSize(0);
 
-        //-----------------------------
-        // Statistical point
-        //-----------------------------
-        gParticleStat[i]->SetMarkerStyle(markers[i]);
-        gParticleStat[i]->SetMarkerSize(2.0);
+    //     //-----------------------------
+    //     // Statistical point
+    //     //-----------------------------
+    //     gParticleStat[i]->SetMarkerStyle(markers[i]);
+    //     gParticleStat[i]->SetMarkerSize(2.0);
 
-        gParticleStat[i]->SetMarkerColor(colors[i]);
-        gParticleStat[i]->SetLineColor(colors[i]);
-        gParticleStat[i]->SetLineWidth(2);
-    }
+    //     gParticleStat[i]->SetMarkerColor(colors[i]);
+    //     gParticleStat[i]->SetLineColor(colors[i]);
+    //     gParticleStat[i]->SetLineWidth(2);
+    // }
 
-    //------------------------------------------------------------------
-    // Draw systematic uncertainties first
-    //------------------------------------------------------------------
-    for (int i = 0; i < 6; i++)
-    {
-        gParticleSyst[i]->Draw("2 SAME");
-    }
+    // //------------------------------------------------------------------
+    // // Draw systematic uncertainties first
+    // //------------------------------------------------------------------
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     gParticleSyst[i]->Draw("2 SAME");
+    // }
 
-    //------------------------------------------------------------------
-    // Draw statistical uncertainties + markers
-    //------------------------------------------------------------------
-    for (int i = 0; i < 6; i++)
-    {
-        gParticleStat[i]->Draw("PZ SAME");
-    }
+    // //------------------------------------------------------------------
+    // // Draw statistical uncertainties + markers
+    // //------------------------------------------------------------------
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     gParticleStat[i]->Draw("PZ SAME");
+    // }
 
-    //------------------------------------------------------------------
-    // Labels
-    //------------------------------------------------------------------
-    TLatex latex2;
-    latex2.SetTextSize(0.03);
-    latex2.SetTextAlign(23);
+    // //------------------------------------------------------------------
+    // // Labels
+    // //------------------------------------------------------------------
+    // TLatex latex2;
+    // latex2.SetTextSize(0.03);
+    // latex2.SetTextAlign(23);
 
-    for (int i = 0; i < 6; i++)
-    {
-        double x, y;
-        gParticleStat[i]->GetPoint(0, x, y);
+    // for (int i = 0; i < 6; i++)
+    // {
+    //     double x, y;
+    //     gParticleStat[i]->GetPoint(0, x, y);
 
-        latex2.SetTextColor(colors[i]);
+    //     latex2.SetTextColor(colors[i]);
 
-        if (i == 0)
-            latex2.DrawLatex(x - 0.5, y - 0.8, names[i]);
+    //     if (i == 0)
+    //         latex2.DrawLatex(x - 0.5, y - 0.8, names[i]);
 
-        else if (i == 1)
-            latex2.DrawLatex(x + 1.8, y - 0.4, names[i]);
+    //     else if (i == 1)
+    //         latex2.DrawLatex(x + 1.8, y - 0.4, names[i]);
 
-        else if (i == 2)
-            latex2.DrawLatex(x, y - 2.2, names[i]);
+    //     else if (i == 2)
+    //         latex2.DrawLatex(x, y - 2.2, names[i]);
 
-        else if (i == 3)
-            latex2.DrawLatex(x, y - 1.0, names[i]);
+    //     else if (i == 3)
+    //         latex2.DrawLatex(x, y - 1.0, names[i]);
 
-        else if (i == 4)
-            latex2.DrawLatex(x, y - 2.2, names[i]);
+    //     else if (i == 4)
+    //         latex2.DrawLatex(x, y - 2.2, names[i]);
 
-        else if (i == 5)
-            latex2.DrawLatex(x, y - 1.0, names[i]);
-    }
-    if (isSavePlots)
-    {
-        cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.pdf");
-    }
+    //     else if (i == 5)
+    //         latex2.DrawLatex(x, y - 1.0, names[i]);
+    // }
+    // if (isSavePlots)
+    // {
+    //     cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.pdf");
+    // }
 
-    //======================================================================
-    // ==Double YieldRatio (Mult/LM): K*0/K, K*+-/K0s, Sigma/Lambda, Xi*/Xi, Phi/K
-    //======================================================================
-    TCanvas *cYieldLMRatio3 = new TCanvas("cYieldLMRatio3", "cYieldLMRatio3", 720, 720);
-    SetCanvasStyle(cYieldLMRatio3, 0.15, 0.03, 0.03, 0.15);
-    TGraphErrors **gYieldChKstarK0sLMRatio = DivideByMult(gYieldChKstarKshortRatio, -1, 0.5, 3);
-    TGraphErrors **gYieldSigmaLambdaLMRatio = DivideByMult(gYieldSigmaLambdaRatio, -1, 0.5, 3);
-    TGraphErrors **gYieldXiStarXiLMRatio = DivideByMult(gYieldXiStarXiRatio, -1, 0.5, 3);
-    TGraphErrors **gYieldPhiKaLMRatio = DivideByMult(gYieldPhiKaRatio, -1, 0.5, 3);
-    TGraphErrors **gYieldLambda1520LambdaLMRatio = DivideByMult(gYieldLambda1520LambdaRatio, -1, 0.5, 2);
+    // //======================================================================
+    // // ==Double YieldRatio (Mult/LM): K*0/K, K*+-/K0s, Sigma/Lambda, Xi*/Xi, Phi/K
+    // //======================================================================
+    // TCanvas *cYieldLMRatio3 = new TCanvas("cYieldLMRatio3", "cYieldLMRatio3", 720, 720);
+    // SetCanvasStyle(cYieldLMRatio3, 0.15, 0.03, 0.03, 0.15);
+    // TGraphErrors **gYieldChKstarK0sLMRatio = DivideByMult(gYieldChKstarKshortRatio, -1, 0.5, 3);
+    // TGraphErrors **gYieldSigmaLambdaLMRatio = DivideByMult(gYieldSigmaLambdaRatio, -1, 0.5, 3);
+    // TGraphErrors **gYieldXiStarXiLMRatio = DivideByMult(gYieldXiStarXiRatio, -1, 0.5, 3);
+    // TGraphErrors **gYieldPhiKaLMRatio = DivideByMult(gYieldPhiKaRatio, -1, 0.5, 3);
+    // TGraphErrors **gYieldLambda1520LambdaLMRatio = DivideByMult(gYieldLambda1520LambdaRatio, -1, 0.5, 2);
 
-    gYieldKstarKaLMRatio[0]->SetMaximum(1.89);
-    gYieldKstarKaLMRatio[0]->SetMinimum(0.48);
-    gYieldKstarKaLMRatio[0]->SetLineColor(kRed);
-    gYieldKstarKaLMRatio[0]->SetMarkerColor(kRed);
-    gYieldKstarKaLMRatio[0]->Draw("APE");
-    gYieldKstarKaLMRatio[1]->SetLineColor(kRed);
-    gYieldKstarKaLMRatio[1]->Draw("5 same");
-    gYieldChKstarK0sLMRatio[0]->SetMarkerColor(kBlue + 1);
-    gYieldChKstarK0sLMRatio[0]->SetLineColor(kBlue + 1);
-    gYieldChKstarK0sLMRatio[0]->SetMarkerStyle(21);
-    gYieldChKstarK0sLMRatio[0]->Draw("PE same");
-    gYieldChKstarK0sLMRatio[1]->SetLineColor(kBlue + 1);
-    gYieldChKstarK0sLMRatio[1]->SetFillStyle(0);
-    gYieldChKstarK0sLMRatio[1]->Draw("5 same");
-    gYieldSigmaLambdaLMRatio[0]->SetMarkerColor(kAzure + 7);
-    gYieldSigmaLambdaLMRatio[0]->SetLineColor(kAzure + 7);
-    gYieldSigmaLambdaLMRatio[0]->SetMarkerStyle(22);
-    gYieldSigmaLambdaLMRatio[0]->Draw("PE same");
-    gYieldSigmaLambdaLMRatio[1]->SetLineColor(kAzure + 7);
-    gYieldSigmaLambdaLMRatio[1]->SetFillStyle(0);
-    gYieldSigmaLambdaLMRatio[1]->Draw("5 same");
-    gYieldLambda1520LambdaLMRatio[0]->SetMarkerColor(kGreen + 2);
-    gYieldLambda1520LambdaLMRatio[0]->SetLineColor(kGreen + 2);
-    gYieldLambda1520LambdaLMRatio[0]->SetMarkerStyle(22);
-    gYieldLambda1520LambdaLMRatio[0]->Draw("PE same");
-    gYieldLambda1520LambdaLMRatio[1]->SetLineColor(kGreen + 2);
-    gYieldLambda1520LambdaLMRatio[1]->SetFillStyle(0);
-    gYieldLambda1520LambdaLMRatio[1]->Draw("5 same");
-    gYieldXiStarXiLMRatio[0]->SetMarkerColor(kBrown);
-    gYieldXiStarXiLMRatio[0]->SetLineColor(kBrown);
-    gYieldXiStarXiLMRatio[0]->SetMarkerStyle(23);
-    gYieldXiStarXiLMRatio[0]->Draw("PE same");
-    gYieldXiStarXiLMRatio[1]->SetLineColor(kBrown);
-    gYieldXiStarXiLMRatio[1]->SetFillStyle(0);
-    gYieldXiStarXiLMRatio[1]->Draw("5 same");
-    gYieldPhiKaLMRatio[0]->SetMarkerColor(kMagenta);
-    gYieldPhiKaLMRatio[0]->SetLineColor(kMagenta);
-    gYieldPhiKaLMRatio[0]->SetMarkerStyle(47);
-    gYieldPhiKaLMRatio[0]->Draw("PE same");
-    gYieldPhiKaLMRatio[1]->SetLineColor(kMagenta);
-    gYieldPhiKaLMRatio[1]->SetFillStyle(0);
-    gYieldPhiKaLMRatio[1]->Draw("5 same");
+    // gYieldKstarKaLMRatio[0]->SetMaximum(1.89);
+    // gYieldKstarKaLMRatio[0]->SetMinimum(0.48);
+    // gYieldKstarKaLMRatio[0]->SetLineColor(kRed);
+    // gYieldKstarKaLMRatio[0]->SetMarkerColor(kRed);
+    // gYieldKstarKaLMRatio[0]->Draw("APE");
+    // gYieldKstarKaLMRatio[1]->SetLineColor(kRed);
+    // gYieldKstarKaLMRatio[1]->Draw("5 same");
+    // gYieldChKstarK0sLMRatio[0]->SetMarkerColor(kBlue + 1);
+    // gYieldChKstarK0sLMRatio[0]->SetLineColor(kBlue + 1);
+    // gYieldChKstarK0sLMRatio[0]->SetMarkerStyle(21);
+    // gYieldChKstarK0sLMRatio[0]->Draw("PE same");
+    // gYieldChKstarK0sLMRatio[1]->SetLineColor(kBlue + 1);
+    // gYieldChKstarK0sLMRatio[1]->SetFillStyle(0);
+    // gYieldChKstarK0sLMRatio[1]->Draw("5 same");
+    // gYieldSigmaLambdaLMRatio[0]->SetMarkerColor(kAzure + 7);
+    // gYieldSigmaLambdaLMRatio[0]->SetLineColor(kAzure + 7);
+    // gYieldSigmaLambdaLMRatio[0]->SetMarkerStyle(22);
+    // gYieldSigmaLambdaLMRatio[0]->Draw("PE same");
+    // gYieldSigmaLambdaLMRatio[1]->SetLineColor(kAzure + 7);
+    // gYieldSigmaLambdaLMRatio[1]->SetFillStyle(0);
+    // gYieldSigmaLambdaLMRatio[1]->Draw("5 same");
+    // gYieldLambda1520LambdaLMRatio[0]->SetMarkerColor(kGreen + 2);
+    // gYieldLambda1520LambdaLMRatio[0]->SetLineColor(kGreen + 2);
+    // gYieldLambda1520LambdaLMRatio[0]->SetMarkerStyle(22);
+    // gYieldLambda1520LambdaLMRatio[0]->Draw("PE same");
+    // gYieldLambda1520LambdaLMRatio[1]->SetLineColor(kGreen + 2);
+    // gYieldLambda1520LambdaLMRatio[1]->SetFillStyle(0);
+    // gYieldLambda1520LambdaLMRatio[1]->Draw("5 same");
+    // gYieldXiStarXiLMRatio[0]->SetMarkerColor(kBrown);
+    // gYieldXiStarXiLMRatio[0]->SetLineColor(kBrown);
+    // gYieldXiStarXiLMRatio[0]->SetMarkerStyle(23);
+    // gYieldXiStarXiLMRatio[0]->Draw("PE same");
+    // gYieldXiStarXiLMRatio[1]->SetLineColor(kBrown);
+    // gYieldXiStarXiLMRatio[1]->SetFillStyle(0);
+    // gYieldXiStarXiLMRatio[1]->Draw("5 same");
+    // gYieldPhiKaLMRatio[0]->SetMarkerColor(kMagenta);
+    // gYieldPhiKaLMRatio[0]->SetLineColor(kMagenta);
+    // gYieldPhiKaLMRatio[0]->SetMarkerStyle(47);
+    // gYieldPhiKaLMRatio[0]->Draw("PE same");
+    // gYieldPhiKaLMRatio[1]->SetLineColor(kMagenta);
+    // gYieldPhiKaLMRatio[1]->SetFillStyle(0);
+    // gYieldPhiKaLMRatio[1]->Draw("5 same");
 
-    TLegend *legendYieldLMRatio4 = new TLegend(0.2, 0.78, 0.8, 0.9);
-    SetLegendStyle(legendYieldLMRatio4);
-    legendYieldLMRatio4->SetTextSize(0.027);
-    legendYieldLMRatio4->SetNColumns(2);
-    legendYieldLMRatio4->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0}/K", "P");
-    legendYieldLMRatio4->AddEntry(gYieldChKstarK0sLMRatio[0], "K*^{#pm}/K_{S}^{0}", "P");
-    legendYieldLMRatio4->AddEntry(gYieldSigmaLambdaLMRatio[0], "#Sigma(1385)/#Lambda", "P");
-    legendYieldLMRatio4->AddEntry(gYieldLambda1520LambdaLMRatio[0], "#Lambda(1520)/#Lambda", "P");
-    legendYieldLMRatio4->AddEntry(gYieldXiStarXiLMRatio[0], "#Xi(1530)/#Xi", "P");
-    legendYieldLMRatio4->AddEntry(gYieldPhiKaLMRatio[0], "#phi/K", "P");
-    legendYieldLMRatio4->Draw();
-    if (isSavePlots)
-    {
-        cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.pdf");
-    }
+    // TLegend *legendYieldLMRatio4 = new TLegend(0.2, 0.78, 0.8, 0.9);
+    // SetLegendStyle(legendYieldLMRatio4);
+    // legendYieldLMRatio4->SetTextSize(0.027);
+    // legendYieldLMRatio4->SetNColumns(2);
+    // legendYieldLMRatio4->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0}/K", "P");
+    // legendYieldLMRatio4->AddEntry(gYieldChKstarK0sLMRatio[0], "K*^{#pm}/K_{S}^{0}", "P");
+    // legendYieldLMRatio4->AddEntry(gYieldSigmaLambdaLMRatio[0], "#Sigma(1385)/#Lambda", "P");
+    // legendYieldLMRatio4->AddEntry(gYieldLambda1520LambdaLMRatio[0], "#Lambda(1520)/#Lambda", "P");
+    // legendYieldLMRatio4->AddEntry(gYieldXiStarXiLMRatio[0], "#Xi(1530)/#Xi", "P");
+    // legendYieldLMRatio4->AddEntry(gYieldPhiKaLMRatio[0], "#phi/K", "P");
+    // legendYieldLMRatio4->Draw();
+    // if (isSavePlots)
+    // {
+    //     cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.pdf");
+    // }
 
     // // /*
     // //====================================================
@@ -2989,161 +3042,161 @@ void ParticleRatioWithRun2()
     //}
     //
 
-    //====================================================
-    // ==================Pion yeild======================
-    //====================================================
-    TCanvas *cPionYield = new TCanvas("cPionYield", "cPionYield", 720, 720);
-    SetCanvasStyle(cPionYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldPion[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldPion[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-    SetGraphErrorStyle(gMYieldPion[0]);
-    gMYieldPion[0]->GetYaxis()->SetRangeUser(0.0, 13);
-    gMYieldPion[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldPion[0]->SetMarkerColor(kRed);
-    gMYieldPion[0]->SetLineColor(kRed);
-    gMYieldPion[0]->Draw("APE");
-    gMYieldPion[1]->SetFillStyle(0);
-    gMYieldPion[1]->SetLineColor(kRed);
-    gMYieldPion[1]->Draw("5 same");
+    // //====================================================
+    // // ==================Pion yeild======================
+    // //====================================================
+    // TCanvas *cPionYield = new TCanvas("cPionYield", "cPionYield", 720, 720);
+    // SetCanvasStyle(cPionYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldPion[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldPion[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    // SetGraphErrorStyle(gMYieldPion[0]);
+    // gMYieldPion[0]->GetYaxis()->SetRangeUser(0.0, 13);
+    // gMYieldPion[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldPion[0]->SetMarkerColor(kRed);
+    // gMYieldPion[0]->SetLineColor(kRed);
+    // gMYieldPion[0]->Draw("APE");
+    // gMYieldPion[1]->SetFillStyle(0);
+    // gMYieldPion[1]->SetLineColor(kRed);
+    // gMYieldPion[1]->Draw("5 same");
 
-    gMYieldPionEPOS_IST0->SetLineStyle(2);
-    gMYieldPionEPOS_IST0->SetLineWidth(3);
-    TGraphErrors *gMYieldPionEPOSClone = (TGraphErrors *)gMYieldPionEPOS_IST0->Clone("gMYieldPionEPOSClone");
-    ScaleGraph(gMYieldPionEPOSClone, 0.5); // In model, Pi,K,p are not averaged.
-    gMYieldPionEPOSClone->SetLineColor(kRed + 1);
-    gMYieldPionEPOSClone->Draw("l same");
+    // gMYieldPionEPOS_IST0->SetLineStyle(2);
+    // gMYieldPionEPOS_IST0->SetLineWidth(3);
+    // TGraphErrors *gMYieldPionEPOSClone = (TGraphErrors *)gMYieldPionEPOS_IST0->Clone("gMYieldPionEPOSClone");
+    // ScaleGraph(gMYieldPionEPOSClone, 0.5); // In model, Pi,K,p are not averaged.
+    // gMYieldPionEPOSClone->SetLineColor(kRed + 1);
+    // gMYieldPionEPOSClone->Draw("l same");
 
-    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    {
-        setStyle(gPythiaYieldLocal[imodel][kPion_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        TGraphErrors *gPythiaYieldPionClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kPion_epos]->Clone(Form("gPythiaYieldPionClone_%d", imodel));
-        ScaleGraph(gPythiaYieldPionClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldPionClone->Draw("l same");
-    }
-    TLegend *legTemp = new TLegend(0.2, 0.65, 0.55, 0.85);
-    SetLegendStyle(legTemp);
-    legTemp->SetTextSize(0.03);
-    legTemp->AddEntry(gMYieldPion[0], "Data", "p");
-    legTemp->AddEntry(gMYieldPionEPOSClone, "EPOS", "l");
-    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    {
-        legTemp->AddEntry(gPythiaYieldLocal[imodel][kPion_epos], modelLabelLocal[imodel], "l");
-    }
-    legTemp->Draw();
-    latex.SetTextSize(0.04);
-    latex.DrawLatex(0.28, 0.88, "#pi^{#pm}");
-    if (isSavePlots)
-    {
-        cPionYield->SaveAs("Plots/PionYield_Run3.pdf");
-    }
+    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    // {
+    //     setStyle(gPythiaYieldLocal[imodel][kPion_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+    //     TGraphErrors *gPythiaYieldPionClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kPion_epos]->Clone(Form("gPythiaYieldPionClone_%d", imodel));
+    //     ScaleGraph(gPythiaYieldPionClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+    //     gPythiaYieldPionClone->Draw("l same");
+    // }
+    // TLegend *legTemp = new TLegend(0.2, 0.65, 0.55, 0.85);
+    // SetLegendStyle(legTemp);
+    // legTemp->SetTextSize(0.03);
+    // legTemp->AddEntry(gMYieldPion[0], "Data", "p");
+    // legTemp->AddEntry(gMYieldPionEPOSClone, "EPOS", "l");
+    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    // {
+    //     legTemp->AddEntry(gPythiaYieldLocal[imodel][kPion_epos], modelLabelLocal[imodel], "l");
+    // }
+    // legTemp->Draw();
+    // latex.SetTextSize(0.04);
+    // latex.DrawLatex(0.28, 0.88, "#pi^{#pm}");
+    // if (isSavePlots)
+    // {
+    //     cPionYield->SaveAs("Plots/PionYield_Run3.pdf");
+    // }
 
-    //====================================================
-    // ==================Kaon yeild======================
-    //====================================================
-    TCanvas *cKaonYield = new TCanvas("cKaonYield", "cKaonYield", 720, 720);
-    SetCanvasStyle(cKaonYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldKaon[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldKaon[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-    SetGraphErrorStyle(gMYieldKaon[0]);
-    gMYieldKaon[0]->GetYaxis()->SetRangeUser(0.0, 2.2);
-    gMYieldKaon[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldKaon[0]->SetMarkerColor(kRed);
-    gMYieldKaon[0]->SetLineColor(kRed);
-    gMYieldKaon[0]->Draw("APE");
-    gMYieldKaon[1]->SetFillStyle(0);
-    gMYieldKaon[1]->SetLineColor(kRed);
-    gMYieldKaon[1]->Draw("5 same");
+    // //====================================================
+    // // ==================Kaon yeild======================
+    // //====================================================
+    // TCanvas *cKaonYield = new TCanvas("cKaonYield", "cKaonYield", 720, 720);
+    // SetCanvasStyle(cKaonYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldKaon[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldKaon[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    // SetGraphErrorStyle(gMYieldKaon[0]);
+    // gMYieldKaon[0]->GetYaxis()->SetRangeUser(0.0, 2.2);
+    // gMYieldKaon[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldKaon[0]->SetMarkerColor(kRed);
+    // gMYieldKaon[0]->SetLineColor(kRed);
+    // gMYieldKaon[0]->Draw("APE");
+    // gMYieldKaon[1]->SetFillStyle(0);
+    // gMYieldKaon[1]->SetLineColor(kRed);
+    // gMYieldKaon[1]->Draw("5 same");
 
-    TGraphErrors *gMYieldKaonEPOSClone = (TGraphErrors *)gMYieldKaonEPOS_IST0->Clone("gMYieldKaonEPOSClone");
-    gMYieldKaonEPOSClone->SetLineStyle(2);
-    gMYieldKaonEPOSClone->SetLineWidth(3);
-    ScaleGraph(gMYieldKaonEPOSClone, 0.5);
-    gMYieldKaonEPOSClone->SetLineColor(kRed + 1);
-    gMYieldKaonEPOSClone->Draw("l same");
+    // TGraphErrors *gMYieldKaonEPOSClone = (TGraphErrors *)gMYieldKaonEPOS_IST0->Clone("gMYieldKaonEPOSClone");
+    // gMYieldKaonEPOSClone->SetLineStyle(2);
+    // gMYieldKaonEPOSClone->SetLineWidth(3);
+    // ScaleGraph(gMYieldKaonEPOSClone, 0.5);
+    // gMYieldKaonEPOSClone->SetLineColor(kRed + 1);
+    // gMYieldKaonEPOSClone->Draw("l same");
 
-    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    {
-        setStyle(gPythiaYieldLocal[imodel][kKaon_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        TGraphErrors *gPythiaYieldKaonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kKaon_epos]->Clone(Form("gPythiaYieldKaonClone_%d", imodel));
-        ScaleGraph(gPythiaYieldKaonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldKaonClone->Draw("l same");
-    }
-    legTemp->Draw();
-    latex.DrawLatex(0.28, 0.88, "K^{#pm}");
-    if (isSavePlots)
-    {
-        cKaonYield->SaveAs("Plots/KaonYield_Run3.pdf");
-    }
+    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    // {
+    //     setStyle(gPythiaYieldLocal[imodel][kKaon_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+    //     TGraphErrors *gPythiaYieldKaonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kKaon_epos]->Clone(Form("gPythiaYieldKaonClone_%d", imodel));
+    //     ScaleGraph(gPythiaYieldKaonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+    //     gPythiaYieldKaonClone->Draw("l same");
+    // }
+    // legTemp->Draw();
+    // latex.DrawLatex(0.28, 0.88, "K^{#pm}");
+    // if (isSavePlots)
+    // {
+    //     cKaonYield->SaveAs("Plots/KaonYield_Run3.pdf");
+    // }
 
-    //====================================================
-    // ==================Proton yeild======================
-    //====================================================
-    TCanvas *cProtonYield = new TCanvas("cProtonYield", "cProtonYield", 720, 720);
-    SetCanvasStyle(cProtonYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldProton[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldProton[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-    SetGraphErrorStyle(gMYieldProton[0]);
-    gMYieldProton[0]->GetYaxis()->SetRangeUser(0.0, 1.05);
-    gMYieldProton[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldProton[0]->SetMarkerColor(kRed);
-    gMYieldProton[0]->SetLineColor(kRed);
-    gMYieldProton[0]->Draw("APE");
-    gMYieldProton[1]->SetFillStyle(0);
-    gMYieldProton[1]->SetLineColor(kRed);
-    gMYieldProton[1]->Draw("5 same");
+    // //====================================================
+    // // ==================Proton yeild======================
+    // //====================================================
+    // TCanvas *cProtonYield = new TCanvas("cProtonYield", "cProtonYield", 720, 720);
+    // SetCanvasStyle(cProtonYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldProton[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldProton[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    // SetGraphErrorStyle(gMYieldProton[0]);
+    // gMYieldProton[0]->GetYaxis()->SetRangeUser(0.0, 1.05);
+    // gMYieldProton[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldProton[0]->SetMarkerColor(kRed);
+    // gMYieldProton[0]->SetLineColor(kRed);
+    // gMYieldProton[0]->Draw("APE");
+    // gMYieldProton[1]->SetFillStyle(0);
+    // gMYieldProton[1]->SetLineColor(kRed);
+    // gMYieldProton[1]->Draw("5 same");
 
-    gMYieldProtonEPOS_IST0->SetLineStyle(2);
-    gMYieldProtonEPOS_IST0->SetLineWidth(3);
-    TGraphErrors *gMYieldProtonEPOSClone = (TGraphErrors *)gMYieldProtonEPOS_IST0->Clone("gMYieldProtonEPOSClone");
-    ScaleGraph(gMYieldProtonEPOSClone, 0.5);
-    gMYieldProtonEPOSClone->SetLineColor(kRed + 1);
-    gMYieldProtonEPOSClone->Draw("l same");
+    // gMYieldProtonEPOS_IST0->SetLineStyle(2);
+    // gMYieldProtonEPOS_IST0->SetLineWidth(3);
+    // TGraphErrors *gMYieldProtonEPOSClone = (TGraphErrors *)gMYieldProtonEPOS_IST0->Clone("gMYieldProtonEPOSClone");
+    // ScaleGraph(gMYieldProtonEPOSClone, 0.5);
+    // gMYieldProtonEPOSClone->SetLineColor(kRed + 1);
+    // gMYieldProtonEPOSClone->Draw("l same");
 
-    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    {
-        setStyle(gPythiaYieldLocal[imodel][kProton_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        TGraphErrors *gPythiaYieldProtonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kProton_epos]->Clone(Form("gPythiaYieldProtonClone_%d", imodel));
-        ScaleGraph(gPythiaYieldProtonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
-        gPythiaYieldProtonClone->Draw("l same");
-    }
-    legTemp->Draw();
-    latex.DrawLatex(0.28, 0.88, "p");
-    if (isSavePlots)
-    {
-        cProtonYield->SaveAs("Plots/ProtonYield_Run3.pdf");
-    }
+    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    // {
+    //     setStyle(gPythiaYieldLocal[imodel][kProton_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+    //     TGraphErrors *gPythiaYieldProtonClone = (TGraphErrors *)gPythiaYieldLocal[imodel][kProton_epos]->Clone(Form("gPythiaYieldProtonClone_%d", imodel));
+    //     ScaleGraph(gPythiaYieldProtonClone, 0.5); // In pythia nothing is averaged, but in data Pi,K,p is averaged.
+    //     gPythiaYieldProtonClone->Draw("l same");
+    // }
+    // legTemp->Draw();
+    // latex.DrawLatex(0.28, 0.88, "p");
+    // if (isSavePlots)
+    // {
+    //     cProtonYield->SaveAs("Plots/ProtonYield_Run3.pdf");
+    // }
 
-    ////======================================================
-    ////  ================Kshort yield========================
-    ////======================================================
-    TCanvas *cKshortYield = new TCanvas("cKshortYield", "cKshortYield", 720, 720);
-    SetCanvasStyle(cKshortYield, 0.15, 0.03, 0.03, 0.15);
-    gMYieldKshortRun3[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gMYieldKshortRun3[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-    SetGraphErrorStyle(gMYieldKshortRun3[0]);
-    gMYieldKshortRun3[0]->GetYaxis()->SetRangeUser(0.0, 1.95);
-    gMYieldKshortRun3[0]->GetXaxis()->SetLimits(0, 27);
-    gMYieldKshortRun3[0]->SetMarkerColor(kRed);
-    gMYieldKshortRun3[0]->SetLineColor(kRed);
-    gMYieldKshortRun3[0]->Draw("APE");
-    gMYieldKshortRun3[1]->SetFillStyle(0);
-    gMYieldKshortRun3[1]->SetLineColor(kRed);
-    gMYieldKshortRun3[1]->Draw("5 same");
-    gMYieldKshortEPOS_IST0->SetLineStyle(2);
-    gMYieldKshortEPOS_IST0->SetLineWidth(3);
-    gMYieldKshortEPOS_IST0->SetLineColor(kRed + 1);
-    gMYieldKshortEPOS_IST0->Draw("l same");
-    for (int imodel = 0; imodel < kNPythiaModels; imodel++)
-    {
-        setStyle(gPythiaYieldLocal[imodel][kKshort_epos], modelStyle[imodel].color, modelStyle[imodel].style);
-        gPythiaYieldLocal[imodel][kKshort_epos]->Draw("l same");
-    }
-    legTemp->Draw();
-    latex.DrawLatex(0.28, 0.88, "K^{0}_{S}");
-    if (isSavePlots)
-    {
-        cKshortYield->SaveAs("Plots/KshortYield_Run3.pdf");
-    }
+    // ////======================================================
+    // ////  ================Kshort yield========================
+    // ////======================================================
+    // TCanvas *cKshortYield = new TCanvas("cKshortYield", "cKshortYield", 720, 720);
+    // SetCanvasStyle(cKshortYield, 0.15, 0.03, 0.03, 0.15);
+    // gMYieldKshortRun3[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
+    // gMYieldKshortRun3[0]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    // SetGraphErrorStyle(gMYieldKshortRun3[0]);
+    // gMYieldKshortRun3[0]->GetYaxis()->SetRangeUser(0.0, 1.95);
+    // gMYieldKshortRun3[0]->GetXaxis()->SetLimits(0, 27);
+    // gMYieldKshortRun3[0]->SetMarkerColor(kRed);
+    // gMYieldKshortRun3[0]->SetLineColor(kRed);
+    // gMYieldKshortRun3[0]->Draw("APE");
+    // gMYieldKshortRun3[1]->SetFillStyle(0);
+    // gMYieldKshortRun3[1]->SetLineColor(kRed);
+    // gMYieldKshortRun3[1]->Draw("5 same");
+    // gMYieldKshortEPOS_IST0->SetLineStyle(2);
+    // gMYieldKshortEPOS_IST0->SetLineWidth(3);
+    // gMYieldKshortEPOS_IST0->SetLineColor(kRed + 1);
+    // gMYieldKshortEPOS_IST0->Draw("l same");
+    // for (int imodel = 0; imodel < kNPythiaModels; imodel++)
+    // {
+    //     setStyle(gPythiaYieldLocal[imodel][kKshort_epos], modelStyle[imodel].color, modelStyle[imodel].style);
+    //     gPythiaYieldLocal[imodel][kKshort_epos]->Draw("l same");
+    // }
+    // legTemp->Draw();
+    // latex.DrawLatex(0.28, 0.88, "K^{0}_{S}");
+    // if (isSavePlots)
+    // {
+    //     cKshortYield->SaveAs("Plots/KshortYield_Run3.pdf");
+    // }
 
     // //====================================================
     // // ==================Phi yeild======================
@@ -3243,20 +3296,36 @@ TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denom
 
 TGraphErrors **MakeRatioUncorr(TGraphErrors **numerator, TGraphErrors **denominator, float CorrFactorDen = 1, int nGraphs = 3)
 {
-    TGraphErrors **ratio = new TGraphErrors *[2];
+    if (!numerator || !denominator)
+    {
+        cout << "Error: null input graph array" << endl;
+        return nullptr;
+    }
 
-    for (int ig = 0; ig < 2; ig++)
+    if (nGraphs < 3)
+    {
+        cout << "Error: nGraphs must be at least 3" << endl;
+        return nullptr;
+    }
+
+    TGraphErrors **ratio = new TGraphErrors *[3];
+
+    for (int ig = 0; ig < 3; ig++)
     {
         if (!numerator[ig] || !denominator[ig])
         {
-            cout << "Error: null graph" << endl;
+            cout << "Error: null graph at index " << ig << endl;
+            delete[] ratio;
             return nullptr;
         }
 
         if (numerator[ig]->GetN() != denominator[ig]->GetN())
         {
-            cout << "Error: different number of points in numerator and denominator graphs" << endl;
-            cout << "In numerator graph points " << numerator[ig]->GetN() << " and in denominator graph points " << denominator[ig]->GetN() << endl;
+            cout << "Error: different number of points in numerator " << "and denominator graphs" << endl;
+
+            cout << "ig = " << ig << ", numerator = " << numerator[ig]->GetN() << ", denominator = " << denominator[ig]->GetN() << endl;
+
+            delete[] ratio;
             return nullptr;
         }
 
@@ -3270,28 +3339,55 @@ TGraphErrors **MakeRatioUncorr(TGraphErrors **numerator, TGraphErrors **denomina
             numerator[ig]->GetPoint(i, xNum, yNum);
             denominator[ig]->GetPoint(i, xDen, yDen);
 
+            // Apply correction factor to denominator
             yDen *= CorrFactorDen;
 
             double yRatio = (yDen != 0.) ? yNum / yDen : 0.;
+
             ratio[ig]->SetPoint(i, xNum, yRatio);
 
-            double xErr = numerator[ig]->GetErrorX(i);
-            double numErr = numerator[ig]->GetErrorY(i);
-            double denErr;
+            // ---------------------------------------------------------
+            // Select the errors according to the requested definition
+            // ---------------------------------------------------------
 
-            if (ig == 1 && nGraphs >= 3)
+            double numErr = 0.;
+            double denErr = 0.;
+
+            if (ig == 0)
+            {
+                // Ratio 0:
+                // stat(num) / stat(den)
+                numErr = numerator[0]->GetErrorY(i);
+                denErr = denominator[0]->GetErrorY(i);
+            }
+            else if (ig == 1)
+            {
+                // Ratio 1:
+                // uncorr(num) / total(den)
+                numErr = numerator[2]->GetErrorY(i);
+                denErr = denominator[1]->GetErrorY(i);
+            }
+            else if (ig == 2)
+            {
+                // Ratio 2:
+                // uncorr(num) / uncorr(den)
+                numErr = numerator[2]->GetErrorY(i);
                 denErr = denominator[2]->GetErrorY(i);
-            else
-                denErr = denominator[ig]->GetErrorY(i);
+            }
 
+            // Correction factor also scales the denominator uncertainty
             denErr *= CorrFactorDen;
 
             double yRatioErr = 0.;
 
             if (yDen != 0.)
             {
-                yRatioErr = sqrt(pow(numErr / yDen, 2) + pow(yNum * denErr / (yDen * yDen), 2));
+                yRatioErr = sqrt(
+                    pow(numErr / yDen, 2) +
+                    pow(yNum * denErr / (yDen * yDen), 2));
             }
+
+            double xErr = numerator[ig]->GetErrorX(i);
 
             ratio[ig]->SetPointError(i, xErr, yRatioErr);
         }
@@ -3400,77 +3496,131 @@ void AddGraph(TGraph *gr1, TGraph *gr2)
 
 TGraphErrors **DivideByMult(TGraphErrors **gr, double WhichMultPoint, double tolerance = 0.5, int noOfGraphs = 3)
 {
-    TGraphErrors **grCopy = new TGraphErrors *[noOfGraphs];
-
-    for (int ig = 0; ig < noOfGraphs; ig++)
+    if (!gr || !gr[0] || !gr[2])
     {
-        grCopy[ig] = (TGraphErrors *)gr[ig]->Clone();
+        cout << "Error: null graph array or required graphs" << endl;
+        return nullptr;
+    }
 
-        double yGivenMult = 1.0;
-        double yGivenMultErr = 0.0;
+    if (noOfGraphs < 3)
+    {
+        cout << "Error: noOfGraphs must be at least 3" << endl;
+        return nullptr;
+    }
 
-        if (WhichMultPoint >= 0)
-        {
-            for (int i = 0; i < gr[ig]->GetN(); i++)
-            {
-                double x, y;
-                gr[ig]->GetPoint(i, x, y);
+    // Output:
+    // grCopy[0] = ratio with statistical uncertainty
+    // grCopy[1] = ratio with uncorrelated uncertainty
+    TGraphErrors **grCopy = new TGraphErrors *[2];
 
-                if (fabs(x - WhichMultPoint) < tolerance)
-                {
-                    yGivenMult = y;
+    // ------------------------------------------------------------
+    // Find the reference multiplicity point
+    // ------------------------------------------------------------
 
-                    if (ig == 1 && noOfGraphs >= 3)
-                        yGivenMultErr = gr[2]->GetErrorY(i);
-                    else
-                        yGivenMultErr = gr[ig]->GetErrorY(i);
+    int refIndex = -1;
 
-                    break;
-                }
-            }
-        }
-        else
-        {
-            double xMult1, xMult2, yMultPoint1, yMultLastPoint, yMultErr1, yMultErrLastPoint;
-            gr[ig]->GetPoint(0, xMult1, yMultPoint1);
-            gr[ig]->GetPoint(gr[ig]->GetN() - 1, xMult2, yMultLastPoint);
-            yGivenMult = (xMult1 < xMult2) ? yMultPoint1 : yMultLastPoint;
-
-            if (ig == 1 && noOfGraphs >= 3)
-                yGivenMultErr = (xMult1 < xMult2) ? gr[2]->GetErrorY(0) : gr[2]->GetErrorY(gr[2]->GetN() - 1);
-            else
-                yGivenMultErr = (xMult1 < xMult2) ? gr[ig]->GetErrorY(0) : gr[ig]->GetErrorY(gr[ig]->GetN() - 1);
-        }
-
-        for (int i = 0; i < gr[ig]->GetN(); i++)
+    if (WhichMultPoint >= 0)
+    {
+        for (int i = 0; i < gr[0]->GetN(); i++)
         {
             double x, y;
-            gr[ig]->GetPoint(i, x, y);
+            gr[0]->GetPoint(i, x, y);
 
-            double xerr = gr[ig]->GetErrorX(i);
+            if (fabs(x - WhichMultPoint) < tolerance)
+            {
+                refIndex = i;
+                break;
+            }
+        }
 
-            double yerr;
+        if (refIndex < 0)
+        {
+            cout << "Error: Could not find multiplicity point "
+                 << WhichMultPoint << endl;
 
-            if (ig == 1 && noOfGraphs >= 3)
-                yerr = gr[1]->GetErrorY(i);
-            else
-                yerr = gr[ig]->GetErrorY(i);
-
-            // if (fabs(x - WhichMultPoint) < tolerance)
-            // {
-            //     grCopy[ig]->SetPoint(i, x, 1.0);
-            //     grCopy[ig]->SetPointError(i, xerr, 0.0);
-            //     continue;
-            // }
-
-            double ratio = y / yGivenMult;
-
-            double ratioErr = sqrt(pow(yerr / yGivenMult, 2) + pow(y * yGivenMultErr / (yGivenMult * yGivenMult), 2));
-
-            grCopy[ig]->SetPoint(i, x, ratio);
-            grCopy[ig]->SetPointError(i, xerr, ratioErr);
+            delete[] grCopy;
+            return nullptr;
         }
     }
+    else
+    {
+        // Use the lowest multiplicity point
+        double xFirst, yFirst;
+        double xLast, yLast;
+
+        gr[0]->GetPoint(0, xFirst, yFirst);
+        gr[0]->GetPoint(gr[0]->GetN() - 1, xLast, yLast);
+
+        refIndex = (xFirst < xLast) ? 0 : gr[0]->GetN() - 1;
+    }
+
+    // ------------------------------------------------------------
+    // Reference value
+    // ------------------------------------------------------------
+
+    double xRef, yRef;
+    gr[0]->GetPoint(refIndex, xRef, yRef);
+
+    if (yRef == 0.)
+    {
+        cout << "Error: Reference value is zero" << endl;
+        delete[] grCopy;
+        return nullptr;
+    }
+
+    // Reference uncertainties
+    double yRefStatErr = gr[0]->GetErrorY(refIndex);
+    double yRefUncorrErr = gr[2]->GetErrorY(refIndex);
+
+    // ------------------------------------------------------------
+    // Create the two output graphs
+    // ------------------------------------------------------------
+
+    grCopy[0] = (TGraphErrors *)gr[0]->Clone();
+    grCopy[1] = (TGraphErrors *)gr[2]->Clone();
+
+    // ------------------------------------------------------------
+    // Calculate ratios
+    // ------------------------------------------------------------
+
+    for (int i = 0; i < gr[0]->GetN(); i++)
+    {
+        double x, y;
+        gr[0]->GetPoint(i, x, y);
+
+        double xerr = gr[0]->GetErrorX(i);
+
+        // ========================================================
+        // 1. STATISTICAL RATIO
+        // ========================================================
+
+        double yStatErr = gr[0]->GetErrorY(i);
+
+        double ratio = y / yRef;
+
+        double ratioStatErr = sqrt(
+            pow(yStatErr / yRef, 2) +
+            pow(y * yRefStatErr / (yRef * yRef), 2));
+
+        grCopy[0]->SetPoint(i, x, ratio);
+        grCopy[0]->SetPointError(i, xerr, ratioStatErr);
+
+        // ========================================================
+        // 2. UNCORRELATED SYSTEMATIC RATIO
+        // ========================================================
+
+        double yUncorrErr = gr[2]->GetErrorY(i);
+
+        double ratioUncorrErr = sqrt(
+            pow(yUncorrErr / yRef, 2) +
+            pow(y * yRefUncorrErr / (yRef * yRef), 2));
+
+        grCopy[1]->SetPoint(i, x, ratio);
+        grCopy[1]->SetPointError(i, xerr, ratioUncorrErr);
+    }
+
+    SetGraphErrorStyle(grCopy[0]);
+    SetGraphErrorStyle(grCopy[1]);
 
     return grCopy;
 }

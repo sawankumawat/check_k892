@@ -51,7 +51,7 @@ void compare_yield_inelgt0_minBias()
     // 672297 (2024 data: MIDptDep2_TOF3, MIDptDep2_small_TOF3, MIDptDep2_0p3_TOF3)
     // 675391 (2024 data: MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
 
-    TFile *fSystematics = new TFile("../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
+    TFile *fSystematics = new TFile("../../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
     if (fSystematics->IsZombie())
     {
         cout << "Error: Systematics file not found" << endl;

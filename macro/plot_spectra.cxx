@@ -49,7 +49,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    TString outputType = "pdf"; // pdf, png
+    TString outputType = "png"; // pdf, png
     double fitRangeMax = 20.0;
     bool systematicsExist = true;
 
@@ -61,26 +61,14 @@ void plot_spectra()
         int index = i * (nPaletteColors - 1) / 11;
         colors[i] = TColor::GetColorPalette(index);
     }
-    
-    TFile *fSysUncert = new TFile("")
 
-    TH1D *hTotalSysSmoothed;
-    if (systematicsExist)
-    {
-        hTotalSysSmoothed = (TH1D *)fSysUncert->Get("hTotalSysSmoothed_0_100"); // Temporary assigning same to all multiplicity classes
-        if (hTotalSysSmoothed == nullptr)
-        {
-            cout << "Histogram hTotalSysSmoothed_0_100 not found in the systematic uncertainty file" << endl;
-            return;
-        }
-    }
+    TString basePath = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
+    TFile *fSysUncert = new TFile(basePath + "SystematicsPlots/SysUncert.root", "READ");
 
     // for (int ivar = 0; ivar < nSysVars; ivar++)
     {
         //================================After SQM=======================
-        // string path = "../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass"; // 2024 data
         string path = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // 2024 data
-        // path = path + "/" + sysVars[ivar];
         TString pathLevyFits = path + "/LevyFits";
         if (gSystem->mkdir(pathLevyFits, kTRUE))
         {
@@ -89,23 +77,15 @@ void plot_spectra()
 
         int markers[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 32, 47};
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-
         const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
+
         TH1F *hmult[numofmultbins + 1];
         TH1F *hmultClone[numofmultbins + 1];
-
-        // TFile *fspectra = (plotOnlyRaw) ? new TFile((path + "/yield.root").c_str(), "read") : new TFile((path + "/corrected_spectra.root").c_str(), "read");
-        // if (fspectra->IsZombie())
-        // {
-        //     cout << "Spectra file not found" << endl;
-        //     return;
-        // }
+        TH1D *hTotalSysSmoothed[numofmultbins + 1];
 
         TFile *fspectraMinBias = (plotOnlyRaw) ? new TFile((path + Form("/yield_0_100.root")).c_str(), "read") : new TFile((path + Form("/corrected_spectra_0_100.root")).c_str(), "read");
 
         hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectraMinBias->Get("mult_0-100/yield_integral") : (TH1F *)fspectraMinBias->Get("mult_0-100/corrected_spectra_BinCount_final");
-
-        // hmult[0] = (plotOnlyRaw) ? (TH1F *)fspectra->Get("mult_0-100/yield_integral") : (TH1F *)fspectra->Get("mult_0-100/corrected_spectra_Integral_final");
 
         hmultClone[0] = (TH1F *)hmult[0]->Clone("hmultClone0");
         if (hmult[0] == nullptr)
@@ -189,17 +169,34 @@ void plot_spectra()
         if (!plotOnlyRaw)
         {
             for (int imult = 0; imult < numofmultbins + 1; imult++)
-            // for (int imult = 9; imult < 10; imult++)
             {
-                // TH1F *h1 = (TH1F *)hmultClone[imult]->Clone("h1");
-                // TH1F *h2 = (TH1F *)hmultClone[imult]->Clone("h2");
+                int multlow, multhigh;
+
+                if (imult == 0)
+                {
+                    multlow = 0;
+                    multhigh = 100; // for all multiplicity
+                }
+                else
+                {
+                    multlow = mult_classes[imult - 1];
+                    multhigh = mult_classes[imult];
+                }
+
+                hTotalSysSmoothed[imult] = (TH1D *)fSysUncert->Get(Form("hTotalSysSmoothed_%d_%d", multlow, multhigh));
+                if (hTotalSysSmoothed[imult] == nullptr)
+                {
+                    cout << "Systematics histogram not found for multiplicity bin: " << Form("%d-%d", multlow, multhigh) << endl;
+                    systematicsExist = false;
+                }
+
                 TH1F *h1 = (TH1F *)hmult[imult]->Clone(Form("h1_%d", imult));
                 TH1F *h2 = (TH1F *)hmult[imult]->Clone(Form("h2_%d", imult));
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
 
-                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
+                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed[imult]->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
                     h2->SetBinError(i, systemerr);
                 }
                 /*************meanpT*****************byresonance*******************package*************************/
@@ -316,9 +313,10 @@ void plot_spectra()
 
                 for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
                 {
-                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
+                    double systemerr = (systematicsExist) ? (hTotalSysSmoothed[imult]->GetBinContent(i) * h2->GetBinContent(i)) : (0.1 * h2->GetBinContent(i)); // 10% systematic error if systematics histogram not found
                     h2->SetBinError(i, systemerr);
                 }
+
                 /*************meanpT*****************byresonance*******************package*************************/
                 Double_t min = 0.0;
                 Double_t max = fitRangeMax;
@@ -403,10 +401,16 @@ void plot_spectra()
             double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
             double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
+            double dndyRun3_UncorrSys[] = {0.00354684, 0.00256758, 0.00196864, 0.0019312, 0.00135132, 0.00137921, 0.000946562, 0.000780209, 0.000389811, 0.000547972};
+            double meanpTRun3_UncorrSys[] = {0.00641073, 0.00533682, 0.00419074, 0.00582635, 0.00449249, 0.00345193, 0.00401086, 0.00412324, 0.00230334, 0.00506651};
+
             TGraphErrors *gMeanYieldRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, yield_errStat);
             TGraphAsymmErrors *gMeanYieldRun3_sys = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, dnch_detaRun3_err, yield_errSys, yield_errSys);
             TGraphErrors *gMeanpTRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, meanpT_errStat);
             TGraphAsymmErrors *gMeanpTRun3_sys = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, dnch_detaRun3_err, meanpT_errSys, meanpT_errSys);
+            TGraphAsymmErrors *gMeanYieldRun3_sysUncorr = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, dnch_detaRun3_err, dndyRun3_UncorrSys, dndyRun3_UncorrSys);
+            TGraphAsymmErrors *gMeanpTRun3_sysUncorr = new TGraphAsymmErrors(numofmultbins, dnch_detaRun3, meanpT, dnch_detaRun3_err, dnch_detaRun3_err, meanpTRun3_UncorrSys, meanpTRun3_UncorrSys);
+
             TGraphErrors *gNLevyRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, nLevy, dnch_detaRun3_err, nLevy_errStat);
             TGraphErrors *gTLevyRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, TLevy, dnch_detaRun3_err, TLevy_errStat);
 
@@ -420,44 +424,53 @@ void plot_spectra()
             TGraphErrors *gMeanYieldRun2 = (TGraphErrors *)fRun2->Get("Table 41/Graph1D_y1");
             TGraphErrors *gMeanpTRun2 = (TGraphErrors *)fRun2->Get("Table 39/Graph1D_y1");
 
-            TH1D *hMeanYieldRun2_stat = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e1"); // stat error
-            TH1D *hMeanYieldRun2_sys = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e2");  // sys error
-            // TH1D *hMeanYieldRun2_sysUncorr = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e3"); // uncorrelated sys error
-            TH1D *hMeanpTRun2_stat = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e1"); // stat error
-            TH1D *hMeanpTRun2_sys = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e2");  // sys error
-            // TH1D *hMeanpTRun2_sysUncorr = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e3"); // uncorrelated sys error
+            TH1D *hMeanYieldRun2_stat = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e1");      // stat error
+            TH1D *hMeanYieldRun2_sys = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e2");       // sys error
+            TH1D *hMeanYieldRun2_sysUncorr = (TH1D *)fRun2->Get("Table 41/Hist1D_y1_e3"); // uncorrelated sys error
+            TH1D *hMeanpTRun2_stat = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e1");         // stat error
+            TH1D *hMeanpTRun2_sys = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e2");          // sys error
+            TH1D *hMeanpTRun2_sysUncorr = (TH1D *)fRun2->Get("Table 39/Hist1D_y1_e3");    // uncorrelated sys error
 
             TGraphErrors *gMeanYieldRun2_stat = new TGraphErrors(gMeanYieldRun2->GetN());
             TGraphErrors *gMeanpTRun2_stat = new TGraphErrors(gMeanpTRun2->GetN());
+            TGraphErrors *gMeanYieldRun2_sysUncorr = new TGraphErrors(gMeanYieldRun2->GetN());
             TGraphErrors *gMeanYieldRun2_sys = new TGraphErrors(gMeanYieldRun2->GetN());
             TGraphErrors *gMeanpTRun2_sys = new TGraphErrors(gMeanpTRun2->GetN());
+            TGraphErrors *gMeanpTRun2_sysUncorr = new TGraphErrors(gMeanpTRun2->GetN());
 
             for (int i = 0; i < gMeanYieldRun2->GetN(); ++i)
             {
-                double x = 0.0, y = 0.0;
-                gMeanYieldRun2->GetPoint(i, x, y);
+                double x = 0.0, yield = 0.0, meanpt;
+                gMeanYieldRun2->GetPoint(i, x, yield);
                 int bin = hMeanYieldRun2_stat->FindBin(x);
                 double ex = gMeanYieldRun2->GetErrorX(i);
                 double ey_stat = hMeanYieldRun2_stat->GetBinContent(bin);
                 double ey_sys = hMeanYieldRun2_sys->GetBinContent(bin);
-                // double ey_sysUncorr = hMeanYieldRun2_sysUncorr->GetBinContent(bin);
+                double ey_sysUncorr = hMeanYieldRun2_sysUncorr->GetBinContent(bin) * yield;
 
-                gMeanYieldRun2_stat->SetPoint(i, x, y);
+                gMeanYieldRun2_stat->SetPoint(i, x, yield);
                 gMeanYieldRun2_stat->SetPointError(i, ex, ey_stat);
 
-                gMeanYieldRun2_sys->SetPoint(i, x, y);
+                gMeanYieldRun2_sys->SetPoint(i, x, yield);
                 gMeanYieldRun2_sys->SetPointError(i, ex, ey_sys);
 
+                gMeanYieldRun2_sysUncorr->SetPoint(i, x, yield);
+                gMeanYieldRun2_sysUncorr->SetPointError(i, ex, ey_sysUncorr);
+
                 // Similarly for mean pT
-                gMeanpTRun2->GetPoint(i, x, y);
+                gMeanpTRun2->GetPoint(i, x, meanpt);
                 double pt_stat = hMeanpTRun2_stat->GetBinContent(bin);
                 double pt_sys = hMeanpTRun2_sys->GetBinContent(bin);
-                // double pt_sysUncorr = hMeanpTRun2_sysUncorr->GetBinContent(bin);
-                gMeanpTRun2_stat->SetPoint(i, x, y);
+                double pt_sysUncorr = hMeanpTRun2_sysUncorr->GetBinContent(bin) * meanpt;
+
+                gMeanpTRun2_stat->SetPoint(i, x, meanpt);
                 gMeanpTRun2_stat->SetPointError(i, ex, pt_stat);
 
-                gMeanpTRun2_sys->SetPoint(i, x, y);
+                gMeanpTRun2_sys->SetPoint(i, x, meanpt);
                 gMeanpTRun2_sys->SetPointError(i, ex, pt_sys);
+
+                gMeanpTRun2_sysUncorr->SetPoint(i, x, meanpt);
+                gMeanpTRun2_sysUncorr->SetPointError(i, ex, pt_sysUncorr);
             }
 
             TGraphErrors *gMeanYieldRun2_5020MeV = (TGraphErrors *)fpp5020MeV->Get("Table 5/Graph1D_y1");
@@ -478,7 +491,7 @@ void plot_spectra()
             gMeanYieldRun2_stat->SetMarkerSize(1.2);
             gMeanYieldRun2_stat->SetMarkerColor(kRed);
             gMeanYieldRun2_stat->SetLineColor(kRed);
-            gMeanYieldRun2_stat->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
+            gMeanYieldRun2_stat->GetXaxis()->SetTitle("#LT#it{dN}_{ch}/d#eta#GT_{|#eta|< 0.5}");
             gMeanYieldRun2_stat->GetYaxis()->SetTitle("dN/dy");
             gMeanYieldRun2_stat->GetYaxis()->SetRangeUser(0.0, 0.89);
             gMeanYieldRun2_stat->SetTitle(0);
@@ -488,6 +501,11 @@ void plot_spectra()
             gMeanYieldRun2_sys->SetLineWidth(2);
             gMeanYieldRun2_sys->SetLineColor(kRed);
             gMeanYieldRun2_sys->Draw("5 same");
+            gMeanYieldRun2_sysUncorr->SetFillColorAlpha(kRed, 0.3);
+            gMeanYieldRun2_sysUncorr->SetFillStyle(1001);
+            gMeanYieldRun2_sysUncorr->SetLineColor(kRed);
+            gMeanYieldRun2_sysUncorr->Draw("E2 same");
+
             gMeanYieldRun2_sys->Write("gMeanYieldRun2_sys");
 
             SetGraphErrorStyle(gMeanYieldRun3);
@@ -502,20 +520,35 @@ void plot_spectra()
             gMeanYieldRun3_sys->SetFillStyle(0);
             gMeanYieldRun3_sys->SetLineWidth(2);
             gMeanYieldRun3_sys->Draw("5 same");
+            gMeanYieldRun3_sysUncorr->SetFillColor(kBlue);
+            gMeanYieldRun3_sysUncorr->SetFillStyle(1001);
+            gMeanYieldRun3_sysUncorr->SetFillColorAlpha(kBlue, 0.3);
+            gMeanYieldRun3_sysUncorr->Draw("E2 same");
+
             gMeanYieldRun3_sys->Write("gMeanYieldRun3_sys");
             gMeanYieldRun3->Write("gMeanYieldRun3_stat");
+            gMeanYieldRun3_sysUncorr->Write("gMeanYieldRun3_sysuncorr");
 
             gMeanYieldRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanYieldRun2_5020MeV->SetMarkerColor(kGreen + 2);
             gMeanYieldRun2_5020MeV->SetMarkerStyle(22);
             // gMeanYieldRun2_5020MeV->Draw("P same");
 
-            TLegend *legMeanYield = new TLegend(0.2, 0.80, 0.45, 0.90);
+            TLatex *latCommon = new TLatex();
+            latCommon->SetNDC();
+            latCommon->SetTextSize(0.035);
+            latCommon->SetTextFont(42);
+            // latCommon->DrawLatex(0.3, 0.2, "Uncertainties: stat. (bars), total sys. (boxes), uncorr. sys. (shaded)");
+            latCommon->DrawLatex(0.22, 0.9, "ALICE");
+            latCommon->DrawLatex(0.22, 0.86, "K*(892)^{0}");
+            latCommon->DrawLatex(0.22, 0.82, "pp, |#it{y}| < 0.5");
+
+            TLegend *legMeanYield = new TLegend(0.2, 0.68, 0.45, 0.78);
             legMeanYield->SetTextSize(0.035);
             legMeanYield->SetBorderSize(0);
             legMeanYield->SetFillStyle(0);
             // legMeanYield->AddEntry(gMeanYieldRun2_5020MeV, "Run 2 (5.02 TeV)", "p");
-            legMeanYield->SetHeader("pp collisions");
+            // legMeanYield->SetHeader("pp collisions");
             legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
             legMeanYield->AddEntry(gMeanYieldRun2_stat, "Run 2 (13 TeV)", "p");
             legMeanYield->Draw();
@@ -530,8 +563,8 @@ void plot_spectra()
             gMeanpTRun2_stat->SetMarkerSize(1.2);
             gMeanpTRun2_stat->SetMarkerColor(kRed);
             gMeanpTRun2_stat->SetLineColor(kRed);
-            gMeanpTRun2_stat->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
-            gMeanpTRun2_stat->GetYaxis()->SetTitle("<#it{p}_{T}> (GeV/c)");
+            gMeanpTRun2_stat->GetXaxis()->SetTitle("#LT#it{dN}_{ch}/d#eta#GT_{|#eta|< 0.5}");
+            gMeanpTRun2_stat->GetYaxis()->SetTitle("#LT#it{p}_{T}#GT (GeV/c)");
             gMeanpTRun2_stat->GetYaxis()->SetRangeUser(0.25, 2.09);
             gMeanpTRun2_stat->SetTitle("");
             gMeanpTRun2_stat->Draw("ape");
@@ -540,6 +573,11 @@ void plot_spectra()
             gMeanpTRun2_sys->SetLineWidth(2);
             gMeanpTRun2_sys->SetLineColor(kRed);
             gMeanpTRun2_sys->Draw("5 same");
+            gMeanpTRun2_sysUncorr->SetFillColorAlpha(kRed, 0.3);
+            gMeanpTRun2_sysUncorr->SetFillStyle(1001);
+            gMeanpTRun2_sysUncorr->SetLineColor(kRed);
+            gMeanpTRun2_sysUncorr->Draw("E2 same");
+
             gMeanpTRun2_sys->Write("gMeanpTRun2_sys");
 
             SetGraphErrorStyle(gMeanpTRun3);
@@ -553,14 +591,25 @@ void plot_spectra()
             gMeanpTRun3_sys->SetFillStyle(0);
             gMeanpTRun3_sys->SetLineWidth(2);
             gMeanpTRun3_sys->Draw("5 same");
+            gMeanpTRun3_sysUncorr->SetFillColorAlpha(kBlue, 0.3);
+            gMeanpTRun3_sysUncorr->SetFillStyle(1001);
+            gMeanpTRun3_sysUncorr->SetLineColor(kBlue);
+            gMeanpTRun3_sysUncorr->Draw("E2 same");
+
             gMeanpTRun3_sys->Write("gMeanpTRun3_sys");
+            gMeanpTRun3->Write("gMeanpTRun3_stat");
+            gMeanpTRun3_sysUncorr->Write("gMeanpTRun3_sysuncorr");
 
             gMeanpTRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanpTRun2_5020MeV->SetMarkerColor(kGreen + 2);
             gMeanpTRun2_5020MeV->SetMarkerStyle(22);
             // gMeanpTRun2_5020MeV->Draw("P same");
+
+            latCommon->DrawLatex(0.22, 0.9, "ALICE");
+            latCommon->DrawLatex(0.22, 0.86, "K*(892)^{0}");
+            latCommon->DrawLatex(0.22, 0.82, "pp, |#it{y}| < 0.5");
             legMeanYield->Draw();
-            gMeanpTRun3->Write("gMeanpTRun3_stat");
+
             TString ptPath = outputfolder + "/mean_pT." + outputType;
             cMeanpT->SaveAs(ptPath.Data());
 
@@ -571,7 +620,7 @@ void plot_spectra()
             gNLevyRun3->SetMarkerSize(1.2);
             gNLevyRun3->SetMarkerColor(kBlue);
             gNLevyRun3->SetLineColor(kBlue);
-            gNLevyRun3->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
+            gNLevyRun3->GetXaxis()->SetTitle("#LT#it{dN}_{ch}/d#eta#GT_{|#eta|< 0.5}");
             gNLevyRun3->GetYaxis()->SetTitle("n");
             gNLevyRun3->GetYaxis()->SetRangeUser(6.2, 9.5);
             gNLevyRun3->SetTitle("");
@@ -587,7 +636,7 @@ void plot_spectra()
             gTLevyRun3->SetMarkerSize(1.2);
             gTLevyRun3->SetMarkerColor(kBlue);
             gTLevyRun3->SetLineColor(kBlue);
-            gTLevyRun3->GetXaxis()->SetTitle("<#it{dN}_{ch}/d#eta>_{|#eta|< 0.5}");
+            gTLevyRun3->GetXaxis()->SetTitle("#LT#it{dN}_{ch}/d#eta#GT_{|#eta|< 0.5}");
             gTLevyRun3->GetYaxis()->SetTitle("T (GeV)");
             gTLevyRun3->GetYaxis()->SetRangeUser(0.13, 0.48);
             gTLevyRun3->SetTitle("");

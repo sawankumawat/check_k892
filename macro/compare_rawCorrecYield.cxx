@@ -33,7 +33,7 @@ void compare_rawCorrecYield()
     gStyle->SetOptFit(0);
 
     string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/751768/kstarqa_NoPVContributor/hInvMass/ROTATED"; // Default2
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/751768/kstarqa/hInvMass/WidthFree";   // Default2
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
@@ -56,8 +56,8 @@ void compare_rawCorrecYield()
     // TH1F *hefficiency3[numofmultbins + 1];
     // TH1F *hefficiency4[numofmultbins + 1];
 
-    // for (int imult = 0; imult < numofmultbins + 1; imult++)
-    for (int imult = 0; imult < 1; imult++)
+    for (int imult = 0; imult < numofmultbins + 1; imult++)
+    // for (int imult = 0; imult < 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
         double multhigh = (imult == 0) ? 100 : mult_classes[imult];
@@ -111,7 +111,7 @@ void compare_rawCorrecYield()
         hmult1[imult]->GetXaxis()->SetTitleOffset(1.02);
         hmult1[imult]->SetMarkerStyle(20);
         hmult1[imult]->SetMarkerSize(1);
-        hmult1[imult]->GetXaxis()->SetRangeUser(0, 10);
+        hmult1[imult]->GetXaxis()->SetRangeUser(0, 20);
         hmult1[imult]->Draw("pe");
         hmult2[imult]->SetMarkerStyle(21);
         hmult2[imult]->SetMarkerSize(1);
@@ -176,10 +176,10 @@ void compare_rawCorrecYield()
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
-        hratio1->GetYaxis()->SetNdivisions(505);
+        hratio1->GetYaxis()->SetNdivisions(510);
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
         // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
-        hratio1->GetXaxis()->SetRangeUser(0, 10);
+        hratio1->GetXaxis()->SetRangeUser(0, 20);
         // hratio1->GetYaxis()->SetRangeUser(0.98, 1.11);
         hratio1->GetYaxis()->SetRangeUser(0.93, 1.04);
         hratio1->Draw("p");
@@ -210,45 +210,45 @@ void compare_rawCorrecYield()
             c1->SaveAs(outputPath + Form("/RawYield_%.0f-%.0f.png", multlow, multhigh));
         }
 
-        if (isCorrectedYield)
-        {
-            TCanvas *c2 = new TCanvas("c2", "c2", 720, 720);
-            SetCanvasStyle(c2, 0.15, 0.03, 0.03, 0.15);
-            SetHistoQA(hefficiency1[imult]);
-            // SetHistoQA(hefficiency4[imult]);
-            hefficiency1[imult]->SetMarkerStyle(20);
-            hefficiency1[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
-            hefficiency1[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-            hefficiency1[imult]->SetMaximum(hefficiency1[imult]->GetMaximum() * 1.2);
-            hefficiency1[imult]->Draw("pe");
-            SetHistoQA(hefficiency2[imult]);
-            hefficiency2[imult]->SetMarkerStyle(21);
-            hefficiency2[imult]->SetMarkerColor(kBlue);
-            hefficiency2[imult]->SetLineColor(kBlue);
-            hefficiency2[imult]->Draw("pe same");
-            // SetHistoQA(hefficiency3[imult]);
-            // hefficiency3[imult]->SetMarkerStyle(22);
-            // hefficiency3[imult]->SetMarkerColor(kRed);
-            // hefficiency3[imult]->SetLineColor(kRed);
-            // hefficiency3[imult]->Draw("pe same");
-            // hefficiency4[imult]->SetMarkerStyle(23);
-            // hefficiency4[imult]->SetMarkerColor(kGreen + 2);
-            // hefficiency4[imult]->SetLineColor(kGreen + 2);
-            // hefficiency4[imult]->Draw("pe same");
-            TLegend *leg2 = new TLegend(0.46, 0.37, 0.9, 0.61);
-            SetLegendStyle(leg2);
-            leg2->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
-            leg2->AddEntry(hefficiency1[imult], "2023 dataset", "lpe");
-            leg2->AddEntry(hefficiency2[imult], "2024 dataset", "lpe");
-            // leg2->AddEntry(hefficiency1[imult], "2022 (500 kHz)", "lpe");
-            // leg2->AddEntry(hefficiency2[imult], "2024 (500 kHz)", "lpe");
-            // leg2->AddEntry(hefficiency3[imult], "2023 (135 kHz)", "lpe");
-            // leg2->AddEntry(hefficiency4[imult], "2023 (650 kHz)", "lpe");
-            // leg2->AddEntry(hefficiency1[imult], "No multCent", "lpe");
-            // leg2->AddEntry(hefficiency2[imult], "With multCent", "lpe");
-            leg2->SetTextSize(0.04);
-            leg2->Draw();
-            c2->SaveAs(outputPath + Form("/EfficiencyMult_%.0f-%.0f.png", multlow, multhigh));
-        }
+        // if (isCorrectedYield)
+        // {
+        //     TCanvas *c2 = new TCanvas("c2", "c2", 720, 720);
+        //     SetCanvasStyle(c2, 0.15, 0.03, 0.03, 0.15);
+        //     SetHistoQA(hefficiency1[imult]);
+        //     // SetHistoQA(hefficiency4[imult]);
+        //     hefficiency1[imult]->SetMarkerStyle(20);
+        //     hefficiency1[imult]->GetYaxis()->SetTitle("Acceptance x Efficiency");
+        //     hefficiency1[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        //     hefficiency1[imult]->SetMaximum(hefficiency1[imult]->GetMaximum() * 1.2);
+        //     hefficiency1[imult]->Draw("pe");
+        //     SetHistoQA(hefficiency2[imult]);
+        //     hefficiency2[imult]->SetMarkerStyle(21);
+        //     hefficiency2[imult]->SetMarkerColor(kBlue);
+        //     hefficiency2[imult]->SetLineColor(kBlue);
+        //     hefficiency2[imult]->Draw("pe same");
+        //     // SetHistoQA(hefficiency3[imult]);
+        //     // hefficiency3[imult]->SetMarkerStyle(22);
+        //     // hefficiency3[imult]->SetMarkerColor(kRed);
+        //     // hefficiency3[imult]->SetLineColor(kRed);
+        //     // hefficiency3[imult]->Draw("pe same");
+        //     // hefficiency4[imult]->SetMarkerStyle(23);
+        //     // hefficiency4[imult]->SetMarkerColor(kGreen + 2);
+        //     // hefficiency4[imult]->SetLineColor(kGreen + 2);
+        //     // hefficiency4[imult]->Draw("pe same");
+        //     TLegend *leg2 = new TLegend(0.46, 0.37, 0.9, 0.61);
+        //     SetLegendStyle(leg2);
+        //     leg2->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
+        //     leg2->AddEntry(hefficiency1[imult], "2023 dataset", "lpe");
+        //     leg2->AddEntry(hefficiency2[imult], "2024 dataset", "lpe");
+        //     // leg2->AddEntry(hefficiency1[imult], "2022 (500 kHz)", "lpe");
+        //     // leg2->AddEntry(hefficiency2[imult], "2024 (500 kHz)", "lpe");
+        //     // leg2->AddEntry(hefficiency3[imult], "2023 (135 kHz)", "lpe");
+        //     // leg2->AddEntry(hefficiency4[imult], "2023 (650 kHz)", "lpe");
+        //     // leg2->AddEntry(hefficiency1[imult], "No multCent", "lpe");
+        //     // leg2->AddEntry(hefficiency2[imult], "With multCent", "lpe");
+        //     leg2->SetTextSize(0.04);
+        //     leg2->Draw();
+        //     // c2->SaveAs(outputPath + Form("/EfficiencyMult_%.0f-%.0f.png", multlow, multhigh));
+        // }
     }
 }

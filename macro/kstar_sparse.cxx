@@ -126,8 +126,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -196,7 +196,7 @@ void kstar_sparse()
         }
 
         for (int imult = 0; imult < nmultbins + 1; imult++)
-        // for (int imult = 0; imult < 1; imult++)
+        // for (int imult = 1; imult < 2; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -421,8 +421,8 @@ void kstar_sparse()
                     }
                     else if (sysVars[ivar] == "Norm2")
                     {
-                        normRangeLow = 1.24;
-                        normRangeHigh = 1.29;
+                        normRangeLow = 1.30;
+                        normRangeHigh = 1.40;
                     }
 
                     if (kResBkg == "MIX" || kResBkg == "ROTATED")
@@ -707,10 +707,13 @@ void kstar_sparse()
                     if (widthFixed)
                         fTotal->FixParameter(2, widthpdg);
                     else
-                        fTotal->SetParLimits(2, widthpdg - 0.005, widthpdg + 0.005);
+                        fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
 
-                    if (ivar == 5 && ip == pt_end - 1 && imult == 10)
-                        fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
+                    // else
+                    //     fTotal->SetParLimits(2, widthpdg - 0.005, widthpdg + 0.005);
+
+                    // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
+                    //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
 
                     // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
                     if (widthFixed)
@@ -1298,7 +1301,7 @@ void kstar_sparse()
                     if (kResBkg == "MIX" || kResBkg == "ROTATED")
                     {
                         hbkg_nopeak->Draw("BAR same");
-                        leg112->AddEntry(hbkg_nopeak, "Normalisation range", "f");
+                        leg112->AddEntry(hbkg_nopeak, "Normalization range", "f");
                     }
                     leg112->SetNColumns(2);
                     leg112->SetColumnSeparation(0.3);

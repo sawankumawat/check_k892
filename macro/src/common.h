@@ -43,14 +43,14 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_SquarePID_TOF3";
 
 //// Systematic variations
-// const string kvariation = "";
+const string kvariation = "";
 // const string kvariation = "_FT0C";
 // const string kvariation = "_FV0A";
 // const string kvariation = "_TPC1p5_combined2";
 // const string kvariation = "_TPC2p5_combined3p5";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
-const string kvariation = "_NoPVContributor";
+// const string kvariation = "_NoPVContributor";
 ////********************************************************************************************
 
 // define datasets here
@@ -106,9 +106,9 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "697595.root"; // INEL only
 // const string kDataFilename_temp2 = "707551.root"; // INEL only (upto 100 GeV pT range)
 // const string kDataFilename_temp2 = "708297.root"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV)
-// const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
+const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
 // const string kDataFilename_temp2 = "750862.root"; // INEL>0, latest train with systematics (Trk selection not available)
-const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
+// const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
 
 #endif
 

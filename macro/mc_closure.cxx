@@ -4,7 +4,7 @@
 #include "src/initializations.h"
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
-void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, const string &MCpath, int multlow1, int multhigh1);
+void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, int multlow1, int multhigh1);
 int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
 void mc_closure()
@@ -15,24 +15,15 @@ void mc_closure()
     bool isINEL = false;
     bool compareAfterEfficiencyCorrection = false;
 
-    // string MCfile = "657468"; // 2024 (Old with mother id checked in kstarqa code)
-    // string MCfile = "665348"; // 2024 (Mother id check commented in the kstarqa code)
-    // string MCfile = "666966"; // pp reference MC
-    // string MCfile = "667890"; // 2024 (MC_closure, MC_closure_INEL, MC_closure_OnlyTPC: all with TOF shift)
-    // string MCfile = "669655"; // 2024 (MC_closure)
-    // string MCfile = "673285"; // 2024 (TOF3: MC_closure, MC_closure_INEL, MC_closure_MID0p3)
-    // string MCfile = "674418"; // 2024 (TOF3 with checks on Mother: MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_WithoutTOFShift)
-    string MCfile = "677471"; // 2024 (MC_closure, MC_closure_INEL, MC_closure_MID0p3, MC_closure_MID, MC_closure_NoITSROF, MC_closure_WithoutTOFShift, MC_closure_OnlyTPC, MC_closure_PVContributor)
+    string MCfile = "750013";
 
-    string MC_path = "MC_closure_PVContributor";
-
-    string path1 = "../output/kstar/LHC22o_pass7/MC_closure/" + MCfile + "/kstarqa_" + MC_path + "/hInvMass"; // path for yield.root file (from rec MC)
-    string path2 = "../data/kstar/LHC22o_pass7/MC_closure/";                                                  // MC file path
+    string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC)
+    string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
 
-    TFile *fspectra1 = new TFile((path1 + ((isINEL) ? "/yield_INEL.root" : "/yield.root")).c_str(), "read");
+    TFile *fspectra1 = new TFile((path1 + ((isINEL) ? "/yield_INEL.root" : "/yield_0_100.root")).c_str(), "read");
     TFile *fspectra2 = new TFile((path2 + MCfile + ".root").c_str(), "read");
     if (fspectra1->IsZombie() || fspectra2->IsZombie())
     {
@@ -52,13 +43,14 @@ void mc_closure()
     TH1F *heff[numofmultbins + 1];
 
     THnSparseF *hSparseRec;
-    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/hk892GenpT", MC_path.c_str())) : (THnSparseF *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()));
+    hSparseRec = (compareAfterEfficiencyCorrection) ? (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/hk892GenpT") : (THnSparseF *)fspectra2->Get("kstarqa/hInvMass/h2KstarRecpt2");
     if (hSparseRec == nullptr)
     {
-        cout << "Error reading efficiency histogram MC in the path "<< Form("kstarqa_%s/hInvMass/h2KstarRecpt2", MC_path.c_str()) << endl;
+        cout << "Error reading efficiency histogram MC in the path kstarqa/hInvMass/h2KstarRecpt2" << endl;
         return;
     }
-    TH1D *h1recmult = (TH1D *)fspectra2->Get(Form("kstarqa_%s/hInvMass/h1RecMult", MC_path.c_str()));
+
+    TH1D *h1recmult = (TH1D *)fspectra2->Get("kstarqa/hInvMass/h1RecMult");
     double multhigh, multlow;
     TCanvas *cEfficiency = new TCanvas("cEfficiency", "cEfficiency", 720, 720);
     SetCanvasStyle(cEfficiency, 0.15, 0.03, 0.03, 0.15);
@@ -80,8 +72,8 @@ void mc_closure()
             multhigh = mult_classes[imult];
         }
 
-        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
-        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
+        hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         if (hmult1[imult] == nullptr)
         {
             cout << "Histogram hmult1 not found" << endl;
@@ -91,7 +83,7 @@ void mc_closure()
         heff[imult] = (TH1F *)hmult1[imult]->Clone(Form("heff_mult_%.0f-%.0f", multlow, multhigh));
 
         if (compareAfterEfficiencyCorrection)
-            calculateEfficiency(fspectra2, hmult1[imult], heff[imult], MC_path, multlow, multhigh);
+            calculateEfficiency(fspectra2, hmult1[imult], heff[imult], multlow, multhigh);
 
         int lowbinMultRec = hSparseRec->GetAxis(1)->FindBin(multlow + 1e-5);
         int highbinMultRec = hSparseRec->GetAxis(1)->FindBin(multhigh - 1e-5);
@@ -135,8 +127,8 @@ void mc_closure()
         gPad->SetLogy(1);
         SetHistoStyle(hmult1[imult], 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
         hmult1[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-        hmult1[imult]->SetMaximum(hmult1[imult]->GetMaximum() * 10);
-        hmult1[imult]->SetMinimum(hmult1[imult]->GetMinimum() * 0.8);
+        hmult1[imult]->SetMaximum(hmult1[imult]->GetMaximum() * 18);
+        hmult1[imult]->SetMinimum(hmult1[imult]->GetMinimum() * 0.6);
         hmult1[imult]->GetYaxis()->SetTitleOffset(1.30);
         hmult1[imult]->GetXaxis()->SetTitleOffset(1.02);
         hmult1[imult]->SetMarkerStyle(20);
@@ -152,13 +144,21 @@ void mc_closure()
         hmult1[imult]->Write("FitYield");
         hmult2[imult]->Write("ReconstructedSpectra");
 
-        TLegend *leg = new TLegend(0.46, 0.64, 0.9, 0.91);
+        TLegend *leg = new TLegend(0.50, 0.75, 0.9, 0.95);
         SetLegendStyle(leg);
-        leg->SetHeader(Form("Multiplicity: %.0f-%.0f%%", multlow, multhigh));
+        leg->SetHeader(Form("FT0M: %.0f-%.0f%%", multlow, multhigh));
         leg->AddEntry(hmult2[imult], "MC Generated", "lpe");
         leg->AddEntry(hmult1[imult], "MC Rec. (AxE corrected)", "lpe");
         leg->SetTextSize(0.04);
         leg->Draw();
+
+        TLatex *latex = new TLatex();
+        latex->SetNDC();
+        latex->SetTextSize(0.04);
+        latex->SetTextFont(42);
+        latex->DrawLatex(0.21, 0.91, "#bf{ALICE}");
+        latex->DrawLatex(0.21, 0.85, "pp, #sqrt{#it{s}} = 13.6 TeV");
+
 
         c1->cd(2);
         gPad->SetGridy(1);
@@ -184,13 +184,13 @@ void mc_closure()
         hratio1->GetYaxis()->SetTitleOffset(0.6);
         hratio1->GetXaxis()->SetTitleOffset(1.1);
         hratio1->GetYaxis()->SetNdivisions(505);
-        hratio1->SetMaximum(1.23);
-        hratio1->SetMinimum(0.75);
+        hratio1->SetMaximum(1.31);
+        hratio1->SetMinimum(0.69);
         // hratio1->GetXaxis()->SetRangeUser(0, 15);
         hratio1->Draw("p");
         hratio1->Write("Ratio");
 
-        TLine *line = new TLine(0, 1, 10, 1);
+        TLine *line = new TLine(0, 1, 20, 1);
         line->SetLineStyle(2);
         line->SetLineWidth(2);
         line->SetLineColor(1);
@@ -212,14 +212,14 @@ void mc_closure()
     cout << "Comparing after efficiency correction: " << (compareAfterEfficiencyCorrection ? "✅" : "❌") << endl;
 }
 
-void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, const string &MCpath, int multlow1, int multhigh1)
+void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, int multlow1, int multhigh1)
 {
 
-    THnSparseF *hSpraseGen = (THnSparseF *)fileEff->Get(Form("kstarqa_%s/hInvMass/hk892GenpTCalib1", MCpath.c_str()));
-    THnSparseF *hSparseRec = (THnSparseF *)fileEff->Get(Form("kstarqa_%s/hInvMass/h2KstarRecptCalib1", MCpath.c_str()));
+    THnSparseF *hSpraseGen = (THnSparseF *)fileEff->Get("kstarqa/hInvMass/hk892GenpTCalib1");
+    THnSparseF *hSparseRec = (THnSparseF *)fileEff->Get("kstarqa/hInvMass/h2KstarRecptCalib1");
     if (hSpraseGen == nullptr || hSparseRec == nullptr)
     {
-        cout << "Error reading efficiency histograms " << Form("kstarqa_%s/hInvMass/hk892GenpTCalib1", MCpath.c_str()) << endl;
+        cout << "Error reading efficiency histograms " << "kstarqa/hInvMass/hk892GenpTCalib1" << endl;
         return;
     }
     TH1D *h1gen;

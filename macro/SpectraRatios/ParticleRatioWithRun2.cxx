@@ -493,7 +493,7 @@ void ParticleRatioWithRun2()
     TCanvas *cdNdyKstar = new TCanvas("cdNdyKstar", "cdNdyKstar", 720, 720);
     SetCanvasStyle(cdNdyKstar, 0.15, 0.03, 0.03, 0.15);
     gMYieldKstar[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5}");
-    gMYieldKstar[0]->GetYaxis()->SetTitle("dN_{ch}/dy");
+    gMYieldKstar[0]->GetYaxis()->SetTitle("dN/dy");
     gMYieldKstar[0]->GetXaxis()->SetLimits(0, 27);
     gMYieldKstar[0]->SetLineWidth(3);
     gMYieldKstar[0]->GetYaxis()->SetRangeUser(0, 0.71);
@@ -642,7 +642,7 @@ void ParticleRatioWithRun2()
     latex.DrawLatex(0.47, 0.2, "uncorr. sys. (shaded box)");
     // if (isSavePlots)
     {
-        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.pdf");
+        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.png");
     }
 
     //===================================================
@@ -719,7 +719,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.2, 0.87, "K* (892)^{0}");
     // if (isSavePlots)
     {
-        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.pdf");
+        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.png");
     }
 
     /*
@@ -836,7 +836,7 @@ void ParticleRatioWithRun2()
     legendMeanPt->Draw();
     if (isSavePlots)
     {
-        cMeanPtAll->SaveAs("Plots/MeanPt_AllParticles_Run3.pdf");
+        cMeanPtAll->SaveAs("Plots/MeanPt_AllParticles_Run3.png");
     }
 
     //===================================================
@@ -926,7 +926,7 @@ void ParticleRatioWithRun2()
     legendMeanPtBaryons->Draw();
     latexMesons.DrawLatex(0.82, 0.3, "Baryons");
     if (isSavePlots)
-        cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.pdf");
+        cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.png");
 
     //===================================================
     //  ========= <pT>/particle mass ======================
@@ -1052,7 +1052,7 @@ void ParticleRatioWithRun2()
 
     if (isSavePlots)
     {
-        cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.pdf");
+        cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.png");
     }
 
     //=====================================================================
@@ -1340,7 +1340,7 @@ void ParticleRatioWithRun2()
     }
 
     if (isSavePlots)
-        cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_CommonClasses.pdf");
+        cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_CommonClasses.png");
 
     //=====================================================================
     //  ====== <pT> vs mass for common multiplicity classes ===========
@@ -1615,7 +1615,7 @@ void ParticleRatioWithRun2()
     }
 
     if (isSavePlots)
-        cMeanPtMassClass->SaveAs("Plots/MeanPt_Mass_CommonClasses.pdf");
+        cMeanPtMassClass->SaveAs("Plots/MeanPt_Mass_CommonClasses.png");
 
     //=================================================================================
     // =====================(<pT> - m) vs <dNch/deta> (hadrons) =========================
@@ -1689,7 +1689,7 @@ void ParticleRatioWithRun2()
     legendMeanPtMassScaled->Draw();
     if (isSavePlots)
     {
-        cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.pdf");
+        cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.png");
     }
 
     //=================================================================================
@@ -1750,7 +1750,7 @@ void ParticleRatioWithRun2()
     legendMeanPtMassScaled->Draw();
     if (isSavePlots)
     {
-        cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.pdf");
+        cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.png");
     }
 
     //==================================================================================
@@ -1853,7 +1853,7 @@ void ParticleRatioWithRun2()
 
     if (isSavePlots)
     {
-        cMeanPtRatio->SaveAs("Plots/MeanPt_LowestMultRatio_Run3.pdf");
+        cMeanPtRatio->SaveAs("Plots/MeanPt_LowestMultRatio_Run3.png");
     }
 
     // //===================================================
@@ -1903,7 +1903,7 @@ void ParticleRatioWithRun2()
     // gMeanPtLMRatioVsMass[1]->Draw("5 same");
     // if (isSavePlots)
     // {
-    //     cMeanPtRatioVsMass->SaveAs("Plots/MeanPt_LowestMultRatio_vs_Mass_Run3.pdf");
+    //     cMeanPtRatioVsMass->SaveAs("Plots/MeanPt_LowestMultRatio_vs_Mass_Run3.png");
     // }
 
     */
@@ -2032,7 +2032,7 @@ void ParticleRatioWithRun2()
     latex.DrawLatex(0.31, 0.80, "|y| < 0.5");
     // if (isSavePlots)
     {
-        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.pdf");
+        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
     }
 
     //==================================================
@@ -2119,7 +2119,7 @@ void ParticleRatioWithRun2()
     legendRatio2->Draw();
     // if (isSavePlots)
     {
-        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.pdf");
+        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.png");
     }
 
     //======================================================
@@ -2187,7 +2187,7 @@ void ParticleRatioWithRun2()
 
     // if (isSavePlots)
     {
-        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.pdf");
+        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
     }
 
     //======================================================================
@@ -2339,7 +2339,7 @@ void ParticleRatioWithRun2()
     // lineDoubleRatio->Draw("same");
     // if (isSavePlots)
     {
-        cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.pdf");
+        cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.png");
     }
 
     // //======================================================================
@@ -2500,7 +2500,7 @@ void ParticleRatioWithRun2()
     // // line->Draw("same");
     // if (isSavePlots)
     // {
-    //     cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.pdf");
+    //     cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.png");
     // }
 
     // //======================================================================
@@ -2679,7 +2679,7 @@ void ParticleRatioWithRun2()
     // }
     // if (isSavePlots)
     // {
-    //     cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.pdf");
+    //     cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.png");
     // }
 
     // //======================================================================
@@ -2749,7 +2749,7 @@ void ParticleRatioWithRun2()
     // legendYieldLMRatio4->Draw();
     // if (isSavePlots)
     // {
-    //     cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.pdf");
+    //     cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.png");
     // }
 
     // // /*
@@ -2811,7 +2811,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.pdf");
+    //     cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
     // }
 
     // //====================================================
@@ -2853,7 +2853,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.pdf");
+    //     cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.png");
     // }
 
     // //====================================================
@@ -2901,7 +2901,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarChargedKstar->SaveAs("Plots/Ratio_KstarChargedKstar_Run3.pdf");
+    //     cRatioKstarChargedKstar->SaveAs("Plots/Ratio_KstarChargedKstar_Run3.png");
     // }
 
     // //================================================
@@ -2953,7 +2953,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.pdf");
+    //     cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.png");
     // }
 
     // /*
@@ -2996,7 +2996,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     //{
-    // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.pdf");
+    // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.png");
     // }
 
     //    //=================================================
@@ -3038,7 +3038,7 @@ void ParticleRatioWithRun2()
     //     legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.pdf");
+    //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.png");
     //}
     //
 
@@ -3087,7 +3087,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "#pi^{#pm}");
     // if (isSavePlots)
     // {
-    //     cPionYield->SaveAs("Plots/PionYield_Run3.pdf");
+    //     cPionYield->SaveAs("Plots/PionYield_Run3.png");
     // }
 
     // //====================================================
@@ -3125,7 +3125,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "K^{#pm}");
     // if (isSavePlots)
     // {
-    //     cKaonYield->SaveAs("Plots/KaonYield_Run3.pdf");
+    //     cKaonYield->SaveAs("Plots/KaonYield_Run3.png");
     // }
 
     // //====================================================
@@ -3163,7 +3163,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "p");
     // if (isSavePlots)
     // {
-    //     cProtonYield->SaveAs("Plots/ProtonYield_Run3.pdf");
+    //     cProtonYield->SaveAs("Plots/ProtonYield_Run3.png");
     // }
 
     // ////======================================================
@@ -3195,7 +3195,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "K^{0}_{S}");
     // if (isSavePlots)
     // {
-    //     cKshortYield->SaveAs("Plots/KshortYield_Run3.pdf");
+    //     cKshortYield->SaveAs("Plots/KshortYield_Run3.png");
     // }
 
     // //====================================================
@@ -3231,7 +3231,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "#phi");
     // // if (isSavePlots)
     // {
-    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.pdf");
+    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
     // }
 
     // */
@@ -4022,7 +4022,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioKstarKaonPion->SaveAs("Plots/Ratio_KstarKaonPion_Run3.pdf");
+    cRatioKstarKaonPion->SaveAs("Plots/Ratio_KstarKaonPion_Run3.png");
     }
 
         //====================================================================
@@ -4099,7 +4099,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-      cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.pdf");
+      cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.png");
     }
 
     //====================================================
@@ -4150,7 +4150,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.pdf");
+    cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.png");
     }
 
     //===================================================
@@ -4200,7 +4200,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiKshort->SaveAs("Plots/Ratio_PhiKshort_Run3.pdf");
+    cRatioPhiKshort->SaveAs("Plots/Ratio_PhiKshort_Run3.png");
     }
 
     //===================================================
@@ -4249,7 +4249,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-        cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.pdf");
+        cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.png");
     }
 
     //================================================
@@ -4297,6 +4297,6 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiXiStar->SaveAs("Plots/Ratio_PhiXiStar_Run3.pdf");
+    cRatioPhiXiStar->SaveAs("Plots/Ratio_PhiXiStar_Run3.png");
     }
 */

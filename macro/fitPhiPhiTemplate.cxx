@@ -26,11 +26,28 @@ void fitPhiPhiTemplate()
     // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25";
     // TString suffix = "BEExpol3";
 
-    double ptCut = 6.0;
+    double ptCut = 9.0;
+    double ptCutMax = 100.0;
     TString suffix = Form("_pt%.1f", ptCut);
+    // TString suffix = Form("_pt%.1f_%.1f", ptCut, ptCutMax);
 
     TString inFilePath = Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025/PhiPhiBkgTemplate_BW%s.root", suffix.Data());
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025";
+
+    // //========2026 data========
+    // TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiRefitted");
+
+    // // Write this output in a .txt file
+    // std::ofstream outFile;
+    // outFile.open(Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation/YieldRatios_pt%.1f.txt", ptCut));
+
+    ////============2025 data========
+    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiShifted");
+
+    std::ofstream outFile;
+    outFile.open(Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025/YieldRatios_pt%.1f.txt", ptCut));
 
     // TString suffix = "BWExpol3_extendedFitRange";
     // TString suffix = "Voigt";
@@ -212,16 +229,9 @@ void fitPhiPhiTemplate()
     // hInvMass->Rebin(8);
     // hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
 
-    // TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
-    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiRefitted");
-
-    ////============2025 data========
-    TFile *fInputData = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInputData, "doublephimeson/SEMassPhiPhiShifted");
-
     // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
     int lowpT = hUnlike->GetAxis(1)->FindBin(ptCut + 0.001);
-    int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
+    int highpT = hUnlike->GetAxis(1)->FindBin(ptCutMax - 0.001);
 
     int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
     int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
@@ -327,7 +337,8 @@ void fitPhiPhiTemplate()
     f_nonSS_Component->SetLineWidth(3);
     f_nonSS_Component->Draw("SAME");
 
-    TLegend *leg2 = new TLegend(0.55, 0.73, 0.88, 0.92);
+    TLegend *leg2 = new TLegend(0.55, 0.70, 0.88, 0.92);
+    leg2->AddEntry((TObject *)0, Form("p_{T} > %.1f GeV/#it{c}", ptCut), "");
     leg2->AddEntry(h_Data, "Data", "pe");
     leg2->AddEntry(f_TotalBkg_Full, "Total background", "l");
     leg2->AddEntry(f_SS_Component, "SS shape", "l");
@@ -398,9 +409,10 @@ void fitPhiPhiTemplate()
     // Fit signal peak
     SetHistoQA(h_Subtracted);
     // h_Subtracted->GetYaxis()->SetRangeUser(-290, 480);
-    // h_Subtracted->GetYaxis()->SetRangeUser(-190, 260);
-    // h_Subtracted->GetYaxis()->SetRangeUser(-1100, 1700); //26 data for all pt cuts
-    h_Subtracted->GetYaxis()->SetRangeUser(-150, 310);
+    h_Subtracted->GetYaxis()->SetRangeUser(-190, 260);
+    // h_Subtracted->GetYaxis()->SetRangeUser(-480, 820); // 26 data for all pt cuts
+    // h_Subtracted->GetYaxis()->SetRangeUser(-880, 1320);
+    // h_Subtracted->GetYaxis()->SetRangeUser(-280, 510);
     h_Subtracted->Fit(f_Signal, "R0Q");
 
     // 3. Extract parameters and statistical significance
@@ -431,10 +443,12 @@ void fitPhiPhiTemplate()
     f_Zero->Draw("SAME");
 
     // Display extracted fit parameter text overlay
-    TLegend *legSig = new TLegend(0.11, 0.72, 0.4, 0.91);
+    TLegend *legSig = new TLegend(0.11, 0.67, 0.4, 0.91);
     legSig->SetBorderSize(0);
     legSig->SetFillStyle(0);
-    legSig->SetTextSize(0.032);
+    legSig->SetTextSize(0.03);
+    // legSig->AddEntry((TObject *)0, Form("#it{p}_{T}^{#phi#phi} > %.1f GeV/#it{c}", ptCut), "");
+    legSig->AddEntry((TObject *)0, Form("%.1f < #it{p}_{T}^{#phi#phi} < %.1f GeV/#it{c}", ptCut, ptCutMax), "");
     legSig->AddEntry((TObject *)0, Form("N_{X} = %.1f #pm %.1f", yield, yieldErr), "");
     legSig->AddEntry((TObject *)0, Form("M_{X} = %.4f #pm %.4f", mass, massErr), "");
     legSig->AddEntry((TObject *)0, Form("#Gamma_{X} = %.4f #pm %.4f", width, widthErr), "");
@@ -463,8 +477,8 @@ void fitPhiPhiTemplate()
     // // STEP 4: Calculate Yield Ratios in Window [2.65 - 2.75 GeV]
     // // =========================================================================
 
-    double ratioLow = 2.63;
-    double ratioHigh = 2.73;
+    double ratioLow = 2.64;
+    double ratioHigh = 2.74;
 
     // 1. Signal Yield (Integral of fitted Breit-Wigner / bin width)
     double binWidthSignal = h_Subtracted->GetBinWidth(1);
@@ -498,10 +512,6 @@ void fitPhiPhiTemplate()
     std::cout << "Signal / Correlated Background     : " << ratio_Sig_CorrelatedBkg << std::endl;
     std::cout << "======================================================================\n"
               << std::endl;
-
-    // Write this output in a .txt file
-    std::ofstream outFile;
-    outFile.open(Form("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025/YieldRatios_pt%.1f.txt", ptCut));
 
     outFile << "\n========== YIELDS & RATIOS IN [" << ratioLow << " - " << ratioHigh << " GeV] ==========" << std::endl;
     outFile << "pT Cut                             : " << ptCut << " GeV/c" << std::endl;

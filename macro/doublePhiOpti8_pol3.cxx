@@ -45,7 +45,7 @@ void doublePhiOpti8_pol3()
     // string suffix = "26adaeag";
     int rebinFactor = 8;
     float fitRangeLow = 2.41;
-    float fitRangeHigh = 2.94;
+    float fitRangeHigh = 2.92;
 
     ////=====New===========
     ////====2026 data========
@@ -78,7 +78,6 @@ void doublePhiOpti8_pol3()
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
     hInvMass->Rebin(rebinFactor);
-    hInvMass->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
 
@@ -226,6 +225,8 @@ void doublePhiOpti8_pol3()
     //============================================================
     // Draw S+B fit
     //============================================================
+    hInvMass->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh - 0.02);
+    hInvMass->GetXaxis()->SetNdivisions(508);
 
     // S+B total fit
     fitFunc->SetLineColor(kRed + 1);
@@ -267,7 +268,7 @@ void doublePhiOpti8_pol3()
     latex->DrawLatex(0.2, 0.32, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
     latex->DrawLatex(0.2, 0.27, Form("p-value = %.3e", pValue));
     latex->DrawLatex(0.2, 0.22, Form("Significance (Z) = %.2f #sigma", significance));
-    // cInvMass->SaveAs(savepath + "/InvariantMassWithFit_pol3.png");
+    cInvMass->SaveAs(savepath + "/InvariantMassWithFit_pol3.png");
 }
 
 //==============End of the main code==================

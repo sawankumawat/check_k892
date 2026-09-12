@@ -25,17 +25,19 @@ void kstar_sparse()
     string kbkg = "pol3";
     // string kbkg = "pol2";
 
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
     const bool multipanel_plots = 0;
     const bool save_plots = 1;
-    bool isINEL = false;
+    bool isINEL = true;
     bool widthFixed = true; // width fixed to PDG value
 
-    double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535};
+    // double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535};                                                                              // INEL>0
+    double ResolutionMCtrue[] = {0.00505649, 0.00599644, 0.00454035, 0.00391939, 0.00643856, 0.00734738, 0.00707784, 0.00663234, 0.00653067, 0.00599724, 0.00559724, 0.00523105, 0.00537785, 0.00554987, 0.00558288, 0.0056433, 0.00593335, 0.006188, 0.0062433, 0.00681146, 0.00689146, 0.00698454, 0.00725093, 0.00741099, 0.00803745, 0.0083834, 0.00863335, 0.00916256, 0.0096846, 0.0113199, 0.0123187}; // INEL
+
     // double ResolutionMCtrue[] = {0.009, 0.0057, 0.0065543, 0.0034, 0.0032, 0.0030, 0.0037, 0.0011, 0.00014, 0.00032, 0.0003, 0.0007, 0.0033, 0.0042, 0.0048, 0.0054, 0.0061, 0.0063, 0.0069, 0.0075, 0.0099, 0.011, 0.012};
 
     int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 1, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
@@ -86,8 +88,8 @@ void kstar_sparse()
     {
         cgrid1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
         cgrid_bkg1->Divide(kcanvasdivide[0], kcanvasdivide[1]);
-        // if (Npt > 16)
-        if (Npt > 9)
+        if (Npt > 25)
+        // if (Npt > 9)
         {
             cgrid2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
             cgrid_bkg2->Divide(kcanvasdivide[0], kcanvasdivide[1]);
@@ -105,7 +107,13 @@ void kstar_sparse()
         return;
     }
 
-    TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
+    TFile *fTemplateFile = (isINEL) ? TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ") : TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
+
+    // Form Norm range variations the normalization range in the template was also shifted
+    //  TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s_Norm2.root", kResBkg.c_str(), kvariation.c_str()), "READ");
+
+    // TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/MCClosure/SignalMinusTrue%s.root", kvariation.c_str()), "READ");
+
     if (!fTemplateFile || fTemplateFile->IsZombie())
     {
         cerr << "ERROR: SignalMinusTrue.root not found!" << endl;
@@ -126,8 +134,8 @@ void kstar_sparse()
     double Event = hmult->GetEntries();
     cout << "*****************number of events********************:" << Event << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -463,7 +471,7 @@ void kstar_sparse()
                     // =====================================================================
                     // Load reflection template
                     // =====================================================================
-                    TString templName = Form("%d-%d/hSigminusTrue_pt_%.1f_%.1f", multlow, multhigh, lowpt, highpt);
+                    TString templName = (isINEL) ? Form("%d-%d/hSigminusTrue_pt_%.2f_%.2f", multlow, multhigh, lowpt, highpt) : Form("%d-%d/hSigminusTrue_pt_%.1f_%.1f", multlow, multhigh, lowpt, highpt);
                     TH1D *hReflRaw = (TH1D *)fTemplateFile->Get(templName);
                     if (!hReflRaw)
                     {
@@ -490,7 +498,7 @@ void kstar_sparse()
 
                     TCanvas *cRefl = new TCanvas(Form("cRefl_ip%d", ip), "Reflection template", 720, 720);
                     TH1D *hDatabyReflection = (TH1D *)hfsig->Clone(Form("hDatabyReflection_ip%d", ip));
-                    hDatabyReflection->SetTitle(Form("%.1f < p_{T} (GeV/c) < %.1f; M_{K#pi} (GeV/c^{2}); Data / Reflection template", lowpt, highpt));
+                    (isINEL) ? hDatabyReflection->SetTitle(Form("%.2f < p_{T} (GeV/c) < %.2f; M_{K#pi} (GeV/c^{2}); Data / Reflection template", lowpt, highpt)) : hDatabyReflection->SetTitle(Form("%.1f < p_{T} (GeV/c) < %.1f; M_{K#pi} (GeV/c^{2}); Data / Reflection template", lowpt, highpt));
 
                     TH1D *hRefNorm = (TH1D *)hReflection->Clone(Form("hRefNorm_ip%d", ip));
                     // TH1D *hRefNorm = (TH1D *)hReflection_truncated->Clone(Form("hRefNorm_ip%d", ip));
@@ -514,7 +522,7 @@ void kstar_sparse()
                     latexref.SetNDC();
                     latexref.SetTextSize(0.05);
                     latexref.SetTextAlign(22);
-                    latexref.DrawLatex(0.5, 0.95, Form("%.1f < p_{T} (GeV/c) < %.1f", lowpt, highpt));
+                    (isINEL) ? latexref.DrawLatex(0.5, 0.95, Form("%.2f < p_{T} (GeV/c) < %.2f", lowpt, highpt)) : latexref.DrawLatex(0.5, 0.95, Form("%.1f < p_{T} (GeV/c) < %.1f", lowpt, highpt));
 
                     // auto c_clone_sigbyref = (TCanvas *)cRefl->Clone(Form("hsigbyref_pt_%d", ip + 1));
                     // c_sigbyref.push_back(c_clone_sigbyref);
@@ -707,10 +715,10 @@ void kstar_sparse()
                     if (widthFixed)
                         fTotal->FixParameter(2, widthpdg);
                     else
-                        fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
+                        fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
 
                     // else
-                    //     fTotal->SetParLimits(2, widthpdg - 0.005, widthpdg + 0.005);
+                    //     fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
 
                     // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
                     //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
@@ -816,8 +824,10 @@ void kstar_sparse()
                     if (fitStatus != 0 || covStatus < 2)
                     {
                         cout << "  WARNING: Bad fit in pT bin " << ip << endl;
-                        badFits.push_back(Form("Multiplicity: %d-%d %, pT Bin %d (%.1f - %.1f GeV/c)",
-                                               multlow, multhigh, ip, lowpt, highpt));
+                        (isINEL) ? badFits.push_back(Form("Multiplicity: %d-%d %, pT Bin %d (%.2f - %.2f GeV/c)",
+                                                          multlow, multhigh, ip, lowpt, highpt))
+                                 : badFits.push_back(Form("Multiplicity: %d-%d %, pT Bin %d (%.1f - %.1f GeV/c)",
+                                                          multlow, multhigh, ip, lowpt, highpt));
                     }
 
                     // =====================================================================
@@ -883,7 +893,7 @@ void kstar_sparse()
                     cout << "  Voigtian fractions: +/-5Γ=" << f_5g << "  +/-2Γ=" << f_2g << endl;
 
                     // =====================================================================
-                    // Raw yield – integral method
+                    // Raw yield: integral method
                     // =====================================================================
                     yieldcalc = N_sig_5g / (Event * ptbinwidth[ip] * dy * BR);
                     yielderror = (N_sig_err * f_5g) / (Event * ptbinwidth[ip] * dy * BR);
@@ -908,7 +918,7 @@ void kstar_sparse()
                     hsignificance->SetBinContent(ip + 1, ratio);
 
                     // =====================================================================
-                    // Raw yield – bin-counting method with Snapped Boundaries Fix
+                    // Raw yield: bin-counting method with Snapped Boundaries Fix
                     // =====================================================================
                     Yield_bincount_hist = hfsig->IntegralAndError(bmin, bmax, hBCError_1);
 
@@ -943,8 +953,16 @@ void kstar_sparse()
 
                     double Final_pro_error = hBCError_1 / (Event * ptbinwidth[ip] * dy * BR);
 
-                    hYbincount->SetBinContent(ip + 1, Total_Ybincounting);
-                    hYbincount->SetBinError(ip + 1, Final_pro_error);
+                    if (Total_Ybincounting / yieldcalc > 1.03 || Total_Ybincounting / yieldcalc < 0.97) // Due to normlization issue with the template for low statistics
+                    {
+                        hYbincount->SetBinContent(ip + 1, yieldcalc);
+                        hYbincount->SetBinError(ip + 1, yielderror);
+                    }
+                    else
+                    {
+                        hYbincount->SetBinContent(ip + 1, Total_Ybincounting);
+                        hYbincount->SetBinError(ip + 1, Final_pro_error);
+                    }
                     hFrac_stat_error->SetBinContent(ip + 1, (Total_Ybincounting > 0) ? Final_pro_error / Total_Ybincounting : 0.0);
 
                     std::cout << "Yield (Bin Count): " << Total_Ybincounting << " #pm " << Final_pro_error << std::endl;
@@ -1147,7 +1165,7 @@ void kstar_sparse()
                     legPars->AddEntry((TObject *)0, Form("#chi^{2}/NDF: %.2f", Chi2Ndf[ip]), "");
                     legPars->Draw();
 
-                    t2->DrawLatex(0.25, 0.94, Form("#bf{%.1f < #it{p}_{T}(GeV/#it{c}) < %.1f}", pT_bins[ip], pT_bins[ip + 1]));
+                    (isINEL) ? t2->DrawLatex(0.25, 0.94, Form("#bf{%.2f < #it{p}_{T}(GeV/#it{c}) < %.2f}", pT_bins[ip], pT_bins[ip + 1])) : t2->DrawLatex(0.25, 0.94, Form("#bf{%.1f < #it{p}_{T}(GeV/#it{c}) < %.1f}", pT_bins[ip], pT_bins[ip + 1]));
 
                     pad1->Update();
                     pad1->Modified();
@@ -1307,8 +1325,7 @@ void kstar_sparse()
                     leg112->SetColumnSeparation(0.3);
                     leg112->Draw();
 
-                    TLatex *ltx = new TLatex(0.27, 0.95,
-                                             Form("%0.1f < #it{p}_{T}(GeV/#it{c}) < %0.1f", pT_bins[ip], pT_bins[ip + 1]));
+                    TLatex *ltx = (isINEL) ? new TLatex(0.27, 0.95, Form("%0.2f < #it{p}_{T}(GeV/#it{c}) < %0.2f", pT_bins[ip], pT_bins[ip + 1])) : new TLatex(0.27, 0.95, Form("%0.1f < #it{p}_{T}(GeV/#it{c}) < %0.1f", pT_bins[ip], pT_bins[ip + 1]));
                     ltx->SetNDC();
                     ltx->SetTextFont(22);
                     ltx->SetTextSize(0.06);
@@ -1549,6 +1566,8 @@ void kstar_sparse()
                     padYield2->SetLeftMargin(0.18);
                     padYield2->Draw();
                     padYield2->cd();
+
+                    gPad->SetGrid(1, 1);
 
                     TH1D *hYieldRatio = (TH1D *)hYbincount->Clone("hYieldRatio");
                     hYieldRatio->Divide(hintegral_yield);

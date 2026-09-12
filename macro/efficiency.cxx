@@ -9,8 +9,8 @@ void efficiency()
 {
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "png"; // pdf, eps
-    bool isINEL = false;
+    string outputtype = "pdf"; // pdf, eps
+    bool isINEL = true;
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     const string kResBkg = "ROTATED";
@@ -69,13 +69,14 @@ void efficiency()
         // string data_path = "697595/kstarqa/hInvMass"; // INEL only
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
-        string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
+        // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
         // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
+        string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
 
         if (ivar == 6)
         {
-            data_path = "749276/kstarqa/hInvMass/ROTATED";
+            data_path = "756343/kstarqa/hInvMass/ROTATED";
         }
 
         TString outputfolder;
@@ -132,7 +133,8 @@ void efficiency()
         // string MCpath = "697699.root"; // Only INEL
         // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
         // string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
-        string MCpath = "750013.root"; // INEL>0, latest train with systematics
+        // string MCpath = "750013.root"; // INEL>0, latest train with systematics
+        string MCpath = "755334.root"; // INEL, latest train with systematics
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -653,10 +655,10 @@ void efficiency()
 
             TCanvas *cEventBySignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cEventBySignalLoss, 0.16, 0.06, 0.01, 0.14);
-            gPad->SetGridy(1);
-            gPad->SetGridx(1);
-            legall->Clear();
-            // legall->AddEntry((TObject *)0, "pp, INEL", "");
+            // gPad->SetGridy(1);
+            // gPad->SetGridx(1);
+            legall2->Clear();
+            // legall2->AddEntry((TObject *)0, "pp, INEL", "");
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 if (imult == 0)
@@ -675,17 +677,21 @@ void efficiency()
                 hRatioEvBySig[imult]->GetYaxis()->SetTitleOffset(1.6);
                 hRatioEvBySig[imult]->SetStats(0);
                 // hRatioEvBySig[imult]->SetMaximum(1.25);
-                hRatioEvBySig[imult]->SetMaximum(1.08);
-                hRatioEvBySig[imult]->SetMinimum(0.8);
+                hRatioEvBySig[imult]->SetMaximum(1.28);
+                hRatioEvBySig[imult]->SetMinimum(0.65);
                 hRatioEvBySig[imult]->SetMarkerStyle(markers[imult]);
                 hRatioEvBySig[imult]->SetMarkerSize(1.0);
                 hRatioEvBySig[imult]->SetMarkerColor(colors[imult]);
                 hRatioEvBySig[imult]->SetLineColor(colors[imult]);
-                hRatioEvBySig[imult]->GetYaxis()->SetNdivisions(515);
+                hRatioEvBySig[imult]->GetYaxis()->SetNdivisions(510);
                 hRatioEvBySig[imult]->Draw("pe same");
-                legall->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                legall2->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
             }
-            legall->Draw();
+            legall2->Draw();
+             latexMC->DrawLatex(0.23, 0.90, "ALICE");
+            latexMC->DrawLatex(0.23, 0.84, "pp #sqrt{#it{s}} = 13.6 TeV");
+            latexMC->DrawLatex(0.23, 0.78, "|y| < 0.5");
+            latexMC->DrawLatex(0.23, 0.71, "K*(892)^{0}");
             cEventBySignalLoss->SaveAs(outputfolder + "/event_by_signal_loss." + outputtype);
 
             TCanvas *cEventSplit = new TCanvas("", "", 720, 720);

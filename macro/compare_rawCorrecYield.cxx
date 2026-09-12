@@ -31,10 +31,13 @@ void compare_rawCorrecYield()
     bool isCorrectedYield = true;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
+    bool isINEL = true;
 
-    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/751768/kstarqa/hInvMass/WidthFree";   // Default2
-    // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/451003/kstarqa/hInvMass"; // 2024 data
+    // string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
+    // string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/751768/kstarqa/hInvMass/WidthFree";   // Default2
+
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED"; // Default1
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa_NoPVContributor/hInvMass/ROTATED";   // Default2
 
     // string path1 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/459845/kstarqa/hInvMass"; // 2022 data
     // string path2 = "/home/sawan/check_k892/output/kstar/LHC22o_pass7/IR_study/466180/kstarqa_id33593/hInvMass"; // 2024 data
@@ -56,11 +59,11 @@ void compare_rawCorrecYield()
     // TH1F *hefficiency3[numofmultbins + 1];
     // TH1F *hefficiency4[numofmultbins + 1];
 
-    for (int imult = 0; imult < numofmultbins + 1; imult++)
-    // for (int imult = 0; imult < 1; imult++)
+    // for (int imult = 0; imult < numofmultbins + 1; imult++)
+    for (int imult = 0; imult < 1; imult++)
     {
         double multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
-        double multhigh = (imult == 0) ? 100 : mult_classes[imult];
+        double multhigh = (imult == 0) ? (isINEL) ? 120 : 100 : mult_classes[imult];
 
         TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path1 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
         TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path2 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
@@ -111,7 +114,7 @@ void compare_rawCorrecYield()
         hmult1[imult]->GetXaxis()->SetTitleOffset(1.02);
         hmult1[imult]->SetMarkerStyle(20);
         hmult1[imult]->SetMarkerSize(1);
-        hmult1[imult]->GetXaxis()->SetRangeUser(0, 20);
+        // hmult1[imult]->GetXaxis()->SetRangeUser(0, 20);
         hmult1[imult]->Draw("pe");
         hmult2[imult]->SetMarkerStyle(21);
         hmult2[imult]->SetMarkerSize(1);
@@ -160,7 +163,7 @@ void compare_rawCorrecYield()
         }
 
         SetHistoQA(hratio1);
-        gPad->SetGridy(1);
+        gPad->SetGrid(1,1);
         hratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
         hratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -179,7 +182,7 @@ void compare_rawCorrecYield()
         hratio1->GetYaxis()->SetNdivisions(510);
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
         // hratio1->SetMinimum(hratio1->GetMinimum() * 0.7);
-        hratio1->GetXaxis()->SetRangeUser(0, 20);
+        // hratio1->GetXaxis()->SetRangeUser(0, 20);
         // hratio1->GetYaxis()->SetRangeUser(0.98, 1.11);
         hratio1->GetYaxis()->SetRangeUser(0.93, 1.04);
         hratio1->Draw("p");
@@ -196,7 +199,7 @@ void compare_rawCorrecYield()
         // hratio3->SetLineColor(kGreen + 2);
         // hratio3->Draw("p same");
 
-        TLine *line = new TLine(0, 1, 10, 1);
+        TLine *line = new TLine(0, 1, 30, 1);
         line->SetLineStyle(2);
         line->SetLineWidth(2);
         line->SetLineColor(1);

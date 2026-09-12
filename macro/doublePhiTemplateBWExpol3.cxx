@@ -68,11 +68,12 @@ void doublePhiTemplateBWExpol3()
     gStyle->SetOptFit(0);
     gStyle->SetOptStat(0);
     // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template";
-    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation2025";
+    TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/pTvariation";
     // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/Template/LHC25";
 
     double ptCut = 6.0;
-    TString suffix = Form("_pt%.1f", ptCut);
+    double ptCutMax = 7.0; // 100 for no upper limit
+    TString suffix = Form("_pt%.1f_%.1f", ptCut, ptCutMax);
     // TString suffix = "_ExtendedFitRange2";
     // TString suffix = "_ExtendedFitRangeLHC25";
 
@@ -106,17 +107,17 @@ void doublePhiTemplateBWExpol3()
     //============Using processOpti8 data======================
     //=========================================================
 
-    // //============2026 data========
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
-    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
+    //============2026 data========
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_WithPhiMasses.root");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
 
-    ////============2025 data========
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+    // ////============2025 data========
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
 
     // Axes: InvMass, pT, deltaM, Chi2, FitProb, Phi1Mass, Phi2Mass
     int lowpT = hUnlike->GetAxis(1)->FindBin(ptCut + 0.001);
-    int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
+    int highpT = hUnlike->GetAxis(1)->FindBin(ptCutMax - 0.001);
 
     int lowDeltaM = hUnlike->GetAxis(2)->FindBin(0.0 + 0.00001);
     int highDeltaM = hUnlike->GetAxis(2)->FindBin(0.005 - 0.00001);
@@ -197,9 +198,9 @@ void doublePhiTemplateBWExpol3()
         // f2D->SetParLimits(2, 0, 1e9);
         // f2D->SetParLimits(3, 0, 1e9);
 
-        // // 2026 dataset
-        // f2D->FixParameter(4, 1.01983);  // Mass peak
-        // f2D->FixParameter(5, 0.007077); // Width
+        // 2026 dataset
+        f2D->FixParameter(4, 1.01983);  // Mass peak
+        f2D->FixParameter(5, 0.007077); // Width
 
         // // 2026 dataset (pT cut 9 GeV/c)
         // f2D->FixParameter(6, 166.3); // Pol2 p0
@@ -231,9 +232,27 @@ void doublePhiTemplateBWExpol3()
         // f2D->FixParameter(8, 17.0);   // Pol2 p2
         // f2D->FixParameter(9, -56.0); // Pol2 p3
 
-        ////2025 dataset
-        f2D->FixParameter(4, 1.01983); // LHC25
-        f2D->FixParameter(5, 0.0058);  // Width
+        // // 2026 dataset (6.0 < pT < 7.0 GeV/c)
+        // f2D->FixParameter(6, 12.0); // Pol2 p0
+        // f2D->FixParameter(7, 6.2);  // Pol2 p1
+        // f2D->FixParameter(8, 9.9);  // Pol2 p2
+        // f2D->FixParameter(9, -6.9); // Pol2 p3
+
+        // // 2026 dataset (7.0 < pT < 8.0 GeV/c)
+        // f2D->FixParameter(6, 33.5); // Pol2 p0
+        // f2D->FixParameter(7, 14.2);  // Pol2 p1
+        // f2D->FixParameter(8, 11.3);  // Pol2 p2
+        // f2D->FixParameter(9, -17.09); // Pol2 p3
+
+        // 2026 dataset (8.0 < pT < 9.0 GeV/c)
+        f2D->FixParameter(6, 27.6);   // Pol2 p0
+        f2D->FixParameter(7, 13.2);   // Pol2 p1
+        f2D->FixParameter(8, 11.7);   // Pol2 p2
+        f2D->FixParameter(9, -14.9); // Pol2 p3
+
+        // ////=============2025 dataset===================
+        // f2D->FixParameter(4, 1.01983); // LHC25
+        // f2D->FixParameter(5, 0.0058);  // Width
 
         // ////2025 dataset (pT > 10 GeV/c)
         // f2D->FixParameter(6, 15.1);  // Pol2 p0
@@ -259,11 +278,11 @@ void doublePhiTemplateBWExpol3()
         // f2D->FixParameter(8, 23.5);  // Pol2 p2
         // f2D->FixParameter(9, -126.6); // Pol2 p3
 
-        ////2025 dataset (pT > 6 GeV/c)
-        f2D->FixParameter(6, 226.1);  // Pol2 p0
-        f2D->FixParameter(7, 90.7);  // Pol2 p1
-        f2D->FixParameter(8, 22.5);   // Pol2 p2
-        f2D->FixParameter(9, -108.6); // Pol2 p3
+        // ////2025 dataset (pT > 6 GeV/c)
+        // f2D->FixParameter(6, 226.1);  // Pol2 p0
+        // f2D->FixParameter(7, 90.7);  // Pol2 p1
+        // f2D->FixParameter(8, 22.5);   // Pol2 p2
+        // f2D->FixParameter(9, -108.6); // Pol2 p3
 
         f2D->SetNpx(1000); // Reduced for speed, increase if fit drawing looks jagged
         f2D->SetNpy(1000);

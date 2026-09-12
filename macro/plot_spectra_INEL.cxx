@@ -20,12 +20,12 @@ using namespace std;
 
 void plot_spectra_INEL()
 {
-    string filePath = "../output/kstar/LHC22o_pass7/708297/kstarqa/hInvMass/";
+    string filePath = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/";
     TFile *fINEL = OpenFile(filePath + "corrected_spectra_0_120.root");
     TH1D *hSpectraINEL = GetHisto(fINEL, "mult_0-120/corrected_spectra_Integral_final");
 
-    TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert_INELTemp.root");
-    TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hSysINELTemp");
+    TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/SystematicsPlots/SysUncert.root");
+    TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hTotalSysSmoothed_0_120");
 
     TH1F *h1 = (TH1F *)hSpectraINEL->Clone("h1");
     TH1F *h2 = (TH1F *)hSpectraINEL->Clone("h2");
@@ -61,13 +61,13 @@ void plot_spectra_INEL()
     fitFcn->SetLineStyle(2);
 
     TCanvas *cSpectraINEL = new TCanvas("cSpectraINEL", "", 720, 720);
-    SetCanvasStyle(cSpectraINEL, 0.16, 0.06, 0.01, 0.14);
+    SetCanvasStyle(cSpectraINEL, 0.17, 0.06, 0.01, 0.14);
     gPad->SetLogy();
     SetHistoQA(hSpectraINEL);
     hSpectraINEL->SetMaximum(0.2);
     hSpectraINEL->SetMinimum(8e-9);
     hSpectraINEL->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSpectraINEL->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    hSpectraINEL->GetYaxis()->SetTitle("1/#it{N}_{Ev} d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
     hSpectraINEL->GetYaxis()->SetTitleOffset(1.6);
     hSpectraINEL->SetStats(0);
     hSpectraINEL->SetMarkerStyle(20);
@@ -81,14 +81,24 @@ void plot_spectra_INEL()
     h2->SetLineWidth(2);
     h2->Draw("e2 same");
     fitFcn->Draw("l same");
-    TLegend *leg = new TLegend(0.5, 0.65, 0.85, 0.88);
-    leg->SetTextSize(0.035);
+    TLegend *leg = new TLegend(0.54, 0.75, 0.90, 0.92);
+    leg->SetTextSize(0.032);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
-    leg->AddEntry((TObject *)0, "K*(892)^{0}", "");
-    leg->AddEntry(hSpectraINEL, "pp INEL, #sqrt{s} = 13.6 TeV", "p");
+    leg->AddEntry(hSpectraINEL, "pp, #sqrt{s} = 13.6 TeV", "p");
     leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
+    leg->AddEntry((TObject *)0, "K*(892)^{0}", "");
     leg->Draw();
+
+    TLatex *lat = new TLatex();
+    lat->SetTextSize(0.035);
+    lat->SetTextFont(42);
+    lat->SetNDC();
+    lat->DrawLatex(0.59, 0.93, "ALICE");
+    lat->SetTextSize(0.03);
+    lat->DrawLatex(0.2, 0.2, "Uncertainties: Stat. (bars), Sys. (boxes)");
+
+
     cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-120.pdf").c_str());
 }
 TH1D *GetHisto(TFile *f, const string &name)

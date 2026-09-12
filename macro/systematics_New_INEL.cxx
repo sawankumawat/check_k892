@@ -29,7 +29,7 @@ void openTH1D(TH1D *&hist, TFile *file, const string &histPath)
     }
 }
 
-void systematics_New()
+void systematics_New_INEL()
 {
     // 1.         Default                         (1)
     // 2.         Norm variation                  (2)
@@ -37,7 +37,7 @@ void systematics_New()
     // 4.         Like-sign bkg                   (1)
     // 5.         pol2                            (1)
     // 6.         Bin counting                    (1)
-    // 7.         WidthFree                       (1) //Upto here only we will calculate for all multiplicities
+    // 7.         WidthFree                       (1)
     // 8.         DCA variations                  (2)
     // 9.         PV contributor                  (1)
     // 10.        PID variations                  (2)
@@ -46,17 +46,17 @@ void systematics_New()
 
     int lineColors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
-    string basePathSigExt = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
-    string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
-    string basePathNormVariations = "../output/kstar/LHC22o_pass7/751768/kstarqa/hInvMass/";
+    string basePathSigExt = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/";
+    string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/";
+    string basePathNormVariations = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/";
     string basePathCommon = "../output/kstar/LHC22o_pass7/";
-    string pathPIDAndMultEst = "750862/";
-    string pathTrackSel = "751768/";
+    string pathPIDAndMultEst = "756343/";
+    string pathTrackSel = "756343/";
     string basePathTrackSel = basePathCommon + pathTrackSel + "kstarqa_";
     string basePathPIDAndMultEst = basePathCommon + pathPIDAndMultEst + "kstarqa_";
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0, 100.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     TFile *SysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/SysUncert.root").c_str(), "RECREATE");
@@ -86,12 +86,8 @@ void systematics_New()
     // -------------------------------------------------------------
     TFile *fMB_Default = nullptr;
     TH1D *hMB_DefaultSpectra = nullptr;
-    openTFile(fMB_Default, basePathSigExt + "ROTATED/corrected_spectra_0_100.root");
-    openTH1D(hMB_DefaultSpectra, fMB_Default, "mult_0-100/corrected_spectra_Integral_final");
-
-    TCanvas *cTotalSysMult = new TCanvas("cTotalSysMult", "cTotalSysMult", 1440, 1080);
-    SetCanvasStyle(cTotalSysMult, 0.15, 0.05, 0.08, 0.13);
-    cTotalSysMult->Divide(4, 3);
+    openTFile(fMB_Default, basePathSigExt + "ROTATED/corrected_spectra_0_120.root");
+    openTH1D(hMB_DefaultSpectra, fMB_Default, "mult_0-120/corrected_spectra_Integral_final");
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {
@@ -100,7 +96,7 @@ void systematics_New()
         if (imult == 0)
         {
             multLow = 0;
-            multHigh = 100;
+            multHigh = 120;
         }
         else
         {
@@ -163,12 +159,10 @@ void systematics_New()
         }
         for (int i = 0; i < CombinatorialBkgVars.size(); i++)
         {
-            // openTFile(fCombinatorialBkgVars[i], basePathSigExt + CombinatorialBkgVars[i] + "/" + correctedFileName);
-            // openTH1D(hSpectraCombinatorialBkgVars[i], fCombinatorialBkgVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
             // Using only MB for combinatorial bkg variation.
-            openTFile(fCombinatorialBkgVars[i], basePathSigExt + CombinatorialBkgVars[i] + "/corrected_spectra_0_100.root");
-            openTH1D(hSpectraCombinatorialBkgVars[i], fCombinatorialBkgVars[i], "mult_0-100/corrected_spectra_Integral_final");
+            openTFile(fCombinatorialBkgVars[i], basePathSigExt + CombinatorialBkgVars[i] + "/corrected_spectra_0_120.root");
+            openTH1D(hSpectraCombinatorialBkgVars[i], fCombinatorialBkgVars[i], "mult_0-120/corrected_spectra_Integral_final");
         }
         for (int i = 0; i < ResidualBkgVars.size(); i++)
         {
@@ -177,7 +171,7 @@ void systematics_New()
         }
         for (int i = 0; i < BinCounting.size(); i++)
         {
-            openTFile(fBinCounting[i], basePathSigExt + BinCounting[i] + "/" + correctedFileName);
+            openTFile(fBinCounting[i], basePathSigExtpol2 + BinCounting[i] + "/" + correctedFileName);
             openTH1D(hSpectraBinCounting[i], fBinCounting[i], (multDir + "corrected_spectra_BinCount_final").c_str());
         }
         for (int i = 0; i < widthVars.size(); i++)
@@ -193,8 +187,8 @@ void systematics_New()
             // openTH1D(hSpectraDCAvars[i], fDCAvars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
             // Using only MB for DCA variation.
-            openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
-            openTH1D(hSpectraDCAvars[i], fDCAvars[i], "mult_0-100/corrected_spectra_Integral_final");
+            openTFile(fDCAvars[i], basePathTrackSel + DCAvars[i] + "/hInvMass/ROTATED/corrected_spectra_0_120.root");
+            openTH1D(hSpectraDCAvars[i], fDCAvars[i], "mult_0-120/corrected_spectra_Integral_final");
         }
         for (int i = 0; i < PVcontributorVars.size(); i++)
         {
@@ -202,8 +196,8 @@ void systematics_New()
             // openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
             // Using only MB for PV contributor variation.
-            openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
-            openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], "mult_0-100/corrected_spectra_Integral_final");
+            openTFile(fPVcontributorVars[i], basePathTrackSel + PVcontributorVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_120.root");
+            openTH1D(hSpectraPVcontributorVars[i], fPVcontributorVars[i], "mult_0-120/corrected_spectra_Integral_final");
         }
 
         // PID
@@ -213,16 +207,16 @@ void systematics_New()
             // openTH1D(hSpectraPIDVars[i], fPIDVars[i], (multDir + "corrected_spectra_Integral_final").c_str());
 
             // Using only MB for PID variation.
-            openTFile(fPIDVars[i], basePathPIDAndMultEst + PIDVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
-            openTH1D(hSpectraPIDVars[i], fPIDVars[i], "mult_0-100/corrected_spectra_Integral_final");
+            openTFile(fPIDVars[i], basePathPIDAndMultEst + PIDVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_120.root");
+            openTH1D(hSpectraPIDVars[i], fPIDVars[i], "mult_0-120/corrected_spectra_Integral_final");
         }
 
         // Material budget
         for (int i = 0; i < materialBudgetVars.size(); i++)
         {
             // Using only MB for material budget variation.
-            openTFile(fmaterialBudgetVars[i], basePathSigExtpol2 + materialBudgetVars[i] + "/corrected_spectra_0_100.root");
-            openTH1D(hSpectraMaterialBudgetVars[i], fmaterialBudgetVars[i], "mult_0-100/heff");
+            openTFile(fmaterialBudgetVars[i], basePathSigExtpol2 + materialBudgetVars[i] + "/corrected_spectra_0_120.root");
+            openTH1D(hSpectraMaterialBudgetVars[i], fmaterialBudgetVars[i], "mult_0-120/heff");
         }
 
         vector<TH1 *> NormVariationHists;
@@ -559,8 +553,8 @@ void systematics_New()
         latSys.SetTextFont(42);
         latSys.SetTextSize(0.04);
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 1080, 720);
@@ -591,8 +585,8 @@ void systematics_New()
         legTrackSel->Draw();
 
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "#sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 1080, 720);
@@ -633,36 +627,9 @@ void systematics_New()
         legTotal->Draw();
 
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "#sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
-
-        cTotalSysMult->cd(imult + 1);
-        gPad->SetLeftMargin(0.15);
-        gPad->SetBottomMargin(0.14);
-        gPad->SetRightMargin(0.03);
-        gPad->SetTopMargin(0.08);
-
-        for (int i = 0; i < vecTotal.size(); i++)
-        {
-            SetHistoQA(vecTotal[i]);
-            vecTotal[i]->GetYaxis()->SetTitle("Relative Uncertainty");
-            vecTotal[i]->SetStats(0);
-            vecTotal[i]->SetMaximum(0.185);
-            vecTotal[i]->SetMinimum(0);
-            vecTotal[i]->SetLineColor(lineColors[i]);
-            vecTotal[i]->GetYaxis()->SetTitleOffset(1.6);
-            vecTotal[i]->Draw("HIST SAME");
-        }
-        hTotalSys->Draw("HIST SAME");
-
-        if (imult == 0)
-        {
-            legTotal->Draw();
-        }
-        latSys.SetTextSize(0.07);
-        latSys.DrawLatex(0.25, 0.85, Form("%d-%d%%", multLow, multHigh));
-        latSys.SetTextSize(0.04);
 
         // smoothing procedure on separate sources
         int Iterations = 2;
@@ -701,20 +668,19 @@ void systematics_New()
         legTotal->Draw();
         SysUncertainties->cd();
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "#sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         hTotalSysSmoothed->Write(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
 
         // Save all the plots
-        cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations.pdf");
-        cRatioAll->SaveAs(savePath + "Ratio_AllVariations.pdf");
-        cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources.pdf");
-        cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics.pdf");
-        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics.pdf");
-        cTotalSys->SaveAs(savePath + "TotalSystematics.pdf");
-        cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics.pdf");
+        cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations_INEL.pdf");
+        cRatioAll->SaveAs(savePath + "Ratio_AllVariations_INEL.pdf");
+        cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources_INEL.pdf");
+        cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics_INEL.pdf");
+        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics_INEL.pdf");
+        cTotalSys->SaveAs(savePath + "TotalSystematics_INEL.pdf");
+        cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics_INEL.pdf");
     }
-    cTotalSysMult->SaveAs((basePathSigExt + "SystematicsPlots/TotalSystematics_Mult.pdf").c_str());
 }

@@ -22,14 +22,18 @@ double voigtian(double *x, double *par)
 void GetResolution()
 {
     gStyle->SetOptFit(1111);
-    TString MCpath = "../mc/LHC24f3c/750013.root"; // INEL>0, latest train with systematics
+    bool isINEL = true;
+    // TString MCpath = "../mc/LHC24f3c/750013.root"; // INEL>0, latest train with systematics
+    TString MCpath = "../mc/LHC24f3c/755334.root"; // INEL, latest train with systematics
     TFile *fileMC = new TFile(MCpath, "READ");
     THnSparseF *hMCSignal = (THnSparseF *)fileMC->Get("kstarqa/hInvMass/h3KstarMassRec");
-    TString savePath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ResolutionFromMC";
+    // TString savePath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ResolutionFromMC"; // INEL>0
+    TString savePath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/ResolutionFromMC"; // INEL
     // Axes: pT, multiplicity, mass
     vector<float> Resolution;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int totalMultClasses = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
     cout << "Total pT bins " << Npt << ", Total multiplicity classes " << totalMultClasses << endl;
@@ -41,7 +45,7 @@ void GetResolution()
         if (imult == 0)
         {
             multlow = 0;
-            multhigh = 100;
+            multhigh = (isINEL) ? 120 : 100;
         }
         else
         {
@@ -63,7 +67,7 @@ void GetResolution()
             int ptLowBin = hMCSignal->GetAxis(0)->FindBin(lowpt + 1e-3);
             int ptHighBin = hMCSignal->GetAxis(0)->FindBin(highpt - 1e-3);
             hMCSignal->GetAxis(0)->SetRange(ptLowBin, ptHighBin);
-            
+
             TH1D *hMassProjection = hMCSignal->Projection(2, "E");
             hMassProjection->Rebin(2);
 
@@ -116,7 +120,6 @@ void GetResolution()
             cMassFit->SaveAs(Form("%s/mult_%d-%d/MassFit_pt_%.1f_%.1f.png", savePath.Data(), multlow, multhigh, lowpt, highpt));
 
             Resolution.push_back(voigtFit->GetParameter(2)); // Sigma is the resolution
-
         }
     }
 

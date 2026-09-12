@@ -53,12 +53,12 @@ void doublePhiOpti8_Chebyshev()
     TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit";
     // TString savepath = "/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise";
     // string suffix = "25_aiam";
-    string suffix = "26afai";
+    string suffix = "26";
     // string suffix = "26ac";
     // string suffix = "26adaeag";
     int rebinFactor = 8;
     float fitRangeLow = 2.41;
-    float fitRangeHigh = 2.95;
+    float fitRangeHigh = 2.92;
 
     ////=====New===========
     ////====2026 data========
@@ -91,7 +91,6 @@ void doublePhiOpti8_Chebyshev()
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
     hInvMass->Rebin(rebinFactor);
-    hInvMass->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
 
@@ -239,6 +238,8 @@ void doublePhiOpti8_Chebyshev()
     //============================================================
     // Draw S+B fit
     //============================================================
+    hInvMass->GetXaxis()->SetRangeUser(fitRangeLow, fitRangeHigh - 0.02);
+    hInvMass->GetXaxis()->SetNdivisions(508);
 
     // S+B total fit
     fitFunc->SetLineColor(kRed + 1);
@@ -280,7 +281,7 @@ void doublePhiOpti8_Chebyshev()
     latex->DrawLatex(0.2, 0.32, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
     latex->DrawLatex(0.2, 0.27, Form("p-value = %.3e", pValue));
     latex->DrawLatex(0.2, 0.22, Form("Significance (Z) = %.2f #sigma", significance));
-    // cInvMass->SaveAs(savepath + "/InvariantMassWithFit_Chebyshev.png");
+    cInvMass->SaveAs(savepath + "/InvariantMassWithFit_Chebyshev.png");
 }
 
 //==============End of the main code==================

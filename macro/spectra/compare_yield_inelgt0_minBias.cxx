@@ -2,8 +2,9 @@
 #include "../src/style.h"
 #include "../src/fitfunc.h"
 #include "YieldMean.C"
-
 using namespace std;
+
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
 
 Double_t FuncLavy(Double_t *x, Double_t *par)
 {
@@ -12,51 +13,19 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
     return (p);
 }
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
-{
-    SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
-    c->Divide(1, 2, 0, 0);
-    TPad *pad1 = (TPad *)c->GetPad(1);
-    TPad *pad2 = (TPad *)c->GetPad(2);
-    pad2Size = 0.3; // Size of the first pad
-    pad1Size = 1 - pad2Size;
-
-    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
-    pad2->SetPad(0, 0, 1, 0.3);
-    pad1->SetRightMargin(0.06);
-    pad2->SetRightMargin(0.06);
-    pad2->SetBottomMargin(0.33);
-    pad1->SetLeftMargin(0.16);
-    pad2->SetLeftMargin(0.16);
-    pad1->SetTopMargin(0.02);
-    pad1->SetBottomMargin(0.001);
-    pad2->SetTopMargin(0.001);
-
-    pad1->SetTickx(1);
-    pad1->SetTicky(1);
-    pad2->SetTickx(1);
-    pad2->SetTicky(1);
-}
-
 void compare_yield_inelgt0_minBias()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = true;
-    // double inelNormRun2 = 0.892; event loss factor used in run 2
-    // 663738 (OnlyTPC)
-    // 664559 (TOFshift, TOFshiftMID)
-    // 670168 (2023 data with two MC productions)
-    // 668605 (2024 data: Base, MIDptDep2, MIDptDep2_small, MIDptDep2_verySmall, TOF3_withoutSquareCut)
-    // 672297 (2024 data: MIDptDep2_TOF3, MIDptDep2_small_TOF3, MIDptDep2_0p3_TOF3)
-    // 675391 (2024 data: MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
+    bool isSameBins = false;
 
-    TFile *fSystematics = new TFile("../../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
+    TFile *fSystematics = new TFile("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots/SysUncert.root", "READ");
     if (fSystematics->IsZombie())
     {
         cout << "Error: Systematics file not found" << endl;
         return;
     }
+
     TH1D *hRelUncertMultEstVars = (TH1D *)fSystematics->Get("hTotalSysSmoothed_0_100");
     if (hRelUncertMultEstVars == nullptr)
     {
@@ -64,14 +33,11 @@ void compare_yield_inelgt0_minBias()
         return;
     }
 
-    string path1 = "../../output/kstar/LHC22o_pass7/672297/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2024 data
-    string path2 = "../../output/kstar/LHC22o_pass7/672297/kstarqa_TOF3_withoutSquareCut/hInvMass"; // 2023 data
-    TString outputPath = path2 + "/spectra_compare";
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // 2024 data
+    TString outputPath = path1 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
-    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra.root").c_str(), "read");
-    TFile *fspectra2 = new TFile((path2 + "/corrected_spectra.root").c_str(), "read");
-    // TFile *fspectra3 = new TFile((path3 + "/corrected_spectra.root").c_str(), "read");
+    TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_0_100.root").c_str(), "read");
 
     if (fspectra1->IsZombie())
     {
@@ -90,17 +56,14 @@ void compare_yield_inelgt0_minBias()
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
     cout << "number of multiplicity bins are " << numofmultbins << endl;
 
-    TH1F *hmult1, *hmult2, *hmult3;
-    TH1F *hmultClone1, *hmultClone2, *hmultClone3;
+    TH1F *hmult1;
+    TH1F *hmultClone1;
     TGraphErrors *gRun2_spectra[numofmultbins];
     TGraphErrors *gRun2_ratio[numofmultbins];
     TGraphErrors *gRun2_minBias[numofmultbins];
 
     hmult1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
-    hmult2 = (TH1F *)fspectra2->Get("mult_0-100/corrected_spectra_Integral_final");
     hmultClone1 = (TH1F *)hmult1->Clone("hmultClone0");
-    hmultClone2 = (TH1F *)hmult2->Clone("hmultClone0");
-    // hmultClone3 = (TH1F *)hmult3->Clone("hmultClone0");
 
     if (hmult1 == nullptr)
     {
@@ -144,51 +107,16 @@ void compare_yield_inelgt0_minBias()
             gRun2_minBias[imult]->SetPoint(i, x, minBiasYield);
             gRun2_minBias[imult]->SetPointError(i, 0, error);
         }
-        // TCanvas *crunMinBias = new TCanvas(Form("crunMinBias_%d", imult), Form("crunMinBias_%d", imult), 720, 720);
-        // SetCanvasStyle(crunMinBias, 0.15, 0.03, 0.03, 0.15);
-        // gPad->SetLogy();
-        // SetGrapherrorStyle(gRun2_minBias[imult]);
-        // gRun2_minBias[imult]->SetMarkerStyle(20 + imult);
-        // gRun2_minBias[imult]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-        // gRun2_minBias[imult]->GetYaxis()->SetTitle("1/#it{N}_{Ev}d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-        // if (imult == 0)
-        // {
-        //     gRun2_minBias[imult]->Draw("AP PLC PMC");
-        // }
-        // else
-        // {
-        //     gRun2_minBias[imult]->Draw("P PLC PMC same");
-        // }
-        // // crunMinBias->SaveAs(outputPath + Form("/run2_minBias_spectra_%d.png", imult));
-        // leg->AddEntry(gRun2_minBias[imult], Form("%.0f-%.0f", mult_classes[imult], mult_classes[imult + 1]), "p");
     }
-    // leg->Draw();
-    // crunMinBias->SaveAs(outputPath + "/run2_minBias_spectra_%d.png");
 
     TH1F *h1 = (TH1F *)hmultClone1->Clone("h1");
     TH1F *h2 = (TH1F *)hmultClone1->Clone("h2");
 
-    TH1F *h21 = (TH1F *)hmultClone2->Clone("h21");
-    TH1F *h22 = (TH1F *)hmultClone2->Clone("h22");
-
-    // TH1F *h31 = (TH1F *)hmultClone3->Clone("h31");
-    // TH1F *h32 = (TH1F *)hmultClone3->Clone("h32");
-
     for (int i = 1; i <= h1->GetNbinsX(); i++) // putting small systematic error by hand
     {
         double systemerr1 = (hRelUncertMultEstVars->GetBinContent(i) * h2->GetBinContent(i));
-        double systemerr2 = (hRelUncertMultEstVars->GetBinContent(i) * h22->GetBinContent(i));
-        // double systemerr3 = (0.1 * h31->GetBinContent(i));
-
         h2->SetBinError(i, systemerr1);
-        h22->SetBinError(i, systemerr2);
-        // h31->SetBinError(i, systemerr3);
     }
-
-    // int numColors = gStyle->GetNumberOfColors();
-    // int paletteIndex = (imult - 1) * numColors / numofmultbins;
-    // paletteIndex = std::min(paletteIndex, numColors - 1); // Ensure within bounds
-    // int color = gStyle->GetColorPalette(paletteIndex);
 
     TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 15.0, 4);
     fitFcn1->SetParameter(0, 5.0);
@@ -196,30 +124,9 @@ void compare_yield_inelgt0_minBias()
     fitFcn1->FixParameter(2, 0.895);
     fitFcn1->SetParameter(3, 0.3);
     fitFcn1->SetParNames("n", "dn/dy", "mass", "T");
-    // fitFcn1->SetLineColor(color);
     fitFcn1->SetLineColor(kBlack);
     fitFcn1->SetLineStyle(2);
     fitFcn1->SetLineWidth(2);
-
-    TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 15.0, 4);
-    fitFcn2->SetParameter(0, 5.0);
-    fitFcn2->SetParameter(1, 0.07);
-    fitFcn2->FixParameter(2, 0.895);
-    fitFcn2->SetParameter(3, 0.3);
-    fitFcn2->SetParNames("n", "dn/dy", "mass", "T");
-    fitFcn2->SetLineColor(kRed);
-    fitFcn2->SetLineStyle(2);
-    fitFcn2->SetLineWidth(2);
-
-    // TF1 *fitFcn3 = new TF1("fitfunc3", FuncLavy, 0.0, 15.0, 4);
-    // fitFcn3->SetParameter(0, 5.0);
-    // fitFcn3->SetParameter(1, 0.07);
-    // fitFcn3->FixParameter(2, 0.895);
-    // fitFcn3->SetParameter(3, 0.3);
-    // fitFcn3->SetParNames("n", "dn/dy", "mass", "T");
-    // fitFcn3->SetLineColor(kRed);
-    // fitFcn3->SetLineStyle(2);
-    // fitFcn3->SetLineWidth(2);
 
     /*************meanpT*****************byresonance*******************package*************************/
     Double_t min = 0;
@@ -233,42 +140,54 @@ void compare_yield_inelgt0_minBias()
     // Double_t maxfit=8.0;
 
     TH1 *hout = YieldMean(h1, h2, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    TH1 *hout2 = YieldMean(h21, h22, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
-    // TH1 *hout3 = YieldMean(h31, h31, fitFcn3, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TGraphErrors *gratio1 = new TGraphErrors();
-    TGraphErrors *gratio2 = new TGraphErrors();
-    // TGraphErrors *gratio3 = new TGraphErrors();
     TGraphErrors *gratio1_sys = new TGraphErrors();
     int minBiasFromWhichGraph = 7;
 
     if (!isSameBins)
     {
-        for (int i = 0; i < gRun2_minBias[minBiasFromWhichGraph]->GetN(); i++) // took 4th for less error bar
+        for (int i = 0; i < gRun2_minBias[minBiasFromWhichGraph]->GetN(); i++)
         {
             double x_run2, yield_run2, x_error, yieldError_run2;
             gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
             x_error = gRun2_minBias[minBiasFromWhichGraph]->GetErrorX(i);
             yieldError_run2 = gRun2_minBias[minBiasFromWhichGraph]->GetErrorY(i);
 
+            if (i == 6 || i == 7)
+                yield_run2 = yield_run2 * 0.92; // event loss for 5-10 and 10-15 multiplicity classes
+            if (i == 8)
+                yield_run2 = yield_run2 * 0.95; // event loss for 1-5 multiplicity class
+
+            // 1. Evaluate Levy fit at Run 2 x-position
             double thisanalysis1 = fitFcn1->Eval(x_run2);
-            double thisanalysis2 = fitFcn2->Eval(x_run2);
-            // double thisanalysis3 = fitFcn3->Eval(x_run2);
 
+            // 2. Look up relative systematic uncertainty corresponding to x_run2
+            int sysBin = hRelUncertMultEstVars->GetXaxis()->FindBin(x_run2);
+            double relSysError = hRelUncertMultEstVars->GetBinContent(sysBin);
+            double sysError_fit = thisanalysis1 * relSysError;
+
+            // 3. Statistical Error Propagation for gratio1
+            //    (Assuming yieldError_run2 contains stat error)
+            double error1_stat = sqrt(pow(thisanalysis1 * yieldError_run2 / (yield_run2 * yield_run2), 2));
+
+            // 4. Full Systematic Error Propagation for gratio1_sys
+            double error1_sys = sqrt(pow(sysError_fit / yield_run2, 2) +
+                                     pow(thisanalysis1 * yieldError_run2 / (yield_run2 * yield_run2), 2));
+
+            // Set central points and error bands
             gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
+            gratio1->SetPointError(i, x_error, error1_stat);
+
             gratio1_sys->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
-            gratio2->SetPoint(i, x_run2, thisanalysis2 / yield_run2);
-            // gratio3->SetPoint(i, x_run2, thisanalysis3 / yield_run2);
 
-            cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
+            // Set x-width for the systematic error box (0.10 GeV/c default or bin width)
+            double xBand = (x_error > 0) ? x_error : 0.10;
+            gratio1_sys->SetPointError(i, xBand, error1_sys);
 
-            double error1 = sqrt(pow(thisanalysis1 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-            double error2 = sqrt(pow(thisanalysis2 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-            // double error3 = sqrt(pow(thisanalysis3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-
-            gratio1->SetPointError(i, x_error, error1);
-            gratio2->SetPointError(i, x_error, error2);
-            // gratio3->SetPointError(i, x_error, error3);
+            cout << "Bin " << i << " at pT=" << x_run2
+                 << " | Ratio = " << thisanalysis1 / yield_run2
+                 << " | SysError = " << error1_sys << endl;
         }
     }
     else
@@ -285,42 +204,24 @@ void compare_yield_inelgt0_minBias()
         {
             double x_run2, yield_run2, x_error, yieldError_run2;
             gRun2_minBias[minBiasFromWhichGraph]->GetPoint(i, x_run2, yield_run2);
-            if (i == 4 || i == 5)
-                yield_run2 = yield_run2 * 1.03; // event loss for 15-20 and 20-30 multiplicity classes
-            if (i == 6 || i == 7)
-                yield_run2 = yield_run2 * 0.94; // event loss for 5-10 and 10-15 multiplicity classes
-            if (i == 12)
-                yield_run2 = yield_run2 * 0.87; // event loss for 0-1 multiplicity class
-            if (i == 9)
-                yield_run2 = yield_run2 * 1.05; // event loss for 1-5 multiplicity class
 
             gRun2_minBias[minBiasFromWhichGraph]->SetPoint(i, x_run2, yield_run2);
             x_error = gRun2_minBias[minBiasFromWhichGraph]->GetErrorX(i);
             yieldError_run2 = gRun2_minBias[minBiasFromWhichGraph]->GetErrorY(i);
             double yieldError_run3 = h1->GetBinError(i + 1);
-            double yield2Error_run3 = h21->GetBinError(i + 1);
             double SysError_run3 = h2->GetBinError(i + 1);
-            double SysError2_run3 = h22->GetBinError(i + 1);
 
             double yield_Run3 = hmultClone1->GetBinContent(i + 1);
-            double yield2_Run3 = hmultClone2->GetBinContent(i + 1);
 
             gratio1->SetPoint(i, x_run2, yield_Run3 / yield_run2);
-            gratio2->SetPoint(i, x_run2, yield2_Run3 / yield_run2);
             gratio1_sys->SetPoint(i, x_run2, yield_Run3 / yield_run2);
 
-            // double error1 = sqrt(pow(yield_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-            // double error2 = sqrt(pow(yield2_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-
             double error1 = sqrt(pow(yieldError_run3 / yield_run2, 2) + pow(yield_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-            double error2 = sqrt(pow(yield2Error_run3 / yield_run2, 2) + pow(yield2_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
 
             double error1_sys = sqrt(pow(SysError_run3 / yield_run2, 2) + pow(yield_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
-            double error2_sys = sqrt(pow(SysError2_run3 / yield_run2, 2) + pow(yield2_Run3 * yieldError_run2 / (yield_run2 * yield_run2), 2));
 
-            // double sysError = hRelUncertMultEstVars->GetBinContent(i + 1); // systematic error from histogram
+            double sysError = hRelUncertMultEstVars->GetBinContent(i + 1); // systematic error from histogram
             gratio1->SetPointError(i, x_error, error1);
-            gratio2->SetPointError(i, x_error, error2);
 
             double xBand = 0.5 * hmultClone1->GetXaxis()->GetBinWidth(i + 1);
             gratio1_sys->SetPointError(i, xBand, error1_sys);
@@ -333,10 +234,9 @@ void compare_yield_inelgt0_minBias()
     canvas_style(c1, pad1Size, pad2Size);
     c1->cd(1);
     SetHistoStyle(hmultClone1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
     hmultClone1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    hmultClone1->SetMaximum(hmultClone1->GetMaximum() * 5);
-    hmultClone1->SetMinimum(hmultClone1->GetMinimum() * 0.5);
+    hmultClone1->SetMaximum(hmultClone1->GetMaximum() * 3);
+    hmultClone1->SetMinimum(hmultClone1->GetMinimum() * 0.9);
     hmultClone1->GetYaxis()->SetTitleOffset(1.30);
     hmultClone1->GetXaxis()->SetTitleOffset(1.02);
     hmultClone1->SetMarkerStyle(20);
@@ -352,28 +252,10 @@ void compare_yield_inelgt0_minBias()
     h2->SetLineWidth(1);
     h2->Draw("e2 same");
 
-    // h21->SetMarkerStyle(21);
-    // h21->SetMarkerSize(1);
-    // h21->SetMarkerColor(kRed);
-    // h21->SetLineColor(kRed);
-    // h21->SetFillColorAlpha(kRed, 0.20);
-    // h21->SetFillStyle(1001);
-    // h21->SetLineWidth(1);
-    // h21->Draw("e2 same");
-    // h31->SetMarkerStyle(22);
-    // h31->SetMarkerSize(1);
-    // h31->SetMarkerColor(kGreen +2);
-    // h31->SetLineColor(kGreen +2);
-    // h31->Draw("pe same");
     fitFcn1->SetLineColor(kBlue);
     fitFcn1->SetLineStyle(2);
     fitFcn1->Draw("same");
-    // fitFcn2->SetLineColor(kRed);
-    // fitFcn2->SetLineStyle(2);
-    // fitFcn2->Draw("same");
-    // fitFcn3->SetLineColor(kGreen + 2);
-    // fitFcn3->SetLineStyle(2);
-    // fitFcn3->Draw("same");
+
     gPad->SetLogy(1);
     gRun2_minBias[minBiasFromWhichGraph]->SetMarkerStyle(22);
     gRun2_minBias[minBiasFromWhichGraph]->SetMarkerSize(1);
@@ -382,18 +264,26 @@ void compare_yield_inelgt0_minBias()
     gRun2_minBias[minBiasFromWhichGraph]->SetLineWidth(2);
     gRun2_minBias[minBiasFromWhichGraph]->Draw("pe same");
 
-    TLegend *leg = new TLegend(0.38, 0.65, 0.9, 0.91);
+    TLegend *leg = new TLegend(0.233983, 0.066092, 0.614206, 0.265189);
     SetLegendStyle(leg);
-    leg->SetTextSize(0.04);
-    leg->SetHeader("INEL > 0");
-    leg->AddEntry(h1, "pp 13.6 TeV", "p");
+    leg->SetTextSize(0.045);
+    leg->AddEntry(hmultClone1, "pp 13.6 TeV", "p");
     leg->AddEntry(gRun2_minBias[minBiasFromWhichGraph], "pp 13 TeV (#it{PLB 807 (2020) 135501)}", "p");
     leg->AddEntry(fitFcn1, "Levy-Tsallis", "l");
     leg->Draw();
 
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.045);
+    lat.SetTextFont(42);
+    lat.DrawLatex(0.65, 0.90, "ALICE");
+    lat.DrawLatex(0.65, 0.83, "|y| < 0.5, INEL > 0");
+    lat.DrawLatex(0.65, 0.76, "FT0M: 0-100%");
+    lat.DrawLatex(0.65, 0.69, "K*(892)^{0}");
+
+
     c1->cd(2);
-    SetGrapherrorStyle(gratio1);
-    SetGrapherrorStyle(gratio2);
+    SetGraphErrorStyle(gratio1);
     gratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
     gratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     gratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -409,13 +299,8 @@ void compare_yield_inelgt0_minBias()
     gratio1->GetXaxis()->SetTitleOffset(1.1);
     gratio1->GetYaxis()->SetNdivisions(506);
     gratio1->GetXaxis()->SetRangeUser(0, 10);
-    // gratio1->GetHistogram()->SetMaximum(2.4);
-    // gratio1->GetHistogram()->SetMinimum(0.3);
     gratio1->GetHistogram()->SetMaximum(1.45);
     gratio1->GetHistogram()->SetMinimum(0.65);
-    // gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
-    // gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
-    // gratio1->SetMinimum(0.45);
     gratio1->Draw("ap");
     gratio1_sys->SetMarkerStyle(20);
     gratio1_sys->SetMarkerSize(1.0);
@@ -425,17 +310,6 @@ void compare_yield_inelgt0_minBias()
     gratio1_sys->SetLineWidth(2);
     gratio1_sys->SetFillStyle(0);
     gratio1_sys->Draw("e2 same");
-
-    gratio2->SetMarkerStyle(21);
-    gratio2->SetMarkerSize(1.0);
-    gratio2->SetMarkerColor(kRed);
-    gratio2->SetLineColor(kRed);
-    // gratio2->Draw("p same");
-    // gratio3->SetMarkerStyle(22);
-    // gratio3->SetMarkerSize(1.0);
-    // gratio3->SetMarkerColor(kGreen + 2);
-    // gratio3->SetLineColor(kGreen + 2);
-    // gratio3->Draw("p same");
 
     TLine *line = new TLine(0, 1, 10, 1);
     line->SetLineStyle(2);
@@ -449,4 +323,30 @@ void compare_yield_inelgt0_minBias()
     box->SetFillStyle(3003);
     box->Draw("same");
     c1->SaveAs(outputPath + "/YieldMinBiasRatio.pdf");
+}
+
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
+{
+    SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
+    c->Divide(1, 2, 0, 0);
+    TPad *pad1 = (TPad *)c->GetPad(1);
+    TPad *pad2 = (TPad *)c->GetPad(2);
+    pad2Size = 0.3; // Size of the first pad
+    pad1Size = 1 - pad2Size;
+
+    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
+    pad2->SetPad(0, 0, 1, 0.3);
+    pad1->SetRightMargin(0.06);
+    pad2->SetRightMargin(0.06);
+    pad2->SetBottomMargin(0.33);
+    pad1->SetLeftMargin(0.16);
+    pad2->SetLeftMargin(0.16);
+    pad1->SetTopMargin(0.02);
+    pad1->SetBottomMargin(0.001);
+    pad2->SetTopMargin(0.001);
+
+    pad1->SetTickx(1);
+    pad1->SetTicky(1);
+    pad2->SetTickx(1);
+    pad2->SetTicky(1);
 }

@@ -321,6 +321,10 @@ void systematics_Uncorrelated()
         finalFracWide[p] = maxVal;
     }
 
+    TCanvas *cTotalSysMult = new TCanvas("cTotalSysMult", "cTotalSysMult", 1440, 1080);
+    SetCanvasStyle(cTotalSysMult, 0.15, 0.05, 0.08, 0.13);
+    cTotalSysMult->Divide(4, 3);
+
     // Save and plot output per multiplicity class
     for (int imult = 0; imult < nmultbins; imult++)
     {
@@ -435,20 +439,42 @@ void systematics_Uncorrelated()
         legUncorr->SetBorderSize(0);
         legUncorr->SetFillStyle(0);
         legUncorr->SetTextSize(0.027);
-        legUncorr->AddEntry(hUncorrOriginal, "Uncorrelated Systematic Uncertainty", "l");
-        legUncorr->AddEntry(hTotalUncert, "Total Systematic Uncertainty", "l");
-        legUncorr->AddEntry(hUncorrSmoothed, "Smoothed Uncorrelated Systematic Uncertainty", "l");
+        legUncorr->AddEntry(hTotalUncert, "Total Sys. Uncertainty", "l");
+        legUncorr->AddEntry(hUncorrOriginal, "Uncorr. Sys. Uncertainty", "l");
+        legUncorr->AddEntry(hUncorrSmoothed, "Smoothed Uncorr. Sys. Uncertainty", "l");
         legUncorr->Draw();
 
-        cUncorr->SaveAs((basePathSigExt + Form("SystematicsPlots/Uncorrelated/hUncorrelatedUncertainty_mult_%d_%d.png", multLow, multHigh)).c_str());
+        cUncorr->SaveAs((basePathSigExt + Form("SystematicsPlots/Uncorrelated/hUncorrelatedUncertainty_mult_%d_%d.pdf", multLow, multHigh)).c_str());
 
-        if (fDefault)
+        cTotalSysMult->cd(imult + 1);
+        gPad->SetLeftMargin(0.15);
+        gPad->SetBottomMargin(0.15);
+        gPad->SetRightMargin(0.05);
+        gPad->SetTopMargin(0.05);
+        hTotalUncert->Draw("HIST");
+        hUncorrOriginal->Draw("HIST SAME");
+        hUncorrSmoothed->Draw("HIST SAME");
+
+        TLatex *latex = new TLatex();
+        latex->SetNDC();
+        latex->SetTextSize(0.04);
+        latex->DrawLatex(0.25, 0.88, Form("Multiplicity: %d-%d", multLow, multHigh));
+
+        if (imult == 0)
         {
-            fDefault->Close();
-            delete fDefault;
+            legUncorr->SetTextSize(0.04);
+            legUncorr->Draw();
         }
-        delete hTotalSysWide;
+
+        // if (fDefault)
+        // {
+        //     fDefault->Close();
+        //     delete fDefault;
+        // }
+        // delete hTotalSysWide;
     }
+
+    cTotalSysMult->SaveAs((basePathSigExt + "SystematicsPlots/Uncorrelated/cTotalSysMultAll.pdf").c_str());
 
     SysUncertainties->Close();
 }

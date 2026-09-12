@@ -48,7 +48,7 @@ Double_t BWExpol(Double_t *x, Double_t *par)
 }
 
 // Global fixed mass value used as initial seed
-const double INIT_MASS = 2.6902;
+const double INIT_MASS = 2.69;
 
 // Combined Multi-Histogram Global Objective Structure (Both Mass & Width Shared)
 struct GlobalChi2
@@ -90,7 +90,7 @@ void doublePhiSimultaneousFit_SharedMassWidth()
 
     int rebinFactor = 8;
     float fitRangeLow = 2.41;
-    float fitRangeHigh = 2.96;
+    float fitRangeHigh = 2.93;
 
     vector<TH1D *> hInvMassVec(nPeriods);
     vector<TH1D *> hBkgVec(nPeriods);
@@ -348,7 +348,7 @@ void doublePhiSimultaneousFit_SharedMassWidth()
         // latex.DrawLatex(0.33, 0.67, Form("Yield = %.1f #pm %.1f", simulYield, simulYieldErr));
     }
 
-    cMulti->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise/LHC26_PeriodStability.png");
+    cMulti->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise26Data/LHC26_PeriodStability.png");
 }
 
 TFile *OpenFile(const string &path)

@@ -5,9 +5,10 @@
 #include <TString.h>
 #include <TStopwatch.h>
 #include "initializations.h"
+#include "../../src/style.h"
 
 using namespace std;
-bool plot_all = false;
+bool savePlots = false;
 
 void buildTemplate()
 {
@@ -18,9 +19,9 @@ void buildTemplate()
     // const string kResBkg = "MIX";
     const string kResBkg = "LIKE";
     // const string kResBkg = "ROTATED";
-    TString outputtype = "pdf";
+    TString outputtype = "png";
     const float txtsize = 0.045; // text size in the plots
-    bool isINEL = false;
+    bool isINEL = true;
 
     const TString kvariation = "";
     // const TString kvariation = "_TPC1p5_combined2";
@@ -28,10 +29,11 @@ void buildTemplate()
     // const TString kvariation = "_DCAvar1";
     // const TString kvariation = "_DCAvar2";
     // const TString kvariation = "_NoPVContributor";
+    // const TString kvariation = "_pTDepDCA";
     //********************************************************************************
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     t2->SetNDC();
@@ -41,8 +43,8 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read");
-    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/746556.root", "Read");
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
     if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
@@ -73,11 +75,16 @@ void buildTemplate()
         return;
     }
 
-    TFile *outPutSigMinusTrue = new TFile(Form("template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
+    TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {
         int multlow, multhigh;
+
+        if (isINEL && imult != 0)
+        {
+            break;
+        }
 
         if (imult == 0)
         {
@@ -93,8 +100,7 @@ void buildTemplate()
 
         //*************************Create folders********************************************
         TString centRange = Form("%d_%d", multlow, multhigh);
-        // TString Cenoutputfolder = Form("template/%s/%d-%d%%", kResBkg.c_str(), multlow, multhigh);
-        TString Cenoutputfolder = Form("template/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh);
+        TString Cenoutputfolder = (isINEL) ? Form("template/INEL/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh) : Form("template/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh);
 
         if (gSystem->mkdir(Cenoutputfolder, kTRUE))
         {
@@ -266,18 +272,37 @@ void buildTemplate()
             // hSigminusTrue->Add(hTotalRef, -1); // Kept commented as in original code
 
             TCanvas *cSigminusTrue = new TCanvas(Form("cSigminusTrue_pt_%d", ip + 1), Form("cSigminusTrue_pt_%d", ip + 1), 720, 720);
-            cSigminusTrue->SetTopMargin(0.08);
-            cSigminusTrue->SetBottomMargin(0.13);
-            cSigminusTrue->SetLeftMargin(0.15);
-            cSigminusTrue->SetRightMargin(0.03);
-
-            hSigminusTrue->SetTitle(Form("%.1f < #it{p}_{T} (GeV/#it{c}) < %.1f; M_{K#pi} (GeV/c^{2}); Counts", lowpt, highpt));
+            SetCanvasStyle(cSigminusTrue, 0.15, 0.03, 0.08, 0.15);
+            SetHistoQA(hSigminusTrue);
+            hSigminusTrue->Rebin(5);
+            hSigminusTrue->GetXaxis()->SetRangeUser(0.7, 1.3);
+            hSigminusTrue->SetTitle(Form("%.2f < #it{p}_{T} (GeV/#it{c}) < %.2f; M_{K#pi} (GeV/c^{2}); Counts", lowpt, highpt));
             hSigminusTrue->Draw("ep");
 
-            cSigminusTrue->SaveAs(Form((Cenoutputfolder + "/hSigminusTrue_pt%d." + outputtype).Data(), ip + 1));
+            if (savePlots)
+                cSigminusTrue->SaveAs(Form((Cenoutputfolder + "/hSigminusTrue_pt%d." + outputtype).Data(), ip + 1));
+
+            TCanvas *cTrueKstar = new TCanvas(Form("cTrueKstar_pt_%d", ip + 1), Form("cTrueKstar_pt_%d", ip + 1), 720, 720);
+            SetCanvasStyle(cTrueKstar, 0.15, 0.03, 0.08, 0.15);
+            SetHistoQA(h1rec);
+            h1rec->GetXaxis()->SetRangeUser(0.6, 1.3);
+            h1rec->SetTitle(Form("%.2f < #it{p}_{T} (GeV/#it{c}) < %.2f; M_{K#pi} (GeV/c^{2}); Counts", lowpt, highpt));
+            h1rec->Draw("ep");
+            if (savePlots)
+                cTrueKstar->SaveAs(Form((Cenoutputfolder + "/hTrueKstar_pt%d." + outputtype).Data(), ip + 1));
+
+            TCanvas *cBkgSubtracted = new TCanvas(Form("cBkgSubtracted_pt_%d", ip + 1), Form("cBkgSubtracted_pt_%d", ip + 1), 720, 720);
+            SetCanvasStyle(cBkgSubtracted, 0.15, 0.03, 0.08, 0.15);
+            SetHistoQA(hfsig);
+            hfsig->Rebin(5);
+            hfsig->GetXaxis()->SetRangeUser(0.7, 1.3);
+            hfsig->SetTitle(Form("%.2f < #it{p}_{T} (GeV/#it{c}) < %.2f; M_{K#pi} (GeV/c^{2}); Counts", lowpt, highpt));
+            hfsig->Draw("ep");
+            if (savePlots)
+                cBkgSubtracted->SaveAs(Form((Cenoutputfolder + "/hBkgSubtracted_pt%d." + outputtype).Data(), ip + 1));
 
             outPutSigMinusTrue->cd();
-            hSigminusTrue->SetName(Form("hSigminusTrue_pt_%.1f_%.1f", lowpt, highpt));
+            (isINEL) ? hSigminusTrue->SetName(Form("hSigminusTrue_pt_%.2f_%.2f", lowpt, highpt)) : hSigminusTrue->SetName(Form("hSigminusTrue_pt_%.1f_%.1f", lowpt, highpt));
             dir->cd();
             hSigminusTrue->Write();
 

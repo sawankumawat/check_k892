@@ -49,7 +49,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    TString outputType = "png"; // pdf, png
+    TString outputType = "pdf"; // pdf, png
     double fitRangeMax = 20.0;
     bool systematicsExist = true;
 

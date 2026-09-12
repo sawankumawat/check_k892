@@ -89,7 +89,7 @@ void doublePhiSimultaneousFit_SharedMass()
 
     int rebinFactor = 8;
     float fitRangeLow = 2.41;
-    float fitRangeHigh = 2.96;
+    float fitRangeHigh = 2.90;
 
     vector<TH1D *> hInvMassVec(nPeriods);
     vector<TH1D *> hBkgVec(nPeriods);
@@ -350,7 +350,7 @@ void doublePhiSimultaneousFit_SharedMass()
         // latex.DrawLatex(0.33, 0.67, Form("Yield = %.1f #pm %.1f", simulYield, simulYieldErr));
     }
 
-    cMulti->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise/LHC26_PeriodStability_SharedMass.png");
+    cMulti->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/PeriodWise26Data/LHC26_PeriodStability_SharedMass.png");
 }
 
 TFile *OpenFile(const string &path)

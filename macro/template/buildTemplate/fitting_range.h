@@ -1,7 +1,9 @@
 // Description: This file contains the fitting range for the different datasets and the different pT bins
 
-// #define INELgt0
-#define INEL
+// For INEL, earlier I used wrong binning for the initial and last bins, so their the uncertainty is high. The rebin should always be 1 only here.
+
+#define INELgt0
+// #define INEL
 
 #ifdef INELgt0
 // For INEL>0 dataset
@@ -57,36 +59,6 @@ const std::vector<vector<float>> kNormRangepT = {
     {1.45, 1.5}  // 20.0-30.0
 };
 
-const std::vector<int> kRebin = {
-    1, // 0.0-0.2
-    1, // 0.2-0.4
-    1, // 0.4-0.6
-    1, // 0.6-0.8
-    1, // 0.8-1.0
-    1, // 1.0-1.2
-    1, // 1.2-1.4
-    1, // 1.4-1.6
-    1, // 1.6-1.8
-    1, // 1.8-2.0
-    1, // 2.0-2.2
-    1, // 2.2-2.4
-    1, // 2.4-2.6
-    1, // 2.6-2.8
-    1, // 2.8-3.0
-    1, // 3.0-3.5
-    1, // 3.5-4.0
-    1, // 4.0-4.5
-    1, // 4.5-5.0
-    1, // 5.0-6.0
-    1, // 6.0-7.0
-    1, // 7.0-8.0
-    1, // 8.0-10.0
-    1, // 10.0-12.0
-    1, // 12.0-15.0
-    1, // 15.0-20.0
-    1  // 20.0-30.0
-};
-
 #endif
 
 #ifdef INEL
@@ -125,41 +97,5 @@ const std::vector<vector<float>> kNormRangepT = {
     {1.20, 1.30}, // 20.0 - 25.0
     {1.20, 1.30}  // 25.0 - 30.0
 
-};
-
-const std::vector<int> kRebin = {
-
-    //======INEL======
-    4, // 0.0-0.05
-    4, // 0.05-0.1
-    2, // 0.1-0.2
-    2, // 0.2-0.3
-    2, // 0.3-0.4
-    2, // 0.4-0.5
-    2, // 0.5-0.6
-    2, // 0.6-0.7
-    2, // 0.7-0.8
-    1, // 0.8-0.9
-    1, // 0.9-1.0
-    1, // 1.0-1.2
-    1, // 1.2-1.4
-    1, // 1.4-1.6
-    1, // 1.6-1.8
-    1, // 1.8-2.0
-    1, // 2.0-2.4
-    1, // 2.4-2.8
-    1, // 2.8-3.2
-    1, // 3.2-3.6
-    1, // 3.6-4.0
-    1, // 4.0-5.0
-    1, // 5.0-6.0
-    1, // 6.0-7.0
-    2, // 7.0-8.0
-    2, // 8.0-10.0
-    4, // 10.0-12.0
-    4, // 12.0-15.0
-    4, // 15.0-20.0
-    4, // 20.0-25.0
-    8  // 25.0-30.0
 };
 #endif

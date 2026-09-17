@@ -51,6 +51,7 @@ const string kvariation = "";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
 // const string kvariation = "_NoPVContributor";
+// const string kvariation = "_pTDepDCA";
 ////********************************************************************************************
 
 // define datasets here
@@ -109,10 +110,9 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "708297.root"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV)
 // const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
 // const string kDataFilename_temp2 = "750862.root"; // INEL>0, latest train with systematics (Trk selection not available)
-// const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
-const string kDataFilename_temp2 = "756343.root"; // INEL file with all systemattics available
-
-
+const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
+// const string kDataFilename_temp2 = "756343.root"; // INEL file with all systemattics available
+// const string kDataFilename_temp2 = "755334.root"; // INEL (for MC closure)
 
 #endif
 
@@ -124,12 +124,12 @@ const string kfoldername = kfoldername_temp.substr(0, kfoldername_temp.length() 
 const string koutputfolder = kSignalOutput + "/" + kfoldername;
 
 // Canvas dimensions
-const int klowerpad = 5;
-const int kupperpad = 5;
+const int klowerpad = 6;
+const int kupperpad = 6;
 // const int kcanvaswidth = 1440 * 2;
 // const int kcanvasheight = 720 * 2;
-const int kcanvaswidth = 1440;
-const int kcanvasheight = 1080;
+const int kcanvaswidth = 1920;
+const int kcanvasheight = 1440;
 const int kcanvasdivide[2] = {klowerpad, kupperpad};
 
 float masspdg = 0.89556; // in GeV/c^2

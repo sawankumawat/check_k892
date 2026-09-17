@@ -10,7 +10,7 @@ void efficiency()
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
     string outputtype = "pdf"; // pdf, eps
-    bool isINEL = true;
+    bool isINEL = false;
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     const string kResBkg = "ROTATED";
@@ -71,8 +71,8 @@ void efficiency()
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
         // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
-        // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
-        string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
+        string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
+        // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
 
         if (ivar == 6)
         {
@@ -133,8 +133,8 @@ void efficiency()
         // string MCpath = "697699.root"; // Only INEL
         // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
         // string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
-        // string MCpath = "750013.root"; // INEL>0, latest train with systematics
-        string MCpath = "755334.root"; // INEL, latest train with systematics
+        string MCpath = "750013.root"; // INEL>0, latest train with systematics
+        // string MCpath = "755334.root"; // INEL, latest train with systematics
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -537,7 +537,6 @@ void efficiency()
             latexMC->DrawLatex(0.23, 0.77, "|y| < 0.5");
             latexMC->DrawLatex(0.23, 0.70, "K*(892)^{0}");
 
-
             cefficiency->cd(2);
             gPad->SetGridy(1);
             for (int imult = 1; imult < multLoopEnd; imult++)
@@ -688,7 +687,7 @@ void efficiency()
                 legall2->AddEntry(hRatioEvBySig[imult], Form("%d-%d%%", multlow, multhigh), "p");
             }
             legall2->Draw();
-             latexMC->DrawLatex(0.23, 0.90, "ALICE");
+            latexMC->DrawLatex(0.23, 0.90, "ALICE");
             latexMC->DrawLatex(0.23, 0.84, "pp #sqrt{#it{s}} = 13.6 TeV");
             latexMC->DrawLatex(0.23, 0.78, "|y| < 0.5");
             latexMC->DrawLatex(0.23, 0.71, "K*(892)^{0}");
@@ -718,65 +717,75 @@ void efficiency()
             TCanvas *cSignificance = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cSignificance, 0.16, 0.06, 0.06, 0.14);
             // hSignificance[0]->Draw("p");
-            legall->Clear();
+            legall2->Clear();
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 SetHistoQA(hSignificance[imult]);
                 hSignificance[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                 hSignificance[imult]->GetYaxis()->SetTitle("Significance");
                 hSignificance[imult]->GetYaxis()->SetTitleOffset(1.6);
-                hSignificance[imult]->SetMaximum(1250);
+                hSignificance[imult]->SetMaximum(2100);
                 hSignificance[imult]->SetMinimum(-5);
                 hSignificance[imult]->SetMarkerStyle(markers[imult]);
                 hSignificance[imult]->SetMarkerSize(1.2);
                 hSignificance[imult]->Draw("p same PLC PMC");
                 multlow = mult_classes[imult - 1];
                 multhigh = mult_classes[imult];
-                legall->AddEntry(hSignificance[imult], Form("%d-%d%%", multlow, multhigh), "p");
+                legall2->AddEntry(hSignificance[imult], Form("%d-%d%%", multlow, multhigh), "p");
             }
-            legall->Draw();
+            legall2->Draw();
+            latexMC->SetTextSize(0.03);
+            latexMC->DrawLatex(0.23, 0.90, "ALICE");
+            latexMC->DrawLatex(0.23, 0.84, "pp #sqrt{#it{s}} = 13.6 TeV");
+            latexMC->DrawLatex(0.23, 0.78, "|y| < 0.5");
+            latexMC->DrawLatex(0.23, 0.71, "K*(892)^{0}");
             cSignificance->SaveAs(outputfolder + "/significance_all_mult." + outputtype);
 
             TCanvas *cChi2byNDF = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cChi2byNDF, 0.16, 0.06, 0.01, 0.14);
             // hChi2byNDF[0]->Draw("p");
-            for (int imult = 0; imult < multLoopEnd; imult++)
+            for (int imult = 1; imult < multLoopEnd; imult++)
             {
                 SetHistoQA(hChi2byNDF[imult]);
                 hChi2byNDF[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                 hChi2byNDF[imult]->GetYaxis()->SetTitle("#chi^{2}/NDF");
                 hChi2byNDF[imult]->GetYaxis()->SetTitleOffset(1.6);
-                hChi2byNDF[imult]->SetMaximum(6.5);
+                hChi2byNDF[imult]->SetMaximum(30.5);
                 hChi2byNDF[imult]->SetMinimum(0);
                 hChi2byNDF[imult]->SetStats(0);
                 hChi2byNDF[imult]->SetMarkerStyle(markers[imult]);
                 hChi2byNDF[imult]->SetMarkerSize(1.2);
                 hChi2byNDF[imult]->Draw("p same PLC PMC");
             }
-            legall->Draw();
+            legall2->Draw();
             cChi2byNDF->SaveAs(outputfolder + "/chi2byNDF_all_mult." + outputtype);
 
             TCanvas *cMass = new TCanvas("", "", 720, 720);
-            SetCanvasStyle(cMass, 0.16, 0.06, 0.01, 0.14);
+            SetCanvasStyle(cMass, 0.18, 0.06, 0.01, 0.14);
             for (int imult = 0; imult < multLoopEnd; imult++)
             {
                 SetHistoQA(hMass[imult]);
                 hMass[imult]->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
                 hMass[imult]->GetYaxis()->SetTitle("Mass (GeV/#it{c}^{2})");
-                hMass[imult]->GetYaxis()->SetTitleOffset(1.6);
+                hMass[imult]->GetYaxis()->SetTitleOffset(1.8);
                 hMass[imult]->GetYaxis()->SetRangeUser(0.878, 0.919);
                 hMass[imult]->SetStats(0);
                 hMass[imult]->SetMarkerStyle(markers[imult]);
                 hMass[imult]->SetMarkerSize(1.2);
                 hMass[imult]->Draw("pe same PLC PMC");
             }
-            TLine *linePDG = new TLine(0, 0.895, 20, 0.895);
+            TLine *linePDG = new TLine(0, 0.89556, 20, 0.89556);
             linePDG->SetLineStyle(2);
             linePDG->SetLineColor(2);
             linePDG->SetLineWidth(2);
             linePDG->Draw();
-            legall->AddEntry(linePDG, "PDG Mass", "l");
-            legall->Draw();
+            legall2->AddEntry(linePDG, "PDG Mass", "l");
+            legall2->Draw();
+            latexMC->SetTextSize(0.03);
+            latexMC->DrawLatex(0.23, 0.90, "ALICE");
+            latexMC->DrawLatex(0.23, 0.84, "pp #sqrt{#it{s}} = 13.6 TeV");
+            latexMC->DrawLatex(0.23, 0.78, "|y| < 0.5");
+            latexMC->DrawLatex(0.23, 0.71, "K*(892)^{0}");
             cMass->SaveAs(outputfolder + "/mass_all_mult." + outputtype);
 
             TCanvas *cWidth = new TCanvas("", "", 720, 720);

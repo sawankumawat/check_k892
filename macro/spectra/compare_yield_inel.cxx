@@ -43,7 +43,7 @@ void compare_yield_inel()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isSameBins = true;
+    bool isSameBins = false;
     bool removeNormFactorsRun2 = false;
     bool compareUsingINELgt0SigLoss = true; // Best comparison is using Event loss/signal loss with for INEL>0 method. (This is used in Bong-Hwi analysis note. so we can use it.)
 
@@ -53,7 +53,8 @@ void compare_yield_inel()
 
     double f_norm_run3 = 0.677; //(52.8 / 77.904) (https://indico.cern.ch/event/1649731/contributions/6943855/attachments/3222296/5743342/Gagliardi_APW_180226.pdf)
 
-    string path1 = "../../output/kstar/LHC22o_pass7/697595/kstarqa/hInvMass";
+    // string path1 = "../../output/kstar/LHC22o_pass7/697595/kstarqa/hInvMass";
+    string path1 = "../../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED";
     TString outputPath = path1 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -65,18 +66,11 @@ void compare_yield_inel()
     double eventLoss{1};
     if (!compareUsingINELgt0SigLoss)
     {
-        fSigLoss = new TFile("../../mc/LHC24f3c/697699.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
+        // fSigLoss = new TFile("../../mc/LHC24f3c/697699.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
+        fSigLoss = new TFile("../../mc/LHC24f3c/755334.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
 
         pathNum = "kstarqa_AllEventsVz"; // vZ only
         pathDen = "kstarqa_Vz_sel8";     // vZ + Sel8
-
-        // //No effect of RCT is there.
-        // pathNum = "kstarqa_AllEventsVz_NoRCT"; // vZ only
-        // pathDen = "kstarqa_Vz_sel8_NoRCT";     // vZ + Sel8
-
-        // // Gives same result as above
-        // pathNum = "kstarqa_AllEvents_NoRCT"; // All events (without Vz)
-        // pathDen = "kstarqa_NoVz_NoRCT";      // Sel8 (without Vz)
 
         hSpraseGenAll = (THnSparseF *)fSigLoss->Get(Form("%s/hInvMass/hk892GenpT", pathNum.c_str()));
         hSpraseGenVzSel = (THnSparseF *)fSigLoss->Get(Form("%s/hInvMass/hk892GenpT", pathDen.c_str()));
@@ -120,7 +114,6 @@ void compare_yield_inel()
         //=================Signal loss end=======================
     }
 
-    // TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_INEL.root").c_str(), "read");
     TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_0_120.root").c_str(), "read");
 
     if (fspectra1->IsZombie())
@@ -153,21 +146,19 @@ void compare_yield_inel()
         return;
     }
     hmult1->Scale(2.0); // for INEL it is K* + K*_bar and not their avearge (but confirm it once)
-    // hmult1->Scale(f_norm_run2 * f_vtx_run2); // Adding same correction factors as run2 for comparison
 
     if (!compareUsingINELgt0SigLoss)
     {
         hmult1->Scale(f_norm_run3);
         hmult1->Multiply(hSignalLoss);
-        // hmult1->Scale(eventLoss);
     }
 
     hmultClone1 = (TH1F *)hmult1->Clone("hmultClone0");
 
     TGraphErrors *gRun2_minBias = (TGraphErrors *)fpub->Get("Table 4/Graph1D_y1");
-    if (hmult1 == nullptr)
+    if (gRun2_minBias == nullptr)
     {
-        cout << "Histogram 1 not found" << endl;
+        cout << "Run2 minBias graph not found" << endl;
         return;
     }
 
@@ -186,7 +177,6 @@ void compare_yield_inel()
     fitFcn1->FixParameter(2, 0.895);
     fitFcn1->SetParameter(3, 0.3);
     fitFcn1->SetParNames("n", "dn/dy", "mass", "T");
-    // fitFcn1->SetLineColor(color);
     fitFcn1->SetLineColor(kBlack);
     fitFcn1->SetLineStyle(2);
     fitFcn1->SetLineWidth(2);
@@ -200,16 +190,15 @@ void compare_yield_inel()
     TString logfilename = "log.root";
     Double_t minfit = 0;
     Double_t maxfit = 15;
-    // Double_t maxfit=8.0;
 
-    TH1 *hout = YieldMean(h1, h1, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+    TH1 *hout = YieldMean(h1, h2, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
 
     TGraphErrors *gratio1 = new TGraphErrors();
     TGraphErrors *gratio1_sys = new TGraphErrors();
 
     if (!isSameBins)
     {
-        for (int i = 0; i < gRun2_minBias->GetN(); i++) // took 4th for less error bar
+        for (int i = 0; i < gRun2_minBias->GetN(); i++)
         {
             double x_run2, yield_run2, x_error, y_error_run2;
             gRun2_minBias->GetPoint(i, x_run2, yield_run2);
@@ -225,11 +214,24 @@ void compare_yield_inel()
             }
 
             double thisanalysis1 = fitFcn1->Eval(x_run2);
+
+            int sysBin = h2->GetXaxis()->FindBin(x_run2);
+            double sysError_fit = 0.10 * thisanalysis1; // Using same 10% systematic error logic
+
+            double error1_stat = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
+
+            double error1_sys = sqrt(pow(sysError_fit / yield_run2, 2) +
+                                     pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
+
             gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
-            cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
-            double error1 = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            gratio1->SetPointError(i, x_error, error1);
+            gratio1->SetPointError(i, x_error, error1_stat);
+
             gratio1_sys->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
+
+            double xBand = (x_error > 0) ? x_error : 0.10;
+            gratio1_sys->SetPointError(i, xBand, error1_sys);
+
+            cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
         }
     }
     else
@@ -256,17 +258,18 @@ void compare_yield_inel()
                 gRun2_minBias->SetPointError(i, x_error, y_error_run2);
             }
 
-            if (i == 20)
-                yield_run2 = yield_run2 * 1.08;
-
-            double yield_Run3 = hmultClone1->GetBinContent(i + 1);
-            gratio1->SetPoint(i, x_run2, yield_Run3 / yield_run2);
-            double error1 = sqrt(pow(yield_Run3 * y_error_run2 / (yield_run2 * yield_run2), 2));
-            gratio1->SetPointError(i, x_error, error1);
+            double yieldError_run3 = h1->GetBinError(i + 1);
             double SysError_run3 = h2->GetBinError(i + 1);
+            double yield_Run3 = hmultClone1->GetBinContent(i + 1);
 
+            gratio1->SetPoint(i, x_run2, yield_Run3 / yield_run2);
             gratio1_sys->SetPoint(i, x_run2, yield_Run3 / yield_run2);
+
+            double error1 = sqrt(pow(yieldError_run3 / yield_run2, 2) + pow(yield_Run3 * y_error_run2 / (yield_run2 * yield_run2), 2));
             double error1_sys = sqrt(pow(SysError_run3 / yield_run2, 2) + pow(yield_Run3 * y_error_run2 / (yield_run2 * yield_run2), 2));
+
+            gratio1->SetPointError(i, x_error, error1);
+
             double xBand = 0.5 * hmultClone1->GetXaxis()->GetBinWidth(i + 1);
             gratio1_sys->SetPointError(i, xBand, error1_sys);
         }
@@ -277,24 +280,22 @@ void compare_yield_inel()
     double pad1Size, pad2Size;
     canvas_style(c1, pad1Size, pad2Size);
     c1->cd(1);
-    SetHistoStyle(h1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    // SetHistoStyle(h21, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
-    h1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
-    h1->SetMaximum(h1->GetMaximum() * 5);
-    h1->SetMinimum(h1->GetMinimum() * 0.15);
-    h1->GetYaxis()->SetTitleOffset(1.30);
-    h1->GetXaxis()->SetTitleOffset(1.02);
-    h1->SetMarkerStyle(20);
-    h1->SetMarkerSize(1);
-    h1->GetXaxis()->SetRangeUser(0, 15);
-    h1->SetLineColor(kBlue);
-    h1->SetMarkerColor(kBlue);
-    h1->Draw("pe");
+    SetHistoStyle(hmultClone1, 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+    hmultClone1->GetYaxis()->SetTitleSize(0.04 / pad1Size);
+    hmultClone1->SetMaximum(hmultClone1->GetMaximum() * 5);
+    hmultClone1->SetMinimum(hmultClone1->GetMinimum() * 0.15);
+    hmultClone1->GetYaxis()->SetTitleOffset(1.30);
+    hmultClone1->GetXaxis()->SetTitleOffset(1.02);
+    hmultClone1->SetMarkerStyle(20);
+    hmultClone1->SetMarkerSize(1);
+    hmultClone1->GetXaxis()->SetRangeUser(0, 15);
+    hmultClone1->SetLineColor(kBlue);
+    hmultClone1->SetMarkerColor(kBlue);
+    hmultClone1->Draw("pe");
+    h2->SetMarkerColor(kBlue);
+    h2->SetLineColor(kBlue);
     h2->SetFillStyle(0);
     h2->SetLineWidth(1);
-    h2->SetLineColor(kBlue);
-    h2->SetMarkerColor(kBlue);
-    h2->SetMarkerSize(0);
     h2->Draw("e2 same");
 
     fitFcn1->SetLineColor(kBlue);
@@ -309,24 +310,25 @@ void compare_yield_inel()
     gRun2_minBias->SetLineWidth(2);
     gRun2_minBias->Draw("pe same");
 
-    TLegend *leg = new TLegend(0.4, 0.65, 0.9, 0.91);
+    TLegend *leg = new TLegend(0.233983, 0.066092, 0.614206, 0.265189);
     SetLegendStyle(leg);
-    leg->AddEntry((TObject *)0, "INEL", "");
-    leg->AddEntry(h1, "pp 13.6 TeV", "p");
+    leg->SetTextSize(0.045);
+    leg->AddEntry(hmultClone1, "pp 13.6 TeV", "p");
     leg->AddEntry(gRun2_minBias, "pp 13 TeV (Eur. Phys. J. C 81:256)", "p");
-    leg->SetTextSize(0.04);
+    leg->AddEntry(fitFcn1, "Levy-Tsallis", "l");
     leg->Draw();
 
-    c1->cd(2);
-    TH1F *hdummy = (TH1F *)h1->Clone();
-    for (int i = 0; i < hdummy->GetNbinsX(); i++)
-    {
-        hdummy->SetBinContent(i + 1, 0);
-        hdummy->SetBinError(i + 1, 0);
-    }
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.045);
+    lat.SetTextFont(42);
+    lat.DrawLatex(0.65, 0.90, "ALICE");
+    lat.DrawLatex(0.65, 0.83, "|y| < 0.5, INEL");
+    lat.DrawLatex(0.65, 0.76, "INEL");
+    lat.DrawLatex(0.65, 0.69, "K*(892)^{0}");
 
+    c1->cd(2);
     SetGraphErrorStyle(gratio1);
-    // SetGraphErrorStyle(gratio2);
     gratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
     gratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     gratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
@@ -342,11 +344,18 @@ void compare_yield_inel()
     gratio1->GetXaxis()->SetTitleOffset(1.1);
     gratio1->GetYaxis()->SetNdivisions(506);
     gratio1->GetXaxis()->SetRangeUser(0, 15);
-    // gratio1->GetHistogram()->SetMaximum(gratio1->GetHistogram()->GetMaximum() * 1.5);
-    // gratio1->GetHistogram()->SetMinimum(gratio1->GetHistogram()->GetMinimum() * 0.5);
     gratio1->SetMinimum(0.2);
     gratio1->SetMaximum(1.95);
     gratio1->Draw("ap");
+
+    gratio1_sys->SetMarkerStyle(20);
+    gratio1_sys->SetMarkerSize(1.0);
+    gratio1_sys->SetMarkerColor(kBlue);
+    gratio1_sys->SetLineColor(kBlue);
+    gratio1_sys->SetFillColor(kBlue);
+    gratio1_sys->SetLineWidth(2);
+    gratio1_sys->SetFillStyle(0);
+    gratio1_sys->Draw("e2 same");
 
     TLine *line = new TLine(0, 1, 15, 1);
     line->SetLineStyle(2);
@@ -359,16 +368,6 @@ void compare_yield_inel()
     box->SetFillColor(kGray + 2);
     box->SetFillStyle(3003);
     box->Draw("same");
-
-    gratio1->Draw("p same"); // Drawing on top of the box and line
-    gratio1_sys->SetMarkerStyle(20);
-    gratio1_sys->SetMarkerSize(1.0);
-    gratio1_sys->SetMarkerColor(kBlue);
-    gratio1_sys->SetLineColor(kBlue);
-    gratio1_sys->SetFillColor(kBlue);
-    gratio1_sys->SetLineWidth(2);
-    gratio1_sys->SetFillStyle(0);
-    gratio1_sys->Draw("e2 same");
 
     TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.pdf" : "YieldRatioINEL.pdf";
     c1->SaveAs(outputPath + "/" + saveName);

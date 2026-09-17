@@ -12,18 +12,22 @@ void mc_closure()
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     bool isMinBias = true;
-    bool isINEL = false;
+    bool isINEL = true;
     bool compareAfterEfficiencyCorrection = false;
 
-    string MCfile = "750013";
+    // string MCfile = "750013"; // INEL>0
+    string MCfile = "755334"; // INEL
 
-    string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC)
-    string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
+    // string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC) (INEL>0)
+    // string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
+
+    string path1 = "../output/kstar/LHC22o_pass7/755334/kstarqa/hInvMass/ROTATED"; // INEL
+    string path2 = "../data/kstar/LHC22o_pass7/";                                  // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
 
-    TFile *fspectra1 = new TFile((path1 + ((isINEL) ? "/yield_INEL.root" : "/yield_0_100.root")).c_str(), "read");
+    TFile *fspectra1 = new TFile((path1 + ((isINEL) ? "/yield_0_120.root" : "/yield_0_100.root")).c_str(), "read");
     TFile *fspectra2 = new TFile((path2 + MCfile + ".root").c_str(), "read");
     if (fspectra1->IsZombie() || fspectra2->IsZombie())
     {
@@ -158,7 +162,6 @@ void mc_closure()
         latex->SetTextFont(42);
         latex->DrawLatex(0.21, 0.91, "#bf{ALICE}");
         latex->DrawLatex(0.21, 0.85, "pp, #sqrt{#it{s}} = 13.6 TeV");
-
 
         c1->cd(2);
         gPad->SetGridy(1);

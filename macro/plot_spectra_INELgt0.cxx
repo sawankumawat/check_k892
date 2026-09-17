@@ -18,19 +18,19 @@ Double_t FuncLavy(Double_t *x, Double_t *par)
 
 using namespace std;
 
-void plot_spectra_INEL()
+void plot_spectra_INELgt0()
 {
     bool isRaw = false;
 
-    string filePath = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/";
-    TFile *fINEL = (isRaw) ? OpenFile(filePath + "yield_0_120.root") : OpenFile(filePath + "corrected_spectra_0_120.root");
-    TH1D *hSpectraINEL = (isRaw) ? GetHisto(fINEL, "mult_0-120/yield_integral") : GetHisto(fINEL, "mult_0-120/corrected_spectra_Integral_final");
+    string filePath = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
+    TFile *fINELgt0 = (isRaw) ? OpenFile(filePath + "yield_0_100.root") : OpenFile(filePath + "corrected_spectra_0_100.root");
+    TH1D *hSpectraINELgt0 = (isRaw) ? GetHisto(fINELgt0, "mult_0-100/yield_integral") : GetHisto(fINELgt0, "mult_0-100/corrected_spectra_Integral_final");
 
-    TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/SystematicsPlots/SysUncert.root");
-    TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hTotalSysSmoothed_0_120");
+    TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots/SysUncert.root");
+    TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hTotalSysSmoothed_0_100");
 
-    TH1F *h1 = (TH1F *)hSpectraINEL->Clone("h1");
-    TH1F *h2 = (TH1F *)hSpectraINEL->Clone("h2");
+    TH1F *h1 = (TH1F *)hSpectraINELgt0->Clone("h1");
+    TH1F *h2 = (TH1F *)hSpectraINELgt0->Clone("h2");
 
     for (int i = 1; i <= h2->GetNbinsX(); i++) // putting small systematic error by hand
     {
@@ -39,15 +39,15 @@ void plot_spectra_INEL()
     }
 
     Double_t min = 0.0;
-    Double_t max = 30.0;
+    Double_t max = 20.0;
     Double_t loprecision = 0.01;
     Double_t hiprecision = 0.5;
     Option_t *opt = "RI0+";
     TString logfilename = "log_fit.root";
     Double_t minfit = 0.0;
-    Double_t maxfit = 30.0;
+    Double_t maxfit = 20.0;
 
-    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 30.0, 4);
+    TF1 *fitFcn = new TF1("fitfunc", FuncLavy, 0.0, 20.0, 4);
     fitFcn->SetParameter(0, 5.0);
     fitFcn->SetParameter(1, 0.05);
     // fitFcn->SetParameter(1, 0.5);
@@ -81,18 +81,18 @@ void plot_spectra_INEL()
     TCanvas *cSpectraINEL = new TCanvas("cSpectraINEL", "", 720, 720);
     SetCanvasStyle(cSpectraINEL, 0.17, 0.06, 0.01, 0.14);
     gPad->SetLogy();
-    SetHistoQA(hSpectraINEL);
-    hSpectraINEL->SetMaximum(0.2);
-    hSpectraINEL->SetMinimum(8e-9);
-    hSpectraINEL->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
-    hSpectraINEL->GetYaxis()->SetTitle("1/#it{N}_{Ev} d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
-    hSpectraINEL->GetYaxis()->SetTitleOffset(1.6);
-    hSpectraINEL->SetStats(0);
-    hSpectraINEL->SetMarkerStyle(20);
-    hSpectraINEL->SetMarkerSize(1.2);
-    hSpectraINEL->SetMarkerColor(kBlue - 1);
-    hSpectraINEL->SetLineColor(kBlue - 1);
-    hSpectraINEL->Draw("pe");
+    SetHistoQA(hSpectraINELgt0);
+    hSpectraINELgt0->SetMaximum(0.2);
+    hSpectraINELgt0->SetMinimum(8e-9);
+    hSpectraINELgt0->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+    hSpectraINELgt0->GetYaxis()->SetTitle("1/#it{N}_{Ev} d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
+    hSpectraINELgt0->GetYaxis()->SetTitleOffset(1.6);
+    hSpectraINELgt0->SetStats(0);
+    hSpectraINELgt0->SetMarkerStyle(20);
+    hSpectraINELgt0->SetMarkerSize(1.2);
+    hSpectraINELgt0->SetMarkerColor(kBlue - 1);
+    hSpectraINELgt0->SetLineColor(kBlue - 1);
+    hSpectraINELgt0->Draw("pe");
     h2->SetMarkerStyle(20);
     h2->SetMarkerSize(1.2);
     h2->SetMarkerColor(kBlack);
@@ -108,7 +108,7 @@ void plot_spectra_INEL()
     leg->SetTextSize(0.032);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
-    leg->AddEntry(hSpectraINEL, "INEL Spectra", "p");
+    leg->AddEntry(hSpectraINELgt0, "INEL Spectra", "p");
     if (!isRaw)
     {
         leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
@@ -131,7 +131,7 @@ void plot_spectra_INEL()
     if (!isRaw)
         lat->DrawLatex(0.2, 0.2, "Uncertainties: Stat. (bars), Sys. (boxes)");
 
-    (isRaw) ? cSpectraINEL->SaveAs((filePath + "/Rawspectra_INEL_0-120.png").c_str()) : cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-120.png").c_str());
+    // (isRaw) ? cSpectraINEL->SaveAs((filePath + "/Rawspectra_INEL_0-100.png").c_str()) : cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-100.png").c_str());
 }
 TH1D *GetHisto(TFile *f, const string &name)
 {

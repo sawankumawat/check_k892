@@ -48,12 +48,17 @@ TGraphErrors *GraphToXTGraph(TGraphErrors *gInput, TH1D *hStat, TH1D *hSys, doub
 void GetGraphRange(TGraph *g, double &xmin, double &xmax);
 TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2);
 TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2, double sqrts1, double sqrts2);
+double FitN(TGraph *g, double xmin, double xmax, double &statError);
 
 void xTscaling()
 {
     // gStyle->SetOptFit(1111);
-    string path1 = "../../output/kstar/LHC22o_pass7/708297/kstarqa/hInvMass/corrected_spectra_0_120.root";
-    string sysPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root";
+    // string path1 = "../../output/kstar/LHC22o_pass7/708297/kstarqa/hInvMass/corrected_spectra_0_120.root";
+    // string sysPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root";
+
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/corrected_spectra_0_120.root";
+    string sysPath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/SystematicsPlots/SysUncert.root";
+
     TFile *fINEL = OpenFile(path1);
     TFile *fSystematics = OpenFile(sysPath);
     TH1D *hSpectraINELStat = GetHisto(fINEL, "mult_0-120/corrected_spectra_Integral_final");
@@ -107,101 +112,125 @@ void xTscaling()
 
     // auto gN13 = CalculateN(gXT136_n, gXT13_n, sqrts136, sqrts13); // No use, energy difference is too small
     auto gN7 = CalculateN(gXT136_n, gXT7_n, sqrts136, sqrts7);
-    auto gN276 = CalculateN2(gXT136_n, gXT276_n, sqrts136, sqrts276);
+    auto gN276 = CalculateN(gXT136_n, gXT276_n, sqrts136, sqrts276);
     auto gn7_276 = CalculateN(gXT7_n, gXT276_n, sqrts7, sqrts276);
     auto gn13_276 = CalculateN(gXT13_n, gXT276_n, sqrts13, sqrts276);
     auto gn13_7 = CalculateN(gXT13_n, gXT7_n, sqrts13, sqrts7);
     auto gn505 = CalculateN2(gXT136_n, gXT502_n, sqrts136, sqrts502);
 
-    // string labels[6] = {
-    //     "n#left(#frac{Y(13.6)}{Y(7)}#right)",
-    //     "n#left(#frac{Y(13.6)}{Y(2.76)}#right)",
-    //     "n#left(#frac{Y(7)}{Y(2.76)}#right)",
-    //     "n#left(#frac{Y(13)}{Y(2.76)}#right)",
-    //     "n#left(#frac{Y(13)}{Y(7)}#right)",
-    //     "n#left(#frac{Y(13.6)}{Y(5.02)}#right)"};
-
     string labels[6] = {
-        "n#left(#frac{Y(13.6)}{Y(7)}#right)",
+        "n#left(#frac{Y(13.6)}{Y(7.0)}#right)",
         "n#left(#frac{Y(13.6)}{Y(5.02)}#right)",
         "n#left(#frac{Y(13.6)}{Y(2.76)}#right)",
-        "n#left(#frac{Y(13)}{Y(7)}#right)",
         "n#left(#frac{Y(7)}{Y(2.76)}#right)"};
 
     // vector<TGraph *> gNList = {gN7, gN276, gn7_276, gn13_276, gn13_7, gn505};
-    vector<TGraph *> gNList = {gN7, gn505, gN276, gn13_7, gn7_276};
+    // vector<TGraph *> gNList = {gN7, gn505, gN276, gn13_7, gn7_276};
+    vector<TGraph *> gNList = {gN7, gn505, gN276, gn7_276};
 
-    TCanvas *cN = new TCanvas("cN", "cN", 1080, 720);
-    SetCanvasStyle(cN, 0.13, 0.10, 0.01, 0.12);
-    cN->Divide(3, 2);
-    vector<double> nValues;
+    TCanvas *cN = new TCanvas("cN", "cN", 720, 720);
+    SetCanvasStyle(cN, 0.13, 0.12, 0.01, 0.12);
+    // cN->Divide(3, 2);
 
-    // vector<vector<double>> fitRanges = {
-    //     {1.6e-3, 3.4e-3},  // 13.6 TeV / 7 TeV
-    //     {1.8e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
-    //     {1.8e-3, 5.45e-3}, // 7 TeV / 2.76 TeV
-    //     {1.6e-3, 2.8e-3},  // 13 TeV / 2.76 TeV
-    //     {0.75e-3, 2.8e-3}, // 13 TeV / 7 TeV
-    //     {1.6e-3, 4.1e-3}   // 13.6 TeV / 5.02 TeV
-    // };
+    int colors[] = {kRed, kBrown, kBlue, kGreen + 2, kViolet + 1};
+    int markerStyles[] = {21, 22, 23, 24, 25};
 
-    vector<vector<double>> fitRanges = {
-        {1.3e-3, 3.4e-3},  // 13.6 TeV / 7 TeV
-        {1.6e-3, 4.1e-3},  // 13.6 TeV / 5.02 TeV
-        {1.9e-3, 4.5e-3},  // 13.6 TeV / 2.76 TeV
-        {0.75e-3, 2.8e-3}, // 13 TeV / 7 TeV
-        {1.8e-3, 4.2e-3}  // 7 TeV / 2.76 TeV
+    TLegend *legendN = new TLegend(0.30, 0.16, 0.80, 0.48);
+    legendN->SetBorderSize(0);
+    legendN->SetFillStyle(0);
+    legendN->SetTextSize(0.028);
+    legendN->SetTextFont(42);
+    legendN->SetNColumns(2);
+
+    // Create a combined graph
+    TGraphErrors *gN_all = new TGraphErrors();
+    int ip = 0;
+
+    auto AddPoints2 = [&](TGraphErrors *g)
+    {
+        for (int i = 0; i < g->GetN(); ++i)
+        {
+            double x, y;
+            g->GetPoint(i, x, y);
+            gN_all->SetPoint(ip, x, y);
+            gN_all->SetPointError(ip, g->GetErrorX(i), g->GetErrorY(i));
+            ip++;
+        }
     };
+
+    for (int i = 0; i < gNList.size(); ++i)
+    {
+        AddPoints2((TGraphErrors *)gNList[i]);
+    }
+
+    cout << "Total points in the combined n(xT) graph: " << gN_all->GetN() << endl;
+
+    TF1 *pol0 = new TF1("pol0", "[0]", 1.6e-3, 4.1e-3);
+    pol0->SetLineColor(kBlue + 2);
+    pol0->SetLineWidth(3);
+    pol0->SetParameter(0, 4.7);
+    pol0->SetLineColor(kBlack);
+    pol0->SetLineStyle(2);
+    gN_all->Fit(pol0, "REBMS0");
+
+    // Vary the fit range to calculate the systematic uncertainty on the average n(xT) value
+    TF1 *pol0_sys1 = new TF1("pol0_sys1", "[0]", 1.3e-3, 3.8e-3);
+    pol0_sys1->SetParameter(0, 4.7);
+    gN_all->Fit(pol0_sys1, "REBMS0");
+
+    TF1 *pol0_sys2 = new TF1("pol0_sys2", "[0]", 1.9e-3, 4.4e-3);
+    pol0_sys2->SetParameter(0, 4.7);
+    gN_all->Fit(pol0_sys2, "REBMS0");
+
+    // Calculate the systematic uncertainty
+    double nAverage = pol0->GetParameter(0);
+    double nAverage_sys1 = pol0_sys1->GetParameter(0);
+    double nAverage_sys2 = pol0_sys2->GetParameter(0);
+    double rmsError = sqrt((pow(nAverage_sys1 - nAverage, 2) + pow(nAverage_sys2 - nAverage, 2)) / 2.0);
+    cout << "\nAverage n(xT) value: " << nAverage << " +/- " << pol0->GetParError(0) << " (stat) +/- " << rmsError << " (sys)"
+         << endl;
+    cout << "Sys1 deviation = " << nAverage_sys1 - nAverage << endl;
+    cout << "Sys2 deviation = " << nAverage_sys2 - nAverage << endl;
+    cout << endl;
 
     // Fit all graphs and then calculate the average n(xT) value
     for (int i = 0; i < gNList.size(); ++i)
     {
-        cN->cd(i + 1);
-        gPad->SetLeftMargin(0.14);
-        gPad->SetRightMargin(0.08);
-        gPad->SetTopMargin(0.05);
-        gPad->SetBottomMargin(0.13);
+
         TGraph *gN = gNList[i];
-        gN->GetXaxis()->SetTitle("x_{T}=2p_{T}/#sqrt{s}");
+        gN->GetXaxis()->SetTitle("x_{T} = 2#it{p}_{T} / #sqrt{s}");
         gN->GetYaxis()->SetTitle("n(x_{T})");
         gN->GetXaxis()->SetMaxDigits(3);
         // gN->GetXaxis()->SetNdivisions(505);
-        gN->SetMarkerStyle(21);
-        gN->SetMarkerColor(kRed);
-        gN->SetLineColor(kRed);
-        gN->SetMaximum(6.3);
-        gN->SetMinimum(-0.9);
-        gN->GetXaxis()->SetRangeUser(0, 4.5e-3);
+        gN->SetMarkerStyle(markerStyles[i]);
+        gN->SetMarkerColor(colors[i]);
+        gN->SetLineColor(colors[i]);
+        gN->SetMarkerSize(1.5);
+        gN->SetMaximum(7.4);
+        gN->SetMinimum(-0.95);
+        gN->GetXaxis()->SetRangeUser(0, 4.7e-3);
         gN->GetYaxis()->SetTitleSize(0.05);
         gN->GetXaxis()->SetTitleSize(0.05);
-        gN->Draw("APE");
+        if (i == 0)
+            gN->Draw("APE");
+        else
+            gN->Draw("PE same");
 
-        TF1 *pol0 = new TF1(Form("pol0_%d", i), "[0]", fitRanges[i][0], fitRanges[i][1]);
-        pol0->SetLineColor(kBlue + 2);
-        pol0->SetLineWidth(2);
-        pol0->SetParameter(0, 4.7);
-        gN->Fit(pol0, "REBMS");
-        TLatex lat;
-        lat.SetNDC();
-        lat.SetTextSize(0.045);
-        lat.SetTextFont(42);
-        lat.DrawLatex(0.5, 0.4, labels[i].c_str());
-        lat.SetTextSize(0.05);
-        lat.DrawLatex(0.45, 0.27, Form("n = %.2f #pm %.2f", pol0->GetParameter(0), pol0->GetParError(0)));
-        nValues.push_back(pol0->GetParameter(0));
-
-        cout << "n value from fit is " << pol0->GetParameter(0) << endl;
-        cout << "Chi2/NDF is " << pol0->GetChisquare() / pol0->GetNDF() << endl;
+        legendN->AddEntry(gN, labels[i].c_str(), "lp");
     }
-    cN->SaveAs("Plots/n_xT.pdf");
 
-    double nAverage = std::accumulate(nValues.begin(), nValues.end(), 0.0) / nValues.size();
-    cout << "Average n value is " << nAverage << endl;
-    //calculate the maximum deviation from the average value
-    double nMaxDeviation = *std::max_element(nValues.begin(), nValues.end()) - *std::min_element(nValues.begin(), nValues.end());
-    cout << "Maximum deviation from average n value is " << nMaxDeviation << endl;
+    pol0->Draw("same");
+    legendN->AddEntry(pol0, "Pol 0", "l");
+    legendN->Draw("same");
 
-    // nAverage = 4.53; // Run2 value
+    TLatex lat;
+    lat.SetNDC();
+    lat.SetTextSize(0.04);
+    lat.SetTextFont(42);
+    lat.DrawLatex(0.25, 0.91, "K*^{0}");
+    lat.DrawLatex(0.25, 0.85, "pp, INEL");
+    lat.DrawLatex(0.25, 0.79, "|y| < 0.5");
+    cN->SaveAs("Plots/n_xTDistributions.pdf");
 
     auto gXT136 = HistToXTGraph(hSpectraINELStat, hRelUncert, sqrts136, sigma_inel136, pow(sqrts136, nAverage), false, 2.0); // Since in 13 TeV it is just sum and not average
     auto gXT13 = GraphToXTGraph(gSpectraRun13TeV, hStatError, hTotalSysError, sqrts13, sigma_inel13, pow(sqrts13, nAverage), false, 1.0);
@@ -251,7 +280,7 @@ void xTscaling()
 
     // Create a combined graph
     TGraphErrors *gXTAll = new TGraphErrors();
-    int ip = 0;
+    ip = 0;
 
     auto AddPoints = [&](TGraphErrors *g)
     {
@@ -292,7 +321,7 @@ void xTscaling()
     cout << "Minimum pT for fit range in 13 TeV is " << pTminFit13 << " GeV/c" << endl;
     cout << "Minimum pT for fit range in 7 TeV is " << pTminFit7 << " GeV/c" << endl;
     cout << "Minimum pT for fit range in 5.02 TeV is " << pTminFit502 << " GeV/c" << endl;
-    cout << "Minimum pT for fit range in 2.76 TeV is "<< pTminFit276 << " GeV/c" << endl;
+    cout << "Minimum pT for fit range in 2.76 TeV is " << pTminFit276 << " GeV/c" << endl;
 
     TLegend *leg = new TLegend(0.68, 0.8, 0.93, 0.95);
     SetLegendStyle(leg);
@@ -300,7 +329,7 @@ void xTscaling()
     leg->AddEntry((TObject *)0, "K*^{0}", "");
     leg->AddEntry((TObject *)0, "pp INEL", "");
     leg->AddEntry((TObject *)0, "|y| < 0.5", "");
-    leg->Draw();
+    // leg->Draw();
 
     TLegend *leg2 = new TLegend(0.2, 0.2, 0.73, 0.65);
     SetLegendStyle(leg2);
@@ -314,6 +343,308 @@ void xTscaling()
     // leg2->AddEntry((TObject *)0, "", "");
     leg2->Draw();
     cXT->SaveAs("Plots/xT_scaling.pdf");
+
+    /*
+    // ============================================================
+    // Combined canvas: n(xT) and xT scaling side-by-side
+    // ============================================================
+
+    TCanvas *cCombined = new TCanvas(
+        "cCombined",
+        "n(xT) and xT scaling",
+        1440,
+        720);
+
+    // ------------------------------------------------------------
+    // Create two pads
+    // ------------------------------------------------------------
+
+    TPad *padN = new TPad(
+        "padN",
+        "n(xT)",
+        0.0, 0.0, 0.5, 1.0);
+
+    TPad *padXT = new TPad(
+        "padXT",
+        "xT scaling",
+        0.5, 0.0, 1.0, 1.0);
+
+    // Margins
+    padN->SetLeftMargin(0.13);
+    padN->SetRightMargin(0.02);
+    padN->SetTopMargin(0.01);
+    padN->SetBottomMargin(0.14);
+
+    padXT->SetLeftMargin(0.02);
+    padXT->SetRightMargin(0.18);
+    padXT->SetTopMargin(0.01);
+    padXT->SetBottomMargin(0.14);
+
+    padN->SetTicks(1, 1);
+    padXT->SetTicks(1, 1);
+
+    padN->Draw();
+    padXT->Draw();
+
+    // ============================================================
+    // LEFT PAD : n(xT)
+    // ============================================================
+
+    padN->cd();
+
+    for (int i = 0; i < gNList.size(); ++i)
+    {
+        TGraph *gN = gNList[i];
+
+        gN->GetXaxis()->SetTitle("x_{T} = 2#it{p}_{T} / #sqrt{s}");
+        gN->GetYaxis()->SetTitle("n(x_{T})");
+
+        gN->GetXaxis()->SetMaxDigits(3);
+
+        gN->SetMarkerStyle(markerStyles[i]);
+        gN->SetMarkerColor(colors[i]);
+        gN->SetLineColor(colors[i]);
+        gN->SetMarkerSize(1.5);
+
+        gN->SetMaximum(7.4);
+        gN->SetMinimum(-0.95);
+
+        gN->GetXaxis()->SetRangeUser(0, 4.7e-3);
+
+        gN->GetYaxis()->SetTitleSize(0.05);
+        gN->GetXaxis()->SetTitleSize(0.05);
+
+        if (i == 0)
+            gN->Draw("APE");
+        else
+            gN->Draw("PE same");
+    }
+
+    // Draw average n fit
+    pol0->Draw("same");
+
+    // ------------------------------------------------------------
+    // Legend
+    // ------------------------------------------------------------
+
+    TLegend *legendCombinedN =
+        new TLegend(0.30, 0.16, 0.80, 0.48);
+
+    legendCombinedN->SetBorderSize(0);
+    legendCombinedN->SetFillStyle(0);
+    legendCombinedN->SetTextSize(0.028);
+    legendCombinedN->SetTextFont(42);
+    legendCombinedN->SetNColumns(2);
+
+    for (int i = 0; i < gNList.size(); ++i)
+    {
+        legendCombinedN->AddEntry(
+            gNList[i],
+            labels[i].c_str(),
+            "lp");
+    }
+
+    legendCombinedN->AddEntry(pol0, "Pol 0", "l");
+    legendCombinedN->Draw();
+
+    // ------------------------------------------------------------
+    // Text
+    // ------------------------------------------------------------
+
+    TLatex latCombinedN;
+    latCombinedN.SetNDC();
+    latCombinedN.SetTextSize(0.04);
+    latCombinedN.SetTextFont(42);
+
+    latCombinedN.DrawLatex(0.25, 0.91, "K*^{0}");
+    latCombinedN.DrawLatex(0.25, 0.85, "pp, INEL");
+    latCombinedN.DrawLatex(0.25, 0.79, "|y| < 0.5");
+
+    // ============================================================
+    // RIGHT PAD : xT scaling
+    // ============================================================
+
+    padXT->cd();
+
+    padXT->SetLogx();
+    padXT->SetLogy();
+
+    // ------------------------------------------------------------
+    // Dummy histogram
+    // ------------------------------------------------------------
+
+    TH1D *hCombinedXT =
+        new TH1D(
+            "hCombinedXT",
+            "",
+            10000,
+            1e-7,
+            1.0);
+
+    SetHistoQA(hCombinedXT);
+
+    hCombinedXT->SetStats(0);
+
+    hCombinedXT->GetXaxis()->SetRangeUser(
+        9e-7,
+        3e-2);
+
+    hCombinedXT->GetYaxis()->SetRangeUser(
+        8e9,
+        9.9e21);
+
+    hCombinedXT->GetYaxis()->SetNdivisions(505);
+
+    // ------------------------------------------------------------
+    // X axis
+    // ------------------------------------------------------------
+
+    hCombinedXT->GetXaxis()->SetTitle("#it{x}_{T}");
+    hCombinedXT->GetXaxis()->SetTitleSize(0.05);
+    hCombinedXT->GetXaxis()->SetTitleOffset(1.4);
+
+    // ------------------------------------------------------------
+    // Do NOT draw Y axis on left
+    // ------------------------------------------------------------
+
+    hCombinedXT->GetYaxis()->SetLabelSize(0);
+    hCombinedXT->GetYaxis()->SetTitleSize(0);
+    hCombinedXT->GetYaxis()->SetTickLength(0);
+
+    hCombinedXT->Draw("AXIS");
+
+    // ============================================================
+    // Draw xT scaling graphs
+    // ============================================================
+
+    gXT136->SetMarkerStyle(20);
+    gXT136->SetMarkerColor(kBlue);
+    gXT136->SetLineColor(kBlue);
+    gXT136->SetMarkerSize(1.5);
+    gXT136->Draw("PE same");
+
+    gXT13->SetMarkerStyle(21);
+    gXT13->SetMarkerColor(kRed);
+    gXT13->SetLineColor(kRed);
+    gXT13->SetMarkerSize(1.5);
+    gXT13->Draw("P same");
+
+    gXT7->SetMarkerStyle(22);
+    gXT7->SetMarkerColor(kGreen + 2);
+    gXT7->SetLineColor(kGreen + 2);
+    gXT7->SetMarkerSize(1.5);
+    gXT7->Draw("P same");
+
+    gXT276->SetMarkerStyle(23);
+    gXT276->SetMarkerColor(kOrange + 7);
+    gXT276->SetLineColor(kOrange + 7);
+    gXT276->SetMarkerSize(1.5);
+    gXT276->Draw("P same");
+
+    gXT502->SetMarkerStyle(24);
+    gXT502->SetMarkerColor(kMagenta + 1);
+    gXT502->SetLineColor(kMagenta + 1);
+    gXT502->SetMarkerSize(1.5);
+    gXT502->Draw("P same");
+
+    fitPL->Draw("same");
+
+    // ============================================================
+    // RIGHT Y AXIS
+    // ============================================================
+
+    padXT->Update();
+
+    TGaxis *axisRight = new TGaxis(
+        0.999, 0.14,
+        0.999, 0.99,
+        8e9,
+        9.9e21,
+        505,
+        "G+");
+
+    axisRight->SetTitle(
+        Form("#sqrt{s}^{%.2f} d^{3}#sigma/dp^{3} "
+             "(mb GeV^{-2}c^{3})",
+             nAverage));
+
+    axisRight->SetTitleFont(42);
+    axisRight->SetLabelFont(42);
+
+    axisRight->SetTitleSize(0.045);
+    axisRight->SetLabelSize(0.038);
+
+    axisRight->SetTitleOffset(1.15);
+    axisRight->SetLabelOffset(0.005);
+
+    axisRight->SetTickSize(0.015);
+
+    axisRight->Draw();
+
+    // ============================================================
+    // RIGHT-PAD LEGENDS
+    // ============================================================
+
+    TLegend *legCombined =
+        new TLegend(0.62, 0.80, 0.94, 0.95);
+
+    SetLegendStyle(legCombined);
+    legCombined->SetTextSize(0.035);
+
+    legCombined->AddEntry((TObject *)0, "K*^{0}", "");
+    legCombined->AddEntry((TObject *)0, "pp INEL", "");
+    legCombined->AddEntry((TObject *)0, "|y| < 0.5", "");
+
+    legCombined->Draw();
+
+    TLegend *legCombined2 =
+        new TLegend(0.18, 0.20, 0.70, 0.65);
+
+    SetLegendStyle(legCombined2);
+    legCombined2->SetTextSize(0.032);
+
+    legCombined2->AddEntry(
+        gXT136,
+        "13.6 TeV",
+        "p");
+
+    legCombined2->AddEntry(
+        gXT13,
+        "13 TeV",
+        "p");
+
+    legCombined2->AddEntry(
+        gXT7,
+        "7 TeV",
+        "p");
+
+    legCombined2->AddEntry(
+        gXT502,
+        "5.02 TeV",
+        "p");
+
+    legCombined2->AddEntry(
+        gXT276,
+        "2.76 TeV",
+        "p");
+
+    legCombined2->AddEntry(
+        fitPL,
+        "power-law (ax^{b}(1+x)^{c})",
+        "l");
+
+    legCombined2->Draw();
+
+    // ============================================================
+    // Save
+    // ============================================================
+
+    cCombined->cd();
+    cCombined->Update();
+
+    cCombined->SaveAs(
+        "Plots/n_xT_and_xT_scaling.png");
+        */
 }
 
 TGraphErrors *HistToXTGraph(TH1D *hStat, TH1D *hRelSys, double sqrts, double sigmaINEL, double nAverage = 1.0, bool alreadyNormalizedYield = false, float AverageKstar = 1.0)
@@ -409,24 +740,36 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
     double xmin = std::max(xmin1, xmin2);
     double xmax = std::min(xmax1, xmax2);
 
-    // Spline for central values of g2
-    TSpline3 splineY("splineY", g2);
+    // // Spline for central values of g2
+    // TSpline3 splineY("splineY", g2);
 
-    // Create graph containing y-errors of g2
-    TGraph *g2Errors = new TGraph();
+    // // Create graph containing y-errors of g2
+    // TGraph *g2Errors = new TGraph();
+
+    // for (int i = 0; i < g2->GetN(); i++)
+    // {
+    //     double x, y;
+    //     g2->GetPoint(i, x, y);
+
+    //     double ey = g2->GetErrorY(i);
+
+    //     g2Errors->SetPoint(i, x, ey);
+    // }
+
+    // // Spline for y-errors of g2
+    // TSpline3 splineEY("splineEY", g2Errors);
+
+    TGraph g2Central(g2->GetN());
+    TGraph g2Errors(g2->GetN());
 
     for (int i = 0; i < g2->GetN(); i++)
     {
         double x, y;
         g2->GetPoint(i, x, y);
 
-        double ey = g2->GetErrorY(i);
-
-        g2Errors->SetPoint(i, x, ey);
+        g2Central.SetPoint(i, x, y);
+        g2Errors.SetPoint(i, x, g2->GetErrorY(i));
     }
-
-    // Spline for y-errors of g2
-    TSpline3 splineEY("splineEY", g2Errors);
 
     TGraphErrors *gN = new TGraphErrors();
 
@@ -442,9 +785,12 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
         // y1 uncertainty
         double ey1 = g1->GetErrorY(i);
 
-        // Interpolated y2 and its uncertainty
-        double y2 = splineY.Eval(xT);
-        double ey2 = splineEY.Eval(xT);
+        // // Interpolated y2 and its uncertainty
+        // double y2 = splineY.Eval(xT);
+        // double ey2 = splineEY.Eval(xT);
+
+        double y2 = g2Central.Eval(xT, 0, "L");
+        double ey2 = g2Errors.Eval(xT, 0, "L");
 
         if (y1 <= 0 || y2 <= 0)
             continue;
@@ -465,7 +811,7 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
         gN->SetPointError(point, 0.0, en);
     }
 
-    delete g2Errors;
+    // delete g2Errors;
 
     SetGraphStyle(gN);
 
@@ -473,7 +819,7 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
 }
 
 TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
-                         double sqrts1, double sqrts2)
+                          double sqrts1, double sqrts2)
 {
     double xmin1, xmax1;
     double xmin2, xmax2;
@@ -492,7 +838,7 @@ TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
     // -------------------------------------------------------
     // Create upper and lower variation graphs for g2
     // -------------------------------------------------------
-    TGraph *g2Up   = new TGraph();
+    TGraph *g2Up = new TGraph();
     TGraph *g2Down = new TGraph();
 
     for (int i = 0; i < g2->GetN(); i++)
@@ -549,7 +895,7 @@ TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
         // ---------------------------------------------------
         double y2 = splineY.Eval(xT);
 
-        double y2Up   = splineUp.Eval(xT);
+        double y2Up = splineUp.Eval(xT);
         double y2Down = splineDown.Eval(xT);
 
         // Check central values
@@ -565,7 +911,7 @@ TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
         // ---------------------------------------------------
         // Upper/lower variations of y1
         // ---------------------------------------------------
-        double y1Up   = y1 + ey1;
+        double y1Up = y1 + ey1;
         double y1Down = y1 - ey1;
 
         // Log requires positive values
@@ -632,4 +978,24 @@ TGraphErrors *CalculateN2(TGraphErrors *g1, TGraphErrors *g2,
     SetGraphStyle(gN);
 
     return gN;
+}
+
+double FitN(TGraph *g, double xmin, double xmax, double &statError)
+{
+    TF1 *fit = new TF1(
+        Form("pol0_sys_%p", g),
+        "[0]",
+        xmin,
+        xmax);
+
+    fit->SetParameter(0, 4.7);
+
+    g->Fit(fit, "QREMS");
+
+    double n = fit->GetParameter(0);
+    statError = fit->GetParError(0);
+
+    delete fit;
+
+    return n;
 }

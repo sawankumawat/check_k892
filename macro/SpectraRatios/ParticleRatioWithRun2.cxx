@@ -17,26 +17,9 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr);
 TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denominator, bool isModel = false, float CorrFactorDen = 1);
 TGraphErrors **MakeRatioUncorr(TGraphErrors **numerator, TGraphErrors **denominator, float CorrFactorDen = 1, int nGraphs = 3);
 TGraphErrors *GetGraph(TFile *f, const string &name);
-void RemoveGraphErrors(TGraphErrors *gr)
-{
-    for (int i = 0; i < gr->GetN(); i++)
-    {
-        gr->SetPointError(i, 0, 0);
-    }
-    gr->SetMarkerSize(0);
-    gr->SetMarkerStyle(0);
-}
+void RemoveGraphErrors(TGraphErrors *gr);
 void makeGraphXaxisCube(TGraph *gr);
-TFile *OpenFile(const string &path)
-{
-    TFile *f = new TFile(path.c_str(), "read");
-    if (f->IsZombie())
-    {
-        cout << "Error: File not found: " << path << endl;
-        return nullptr;
-    }
-    return f;
-}
+TFile *OpenFile(const string &path);
 void canvas_style(TCanvas *c, double pad1Size = 0.7, double pad2Size = 0.3, double leftMargin = 0.16, double rightMargin = 0.06, double topMargin = 0.02, double bottomMargin = 0.35);
 void CanvasPartition(TCanvas *C, const Int_t Nx = 2, const Int_t Ny = 2, Float_t lMargin = 0.15, Float_t rMargin = 0.05, Float_t bMargin = 0.15, Float_t tMargin = 0.05);
 double XtoPad(double x);
@@ -55,6 +38,7 @@ TGraphErrors **DivideByMult(TGraphErrors **gr, double WhichMultPoint, double tol
 TGraphErrors *DivideByMultModel(TGraphErrors *gr, double WhichMultPoint, double tolerance = 0.5);
 int FindGraphXPoint(TGraphErrors *gr, double xValue);
 void RestrictModelXaxis(TGraphErrors *gr, double xMin, double xMax);
+TGraphErrors *MakeDataOverEPOSSpline(const TGraphErrors *data, const TGraphErrors *epos);
 
 void ParticleRatioWithRun2()
 {
@@ -642,7 +626,7 @@ void ParticleRatioWithRun2()
     latex.DrawLatex(0.47, 0.2, "uncorr. sys. (shaded box)");
     // if (isSavePlots)
     {
-        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.png");
+        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.pdf");
     }
 
     //===================================================
@@ -719,7 +703,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.2, 0.87, "K* (892)^{0}");
     // if (isSavePlots)
     {
-        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.png");
+        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.pdf");
     }
 
     /*
@@ -836,7 +820,7 @@ void ParticleRatioWithRun2()
     legendMeanPt->Draw();
     if (isSavePlots)
     {
-        cMeanPtAll->SaveAs("Plots/MeanPt_AllParticles_Run3.png");
+        cMeanPtAll->SaveAs("Plots/MeanPt_AllParticles_Run3.pdf");
     }
 
     //===================================================
@@ -926,7 +910,7 @@ void ParticleRatioWithRun2()
     legendMeanPtBaryons->Draw();
     latexMesons.DrawLatex(0.82, 0.3, "Baryons");
     if (isSavePlots)
-        cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.png");
+        cMeanPtMesonsBaryons->SaveAs("Plots/MeanPt_Mesons_Baryons_Run3.pdf");
 
     //===================================================
     //  ========= <pT>/particle mass ======================
@@ -1052,7 +1036,7 @@ void ParticleRatioWithRun2()
 
     if (isSavePlots)
     {
-        cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.png");
+        cMeanPtMass->SaveAs("Plots/MeanPt_MassScaled_Run3.pdf");
     }
 
     //=====================================================================
@@ -1340,7 +1324,7 @@ void ParticleRatioWithRun2()
     }
 
     if (isSavePlots)
-        cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_CommonClasses.png");
+        cMeanPtMassNq->SaveAs("Plots/MeanPt_MassNq_CommonClasses.pdf");
 
     //=====================================================================
     //  ====== <pT> vs mass for common multiplicity classes ===========
@@ -1615,7 +1599,7 @@ void ParticleRatioWithRun2()
     }
 
     if (isSavePlots)
-        cMeanPtMassClass->SaveAs("Plots/MeanPt_Mass_CommonClasses.png");
+        cMeanPtMassClass->SaveAs("Plots/MeanPt_Mass_CommonClasses.pdf");
 
     //=================================================================================
     // =====================(<pT> - m) vs <dNch/deta> (hadrons) =========================
@@ -1689,7 +1673,7 @@ void ParticleRatioWithRun2()
     legendMeanPtMassScaled->Draw();
     if (isSavePlots)
     {
-        cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.png");
+        cMeanPtMassScaled->SaveAs("Plots/MeanPt_Mass_nq_scaled_Run3.pdf");
     }
 
     //=================================================================================
@@ -1750,7 +1734,7 @@ void ParticleRatioWithRun2()
     legendMeanPtMassScaled->Draw();
     if (isSavePlots)
     {
-        cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.png");
+        cMeanPtMassnqScaled->SaveAs("Plots/MeanPt_MassScaled_nq_Run3.pdf");
     }
 
     //==================================================================================
@@ -1853,7 +1837,7 @@ void ParticleRatioWithRun2()
 
     if (isSavePlots)
     {
-        cMeanPtRatio->SaveAs("Plots/MeanPt_LowestMultRatio_Run3.png");
+        cMeanPtRatio->SaveAs("Plots/MeanPt_LowestMultRatio_Run3.pdf");
     }
 
     // //===================================================
@@ -1903,7 +1887,7 @@ void ParticleRatioWithRun2()
     // gMeanPtLMRatioVsMass[1]->Draw("5 same");
     // if (isSavePlots)
     // {
-    //     cMeanPtRatioVsMass->SaveAs("Plots/MeanPt_LowestMultRatio_vs_Mass_Run3.png");
+    //     cMeanPtRatioVsMass->SaveAs("Plots/MeanPt_LowestMultRatio_vs_Mass_Run3.pdf");
     // }
 
     */
@@ -1930,8 +1914,8 @@ void ParticleRatioWithRun2()
     SetCanvasStyle(cRatioKstarKaon, 0.15, 0.03, 0.03, 0.15);
 
     TGraphErrors **gRatioKstarKaon = MakeRatioUncorr(gMYieldKstar, gMYieldKaon, 1.0, 3);
-    gRatioKstarKaon[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioKstarKaon[0]->GetYaxis()->SetTitle("dN/dy");
+    gRatioKstarKaon[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
+    gRatioKstarKaon[0]->GetYaxis()->SetTitle("dN / dy ratio");
     SetGraphErrorStyle(gRatioKstarKaon[0]);
     // gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.25, 0.73);
     gRatioKstarKaon[0]->GetYaxis()->SetRangeUser(0.26, 0.44);
@@ -1996,7 +1980,7 @@ void ParticleRatioWithRun2()
     legendRatio->SetTextSize(0.04);
     // legendRatio->AddEntry(gRatioKstarKaon[0], "pp, #sqrt{s} = 13.6 TeV", "p");
     // legendRatio->AddEntry(gKstarKaRatio_13TeV[0], "pp, #sqrt{s} = 13 TeV", "p");
-    legendRatio->AddEntry(gRatioKstarKaon[0], "K*^{0}/K", "p");
+    legendRatio->AddEntry(gRatioKstarKaon[0], "K*^{0} / K", "p");
 
     TLegend *legendRatio2 = new TLegend(0.55, 0.66, 0.8, 0.92);
     SetLegendStyle(legendRatio2);
@@ -2032,8 +2016,66 @@ void ParticleRatioWithRun2()
     latex.DrawLatex(0.31, 0.80, "|y| < 0.5");
     // if (isSavePlots)
     {
-        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
+        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.pdf");
     }
+
+    // ============================================================
+    // Data / EPOS ratio
+    // ============================================================
+
+    TGraphErrors *gDataOverEPOS_UrQMDOff =
+        MakeDataOverEPOSSpline(gRatioKstarKaon[0],
+                               gKstarKaRatio_EPOSNew_UrQMDOff);
+
+    TGraphErrors *gDataOverEPOS_UrQMDOn =
+        MakeDataOverEPOSSpline(gRatioKstarKaon[0],
+                               gKstarKaRatio_EPOSNew_UrQMDOn);
+
+    TCanvas *cRatioKstarKaon2 =
+        new TCanvas("cRatioKstarKaon2",
+                    "cRatioKstarKaon2",
+                    720, 850);
+
+    cRatioKstarKaon2->Divide(1, 2, 0, 0);
+
+    TPad *pad1 = (TPad *)cRatioKstarKaon2->GetPad(1);
+    TPad *pad2 = (TPad *)cRatioKstarKaon2->GetPad(2);
+
+    pad1->SetPad(0, 0.30, 1, 1);
+    pad2->SetPad(0, 0.00, 1, 0.30);
+
+    pad1->SetBottomMargin(0.02);
+    pad2->SetTopMargin(0.02);
+    pad2->SetBottomMargin(0.30);
+    pad1->cd();
+    gRatioKstarKaon[0]->Draw("APE");
+    gRatioKstarKaon[1]->Draw("5 same");
+    gRatioKstarKaon[2]->Draw("E2 same");
+
+    pad2->cd();
+    gPad->SetGridy();
+
+    gDataOverEPOS_UrQMDOff->SetMarkerStyle(20);
+    gDataOverEPOS_UrQMDOff->SetMarkerColor(kGreen + 2);
+    gDataOverEPOS_UrQMDOff->SetLineColor(kGreen + 2);
+
+    gDataOverEPOS_UrQMDOn->SetMarkerStyle(21);
+    gDataOverEPOS_UrQMDOn->SetMarkerColor(kBlue - 6);
+    gDataOverEPOS_UrQMDOn->SetLineColor(kBlue - 6);
+
+    gDataOverEPOS_UrQMDOff->GetXaxis()->SetTitle(
+        "#LT dN_{ch}/d#eta #GT_{|#eta|<0.5}");
+
+    gDataOverEPOS_UrQMDOff->GetYaxis()->SetTitle(
+        "Data / EPOS");
+
+    gDataOverEPOS_UrQMDOff->GetYaxis()->SetRangeUser(0.6, 1.4);
+    gDataOverEPOS_UrQMDOff->GetXaxis()->SetLimits(0, 27);
+
+    gDataOverEPOS_UrQMDOff->Draw("AL");
+    gDataOverEPOS_UrQMDOn->Draw("L same");
+
+   
 
     //==================================================
     // ===================Kstar / Pion Ratio ==================
@@ -2041,8 +2083,8 @@ void ParticleRatioWithRun2()
     TCanvas *cRatioKstarPion = new TCanvas("cRatioKstarPion", "cRatioKstarPion", 720, 720);
     SetCanvasStyle(cRatioKstarPion, 0.15, 0.03, 0.06, 0.15);
     TGraphErrors **gRatioKstarPion = MakeRatioUncorr(gMYieldKstar, gMYieldPion, 1.0, 3);
-    gRatioKstarPion[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioKstarPion[0]->GetYaxis()->SetTitle("dN/dy");
+    gRatioKstarPion[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
+    gRatioKstarPion[0]->GetYaxis()->SetTitle("dN / dy ratio");
     SetGraphErrorStyle(gRatioKstarPion[0]);
     // gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.029, 0.158);
     gRatioKstarPion[0]->GetYaxis()->SetRangeUser(0.024, 0.078);
@@ -2114,12 +2156,12 @@ void ParticleRatioWithRun2()
     legendRatio3->SetTextSize(0.04);
     // legendRatio3->AddEntry(gKstarPiRatio_7TeV[0], "pp, #sqrt{s} = 7 TeV", "P");
     legendRatio3->Clear();
-    legendRatio3->AddEntry(gRatioKstarPion[0], "K*^{0}/#pi", "p");
+    legendRatio3->AddEntry(gRatioKstarPion[0], "K*^{0} / #pi", "p");
     legendRatio3->Draw();
     legendRatio2->Draw();
     // if (isSavePlots)
     {
-        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.png");
+        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.pdf");
     }
 
     //======================================================
@@ -2128,8 +2170,8 @@ void ParticleRatioWithRun2()
     TCanvas *cRatioKstarKshort = new TCanvas("cRatioKstarKshort", "cRatioKstarKshort", 720, 720);
     SetCanvasStyle(cRatioKstarKshort, 0.15, 0.03, 0.06, 0.15);
     TGraphErrors **gRatioKstarKshort = MakeRatioUncorr(gMYieldKstar, gMYieldKshortRun3, 1.0, 3);
-    gRatioKstarKshort[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gRatioKstarKshort[0]->GetYaxis()->SetTitle("dN/dy");
+    gRatioKstarKshort[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
+    gRatioKstarKshort[0]->GetYaxis()->SetTitle("dN / dy ratio");
     SetGraphErrorStyle(gRatioKstarKshort[0]);
     gRatioKstarKshort[0]->GetYaxis()->SetRangeUser(0.26, 0.44);
     gRatioKstarKshort[0]->GetXaxis()->SetLimits(0, 27);
@@ -2181,13 +2223,13 @@ void ParticleRatioWithRun2()
     TLegend *legendRatio4 = new TLegend(0.35, 0.83, 0.5, 0.9);
     SetLegendStyle(legendRatio4);
     legendRatio4->SetTextSize(0.04);
-    legendRatio4->AddEntry(gRatioKstarKshort[0], "K*^{0}/K_{S}^{0}", "p");
+    legendRatio4->AddEntry(gRatioKstarKshort[0], "K*^{0} / K_{S}^{0}", "p");
     legendRatio4->Draw();
     legendRatio2->Draw();
 
     // if (isSavePlots)
     {
-        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
+        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.pdf");
     }
 
     //======================================================================
@@ -2217,8 +2259,8 @@ void ParticleRatioWithRun2()
     gYieldKstarKaLMRatio[0]->SetMarkerColor(kRed);
     gYieldKstarKaLMRatio[0]->SetLineColor(kRed);
     gYieldKstarKaLMRatio[0]->SetMarkerStyle(20);
-    gYieldKstarKaLMRatio[0]->GetXaxis()->SetTitle("<dN_{ch}/d#eta>_{|#eta|<0.5}");
-    gYieldKstarKaLMRatio[0]->GetYaxis()->SetTitle("Y/Y_{LM}");
+    gYieldKstarKaLMRatio[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
+    gYieldKstarKaLMRatio[0]->GetYaxis()->SetTitle("Y / Y_{LM}");
     gYieldKstarKaLMRatio[0]->SetFillStyle(0);
     gYieldKstarKaLMRatio[1]->SetFillStyle(0);
     gYieldKstarKaLMRatio[0]->Draw("APE");
@@ -2286,8 +2328,8 @@ void ParticleRatioWithRun2()
     SetLegendStyle(legendYieldLMRatio);
     legendYieldLMRatio->SetTextSize(0.035);
     legendYieldLMRatio->SetNColumns(2);
-    legendYieldLMRatio->AddEntry(gYieldKstarPiLMRatio[0], "K*^{0}/#pi", "P");
-    legendYieldLMRatio->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0}/K", "P");
+    legendYieldLMRatio->AddEntry(gYieldKstarPiLMRatio[0], "K*^{0} / #pi", "P");
+    legendYieldLMRatio->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0} / K", "P");
 
     TLegend *legendYieldLMRatio2 = new TLegend(0.2, 0.78, 0.95, 0.92);
     SetLegendStyle(legendYieldLMRatio2);
@@ -2339,7 +2381,7 @@ void ParticleRatioWithRun2()
     // lineDoubleRatio->Draw("same");
     // if (isSavePlots)
     {
-        cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.png");
+        cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.pdf");
     }
 
     // //======================================================================
@@ -2500,7 +2542,7 @@ void ParticleRatioWithRun2()
     // // line->Draw("same");
     // if (isSavePlots)
     // {
-    //     cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.png");
+    //     cYieldLMRatio2->SaveAs("Plots/Yield_LMRatio2.pdf");
     // }
 
     // //======================================================================
@@ -2679,7 +2721,7 @@ void ParticleRatioWithRun2()
     // }
     // if (isSavePlots)
     // {
-    //     cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.png");
+    //     cYieldLifetime->SaveAs("Plots/Yield_Lifetime_Ratio.pdf");
     // }
 
     // //======================================================================
@@ -2749,7 +2791,7 @@ void ParticleRatioWithRun2()
     // legendYieldLMRatio4->Draw();
     // if (isSavePlots)
     // {
-    //     cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.png");
+    //     cYieldLMRatio3->SaveAs("Plots/Yield_LMRatio3.pdf");
     // }
 
     // // /*
@@ -2811,7 +2853,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
+    //     cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.pdf");
     // }
 
     // //====================================================
@@ -2853,7 +2895,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.png");
+    //     cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.pdf");
     // }
 
     // //====================================================
@@ -2901,7 +2943,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarChargedKstar->SaveAs("Plots/Ratio_KstarChargedKstar_Run3.png");
+    //     cRatioKstarChargedKstar->SaveAs("Plots/Ratio_KstarChargedKstar_Run3.pdf");
     // }
 
     // //================================================
@@ -2953,7 +2995,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.png");
+    //     cRatioKstarXiStar->SaveAs("Plots/Ratio_KstarXiStar_Run3.pdf");
     // }
 
     // /*
@@ -2996,7 +3038,7 @@ void ParticleRatioWithRun2()
     // legendRatio2->Draw();
     // if (isSavePlots)
     //{
-    // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.png");
+    // cRatioKaonPion->SaveAs("Plots/Ratio_KaonPion_Run3.pdf");
     // }
 
     //    //=================================================
@@ -3038,7 +3080,7 @@ void ParticleRatioWithRun2()
     //     legendRatio2->Draw();
     // if (isSavePlots)
     // {
-    //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.png");
+    //     cRatioProtonPion->SaveAs("Plots/Ratio_ProtonPion_Run3.pdf");
     //}
     //
 
@@ -3087,7 +3129,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "#pi^{#pm}");
     // if (isSavePlots)
     // {
-    //     cPionYield->SaveAs("Plots/PionYield_Run3.png");
+    //     cPionYield->SaveAs("Plots/PionYield_Run3.pdf");
     // }
 
     // //====================================================
@@ -3125,7 +3167,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "K^{#pm}");
     // if (isSavePlots)
     // {
-    //     cKaonYield->SaveAs("Plots/KaonYield_Run3.png");
+    //     cKaonYield->SaveAs("Plots/KaonYield_Run3.pdf");
     // }
 
     // //====================================================
@@ -3163,7 +3205,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "p");
     // if (isSavePlots)
     // {
-    //     cProtonYield->SaveAs("Plots/ProtonYield_Run3.png");
+    //     cProtonYield->SaveAs("Plots/ProtonYield_Run3.pdf");
     // }
 
     // ////======================================================
@@ -3195,7 +3237,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "K^{0}_{S}");
     // if (isSavePlots)
     // {
-    //     cKshortYield->SaveAs("Plots/KshortYield_Run3.png");
+    //     cKshortYield->SaveAs("Plots/KshortYield_Run3.pdf");
     // }
 
     // //====================================================
@@ -3231,7 +3273,7 @@ void ParticleRatioWithRun2()
     // latex.DrawLatex(0.28, 0.88, "#phi");
     // // if (isSavePlots)
     // {
-    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.png");
+    //     cPhiYield->SaveAs("Plots/PhiYield_Run3.pdf");
     // }
 
     // */
@@ -3396,6 +3438,27 @@ TGraphErrors **MakeRatioUncorr(TGraphErrors **numerator, TGraphErrors **denomina
     }
 
     return ratio;
+}
+
+void RemoveGraphErrors(TGraphErrors *gr)
+{
+    for (int i = 0; i < gr->GetN(); i++)
+    {
+        gr->SetPointError(i, 0, 0);
+    }
+    gr->SetMarkerSize(0);
+    gr->SetMarkerStyle(0);
+}
+
+TFile *OpenFile(const string &path)
+{
+    TFile *f = new TFile(path.c_str(), "read");
+    if (f->IsZombie())
+    {
+        cout << "Error: File not found: " << path << endl;
+        return nullptr;
+    }
+    return f;
 }
 
 TGraphErrors *GetGraph(TFile *f, const string &name)
@@ -3918,6 +3981,96 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     return grSmooth;
 }
 
+TGraphErrors *MakeDataOverEPOSSpline(const TGraphErrors *data,
+                                     const TGraphErrors *epos)
+{
+    if (!data || !epos)
+    {
+        cout << "Error: null graph in MakeDataOverEPOSSpline()" << endl;
+        return nullptr;
+    }
+
+    const int nData = data->GetN();
+    const int nEPOS = epos->GetN();
+
+    if (nEPOS < 2)
+    {
+        cout << "Error: EPOS graph has fewer than 2 points" << endl;
+        return nullptr;
+    }
+
+    // ---------------------------------------------------------
+    // Create spline from the ORIGINAL EPOS data points
+    // ---------------------------------------------------------
+    TSpline3 spline("eposSpline", epos);
+
+    TGraphErrors *ratio = new TGraphErrors(nData);
+
+    const double tolerance = 1e-6;
+
+    for (int i = 0; i < nData; ++i)
+    {
+        double xData, yData;
+        data->GetPoint(i, xData, yData);
+
+        // -----------------------------------------------------
+        // Find exact EPOS point first
+        // -----------------------------------------------------
+        double yEPOS = 0.0;
+        bool exactMatch = false;
+
+        for (int j = 0; j < nEPOS; ++j)
+        {
+            double xEPOS, yEPOSPoint;
+            epos->GetPoint(j, xEPOS, yEPOSPoint);
+
+            if (std::abs(xData - xEPOS) < tolerance)
+            {
+                yEPOS = yEPOSPoint;
+                exactMatch = true;
+                break;
+            }
+        }
+
+        // -----------------------------------------------------
+        // If no exact point exists, use spline interpolation
+        // -----------------------------------------------------
+        if (!exactMatch)
+        {
+            yEPOS = spline.Eval(xData);
+        }
+
+        // -----------------------------------------------------
+        // Data / EPOS
+        // -----------------------------------------------------
+        double ratioValue = 0.0;
+
+        if (yEPOS != 0.0)
+            ratioValue = yData / yEPOS;
+
+        // Data statistical uncertainty only
+        double dataError = data->GetErrorY(i);
+        double ratioError = 0.0;
+
+        if (yEPOS != 0.0)
+            ratioError = dataError / std::abs(yEPOS);
+
+        ratio->SetPoint(i, xData, ratioValue);
+        ratio->SetPointError(i, data->GetErrorX(i), ratioError);
+
+        cout << "Data/EPOS: x = " << xData
+             << ", Data = " << yData
+             << ", EPOS = " << yEPOS
+             << ", ratio = " << ratioValue
+             << (exactMatch ? " [exact]" : " [spline]")
+             << endl;
+    }
+
+    SetGraphErrorStyle(ratio);
+
+    return ratio;
+}
+
 // TGraphErrors **DivideByMinBias(TGraphErrors **gr, const vector<int> &multClasses, int noOfGraphs = 3)
 // {
 //     TGraphErrors **grCopy = new TGraphErrors *[noOfGraphs];
@@ -4022,7 +4175,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioKstarKaonPion->SaveAs("Plots/Ratio_KstarKaonPion_Run3.png");
+    cRatioKstarKaonPion->SaveAs("Plots/Ratio_KstarKaonPion_Run3.pdf");
     }
 
         //====================================================================
@@ -4099,7 +4252,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-      cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.png");
+      cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.pdf");
     }
 
     //====================================================
@@ -4150,7 +4303,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.png");
+    cRatioPhiKaon->SaveAs("Plots/Ratio_PhiKaon_Run3.pdf");
     }
 
     //===================================================
@@ -4200,7 +4353,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiKshort->SaveAs("Plots/Ratio_PhiKshort_Run3.png");
+    cRatioPhiKshort->SaveAs("Plots/Ratio_PhiKshort_Run3.pdf");
     }
 
     //===================================================
@@ -4249,7 +4402,7 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-        cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.png");
+        cRatioPhiProton->SaveAs("Plots/Ratio_PhiProton_Run3.pdf");
     }
 
     //================================================
@@ -4297,6 +4450,6 @@ TGraphErrors *SmoothGraph(const TGraphErrors *gr)
     legendRatio2->Draw();
     if (isSavePlots)
     {
-    cRatioPhiXiStar->SaveAs("Plots/Ratio_PhiXiStar_Run3.png");
+    cRatioPhiXiStar->SaveAs("Plots/Ratio_PhiXiStar_Run3.pdf");
     }
 */

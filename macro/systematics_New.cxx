@@ -559,8 +559,8 @@ void systematics_New()
         latSys.SetTextFont(42);
         latSys.SetTextSize(0.04);
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 1080, 720);
@@ -591,8 +591,8 @@ void systematics_New()
         legTrackSel->Draw();
 
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 1080, 720);
@@ -633,8 +633,8 @@ void systematics_New()
         legTotal->Draw();
 
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         cTotalSysMult->cd(imult + 1);
@@ -701,8 +701,8 @@ void systematics_New()
         legTotal->Draw();
         SysUncertainties->cd();
         latSys.DrawLatex(0.20, 0.88, "ALICE");
-        latSys.DrawLatex(0.20, 0.82, Form("#sqrt{s} = 13 TeV, %d-%d%%", 0, 100));
-        latSys.DrawLatex(0.20, 0.76, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
+        latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
         hTotalSysSmoothed->Write(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));

@@ -24,15 +24,16 @@ void kstar_sparse()
 
     string kbkg = "pol3";
     // string kbkg = "pol2";
+    // string kbkg = "pol3WoChebyshev";
 
-    string outputtype = "png";     // pdf, eps
+    string outputtype = "pdf";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
     const bool multipanel_plots = 0;
     const bool save_plots = 1;
-    bool isINEL = true;
+    bool isINEL = false;
     bool widthFixed = true; // width fixed to PDG value
 
     // double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535};                                                                              // INEL>0
@@ -594,6 +595,10 @@ void kstar_sparse()
                             double chebInt = ((fitHi - fitLo) / 2.0) * (2.0 - (2.0 / 3.0) * par[1]);
                             return chebRaw / std::max(chebInt, 1e-12);
                         }
+                        else if (kbkg == "pol3WoChebyshev")
+                        {
+                            return par[0] + par[1] * x + par[2] * x * x + par[3] * x * x * x;
+                        }
                         else if (kbkg == "expol")
                         {
                             if (x <= 0)
@@ -766,6 +771,17 @@ void kstar_sparse()
                         fTotal->SetParLimits(7, -1.0, 1.0);
                         fTotal->SetParameter(8, -0.05);
                         fTotal->SetParLimits(8, -1.0, 1.0);
+                    }
+                    else if (kbkg == "pol3WoChebyshev")
+                    {
+                        fTotal->SetParName(6, "p0");
+                        fTotal->SetParName(7, "p1");
+                        fTotal->SetParName(8, "p2");
+                        fTotal->SetParName(9, "p3");
+                        fTotal->SetParameter(6, 1.0);
+                        fTotal->SetParameter(7, 1.0);
+                        fTotal->SetParameter(8, 1.0);
+                        fTotal->SetParameter(9, 1.0);
                     }
                     else if (kbkg == "expol")
                     {
@@ -1130,8 +1146,14 @@ void kstar_sparse()
                     legComp->AddEntry(mkLine(kMagenta + 1, kSolid), "Voigtian Sig", "l");
                     legComp->AddEntry(mkLine(kGreen + 2, kSolid), "MC Template", "l");
 
-                    TString bkgLegendLabel = (kbkg == "expol") ? "Exp. Pol" : (kbkg == "pol3Thresh") ? "Pol3 Thresh"
-                                                                                                     : Form("Cheby %s", kbkg.c_str());
+                    TString bkgLegendLabel;
+                    bkgLegendLabel = (kbkg == "expol") ? "Exp. Pol" : (kbkg == "pol3Thresh") ? "Pol3 Thresh"
+                                                                                             : Form("Cheby %s", kbkg.c_str());
+
+                    if (kbkg == "pol3WoChebyshev")
+                    {
+                        bkgLegendLabel = "Pol3";
+                    }
                     // legComp->AddEntry(mkLine(kBlue, kSolid), Form("Residual Bkg (%s)", bkgLegendLabel.Data()), "l");
                     legComp->AddEntry(mkLine(kBlue, kSolid), bkgLegendLabel.Data(), "l");
                     legComp->AddEntry(mkLine(kOrange + 7, kDashed), "Total Bkg (Temp+Res)", "l");

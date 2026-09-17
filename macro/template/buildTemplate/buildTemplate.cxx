@@ -17,11 +17,12 @@ void buildTemplate()
 
     //*************************** change here ***************************************
     // const string kResBkg = "MIX";
-    const string kResBkg = "LIKE";
-    // const string kResBkg = "ROTATED";
+    // const string kResBkg = "LIKE";
+    const string kResBkg = "ROTATED";
     TString outputtype = "png";
     const float txtsize = 0.045; // text size in the plots
-    bool isINEL = true;
+    bool isINEL = false;
+    int rebinFactor = 1; // Keep it 1, since we rebin the histograms in the kstar_sparse.cxx code and want to keep same binning for the inv mass and template.
 
     const TString kvariation = "";
     // const TString kvariation = "_TPC1p5_combined2";
@@ -32,8 +33,8 @@ void buildTemplate()
     // const TString kvariation = "_pTDepDCA";
     //********************************************************************************
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     t2->SetNDC();
@@ -43,8 +44,8 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
-    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
     if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
@@ -226,7 +227,7 @@ void buildTemplate()
 
             //**Cloning sig+bkg histogram for like sign, mixed event, or rotated subtraction ******************
             TH1D *hfsig = (TH1D *)fHistTotal[ip]->Clone();
-            auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * kRebin[ip] / fHistTotal[ip]->GetXaxis()->GetNbins();
+            auto binwidth_file = (fHistTotal[ip]->GetXaxis()->GetXmax() - fHistTotal[ip]->GetXaxis()->GetXmin()) * rebinFactor / fHistTotal[ip]->GetXaxis()->GetNbins();
             cout << "The value of binwidth_file is: " << binwidth_file << endl;
 
             if (kResBkg == "MIX")
@@ -238,15 +239,15 @@ void buildTemplate()
 
                 hfbkg = (TH1D *)bkgclonetemp->Clone();
                 hfbkg->Scale(normfactor);
-                hfbkg->Rebin(kRebin[ip]);
-                hfsig->Rebin(kRebin[ip]);
+                hfbkg->Rebin(rebinFactor);
+                hfsig->Rebin(rebinFactor);
                 hfsig->Add(hfbkg, -1);
             }
             else if (kResBkg == "LIKE")
             {
                 hfbkg = (TH1D *)fHistbkgLS[ip]->Clone();
-                hfbkg->Rebin(kRebin[ip]);
-                hfsig->Rebin(kRebin[ip]);
+                hfbkg->Rebin(rebinFactor);
+                hfsig->Rebin(rebinFactor);
                 hfsig->Add(hfbkg, -1);
             }
             else if (kResBkg == "ROTATED")
@@ -258,13 +259,13 @@ void buildTemplate()
 
                 hfbkg = (TH1D *)bkgclonetemp->Clone();
                 hfbkg->Scale(normfactor);
-                hfbkg->Rebin(kRebin[ip]);
-                hfsig->Rebin(kRebin[ip]);
+                hfbkg->Rebin(rebinFactor);
+                hfsig->Rebin(rebinFactor);
                 hfsig->Add(hfbkg, -1);
             }
 
-            fHistTotal[ip]->Rebin(kRebin[ip]);
-            h1rec->Rebin(kRebin[ip]);
+            fHistTotal[ip]->Rebin(rebinFactor);
+            h1rec->Rebin(rebinFactor);
 
             //**Signal Minus True Generation *****************************************************************
             TH1D *hSigminusTrue = (TH1D *)hfsig->Clone("hSigminusTrue");

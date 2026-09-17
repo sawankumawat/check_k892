@@ -9,13 +9,6 @@
 
 void openTFile(TFile *&file, const string &path);
 void openTH1D(TH1D *&hist, TFile *file, const string &histPath);
-void CalculateAverageUncertainties(
-    TFile *fTotalSys,
-    const string &basePathSigExt,
-    const float *mult_classes,
-    int nmultbins,
-    const std::vector<std::vector<double>> &combinedFrac,
-    const std::vector<double> &widePtBins);
 
 TH1D *smooth(TH1D *hist1, int n = 2)
 {
@@ -115,7 +108,7 @@ double CalculateRValueAndBarlowSigma(double yVarMult, double eVarMult, double yD
     return (delta > sigmaRB) ? delta : -999.0;
 }
 
-void systematics_Uncorrelated()
+void systematics_UncorrelatedPID()
 {
     int lineColors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
 
@@ -128,11 +121,14 @@ void systematics_Uncorrelated()
 
     string basePathSigExt = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
     string basePathSigExtpol2 = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
+    string basePathCommon = "../output/kstar/LHC22o_pass7/";
+    string pathPIDAndMultEst = "750862/";
+    string basePathPIDAndMultEst = basePathCommon + pathPIDAndMultEst + "kstarqa_";
+
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
 
     TFile *SysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/UnCorrSystematics.root").c_str(), "RECREATE");
-    // std::vector<double> widePtBins = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
     std::vector<double> widePtBins = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 20.0};
     int nWideBins = widePtBins.size() - 1;
 
@@ -145,17 +141,14 @@ void systematics_Uncorrelated()
 
     vector<string> normVars = {"Norm1", "Norm2"};
     vector<string> fitRangeVars = {"FitRange1", "FitRange2"};
-    // vector<string> CombinatorialBkgVars = {"LIKE"};
     vector<string> ResidualBkgVars = {"pol2"};
     vector<string> BinCounting = {"BinCounting"};
     vector<string> widthVars = {"WidthFree"};
 
-    // // Load MB variation histograms
-    // std::vector<TH1D *> hNormMB(normVars.size()), hFitMB(fitRangeVars.size()),
-    //     hLikeMB(CombinatorialBkgVars.size()), hPolMB(ResidualBkgVars.size()),
-    //     hBCMB(BinCounting.size()), hWidthMB(widthVars.size());
+    //// For PID variations
+    vector<string> PIDVars = {"TPC1p5_combined2", "TPC2p5_combined3p5"};
 
-    std::vector<TH1D *> hNormMB(normVars.size()), hFitMB(fitRangeVars.size()), hPolMB(ResidualBkgVars.size()), hBCMB(BinCounting.size()), hWidthMB(widthVars.size());
+    std::vector<TH1D *> hNormMB(normVars.size()), hFitMB(fitRangeVars.size()), hPolMB(ResidualBkgVars.size()), hBCMB(BinCounting.size()), hWidthMB(widthVars.size()), hPIDMB(PIDVars.size());
 
     for (size_t i = 0; i < normVars.size(); i++)
     {
@@ -173,14 +166,6 @@ void systematics_Uncorrelated()
         openTH1D(h, f, "mult_0-100/corrected_spectra_Integral_final");
         hFitMB[i] = RebinHistogram(h, Form("hFitMB_%zu", i), widePtBins);
     }
-    // for (size_t i = 0; i < CombinatorialBkgVars.size(); i++)
-    // {
-    //     TFile *f;
-    //     openTFile(f, basePathSigExt + CombinatorialBkgVars[i] + "/corrected_spectra_0_100.root");
-    //     TH1D *h;
-    //     openTH1D(h, f, "mult_0-100/corrected_spectra_Integral_final");
-    //     hLikeMB[i] = RebinHistogram(h, Form("hLikeMB_%zu", i), widePtBins);
-    // }
     for (size_t i = 0; i < ResidualBkgVars.size(); i++)
     {
         TFile *f;
@@ -205,6 +190,14 @@ void systematics_Uncorrelated()
         openTH1D(h, f, "mult_0-100/corrected_spectra_Integral_final");
         hWidthMB[i] = RebinHistogram(h, Form("hWidthMB_%zu", i), widePtBins);
     }
+    for (size_t i = 0; i < PIDVars.size(); i++)
+    {
+        TFile *f;
+        openTFile(f, basePathPIDAndMultEst + PIDVars[i] + "/hInvMass/ROTATED/corrected_spectra_0_100.root");
+        TH1D *h;
+        openTH1D(h, f, "mult_0-100/corrected_spectra_Integral_final");
+        hPIDMB[i] = RebinHistogram(h, Form("hPIDMB_%zu", i), widePtBins);
+    }
 
     // Dynamic structures to process sources following uncorrSys.cpp logic
     struct VarGroup
@@ -214,14 +207,15 @@ void systematics_Uncorrelated()
         std::vector<string> names;
         bool isPol2;
         bool isBC;
+        bool isPID;
     };
     std::vector<VarGroup> sourceGroups = {
-        {"Norm", hNormMB, normVars, false, false},
-        {"FitRange", hFitMB, fitRangeVars, false, false},
-        // {"CombinatorialBkg", hLikeMB, CombinatorialBkgVars, false, false},
-        {"ResidualBkg", hPolMB, ResidualBkgVars, true, false},
-        {"BinCounting", hBCMB, BinCounting, false, true},
-        {"Width", hWidthMB, widthVars, false, false}};
+        {"Norm", hNormMB, normVars, false, false, false},
+        {"FitRange", hFitMB, fitRangeVars, false, false, false},
+        {"ResidualBkg", hPolMB, ResidualBkgVars, true, false, false},
+        {"BinCounting", hBCMB, BinCounting, false, true, false},
+        {"Width", hWidthMB, widthVars, false, false, false},
+        {"PID", hPIDMB, PIDVars, false, false, true}};
 
     std::map<string, std::vector<std::vector<double>>> uncorrBySource;
 
@@ -252,7 +246,14 @@ void systematics_Uncorrelated()
 
                 TFile *fVar = nullptr;
                 TH1D *hVarRaw = nullptr;
-                string varPath = (grp.isPol2 ? basePathSigExtpol2 : basePathSigExt) + grp.names[ivar] + "/" + correctedFileName;
+                string varPath;
+                if (grp.isPol2)
+                    varPath = basePathSigExtpol2 + grp.names[ivar] + "/" + correctedFileName;
+                else if (grp.isPID)
+                    varPath = basePathPIDAndMultEst + grp.names[ivar] + "/hInvMass/ROTATED/" + correctedFileName;
+                else
+                    varPath = basePathSigExt + grp.names[ivar] + "/" + correctedFileName;
+
                 string histNameMult = grp.isBC ? (multDir + "corrected_spectra_BinCount_final") : (multDir + "corrected_spectra_Integral_final");
 
                 openTFile(fVar, varPath);
@@ -305,7 +306,7 @@ void systematics_Uncorrelated()
         uncorrBySource[grp.name] = uncorr_source;
     }
 
-    // Quadrature-sum across distinct sources per bin
+    // Quadrature-sum across distinct sources per bin (EXCLUDING PID)
     std::vector<std::vector<double>> combinedFrac(nWideBins, std::vector<double>(nmultbins, 0.0));
     for (int p = 0; p < nWideBins; ++p)
     {
@@ -313,7 +314,12 @@ void systematics_Uncorrelated()
         {
             double sumSq = 0.0;
             for (auto &kv : uncorrBySource)
-                sumSq += kv.second[p][c] * kv.second[p][c];
+            {
+                if (kv.first != "PID") // Do not add PID to total uncorrelated
+                {
+                    sumSq += kv.second[p][c] * kv.second[p][c];
+                }
+            }
             combinedFrac[p][c] = std::sqrt(sumSq);
         }
     }
@@ -346,6 +352,8 @@ void systematics_Uncorrelated()
 
         TH1D *hTotalUncert = (TH1D *)fTotalSys->Get(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
         TH1D *hSigExtUncert = (TH1D *)fTotalSys->Get(Form("hSignalExtTotalSysSmoothed_%d_%d", multLow, multHigh));
+        TH1D *hPIDUncert = (TH1D *)fTotalSys->Get(Form("hPIDTotalSysSmoothed_%d_%d", multLow, multHigh));
+
         if (!hTotalUncert || !hSigExtUncert)
         {
             std::cout << "Error: Could not retrieve hTotalSys_" << multLow << "_" << multHigh << " from fTotalSys" << std::endl;
@@ -369,6 +377,10 @@ void systematics_Uncorrelated()
         hUncorrOriginal->Reset();
         hUncorrOriginal->SetTitle("Uncorrelated Systematic Uncertainty; p_{T} (GeV/c); Uncorrelated Error");
 
+        TH1D *hPIDUncorrOriginal = (TH1D *)hTotalUncert->Clone(Form("hPIDUncorrelatedUncertainty_mult_%d_%d", multLow, multHigh));
+        hPIDUncorrOriginal->Reset();
+        hPIDUncorrOriginal->SetTitle("PID Uncorrelated Systematic Uncertainty; p_{T} (GeV/c); PID Uncorrelated Error");
+
         for (int j = 1; j <= hSpectraDefault->GetNbinsX(); j++)
         {
             double ptCenter = hSpectraDefault->GetBinCenter(j);
@@ -384,7 +396,6 @@ void systematics_Uncorrelated()
 
             if (wideBin >= 0)
             {
-                // double relUncorrWide = finalFracWide[wideBin];
                 double relUncorrWide = combinedFrac[wideBin][imult];
                 double relTotWide = hTotalSysWide->GetBinContent(wideBin + 1);
 
@@ -407,9 +418,19 @@ void systematics_Uncorrelated()
                     finalRelUncorrFine = fineTotalSys;
                 }
 
-                // hUncorrOriginal->SetBinContent(j, relUncorrWide);
                 hUncorrOriginal->SetBinContent(j, finalRelUncorrFine);
                 hUncorrOriginal->SetBinError(j, 0.0);
+
+                // Separate scale calculation for PID uncorrelated
+                double relPIDUncorrWide = uncorrBySource["PID"][wideBin][imult];
+                double truePIDFraction = (relTotWide > 0) ? (relPIDUncorrWide / relTotWide) : 0.0;
+                if (truePIDFraction > 1.0) truePIDFraction = 1.0;
+
+                double finalRelPIDUncorrFine = truePIDFraction * fineTotalSys;
+                if (finalRelPIDUncorrFine > fineTotalSys) finalRelPIDUncorrFine = fineTotalSys;
+
+                hPIDUncorrOriginal->SetBinContent(j, finalRelPIDUncorrFine);
+                hPIDUncorrOriginal->SetBinError(j, 0.0);
             }
         }
 
@@ -424,8 +445,13 @@ void systematics_Uncorrelated()
         SysUncertainties->cd();
         hUncorrSmoothed->Write();
 
+        TH1D *hPIDUncorrSmoothed = smooth(hPIDUncorrOriginal, Iterations);
+        hPIDUncorrSmoothed->SetName(Form("hPIDUncorrelatedUncertaintySmoothed_mult_%d_%d", multLow, multHigh));
+        SysUncertainties->cd();
+        hPIDUncorrSmoothed->Write();
+
         // -------------------------------------------------------------
-        // Plotting logic (Preserved original visualization)
+        // Plotting logic
         // -------------------------------------------------------------
         TCanvas *cUncorr = new TCanvas(Form("cUncorr_mult_%d_%d", multLow, multHigh), "Uncorrelated Systematic Uncertainty", 720, 720);
         SetCanvasStyle(cUncorr, 0.15, 0.03, 0.06, 0.15);
@@ -442,13 +468,21 @@ void systematics_Uncorrelated()
         hUncorrSmoothed->SetLineColor(kGreen + 2);
         hUncorrSmoothed->Draw("HIST SAME");
 
-        TLegend *legUncorr = new TLegend(0.2, 0.7, 0.85, 0.85);
+        if (hPIDUncert)
+        {
+            SetHistoQA(hPIDUncert);
+            hPIDUncert->SetLineColor(kMagenta + 2);
+            hPIDUncert->Draw("HIST SAME");
+        }
+
+        TLegend *legUncorr = new TLegend(0.2, 0.65, 0.85, 0.85);
         legUncorr->SetBorderSize(0);
         legUncorr->SetFillStyle(0);
         legUncorr->SetTextSize(0.027);
         legUncorr->AddEntry(hTotalUncert, "Total Sys. Uncertainty", "l");
         legUncorr->AddEntry(hUncorrOriginal, "Uncorr. Sys. Uncertainty", "l");
         legUncorr->AddEntry(hUncorrSmoothed, "Smoothed Uncorr. Sys. Uncertainty", "l");
+        if (hPIDUncert) legUncorr->AddEntry(hPIDUncert, "PID Sys. Uncertainty", "l");
         legUncorr->Draw();
 
         cUncorr->SaveAs((basePathSigExt + Form("SystematicsPlots/Uncorrelated/hUncorrelatedUncertainty_mult_%d_%d.pdf", multLow, multHigh)).c_str());
@@ -461,6 +495,7 @@ void systematics_Uncorrelated()
         hTotalUncert->Draw("HIST");
         hUncorrOriginal->Draw("HIST SAME");
         hUncorrSmoothed->Draw("HIST SAME");
+        if (hPIDUncert) hPIDUncert->Draw("HIST SAME");
 
         TLatex *latex = new TLatex();
         latex->SetNDC();
@@ -472,24 +507,9 @@ void systematics_Uncorrelated()
             legUncorr->SetTextSize(0.04);
             legUncorr->Draw();
         }
-
-        // if (fDefault)
-        // {
-        //     fDefault->Close();
-        //     delete fDefault;
-        // }
-        // delete hTotalSysWide;
     }
 
     cTotalSysMult->SaveAs((basePathSigExt + "SystematicsPlots/Uncorrelated/cTotalSysMultAll.pdf").c_str());
-
-    CalculateAverageUncertainties(
-        fTotalSys,
-        basePathSigExt,
-        mult_classes,
-        nmultbins,
-        combinedFrac,
-        widePtBins);
 
     SysUncertainties->Close();
 }
@@ -518,158 +538,4 @@ void openTH1D(TH1D *&hist, TFile *file, const string &histPath)
     {
         cout << "File is not open. Cannot read histogram: " << histPath << endl;
     }
-}
-
-// ============================================================================
-// Calculate average total and uncorrelated systematic uncertainties
-// over all multiplicity classes for three pT intervals:
-//
-//   0-1 GeV/c
-//   1-4 GeV/c
-//   4-20 GeV/c
-//
-// The uncertainty is averaged over all pT bins and all multiplicity classes.
-// Values are returned as fractions (e.g. 0.05 = 5%).
-// ============================================================================
-
-void CalculateAverageUncertainties(
-    TFile *fTotalSys,
-    const string &basePathSigExt,
-    const float *mult_classes,
-    int nmultbins,
-    const std::vector<std::vector<double>> &combinedFrac,
-    const std::vector<double> &widePtBins)
-{
-    // Define the requested pT intervals
-    const int nPtIntervals = 3;
-
-    double ptLow[nPtIntervals] = {0.0, 1.0, 4.0};
-    double ptHigh[nPtIntervals] = {1.0, 4.0, 20.0};
-
-    double sumTotal[nPtIntervals] = {0.0, 0.0, 0.0};
-    double sumUncorr[nPtIntervals] = {0.0, 0.0, 0.0};
-
-    int countTotal[nPtIntervals] = {0, 0, 0};
-    int countUncorr[nPtIntervals] = {0, 0, 0};
-
-    // ------------------------------------------------------------
-    // Loop over multiplicity classes
-    // ------------------------------------------------------------
-
-    for (int imult = 0; imult < nmultbins; ++imult)
-    {
-        int multLow = mult_classes[imult];
-        int multHigh = mult_classes[imult + 1];
-
-        // Total systematic uncertainty histogram
-        TH1D *hTotalUncert = (TH1D *)fTotalSys->Get(
-            Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
-
-        if (!hTotalUncert)
-        {
-            cout << "Warning: total systematic histogram not found for "
-                 << multLow << "-" << multHigh << "%" << endl;
-            continue;
-        }
-
-        // --------------------------------------------------------
-        // Loop over pT bins
-        // --------------------------------------------------------
-
-        for (int j = 1; j <= hTotalUncert->GetNbinsX(); ++j)
-        {
-            double ptCenter = hTotalUncert->GetBinCenter(j);
-
-            // Find requested pT interval
-            int interval = -1;
-
-            for (int ipt = 0; ipt < nPtIntervals; ++ipt)
-            {
-                if (ptCenter >= ptLow[ipt] &&
-                    ptCenter < ptHigh[ipt])
-                {
-                    interval = ipt;
-                    break;
-                }
-            }
-
-            if (interval < 0)
-                continue;
-
-            // ----------------------------------------------------
-            // Total systematic uncertainty
-            // ----------------------------------------------------
-
-            double totalUnc = hTotalUncert->GetBinContent(j);
-
-            sumTotal[interval] += totalUnc;
-            countTotal[interval]++;
-
-            // ----------------------------------------------------
-            // Uncorrelated uncertainty
-            //
-            // Find the corresponding wide pT bin
-            // ----------------------------------------------------
-
-            int wideBin = -1;
-
-            for (size_t p = 0; p < widePtBins.size() - 1; ++p)
-            {
-                if (ptCenter >= widePtBins[p] &&
-                    ptCenter < widePtBins[p + 1])
-                {
-                    wideBin = p;
-                    break;
-                }
-            }
-
-            if (wideBin >= 0)
-            {
-                double uncorrUnc = combinedFrac[wideBin][imult];
-
-                sumUncorr[interval] += uncorrUnc;
-                countUncorr[interval]++;
-            }
-        }
-    }
-
-    // ------------------------------------------------------------
-    // Calculate averages
-    // ------------------------------------------------------------
-
-    cout << endl;
-    cout << "============================================================"
-         << endl;
-    cout << "Average systematic uncertainties over all multiplicity bins"
-         << endl;
-    cout << "============================================================"
-         << endl;
-
-    for (int ipt = 0; ipt < nPtIntervals; ++ipt)
-    {
-        double avgTotal =
-            (countTotal[ipt] > 0)
-                ? sumTotal[ipt] / countTotal[ipt]
-                : 0.0;
-
-        double avgUncorr =
-            (countUncorr[ipt] > 0)
-                ? sumUncorr[ipt] / countUncorr[ipt]
-                : 0.0;
-
-        cout << Form(
-                    "pT = %.0f-%.0f GeV/c :  "
-                    "Average Total = %.4f (%.2f%%),  "
-                    "Average Uncorr = %.4f (%.2f%%)",
-                    ptLow[ipt],
-                    ptHigh[ipt],
-                    avgTotal,
-                    100.0 * avgTotal,
-                    avgUncorr,
-                    100.0 * avgUncorr)
-             << endl;
-    }
-
-    cout << "============================================================"
-         << endl;
 }

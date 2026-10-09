@@ -59,7 +59,8 @@ void systematics_New()
     // float mult_classes[] = {0, 100.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
-    TFile *SysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/SysUncert.root").c_str(), "RECREATE");
+    TFile *fSysUncertainties = new TFile((basePathSigExt + "SystematicsPlots/SysUncert.root").c_str(), "RECREATE");
+    TDirectory *dirIndividual = fSysUncertainties->mkdir("SystematicSources");
 
     ////For signal extraction variations
     vector<string> normVars = {"Norm1", "Norm2"};
@@ -221,7 +222,7 @@ void systematics_New()
         for (int i = 0; i < materialBudgetVars.size(); i++)
         {
             // Using only MB for material budget variation.
-            openTFile(fmaterialBudgetVars[i], basePathSigExtpol2 + materialBudgetVars[i] + "/corrected_spectra_0_100.root");
+            openTFile(fmaterialBudgetVars[i], basePathSigExtpol2 + materialBudgetVars[i] + "/corrected_spectra_0_100v2.root");
             openTH1D(hSpectraMaterialBudgetVars[i], fmaterialBudgetVars[i], "mult_0-100/heff");
         }
 
@@ -433,6 +434,7 @@ void systematics_New()
 
         TH1D *hRelUncertPIDVars = operations.RelativeUncertainty(hMB_DefaultSpectra, PIDVariationHists);
         TH1D *hRelUncertMaterialBudgetVars = operations.RelativeUncertainty(hSpectraMaterialBudgetVars[0], MaterialBudgetVariationHists);
+        hRelUncertMaterialBudgetVars->Scale(sqrt(2.0));
 
         TCanvas *cRelUncert = new TCanvas("", "Relative Uncertainties", 1080, 720);
         SetCanvasStyle(cRelUncert, 0.15, 0.03, 0.06, 0.15);
@@ -494,18 +496,19 @@ void systematics_New()
 
         // First set everything to zero
         for (int ibin = 1; ibin <= hHadronicInteractionRelUncert->GetNbinsX(); ibin++)
-        {
-            hHadronicInteractionRelUncert->SetBinContent(ibin, 0.);
-        }
+            hHadronicInteractionRelUncert->SetBinContent(ibin, 0.0);
 
-        // Fill only matching pT bins
+        // Fill according to pT ranges
         for (int ibin = 1; ibin <= hHadronicInteractionRelUncert->GetNbinsX(); ibin++)
         {
             double binCenter = hHadronicInteractionRelUncert->GetBinCenter(ibin);
 
             for (int i = 0; i < nValues; i++)
             {
-                if (fabs(binCenter - pTValues[i]) < 0.2) // tolerance
+                double lowerEdge = (i == 0) ? 0.0 : pTValues[i - 1];
+                double upperEdge = pTValues[i];
+
+                if (binCenter >= lowerEdge && binCenter < upperEdge)
                 {
                     hHadronicInteractionRelUncert->SetBinContent(ibin, relUncertHI[i]);
                     break;
@@ -526,7 +529,9 @@ void systematics_New()
         TH1D *hSignalExtTotalSysClone = (TH1D *)hSignalExtTotalSys->Clone();
         TH1D *hTrackSelTotalSysClone = (TH1D *)hTrackSelTotalSys->Clone();
 
-        string SigExtNames[] = {"Norm. range", "Fit Range", "Combinatorial Bkg", "Residual Bkg", "Width fix/free"};
+        string SigExtNames[] = {"Norm_range", "Fit_range", "Combinatorial_bkg", "Residual_bkg", "Width_fix_free"};
+
+        dirIndividual->cd();
 
         TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 1080, 720);
         SetCanvasStyle(cSigExtAll, 0.14, 0.03, 0.06, 0.13);
@@ -547,6 +552,10 @@ void systematics_New()
             vecSignalExt[i]->SetLineColor(lineColors[i]);
             vecSignalExt[i]->Draw("HIST SAME");
             legSigExt->AddEntry(vecSignalExt[i], Form("%s", SigExtNames[i].c_str()), "l");
+            if (imult == 0)
+            {
+                vecSignalExt[i]->Write(Form("%s", SigExtNames[i].c_str()));
+            }
         }
         hSignalExtTotalSysClone->SetLineColor(1);
         hSignalExtTotalSysClone->SetLineWidth(3);
@@ -582,6 +591,10 @@ void systematics_New()
             vecTrackSel[i]->SetLineColor(lineColors[i]);
             vecTrackSel[i]->Draw("HIST SAME");
             legTrackSel->AddEntry(vecTrackSel[i], Form("%s", AllVariationNames[i + 6][0].c_str()), "l");
+            if (imult == 0)
+            {
+                vecTrackSel[i]->Write(Form("%s", AllVariationNames[i + 6][0].c_str()));
+            }
         }
         SetHistoQA(hTrackSelTotalSysClone);
         hTrackSelTotalSysClone->SetLineColor(kBlack);
@@ -594,6 +607,8 @@ void systematics_New()
         latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
         latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
+
+        string namesTemp[] = {"SigExt", "TrkSel", "PID", "Material_budget", "Hadronic_interaction"};
 
         TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 1080, 720);
         SetCanvasStyle(cTotalSys, 0.14, 0.03, 0.06, 0.13);
@@ -623,11 +638,16 @@ void systematics_New()
                 legTotal->AddEntry(vecTotal[i], "Material Budget", "l");
             else if (i == 4)
                 legTotal->AddEntry(vecTotal[i], "Hadronic Interaction", "l");
+
+            if (imult == 0)
+            {
+                vecTotal[i]->Write(Form("%s", namesTemp[i].c_str(), multLow, multHigh));
+            }
         }
         hTotalSys->SetLineColor(kBlack);
         hTotalSys->SetLineWidth(2);
         hTotalSys->Draw("HIST SAME");
-        SysUncertainties->cd();
+        fSysUncertainties->cd();
         hTotalSys->Write(Form("hTotalSys_%d_%d", multLow, multHigh));
         legTotal->AddEntry(hTotalSys, "Total", "l");
         legTotal->Draw();
@@ -699,7 +719,7 @@ void systematics_New()
         hTotalSysSmoothed->SetLineWidth(3);
         hTotalSysSmoothed->Draw("HIST SAME");
         legTotal->Draw();
-        SysUncertainties->cd();
+        fSysUncertainties->cd();
         latSys.DrawLatex(0.20, 0.88, "ALICE");
         latSys.DrawLatex(0.20, 0.82, "pp, #sqrt{s} = 13.6 TeV");
         latSys.DrawLatex(0.20, 0.76, Form("FT0M: %d-%d%%", 0, 100));

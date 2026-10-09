@@ -1,0 +1,482 @@
+   ------------------------------------------------------------------
+  | Welcome to ROOT 6.36.000                       https://root.cern |
+  | (c) 1995-2025, The ROOT Team; conception: R. Brun, F. Rademakers |
+  | Built for linuxx8664gcc on Jul 08 2025, 08:13:40                 |
+  | From tags/6-36-000@6-36-000                                      |
+  | With c++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0                   |
+  | Try '.help'/'.?', '.demo', '.license', '.credits', '.quit'/'.q'  |
+   ------------------------------------------------------------------
+
+
+Processing print_keys.cxx...
+Successfully opened file: /home/sawan/Downloads/762508.root
+[KEY ] eventselection-run3 | class=TDirectoryFile
+  [OBJ ] eventselection-run3 | class=TDirectoryFile
+    [KEY ] bcselection | class=TDirectoryFile
+      [OBJ ] bcselection | class=TDirectoryFile
+        [KEY ] hCounterInvalidBCTimestamp | class=TH1D
+          [HIST] bcselection/hCounterInvalidBCTimestamp | class=TH1D | title="" | nbinsX=1 | entries=0
+    [KEY ] eventselection | class=TDirectoryFile
+      [OBJ ] eventselection | class=TDirectoryFile
+        [KEY ] hColCounterAll | class=TH1D
+          [HIST] eventselection/hColCounterAll | class=TH1D | title="" | nbinsX=2 | entries=3.88369e+07
+        [KEY ] hColCounterTVX | class=TH1D
+          [HIST] eventselection/hColCounterTVX | class=TH1D | title="" | nbinsX=2 | entries=3.50085e+07
+        [KEY ] hColCounterAcc | class=TH1D
+          [HIST] eventselection/hColCounterAcc | class=TH1D | title="" | nbinsX=2 | entries=2.77149e+07
+    [KEY ] luminosity | class=TDirectoryFile
+      [OBJ ] luminosity | class=TDirectoryFile
+        [KEY ] hCounterTVX | class=TH1D
+          [HIST] luminosity/hCounterTVX | class=TH1D | title="" | nbinsX=2 | entries=3.76002e+07
+        [KEY ] hCounterTCE | class=TH1D
+          [HIST] luminosity/hCounterTCE | class=TH1D | title="" | nbinsX=2 | entries=1.64795e+07
+        [KEY ] hCounterZEM | class=TH1D
+          [HIST] luminosity/hCounterZEM | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hCounterZNC | class=TH1D
+          [HIST] luminosity/hCounterZNC | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hCounterTVXZDC | class=TH1D
+          [HIST] luminosity/hCounterTVXZDC | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hCounterTVXafterBCcuts | class=TH1D
+          [HIST] luminosity/hCounterTVXafterBCcuts | class=TH1D | title="" | nbinsX=2 | entries=2.94931e+07
+        [KEY ] hCounterTCEafterBCcuts | class=TH1D
+          [HIST] luminosity/hCounterTCEafterBCcuts | class=TH1D | title="" | nbinsX=2 | entries=1.29233e+07
+        [KEY ] hCounterZEMafterBCcuts | class=TH1D
+          [HIST] luminosity/hCounterZEMafterBCcuts | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hCounterZNCafterBCcuts | class=TH1D
+          [HIST] luminosity/hCounterZNCafterBCcuts | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hCounterTVXZDCafterBCcuts | class=TH1D
+          [HIST] luminosity/hCounterTVXZDCafterBCcuts | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiTVX | class=TH1D
+          [HIST] luminosity/hLumiTVX | class=TH1D | title="" | nbinsX=2 | entries=3.76002e+07
+        [KEY ] hLumiTCE | class=TH1D
+          [HIST] luminosity/hLumiTCE | class=TH1D | title="" | nbinsX=2 | entries=1.64795e+07
+        [KEY ] hLumiZEM | class=TH1D
+          [HIST] luminosity/hLumiZEM | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiZNC | class=TH1D
+          [HIST] luminosity/hLumiZNC | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiTVXafterBCcuts | class=TH1D
+          [HIST] luminosity/hLumiTVXafterBCcuts | class=TH1D | title="" | nbinsX=2 | entries=2.94931e+07
+        [KEY ] hLumiTCEafterBCcuts | class=TH1D
+          [HIST] luminosity/hLumiTCEafterBCcuts | class=TH1D | title="" | nbinsX=2 | entries=1.29233e+07
+        [KEY ] hLumiZEMafterBCcuts | class=TH1D
+          [HIST] luminosity/hLumiZEMafterBCcuts | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiZNCafterBCcuts | class=TH1D
+          [HIST] luminosity/hLumiZNCafterBCcuts | class=TH1D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiTVXafterBCcutsRCT | class=TH2D
+          [HIST] luminosity/hLumiTVXafterBCcutsRCT | class=TH2D | title="" | nbinsX=2 | entries=2.34907e+08
+        [KEY ] hLumiTCEafterBCcutsRCT | class=TH2D
+          [HIST] luminosity/hLumiTCEafterBCcutsRCT | class=TH2D | title="" | nbinsX=2 | entries=1.02929e+08
+        [KEY ] hLumiZEMafterBCcutsRCT | class=TH2D
+          [HIST] luminosity/hLumiZEMafterBCcutsRCT | class=TH2D | title="" | nbinsX=1 | entries=0
+        [KEY ] hLumiZNCafterBCcutsRCT | class=TH2D
+          [HIST] luminosity/hLumiZNCafterBCcutsRCT | class=TH2D | title="" | nbinsX=1 | entries=0
+[KEY ] mc-centrality | class=TDirectoryFile
+  [OBJ ] mc-centrality | class=TDirectoryFile
+    [KEY ] FT0M | class=TDirectoryFile
+      [OBJ ] FT0M | class=TDirectoryFile
+        [KEY ] percentile | class=TH1D
+          [HIST] FT0M/percentile | class=TH1D | title="FT0M percentile." | nbinsX=16 | entries=5.17271e+07
+        [KEY ] percentilevsMult | class=TH2D
+          [HIST] FT0M/percentilevsMult | class=TH2D | title="FT0M percentile." | nbinsX=16 | entries=5.17271e+07
+[KEY ] propagation-service | class=TDirectoryFile
+  [OBJ ] propagation-service | class=TDirectoryFile
+    [KEY ] trackTunedTracks | class=TH1D
+      [HIST] trackTunedTracks | class=TH1D | title="" | nbinsX=1 | entries=0
+    [KEY ] hDCAxyVsPtRec | class=TH2F
+      [HIST] hDCAxyVsPtRec | class=TH2F | title="hDCAxyVsPtRec" | nbinsX=600 | entries=0
+    [KEY ] hDCAxyVsPtMC | class=TH2F
+      [HIST] hDCAxyVsPtMC | class=TH2F | title="hDCAxyVsPtMC" | nbinsX=600 | entries=0
+    [KEY ] hDCAzVsPtRec | class=TH2F
+      [HIST] hDCAzVsPtRec | class=TH2F | title="hDCAzVsPtRec" | nbinsX=600 | entries=0
+    [KEY ] hDCAzVsPtMC | class=TH2F
+      [HIST] hDCAzVsPtMC | class=TH2F | title="hDCAzVsPtMC" | nbinsX=600 | entries=0
+    [KEY ] hPropagation | class=TH1D
+      [HIST] hPropagation | class=TH1D | title="hPropagation" | nbinsX=3 | entries=4.97024e+09
+[KEY ] kstarqa | class=TDirectoryFile
+  [OBJ ] kstarqa | class=TDirectoryFile
+    [KEY ] hOthers | class=TDirectoryFile
+      [OBJ ] hOthers | class=TDirectoryFile
+        [KEY ] hCRFC_after | class=TH1F
+          [HIST] hCRFC_after | class=TH1F | title="CRFC after distribution" | nbinsX=100 | entries=1.92152e+08
+        [KEY ] hCRFC_before | class=TH1F
+          [HIST] hCRFC_before | class=TH1F | title="CRFC before distribution" | nbinsX=100 | entries=1.16929e+09
+        [KEY ] hEta_after | class=TH1F
+          [HIST] hEta_after | class=TH1F | title="Eta distribution" | nbinsX=200 | entries=1.92152e+08
+        [KEY ] hKstar_eta_pt | class=TH2F
+          [HIST] hKstar_eta_pt | class=TH2F | title="Pair eta distribution" | nbinsX=400 | entries=1.92152e+08
+        [KEY ] hKstar_rap_pt | class=TH2F
+          [HIST] hKstar_rap_pt | class=TH2F | title="Pair rapidity distribution" | nbinsX=400 | entries=1.92152e+08
+        [KEY ] hphi | class=TH1F
+          [HIST] hphi | class=TH1F | title="Phi distribution" | nbinsX=65 | entries=1.16929e+09
+        [KEY ] hTOFBetaKa | class=TH1F
+          [HIST] hTOFBetaKa | class=TH1F | title="Beta distribution from TOF" | nbinsX=50 | entries=3.32698e+07
+        [KEY ] hTOFBetaPi | class=TH1F
+          [HIST] hTOFBetaPi | class=TH1F | title="Beta distribution from TOF" | nbinsX=50 | entries=5.88285e+07
+        [KEY ] hTPCMomDiffKa | class=TH1F
+          [HIST] hTPCMomDiffKa | class=TH1F | title="Momentum difference between global and TPC tracks for Kaons" | nbinsX=100 | entries=0
+        [KEY ] hTPCMomDiffPi | class=TH1F
+          [HIST] hTPCMomDiffPi | class=TH1F | title="Momentum difference between global and TPC tracks for Pions" | nbinsX=100 | entries=0
+    [KEY ] hPID | class=TDirectoryFile
+      [OBJ ] hPID | class=TDirectoryFile
+        [KEY ] AdditionalChecks | class=TDirectoryFile
+          [OBJ ] AdditionalChecks | class=TDirectoryFile
+            [KEY ] hTOFnsigKa_ptPrCut | class=TH2F
+              [HIST] AdditionalChecks/hTOFnsigKa_ptPrCut | class=TH2F | title="TOF nsigma of Kaon with pt" | nbinsX=100 | entries=0
+            [KEY ] hTOFnsigPi_ptPrCut | class=TH2F
+              [HIST] AdditionalChecks/hTOFnsigPi_ptPrCut | class=TH2F | title="TOF nsigma of Pion with pt" | nbinsX=100 | entries=0
+            [KEY ] hTPCnsigKa_pt | class=TH2F
+              [HIST] AdditionalChecks/hTPCnsigKa_pt | class=TH2F | title="TPC nsigma of Kaon with pt" | nbinsX=100 | entries=0
+            [KEY ] hTPCnsigPi_pt | class=TH2F
+              [HIST] AdditionalChecks/hTPCnsigPi_pt | class=TH2F | title="TPC nsigma of Pion with pt" | nbinsX=100 | entries=0
+        [KEY ] After | class=TDirectoryFile
+          [OBJ ] After | class=TDirectoryFile
+            [KEY ] hDcaxyKa | class=TH1F
+              [HIST] After/hDcaxyKa | class=TH1F | title="Dcaxy distribution of selected Kaons" | nbinsX=200 | entries=1.92152e+08
+            [KEY ] hDcaxyPi | class=TH1F
+              [HIST] After/hDcaxyPi | class=TH1F | title="Dcaxy distribution of selected Pions" | nbinsX=200 | entries=1.92152e+08
+            [KEY ] hDcazKa | class=TH1F
+              [HIST] After/hDcazKa | class=TH1F | title="Dcaz distribution of selected Kaons" | nbinsX=200 | entries=1.92152e+08
+            [KEY ] hDcazPi | class=TH1F
+              [HIST] After/hDcazPi | class=TH1F | title="Dcaz distribution of selected Pions" | nbinsX=200 | entries=1.92152e+08
+            [KEY ] hNsigma_TPC_TOF_Ka_after | class=TH3F
+              [HIST] After/hNsigma_TPC_TOF_Ka_after | class=TH3F | title="N #sigma Kaon TOF after" | nbinsX=50 | entries=1.92601e+08
+            [KEY ] hNsigma_TPC_TOF_Pi_after | class=TH3F
+              [HIST] After/hNsigma_TPC_TOF_Pi_after | class=TH3F | title="N #sigma Pion TOF after" | nbinsX=50 | entries=1.92601e+08
+            [KEY ] hTOFnsigKa_mult_pt | class=TH3F
+              [HIST] After/hTOFnsigKa_mult_pt | class=TH3F | title="TOF nsigma of Kaon after PID with pt and multiplicity" | nbinsX=100 | entries=1.92601e+08
+            [KEY ] hTOFnsigPi_mult_pt | class=TH3F
+              [HIST] After/hTOFnsigPi_mult_pt | class=TH3F | title="TOF nsigma of Pion after PID with pt and multiplicity" | nbinsX=100 | entries=1.92601e+08
+            [KEY ] hTPCnsigKa_mult_pt | class=TH3F
+              [HIST] After/hTPCnsigKa_mult_pt | class=TH3F | title="TPC nsigma of Kaon after PID with pt and multiplicity" | nbinsX=100 | entries=1.92601e+08
+            [KEY ] hTPCnsigPi_mult_pt | class=TH3F
+              [HIST] After/hTPCnsigPi_mult_pt | class=TH3F | title="TPC nsigma of Pion after PID with pt and multiplicity" | nbinsX=100 | entries=1.92601e+08
+        [KEY ] Before | class=TDirectoryFile
+          [OBJ ] Before | class=TDirectoryFile
+            [KEY ] hNsigma_TPC_TOF_Ka_before | class=TH3F
+              [HIST] Before/hNsigma_TPC_TOF_Ka_before | class=TH3F | title="N #sigma Kaon TOF before" | nbinsX=50 | entries=1.19119e+09
+            [KEY ] hNsigma_TPC_TOF_Pi_before | class=TH3F
+              [HIST] Before/hNsigma_TPC_TOF_Pi_before | class=TH3F | title="N #sigma Pion TOF before" | nbinsX=50 | entries=1.19119e+09
+            [KEY ] hTOFnsigKa_mult_pt | class=TH3F
+              [HIST] Before/hTOFnsigKa_mult_pt | class=TH3F | title="TOF nsigma of Kaon brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTOFnsigPi_mult_pt | class=TH3F
+              [HIST] Before/hTOFnsigPi_mult_pt | class=TH3F | title="TOF nsigma of Pion brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTPCnsigKa_mult_pt | class=TH3F
+              [HIST] Before/hTPCnsigKa_mult_pt | class=TH3F | title="TPC nsigma of Kaon brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTPCnsigPi_mult_pt | class=TH3F
+              [HIST] Before/hTPCnsigPi_mult_pt | class=TH3F | title="TPC nsigma of Pion brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+    [KEY ] hInvMass | class=TDirectoryFile
+      [OBJ ] hInvMass | class=TDirectoryFile
+        [KEY ] CorrFactors | class=TDirectoryFile
+          [OBJ ] CorrFactors | class=TDirectoryFile
+            [KEY ] h2dGenKstar | class=TH2D
+              [HIST] CorrFactors/h2dGenKstar | class=TH2D | title="Centrality vs p_{T}" | nbinsX=101 | entries=7.90383e+06
+            [KEY ] h3dGenKstarVsMultMCVsMultiplicity | class=TH3D
+              [HIST] CorrFactors/h3dGenKstarVsMultMCVsMultiplicity | class=TH3D | title="MC centrality vs centrality vs p_{T}" | nbinsX=100 | entries=7.90383e+06
+            [KEY ] hEventCentrality | class=TH1F
+              [HIST] CorrFactors/hEventCentrality | class=TH1F | title="Event centrality" | nbinsX=101 | entries=0
+            [KEY ] hGenEvents | class=TH2F
+              [HIST] CorrFactors/hGenEvents | class=TH2F | title="Generated events" | nbinsX=100 | entries=1.77338e+08
+            [KEY ] hMultiplicityVsMultMC | class=TH2F
+              [HIST] CorrFactors/hMultiplicityVsMultMC | class=TH2F | title="Event centrality vs MC centrality" | nbinsX=101 | entries=4.15959e+07
+            [KEY ] hNrecInGen | class=TH1F
+              [HIST] CorrFactors/hNrecInGen | class=TH1F | title="Number of collisions in MC" | nbinsX=4 | entries=4.15959e+07
+            [KEY ] hSignalLoss1 | class=TH2F
+              [HIST] CorrFactors/hSignalLoss1 | class=TH2F | title="Kstar generated before event selection" | nbinsX=67 | entries=7.90383e+06
+            [KEY ] hSignalLoss2 | class=TH2F
+              [HIST] CorrFactors/hSignalLoss2 | class=TH2F | title="Kstar generated after event selection" | nbinsX=67 | entries=2.73497e+06
+            [KEY ] MultiplicityGen | class=TH1F
+              [HIST] CorrFactors/MultiplicityGen | class=TH1F | title="Multiplicity in generated MC" | nbinsX=100 | entries=4.15959e+07
+            [KEY ] MultiplicityRec | class=TH1F
+              [HIST] CorrFactors/MultiplicityRec | class=TH1F | title="Multiplicity in generated MC with at least 1 reconstruction" | nbinsX=100 | entries=1.25581e+07
+        [KEY ] h1genmass | class=TH1F
+          [HIST] h1genmass | class=TH1F | title="Invariant mass of generated kstar meson" | nbinsX=400 | entries=2.73497e+06
+        [KEY ] h1GenMult | class=TH1F
+          [HIST] h1GenMult | class=TH1F | title="Multiplicity generated" | nbinsX=20 | entries=1.25914e+07
+        [KEY ] h1GenMult2 | class=TH1F
+          [HIST] h1GenMult2 | class=TH1F | title="Multiplicity generated (direct)" | nbinsX=20 | entries=1.25581e+07
+        [KEY ] h1KSRecsplit | class=TH1F
+          [HIST] h1KSRecsplit | class=TH1F | title="KS meson Rec split" | nbinsX=100 | entries=3
+        [KEY ] h1KstarRecMass | class=TH1F
+          [HIST] h1KstarRecMass | class=TH1F | title="Invariant mass of kstar meson" | nbinsX=400 | entries=448520
+        [KEY ] h1RecMult | class=TH1F
+          [HIST] h1RecMult | class=TH1F | title="Multiplicity reconstructed" | nbinsX=20 | entries=1.25947e+07
+        [KEY ] h1RecMult2 | class=TH1F
+          [HIST] h1RecMult2 | class=TH1F | title="Multiplicity reconstructed" | nbinsX=20 | entries=1.25947e+07
+        [KEY ] h2KstarRecpt1 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecpt1 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecpt2 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecpt2 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecptCalib1 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecptCalib1 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecptCalib2 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecptCalib2 | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMasslikeSignMM | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMasslikeSignMM | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMasslikeSignPP | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMasslikeSignPP | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassMixed | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassMixed | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassRotated | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassRotated | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassUnlikeSign | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassUnlikeSign | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassGen | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassGen | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassGenCalib | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassGenCalib | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassRec | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassRec | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassRecCalib | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassRecCalib | class=THnSparseT<TArrayF>
+        [KEY ] hAllGenCollisions | class=TH1F
+          [HIST] hAllGenCollisions | class=TH1F | title="All generated events" | nbinsX=20 | entries=4.15959e+07
+        [KEY ] hAllGenCollisions1Rec | class=TH1F
+          [HIST] hAllGenCollisions1Rec | class=TH1F | title="All gen events with at least one rec event" | nbinsX=20 | entries=1.25581e+07
+        [KEY ] hAllKstarGenCollisisons | class=TH2F
+          [HIST] hAllKstarGenCollisisons | class=TH2F | title="All generated Kstar in events with rapidity in 0.5" | nbinsX=20 | entries=1.18724e+07
+        [KEY ] hAllKstarGenCollisisons1Rec | class=TH2F
+          [HIST] hAllKstarGenCollisisons1Rec | class=TH2F | title="All generated Kstar in events with at least one rec event in rapidity in 0.5" | nbinsX=20 | entries=4.09564e+06
+        [KEY ] hAllRecCollisions | class=TH1F
+          [HIST] hAllRecCollisions | class=TH1F | title="All reconstructed events" | nbinsX=20 | entries=3.85003e+07
+        [KEY ] hAllRecCollisionsCalib | class=TH1F
+          [HIST] hAllRecCollisionsCalib | class=TH1F | title="All reconstructed events" | nbinsX=20 | entries=3.85003e+07
+        [KEY ] hk892GenpT | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpT | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpT2 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpT2 | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpTCalib1 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpTCalib1 | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpTCalib2 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpTCalib2 | class=THnSparseT<TArrayF>
+        [KEY ] MCcorrections | class=TDirectoryFile
+          [OBJ ] MCcorrections | class=TDirectoryFile
+            [KEY ] hImpactParameterGen | class=TH1F
+              [HIST] MCcorrections/hImpactParameterGen | class=TH1F | title="Impact parameter in generated MC" | nbinsX=1 | entries=4.15959e+07
+            [KEY ] hImpactParameterRec | class=TH1F
+              [HIST] MCcorrections/hImpactParameterRec | class=TH1F | title="Impact parameter in reconstructed MC" | nbinsX=1 | entries=1.25581e+07
+            [KEY ] hImpactParametervsMultiplicity | class=TH2F
+              [HIST] MCcorrections/hImpactParametervsMultiplicity | class=TH2F | title="Impact parameter vs multiplicity in reconstructed MC" | nbinsX=1 | entries=1.25581e+07
+            [KEY ] hSignalLossDenominator | class=TH2F
+              [HIST] MCcorrections/hSignalLossDenominator | class=TH2F | title="Kstar generated before event selection" | nbinsX=67 | entries=1.18724e+07
+            [KEY ] hSignalLossNumerator | class=TH2F
+              [HIST] MCcorrections/hSignalLossNumerator | class=TH2F | title="Kstar generated after event selection" | nbinsX=67 | entries=4.09564e+06
+            [KEY ] MultiplicityGen | class=TH1F
+              [HIST] MCcorrections/MultiplicityGen | class=TH1F | title="Multiplicity in generated MC" | nbinsX=20 | entries=4.15959e+07
+            [KEY ] MultiplicityRec | class=TH1F
+              [HIST] MCcorrections/MultiplicityRec | class=TH1F | title="Multiplicity in generated MC with at least 1 reconstruction" | nbinsX=20 | entries=1.25581e+07
+    [KEY ] eventSelection | class=TDirectoryFile
+      [OBJ ] eventSelection | class=TDirectoryFile
+        [KEY ] eventsCheckGen | class=TH1I
+          [HIST] eventsCheckGen | class=TH1I | title="No. of events in the generated MC" | nbinsX=10 | entries=2.02181e+08
+        [KEY ] eventsCheckRec | class=TH1I
+          [HIST] eventsCheckRec | class=TH1I | title="No. of events in the generated MC" | nbinsX=5 | entries=1.28769e+08
+        [KEY ] hDcaxy_cent_pt | class=TH3F
+          [HIST] hDcaxy_cent_pt | class=TH3F | title="Dcaxy distribution" | nbinsX=200 | entries=1.26527e+09
+        [KEY ] hDcaz_cent_pt | class=TH3F
+          [HIST] hDcaz_cent_pt | class=TH3F | title="Dcaz distribution" | nbinsX=200 | entries=1.26527e+09
+        [KEY ] hEventCut | class=TH1D
+          [HIST] hEventCut | class=TH1D | title="No. of event after cuts" | nbinsX=20 | entries=2.27875e+08
+        [KEY ] hMultiplicity | class=TH1F
+          [HIST] hMultiplicity | class=TH1F | title="Multiplicity percentile" | nbinsX=110 | entries=1.25947e+07
+        [KEY ] hOccupancy | class=TH1F
+          [HIST] hOccupancy | class=TH1F | title="Occupancy distribution" | nbinsX=1000 | entries=5.14283e+07
+        [KEY ] hVertexZRec | class=TH1F
+          [HIST] hVertexZRec | class=TH1F | title="hVertexZRec" | nbinsX=60 | entries=2.51894e+07
+        [KEY ] recMCparticles | class=TH1I
+          [HIST] recMCparticles | class=TH1I | title="No. of events in the reconstructed MC" | nbinsX=20 | entries=6.40636e+09
+        [KEY ] tracksCheckData | class=TH1I
+          [HIST] tracksCheckData | class=TH1I | title="No. of events in the data" | nbinsX=10 | entries=5.5207e+09
+[KEY ] kstarqa_WithoutTOFShift | class=TDirectoryFile
+  [OBJ ] kstarqa_WithoutTOFShift | class=TDirectoryFile
+    [KEY ] hOthers | class=TDirectoryFile
+      [OBJ ] hOthers | class=TDirectoryFile
+        [KEY ] hCRFC_after | class=TH1F
+          [HIST] hCRFC_after | class=TH1F | title="CRFC after distribution" | nbinsX=100 | entries=1.94176e+08
+        [KEY ] hCRFC_before | class=TH1F
+          [HIST] hCRFC_before | class=TH1F | title="CRFC before distribution" | nbinsX=100 | entries=1.16929e+09
+        [KEY ] hEta_after | class=TH1F
+          [HIST] hEta_after | class=TH1F | title="Eta distribution" | nbinsX=200 | entries=1.94176e+08
+        [KEY ] hKstar_eta_pt | class=TH2F
+          [HIST] hKstar_eta_pt | class=TH2F | title="Pair eta distribution" | nbinsX=400 | entries=1.94176e+08
+        [KEY ] hKstar_rap_pt | class=TH2F
+          [HIST] hKstar_rap_pt | class=TH2F | title="Pair rapidity distribution" | nbinsX=400 | entries=1.94176e+08
+        [KEY ] hphi | class=TH1F
+          [HIST] hphi | class=TH1F | title="Phi distribution" | nbinsX=65 | entries=1.16929e+09
+        [KEY ] hTOFBetaKa | class=TH1F
+          [HIST] hTOFBetaKa | class=TH1F | title="Beta distribution from TOF" | nbinsX=50 | entries=3.26022e+07
+        [KEY ] hTOFBetaPi | class=TH1F
+          [HIST] hTOFBetaPi | class=TH1F | title="Beta distribution from TOF" | nbinsX=50 | entries=6.16802e+07
+        [KEY ] hTPCMomDiffKa | class=TH1F
+          [HIST] hTPCMomDiffKa | class=TH1F | title="Momentum difference between global and TPC tracks for Kaons" | nbinsX=100 | entries=0
+        [KEY ] hTPCMomDiffPi | class=TH1F
+          [HIST] hTPCMomDiffPi | class=TH1F | title="Momentum difference between global and TPC tracks for Pions" | nbinsX=100 | entries=0
+    [KEY ] hPID | class=TDirectoryFile
+      [OBJ ] hPID | class=TDirectoryFile
+        [KEY ] AdditionalChecks | class=TDirectoryFile
+          [OBJ ] AdditionalChecks | class=TDirectoryFile
+            [KEY ] hTOFnsigKa_ptPrCut | class=TH2F
+              [HIST] AdditionalChecks/hTOFnsigKa_ptPrCut | class=TH2F | title="TOF nsigma of Kaon with pt" | nbinsX=100 | entries=0
+            [KEY ] hTOFnsigPi_ptPrCut | class=TH2F
+              [HIST] AdditionalChecks/hTOFnsigPi_ptPrCut | class=TH2F | title="TOF nsigma of Pion with pt" | nbinsX=100 | entries=0
+            [KEY ] hTPCnsigKa_pt | class=TH2F
+              [HIST] AdditionalChecks/hTPCnsigKa_pt | class=TH2F | title="TPC nsigma of Kaon with pt" | nbinsX=100 | entries=0
+            [KEY ] hTPCnsigPi_pt | class=TH2F
+              [HIST] AdditionalChecks/hTPCnsigPi_pt | class=TH2F | title="TPC nsigma of Pion with pt" | nbinsX=100 | entries=0
+        [KEY ] After | class=TDirectoryFile
+          [OBJ ] After | class=TDirectoryFile
+            [KEY ] hDcaxyKa | class=TH1F
+              [HIST] After/hDcaxyKa | class=TH1F | title="Dcaxy distribution of selected Kaons" | nbinsX=200 | entries=1.94176e+08
+            [KEY ] hDcaxyPi | class=TH1F
+              [HIST] After/hDcaxyPi | class=TH1F | title="Dcaxy distribution of selected Pions" | nbinsX=200 | entries=1.94176e+08
+            [KEY ] hDcazKa | class=TH1F
+              [HIST] After/hDcazKa | class=TH1F | title="Dcaz distribution of selected Kaons" | nbinsX=200 | entries=1.94176e+08
+            [KEY ] hDcazPi | class=TH1F
+              [HIST] After/hDcazPi | class=TH1F | title="Dcaz distribution of selected Pions" | nbinsX=200 | entries=1.94176e+08
+            [KEY ] hNsigma_TPC_TOF_Ka_after | class=TH3F
+              [HIST] After/hNsigma_TPC_TOF_Ka_after | class=TH3F | title="N #sigma Kaon TOF after" | nbinsX=50 | entries=1.94635e+08
+            [KEY ] hNsigma_TPC_TOF_Pi_after | class=TH3F
+              [HIST] After/hNsigma_TPC_TOF_Pi_after | class=TH3F | title="N #sigma Pion TOF after" | nbinsX=50 | entries=1.94635e+08
+            [KEY ] hTOFnsigKa_mult_pt | class=TH3F
+              [HIST] After/hTOFnsigKa_mult_pt | class=TH3F | title="TOF nsigma of Kaon after PID with pt and multiplicity" | nbinsX=100 | entries=1.94635e+08
+            [KEY ] hTOFnsigPi_mult_pt | class=TH3F
+              [HIST] After/hTOFnsigPi_mult_pt | class=TH3F | title="TOF nsigma of Pion after PID with pt and multiplicity" | nbinsX=100 | entries=1.94635e+08
+            [KEY ] hTPCnsigKa_mult_pt | class=TH3F
+              [HIST] After/hTPCnsigKa_mult_pt | class=TH3F | title="TPC nsigma of Kaon after PID with pt and multiplicity" | nbinsX=100 | entries=1.94635e+08
+            [KEY ] hTPCnsigPi_mult_pt | class=TH3F
+              [HIST] After/hTPCnsigPi_mult_pt | class=TH3F | title="TPC nsigma of Pion after PID with pt and multiplicity" | nbinsX=100 | entries=1.94635e+08
+        [KEY ] Before | class=TDirectoryFile
+          [OBJ ] Before | class=TDirectoryFile
+            [KEY ] hNsigma_TPC_TOF_Ka_before | class=TH3F
+              [HIST] Before/hNsigma_TPC_TOF_Ka_before | class=TH3F | title="N #sigma Kaon TOF before" | nbinsX=50 | entries=1.19119e+09
+            [KEY ] hNsigma_TPC_TOF_Pi_before | class=TH3F
+              [HIST] Before/hNsigma_TPC_TOF_Pi_before | class=TH3F | title="N #sigma Pion TOF before" | nbinsX=50 | entries=1.19119e+09
+            [KEY ] hTOFnsigKa_mult_pt | class=TH3F
+              [HIST] Before/hTOFnsigKa_mult_pt | class=TH3F | title="TOF nsigma of Kaon brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTOFnsigPi_mult_pt | class=TH3F
+              [HIST] Before/hTOFnsigPi_mult_pt | class=TH3F | title="TOF nsigma of Pion brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTPCnsigKa_mult_pt | class=TH3F
+              [HIST] Before/hTPCnsigKa_mult_pt | class=TH3F | title="TPC nsigma of Kaon brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+            [KEY ] hTPCnsigPi_mult_pt | class=TH3F
+              [HIST] Before/hTPCnsigPi_mult_pt | class=TH3F | title="TPC nsigma of Pion brfore PID with pt and multiplicity" | nbinsX=100 | entries=1.19119e+09
+    [KEY ] hInvMass | class=TDirectoryFile
+      [OBJ ] hInvMass | class=TDirectoryFile
+        [KEY ] CorrFactors | class=TDirectoryFile
+          [OBJ ] CorrFactors | class=TDirectoryFile
+            [KEY ] h2dGenKstar | class=TH2D
+              [HIST] CorrFactors/h2dGenKstar | class=TH2D | title="Centrality vs p_{T}" | nbinsX=101 | entries=7.90383e+06
+            [KEY ] h3dGenKstarVsMultMCVsMultiplicity | class=TH3D
+              [HIST] CorrFactors/h3dGenKstarVsMultMCVsMultiplicity | class=TH3D | title="MC centrality vs centrality vs p_{T}" | nbinsX=100 | entries=7.90383e+06
+            [KEY ] hEventCentrality | class=TH1F
+              [HIST] CorrFactors/hEventCentrality | class=TH1F | title="Event centrality" | nbinsX=101 | entries=0
+            [KEY ] hGenEvents | class=TH2F
+              [HIST] CorrFactors/hGenEvents | class=TH2F | title="Generated events" | nbinsX=100 | entries=1.77338e+08
+            [KEY ] hMultiplicityVsMultMC | class=TH2F
+              [HIST] CorrFactors/hMultiplicityVsMultMC | class=TH2F | title="Event centrality vs MC centrality" | nbinsX=101 | entries=4.15959e+07
+            [KEY ] hNrecInGen | class=TH1F
+              [HIST] CorrFactors/hNrecInGen | class=TH1F | title="Number of collisions in MC" | nbinsX=4 | entries=4.15959e+07
+            [KEY ] hSignalLoss1 | class=TH2F
+              [HIST] CorrFactors/hSignalLoss1 | class=TH2F | title="Kstar generated before event selection" | nbinsX=67 | entries=7.90383e+06
+            [KEY ] hSignalLoss2 | class=TH2F
+              [HIST] CorrFactors/hSignalLoss2 | class=TH2F | title="Kstar generated after event selection" | nbinsX=67 | entries=2.73497e+06
+            [KEY ] MultiplicityGen | class=TH1F
+              [HIST] CorrFactors/MultiplicityGen | class=TH1F | title="Multiplicity in generated MC" | nbinsX=100 | entries=4.15959e+07
+            [KEY ] MultiplicityRec | class=TH1F
+              [HIST] CorrFactors/MultiplicityRec | class=TH1F | title="Multiplicity in generated MC with at least 1 reconstruction" | nbinsX=100 | entries=1.25581e+07
+        [KEY ] h1genmass | class=TH1F
+          [HIST] h1genmass | class=TH1F | title="Invariant mass of generated kstar meson" | nbinsX=400 | entries=2.73497e+06
+        [KEY ] h1GenMult | class=TH1F
+          [HIST] h1GenMult | class=TH1F | title="Multiplicity generated" | nbinsX=20 | entries=1.25914e+07
+        [KEY ] h1GenMult2 | class=TH1F
+          [HIST] h1GenMult2 | class=TH1F | title="Multiplicity generated (direct)" | nbinsX=20 | entries=1.25581e+07
+        [KEY ] h1KSRecsplit | class=TH1F
+          [HIST] h1KSRecsplit | class=TH1F | title="KS meson Rec split" | nbinsX=100 | entries=3
+        [KEY ] h1KstarRecMass | class=TH1F
+          [HIST] h1KstarRecMass | class=TH1F | title="Invariant mass of kstar meson" | nbinsX=400 | entries=457830
+        [KEY ] h1RecMult | class=TH1F
+          [HIST] h1RecMult | class=TH1F | title="Multiplicity reconstructed" | nbinsX=20 | entries=1.25947e+07
+        [KEY ] h1RecMult2 | class=TH1F
+          [HIST] h1RecMult2 | class=TH1F | title="Multiplicity reconstructed" | nbinsX=20 | entries=1.25947e+07
+        [KEY ] h2KstarRecpt1 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecpt1 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecpt2 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecpt2 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecptCalib1 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecptCalib1 | class=THnSparseT<TArrayF>
+        [KEY ] h2KstarRecptCalib2 | class=THnSparseT<TArrayF>
+          [OBJ ] h2KstarRecptCalib2 | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMasslikeSignMM | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMasslikeSignMM | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMasslikeSignPP | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMasslikeSignPP | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassMixed | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassMixed | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassRotated | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassRotated | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarInvMassUnlikeSign | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarInvMassUnlikeSign | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassGen | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassGen | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassGenCalib | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassGenCalib | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassRec | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassRec | class=THnSparseT<TArrayF>
+        [KEY ] h3KstarMassRecCalib | class=THnSparseT<TArrayF>
+          [OBJ ] h3KstarMassRecCalib | class=THnSparseT<TArrayF>
+        [KEY ] hAllGenCollisions | class=TH1F
+          [HIST] hAllGenCollisions | class=TH1F | title="All generated events" | nbinsX=20 | entries=4.15959e+07
+        [KEY ] hAllGenCollisions1Rec | class=TH1F
+          [HIST] hAllGenCollisions1Rec | class=TH1F | title="All gen events with at least one rec event" | nbinsX=20 | entries=1.25581e+07
+        [KEY ] hAllKstarGenCollisisons | class=TH2F
+          [HIST] hAllKstarGenCollisisons | class=TH2F | title="All generated Kstar in events with rapidity in 0.5" | nbinsX=20 | entries=1.18724e+07
+        [KEY ] hAllKstarGenCollisisons1Rec | class=TH2F
+          [HIST] hAllKstarGenCollisisons1Rec | class=TH2F | title="All generated Kstar in events with at least one rec event in rapidity in 0.5" | nbinsX=20 | entries=4.09564e+06
+        [KEY ] hAllRecCollisions | class=TH1F
+          [HIST] hAllRecCollisions | class=TH1F | title="All reconstructed events" | nbinsX=20 | entries=3.85003e+07
+        [KEY ] hAllRecCollisionsCalib | class=TH1F
+          [HIST] hAllRecCollisionsCalib | class=TH1F | title="All reconstructed events" | nbinsX=20 | entries=3.85003e+07
+        [KEY ] hk892GenpT | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpT | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpT2 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpT2 | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpTCalib1 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpTCalib1 | class=THnSparseT<TArrayF>
+        [KEY ] hk892GenpTCalib2 | class=THnSparseT<TArrayF>
+          [OBJ ] hk892GenpTCalib2 | class=THnSparseT<TArrayF>
+        [KEY ] MCcorrections | class=TDirectoryFile
+          [OBJ ] MCcorrections | class=TDirectoryFile
+            [KEY ] hImpactParameterGen | class=TH1F
+              [HIST] MCcorrections/hImpactParameterGen | class=TH1F | title="Impact parameter in generated MC" | nbinsX=1 | entries=4.15959e+07
+            [KEY ] hImpactParameterRec | class=TH1F
+              [HIST] MCcorrections/hImpactParameterRec | class=TH1F | title="Impact parameter in reconstructed MC" | nbinsX=1 | entries=1.25581e+07
+            [KEY ] hImpactParametervsMultiplicity | class=TH2F
+              [HIST] MCcorrections/hImpactParametervsMultiplicity | class=TH2F | title="Impact parameter vs multiplicity in reconstructed MC" | nbinsX=1 | entries=1.25581e+07
+            [KEY ] hSignalLossDenominator | class=TH2F
+              [HIST] MCcorrections/hSignalLossDenominator | class=TH2F | title="Kstar generated before event selection" | nbinsX=67 | entries=1.18724e+07
+            [KEY ] hSignalLossNumerator | class=TH2F
+              [HIST] MCcorrections/hSignalLossNumerator | class=TH2F | title="Kstar generated after event selection" | nbinsX=67 | entries=4.09564e+06
+            [KEY ] MultiplicityGen | class=TH1F
+              [HIST] MCcorrections/MultiplicityGen | class=TH1F | title="Multiplicity in generated MC" | nbinsX=20 | entries=4.15959e+07
+            [KEY ] MultiplicityRec | class=TH1F
+              [HIST] MCcorrections/MultiplicityRec | class=TH1F | title="Multiplicity in generated MC with at least 1 reconstruction" | nbinsX=20 | entries=1.25581e+07
+    [KEY ] eventSelection | class=TDirectoryFile
+      [OBJ ] eventSelection | class=TDirectoryFile
+        [KEY ] eventsCheckGen | class=TH1I
+          [HIST] eventsCheckGen | class=TH1I | title="No. of events in the generated MC" | nbinsX=10 | entries=2.02181e+08
+        [KEY ] eventsCheckRec | class=TH1I
+          [HIST] eventsCheckRec | class=TH1I | title="No. of events in the generated MC" | nbinsX=5 | entries=1.28769e+08
+        [KEY ] hDcaxy_cent_pt | class=TH3F
+          [HIST] hDcaxy_cent_pt | class=TH3F | title="Dcaxy distribution" | nbinsX=200 | entries=1.26527e+09
+        [KEY ] hDcaz_cent_pt | class=TH3F
+          [HIST] hDcaz_cent_pt | class=TH3F | title="Dcaz distribution" | nbinsX=200 | entries=1.26527e+09
+        [KEY ] hEventCut | class=TH1D
+          [HIST] hEventCut | class=TH1D | title="No. of event after cuts" | nbinsX=20 | entries=2.27875e+08
+        [KEY ] hMultiplicity | class=TH1F
+          [HIST] hMultiplicity | class=TH1F | title="Multiplicity percentile" | nbinsX=110 | entries=1.25947e+07
+        [KEY ] hOccupancy | class=TH1F
+          [HIST] hOccupancy | class=TH1F | title="Occupancy distribution" | nbinsX=1000 | entries=5.14283e+07
+        [KEY ] hVertexZRec | class=TH1F
+          [HIST] hVertexZRec | class=TH1F | title="hVertexZRec" | nbinsX=60 | entries=2.51894e+07
+        [KEY ] recMCparticles | class=TH1I
+          [HIST] recMCparticles | class=TH1I | title="No. of events in the reconstructed MC" | nbinsX=20 | entries=6.4064e+09
+        [KEY ] tracksCheckData | class=TH1I
+          [HIST] tracksCheckData | class=TH1I | title="No. of events in the data" | nbinsX=10 | entries=5.52879e+09

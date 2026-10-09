@@ -71,21 +71,8 @@ namespace
 }
 
 void print_keys() {
-    // std::string filePath = "/home/sawan/check_k892/data/kstar/LHC22o_pass7/447406.root"; // Default file path
-    std::string filePath = "/home/sawan/check_k892/macro/AnalysisMCpass1pass2.root"; // Default file path
+    std::string filePath = "/home/sawan/Downloads/762508.root"; // Default file path
 
-    // // Parse command line arguments
-    // int option;
-    // while ((option = getopt(argc, argv, "d:")) != -1) {
-    //     switch (option) {
-    //         case 'd':
-    //             filePath = optarg; // Set file path to the provided argument
-    //             break;
-    //         default:
-    //             std::cerr << "Usage: " << argv[0] << " [-d file_path]\n";
-    //             return 1;
-    //     }
-    // }
 
     // Open the ROOT file
     TFile *file = TFile::Open(filePath.c_str(), "READ");

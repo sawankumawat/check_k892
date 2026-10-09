@@ -1,6 +1,6 @@
 using namespace std;
 
-void saveKstarSpectra()
+void KstarSpectraSave()
 {
     TString SpectraPath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED";
     TString UncertPath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots";

@@ -398,10 +398,13 @@ void plot_spectra()
             ctemp->Delete();
 
             // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
-            double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
-            double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
+            // double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
+            // double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
-            double dndyRun3_UncorrSys[] = {0.00354684, 0.00256758, 0.00196864, 0.0019312, 0.00135132, 0.00137921, 0.000946562, 0.000780209, 0.000389811, 0.000547972};
+            double dnch_detaRun3[] = {21.642, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; //updated uncertainties (matching correction)
+            double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // using same as previous one
+
+            double dndyRun3_UncorrSys[] = {0.0171542, 0.0123024, 0.00913457, 0.00922026, 0.00625093, 0.00683177, 0.00451025, 0.00377954, 0.00191806, 0.00171489};
             double meanpTRun3_UncorrSys[] = {0.00641073, 0.00533682, 0.00419074, 0.00582635, 0.00449249, 0.00345193, 0.00401086, 0.00412324, 0.00230334, 0.00506651};
 
             TGraphErrors *gMeanYieldRun3 = new TGraphErrors(numofmultbins, dnch_detaRun3, yield, dnch_detaRun3_err, yield_errStat);

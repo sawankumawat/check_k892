@@ -56,11 +56,11 @@ void doublePhiOpti8()
     // string suffix = "26afai";
     // string suffix = "26ac";
     // string suffix = "26adaeag";
-    int rebinFactor = 10;
-    // float fitRangeLow = 2.41;
-    // float fitRangeHigh = 2.92;
-    float fitRangeLow = 2.61;
-    float fitRangeHigh = 3.20;
+    int rebinFactor = 8;
+    float fitRangeLow = 2.41;
+    float fitRangeHigh = 2.92;
+    // float fitRangeLow = 2.61;
+    // float fitRangeHigh = 3.20;
 
     ////=====New===========
     ////====2026 data========
@@ -68,7 +68,7 @@ void doublePhiOpti8()
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults_LHC26_PID2003.root");
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_latest.root");
     // TFile *fInput = OpenFile(Form("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/All/AnalysisResults_LHC%s.root", suffix.c_str())); // For period wise checks
-    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_morepTbins.root"); //Default file
+    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_morepTbins.root"); //Default file
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti8/AnalysisResults26_extendedMassRange.root"); // Extended mass range to 3.2 GeV/c^2
 
     ////======2025 data==========
@@ -80,10 +80,10 @@ void doublePhiOpti8()
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_aiamShifted.root"); // opti9, shifted
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti10/LHC25/AnalysisResults25aiam_morepTbins.root"); // opti10, shifted
     // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25ai.root"); // opti9, shifted
-    TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_extendedMassRange.root"); // opti9, refitted
+    // TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti9/LHC25/AnalysisResults25_extendedMassRange.root"); // opti9, refitted
 
-    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
-    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
+    THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRefitted");
+    // THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiShifted");
     // THnSparseF *hRot = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassPhiPhiRotational");
 
     TH1D *hPt = hUnlike->Projection(1, "E");
@@ -106,8 +106,8 @@ void doublePhiOpti8()
 
     hUnlike->GetAxis(1)->SetRange(lowpT, highpT);
     hUnlike->GetAxis(2)->SetRange(lowDeltaM, highDeltaM);
-    // hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
-    // hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
+    hUnlike->GetAxis(3)->SetRange(lowChi2, highChi2);
+    hUnlike->GetAxis(4)->SetRange(lowFitProb, highFitProb);
 
     // hRot->GetAxis(1)->SetRange(lowpT, highpT);
 
@@ -146,11 +146,11 @@ void doublePhiOpti8()
     {
         double x = hInvMass->GetBinCenter(i);
 
-        // Exclude signal region
-        if (x >= 2.92 && x <= 3.02)
-            continue;
-        // if (x >= 2.62 && x <= 2.73)
+        // // Exclude signal region
+        // if (x >= 2.92 && x <= 3.02)
         //     continue;
+        if (x >= 2.62 && x <= 2.73)
+            continue;
 
         hBkg->SetBinContent(i, hInvMass->GetBinContent(i));
         hBkg->SetBinError(i, hInvMass->GetBinError(i));
@@ -245,8 +245,8 @@ void doublePhiOpti8()
     fInitialCombinedFit->SetParameter(6, fitBkg->GetParameter(3));
 
     fInitialCombinedFit->SetParLimits(0, 0.0, 1.0e6);
-    // fInitialCombinedFit->SetParLimits(1, 2.65, 2.71);
-    fInitialCombinedFit->SetParLimits(1, 2.92, 3.04);
+    fInitialCombinedFit->SetParLimits(1, 2.65, 2.71);
+    // fInitialCombinedFit->SetParLimits(1, 2.92, 3.04);
     fInitialCombinedFit->SetParLimits(2, 0.01, 0.05);
     fInitialCombinedFit->SetLineStyle(2);
     fInitialCombinedFit->SetLineColor(kMagenta);
@@ -278,8 +278,8 @@ void doublePhiOpti8()
     // fitFunc->FixParameter(6, -7.178);
 
     fitFunc->SetParLimits(0, 0.0, 1.0e6);
-    fitFunc->SetParLimits(1, 2.92, 3.04);
-    // fitFunc->SetParLimits(1, 2.65, 2.72);
+    // fitFunc->SetParLimits(1, 2.92, 3.04);
+    fitFunc->SetParLimits(1, 2.65, 2.72);
     // fitFunc->SetParLimits(1, 2.67, 2.71);
     fitFunc->SetParLimits(2, 0.01, 0.15);
 

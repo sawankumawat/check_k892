@@ -48,6 +48,8 @@ void doublePhiOpti5()
 
     ////=====New===========
     TFile *fInput = OpenFile("/home/sawan/alice/practice/OutputDoublePhi/New/processopti5/AnalysisResults_MorePhiBins.root");
+    // TFile *fInput = OpenFile("/home/sawan/Storage/check_k892/data/doublePhi/762068.root");
+    // TFile *fInput = OpenFile("/home/sawan/Storage/check_k892/data/doublePhi/758805.root");
 
     THnSparseF *hUnlike = GetHisto<THnSparseF>(fInput, "doublephimeson/SEMassDoublePhi");
 
@@ -60,10 +62,12 @@ void doublePhiOpti5()
     TH1D *hnKaonTOF = hUnlike->Projection(7, "E");
     TH1D *hCombinedPID4Kaon = hUnlike->Projection(8, "E");
 
-    // TCanvas *cPt = new TCanvas("cPt", "Pt", 720, 720);
-    // SetCanvasStyle(cPt, 0.15, 0.03, 0.05, 0.15);
-    // SetHistoQA(hPt);
-    // hPt->Draw("pe");
+    TCanvas *cPt = new TCanvas("cPt", "Pt", 720, 720);
+    SetCanvasStyle(cPt, 0.15, 0.03, 0.05, 0.15);
+    gPad->SetLogy();
+    SetHistoQA(hPt);
+    hPt->Draw("pe");
+    // cPt->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/LHC26ThinDataset/Pt26Thin.png");
 
     int lowpT = hUnlike->GetAxis(1)->FindBin(9.0 + 0.001);
     int highpT = hUnlike->GetAxis(1)->FindBin(100.0 - 0.001);
@@ -74,11 +78,11 @@ void doublePhiOpti5()
     int lowRapidity = hUnlike->GetAxis(3)->FindBin(-0.8 + 0.0001);
     int highRapidity = hUnlike->GetAxis(3)->FindBin(0.8 - 0.0001);
 
-    int lowPhi1Mass = hUnlike->GetAxis(4)->FindBin(1.005 + 0.0001);
-    int highPhi1Mass = hUnlike->GetAxis(4)->FindBin(1.035 - 0.0001);
+    int lowPhi1Mass = hUnlike->GetAxis(4)->FindBin(1.00 + 0.0001);
+    int highPhi1Mass = hUnlike->GetAxis(4)->FindBin(1.04 - 0.0001);
 
-    int lowPhi2Mass = hUnlike->GetAxis(5)->FindBin(1.005 + 0.0001);
-    int highPhi2Mass = hUnlike->GetAxis(5)->FindBin(1.035 - 0.0001);
+    int lowPhi2Mass = hUnlike->GetAxis(5)->FindBin(1.00 + 0.0001);
+    int highPhi2Mass = hUnlike->GetAxis(5)->FindBin(1.04 - 0.0001);
 
     int lowDeltaM = hUnlike->GetAxis(6)->FindBin(0.0 + 0.00001);
     int highDeltaM = hUnlike->GetAxis(6)->FindBin(0.005 - 0.00001);
@@ -101,7 +105,6 @@ void doublePhiOpti5()
     TH1D *hInvMass = hUnlike->Projection(0, "E");
     SetHistoQA(hInvMass);
     hInvMass->Rebin(8);
-    hInvMass->GetXaxis()->SetRangeUser(2.5, 2.9);
     hInvMass->GetXaxis()->SetTitle("#it{M}_{#phi#phi} (GeV/#it{c}^{2})");
     hInvMass->GetYaxis()->SetTitle(Form("Counts/%.1f MeV/#it{c}^{2}", hInvMass->GetBinWidth(1) * 1000));
 
@@ -113,7 +116,7 @@ void doublePhiOpti5()
         double x = hInvMass->GetBinCenter(i);
 
         // Exclude signal region
-        if (x >= 2.65 && x <= 2.75)
+        if (x >= 2.63 && x <= 2.73)
             continue;
 
         hBkg->SetBinContent(i, hInvMass->GetBinContent(i));
@@ -128,20 +131,48 @@ void doublePhiOpti5()
     // Likelihood fit
     //============================================================
 
-    const double FIT_MIN = 2.5;
-    const double FIT_MAX = 2.9;
+    const double FIT_MIN = 2.40;
+    const double FIT_MAX = 2.91;
 
     TF1 *fitBkg = new TF1("fitBkg", expPol3, FIT_MIN, FIT_MAX, 4);
-
-    //------------------------------------------------------------
-    // Initial background fit
-    //------------------------------------------------------------
-
     fitBkg->SetParNames("p0", "p1", "p2", "p3");
     fitBkg->SetParameters(1.0, 1.0, 1.0, 1.0);
-
-    // Background-only histogram
     hBkg->Fit(fitBkg, "REBM");
+    fitBkg->Draw("same");
+
+    TCanvas *cInitialFit = new TCanvas("cInitialFit", "Initial Fit", 720, 720);
+    SetCanvasStyle(cInitialFit, 0.15, 0.03, 0.05, 0.15);
+    hInvMass->Draw("pe");
+
+    //print the statistical uncertainty in each mass bin
+    int totalMassBins = hInvMass->GetNbinsX();
+    for (int i = 1; i <= totalMassBins; i++)
+    {
+        double binContent = hInvMass->GetBinContent(i);
+        double binError = hInvMass->GetBinError(i);
+        double binCenter = hInvMass->GetBinCenter(i);
+        double percentageError = (binError / binContent) * 100.0;
+        cout << "Bin " << i << ": Center = " << binCenter << ", Content = " << binContent << ", Error = " << binError << ", Percentage Error = " << percentageError << "%" << endl;
+    }
+
+    TF1 *fInitialCombinedFit = new TF1("fInitialCombinedFit", BWExpol, FIT_MIN, FIT_MAX, 7);
+    fInitialCombinedFit->SetParNames("SignalYield", "Mass", "Width", "p0", "p1", "p2", "p3");
+    fInitialCombinedFit->SetParameter(0, 100.0); // Signal yield
+    fInitialCombinedFit->SetParameter(1, 2.70);  // Mass
+    fInitialCombinedFit->SetParameter(2, 0.03);  // Width
+
+    fInitialCombinedFit->SetParameter(3, fitBkg->GetParameter(0));
+    fInitialCombinedFit->SetParameter(4, fitBkg->GetParameter(1));
+    fInitialCombinedFit->SetParameter(5, fitBkg->GetParameter(2));
+    fInitialCombinedFit->SetParameter(6, fitBkg->GetParameter(3));
+
+    fInitialCombinedFit->SetParLimits(0, 0.0, 1.0e6);
+    fInitialCombinedFit->SetParLimits(1, 2.65, 2.71);
+    fInitialCombinedFit->SetParLimits(2, 0.01, 0.05);
+    fInitialCombinedFit->SetLineStyle(2);
+    fInitialCombinedFit->SetLineColor(kMagenta);
+    TFitResultPtr fitResultInitial = hInvMass->Fit(fInitialCombinedFit, "REBMS0");
+    fInitialCombinedFit->Draw("same");
 
     //============================================================
     // S + B likelihood fit
@@ -154,14 +185,18 @@ void doublePhiOpti5()
     //------------------------------------------------------------
     // Initial parameters
     //------------------------------------------------------------
-    fitFunc->SetParameter(0, 100.0); // Signal yield
-    fitFunc->SetParameter(1, 2.70);  // Mass
-    fitFunc->SetParameter(2, 0.03);  // Width
+    // fitFunc->SetParameter(0, 100.0); // Signal yield
+    // fitFunc->SetParameter(1, 2.70);  // Mass
+    // fitFunc->SetParameter(2, 0.03);  // Width
 
-    fitFunc->SetParameter(3, fitBkg->GetParameter(0));
-    fitFunc->SetParameter(4, fitBkg->GetParameter(1));
-    fitFunc->SetParameter(5, fitBkg->GetParameter(2));
-    fitFunc->SetParameter(6, fitBkg->GetParameter(3));
+    fitFunc->SetParameter(0, fInitialCombinedFit->GetParameter(0)); // Signal yield
+    fitFunc->SetParameter(1, fInitialCombinedFit->GetParameter(1)); // Mass
+    fitFunc->SetParameter(2, fInitialCombinedFit->GetParameter(2)); // Width
+
+    fitFunc->FixParameter(3, fInitialCombinedFit->GetParameter(3));
+    fitFunc->FixParameter(4, fInitialCombinedFit->GetParameter(4));
+    fitFunc->FixParameter(5, fInitialCombinedFit->GetParameter(5));
+    fitFunc->FixParameter(6, fInitialCombinedFit->GetParameter(6));
 
     fitFunc->SetParLimits(0, 0.0, 1.0e6);
     fitFunc->SetParLimits(1, 2.65, 2.75);
@@ -172,7 +207,7 @@ void doublePhiOpti5()
     // L = Poisson(data | S+B)
     //------------------------------------------------------------
 
-    TFitResultPtr fitResultSB = hInvMass->Fit(fitFunc, "RLS");
+    TFitResultPtr fitResultSB = hInvMass->Fit(fitFunc, "RLS0");
 
     if (fitResultSB.Get() == nullptr)
     {
@@ -282,6 +317,7 @@ void doublePhiOpti5()
 
     TCanvas *cInvMass = new TCanvas("cInvMass", "Invariant Mass", 720, 720);
     SetCanvasStyle(cInvMass, 0.15, 0.03, 0.05, 0.15);
+    hInvMass->GetXaxis()->SetRangeUser(2.4, 2.92);
     hInvMass->Draw("pe");
 
     // S+B total fit
@@ -323,12 +359,18 @@ void doublePhiOpti5()
     latex->SetNDC();
     latex->SetTextFont(22);
     latex->SetTextSize(0.03);
-    latex->DrawLatex(0.2, 0.45, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
-    latex->DrawLatex(0.2, 0.40, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
+    latex->DrawLatex(0.2, 0.42, Form("M = %.4f #pm %.4f GeV/c^{2}", massFit, massErr));
+    latex->DrawLatex(0.2, 0.37, Form("#Gamma = %.4f #pm %.4f GeV/c^{2}", widthFit, widthErr));
     // latex->DrawLatex(0.2, 0.35, Form("N_{sig} = %.1f #pm %.1f", signalYield, signalYieldErr));
-    latex->DrawLatex(0.2, 0.35, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
-    latex->DrawLatex(0.2, 0.30, Form("p-value = %.3e", pValue));
-    latex->DrawLatex(0.2, 0.25, Form("Significance (Z) = %.2f #sigma", significance));
+    latex->DrawLatex(0.2, 0.32, Form("#Chi^{2}/NDF = %.2f / %d", fitFunc->GetChisquare(), fitFunc->GetNDF()));
+    latex->DrawLatex(0.2, 0.27, Form("p-value = %.3e", pValue));
+    latex->DrawLatex(0.2, 0.22, Form("Significance (Z) = %.2f #sigma", significance));
+
+    latex->DrawLatex(0.30, 0.88, "LHC26_pass1_skimmed");
+    latex->DrawLatex(0.30, 0.83, "#it{p}_{T}^{#phi#phi} > 9 GeV/#it{c}");
+    latex->DrawLatex(0.30, 0.78, "#Delta#it{M}_{#phi} < 0.005");
+
+    cInvMass->SaveAs("/home/sawan/Storage/check_k892/output/doublePhi/LocalTests/TetraquarkFit/LHC26ThinDataset/InvMass26Skimmed.png");
 }
 
 //==============End of the main code==================

@@ -24,17 +24,18 @@ void buildTemplate()
     bool isINEL = false;
     int rebinFactor = 1; // Keep it 1, since we rebin the histograms in the kstar_sparse.cxx code and want to keep same binning for the inv mass and template.
 
-    const TString kvariation = "";
+    // const TString kvariation = "";
     // const TString kvariation = "_TPC1p5_combined2";
     // const TString kvariation = "_TPC2p5_combined3p5";
     // const TString kvariation = "_DCAvar1";
     // const TString kvariation = "_DCAvar2";
     // const TString kvariation = "_NoPVContributor";
     // const TString kvariation = "_pTDepDCA";
+    const TString kvariation = "_ptDepDCA2";
     //********************************************************************************
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
 
     t2->SetNDC();
@@ -44,8 +45,10 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
+
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/764341.root", "Read"); // pT-Dependent DCA check
     if (fInputFile->IsZombie())
     {
         cerr << "File not found " << endl;
@@ -76,7 +79,7 @@ void buildTemplate()
         return;
     }
 
-    TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
+    TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/764341/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {
@@ -101,7 +104,7 @@ void buildTemplate()
 
         //*************************Create folders********************************************
         TString centRange = Form("%d_%d", multlow, multhigh);
-        TString Cenoutputfolder = (isINEL) ? Form("template/INEL/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh) : Form("template/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh);
+        TString Cenoutputfolder = (isINEL) ? Form("template/INEL/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh) : Form("template/764341/%s/%s/%d-%d%%", kResBkg.c_str(), kvariation.Data(), multlow, multhigh);
 
         if (gSystem->mkdir(Cenoutputfolder, kTRUE))
         {

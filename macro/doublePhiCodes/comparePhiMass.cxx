@@ -1,5 +1,5 @@
 #include <iostream>
-#include "src/style.h"
+#include "../src/style.h"
 
 TFile *OpenFile(const string &path);
 template <typename T>

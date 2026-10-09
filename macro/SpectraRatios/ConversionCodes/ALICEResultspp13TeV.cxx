@@ -141,7 +141,7 @@ void ALICEResultspp13TeV()
         BuildErrorGraphs(d);
     }
 
-    TFile *fOutput = new TFile("pp13TeVALICE.root", "RECREATE");
+    TFile *fOutput = new TFile("pp13TeV_KstarPhi.root", "RECREATE");
 
     for (const auto &d : data)
     {

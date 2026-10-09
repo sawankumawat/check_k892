@@ -17,18 +17,10 @@ void systematicsTable()
         return;
     }
 
-    // ============================================================
-    // Multiplicity classes
-    // ============================================================
-
     vector<int> multLow = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70};
     vector<int> multHigh = {1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
 
     const int nMult = multLow.size();
-
-    // ============================================================
-    // Get first histogram to determine pT binning
-    // ============================================================
 
     TH1D *hFirst =
         (TH1D *)file->Get(
@@ -43,12 +35,6 @@ void systematicsTable()
     }
 
     int nPtBins = hFirst->GetNbinsX();
-
-    // ============================================================
-    // STEP 1
-    //
-    // Calculate multiplicity-averaged uncertainty for every pT bin
-    // ============================================================
 
     vector<double> avgSignal(nPtBins, 0.);
     vector<double> avgTrack(nPtBins, 0.);
@@ -300,4 +286,32 @@ void systematicsTable()
     }
 
     file->Close();
+
+    cout << endl;
+
+    // TFile *fdNdy = new TFile("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/Results.root", "read");
+    TFile *fdNdy = new TFile("/home/sawan/Storage/check_k892/macro/SpectraRatios/K0s_Run3_Results/Sawan/ResultsK0s.root", "read");
+    TGraphErrors *gdNdyStat = (TGraphErrors *)fdNdy->Get("gMeanYieldRun3_stat");
+    TGraphErrors *gdNdySys = (TGraphErrors *)fdNdy->Get("gMeanYieldRun3_sys");
+    TGraphErrors *gdNdySysuncorr = (TGraphErrors *)fdNdy->Get("gMeanYieldRun3_sysuncorr");
+
+    int totalPoints = gdNdyStat->GetN();
+    for (int imult = 0; imult < totalPoints; imult++)
+    {
+        int low = multLow[imult];
+        int high = multHigh[imult];
+
+        double x, y;
+        gdNdyStat->GetPoint(imult, x, y);
+        double statError = gdNdyStat->GetErrorY(imult);
+        double sysError = gdNdySys->GetErrorY(imult);
+        double sysUncorrError = gdNdySysuncorr->GetErrorY(imult);
+
+        cout << "Multiplicity: " << low << "-" << high << "%" << endl;
+        cout << "Mean Yield: " << y << endl;
+        cout << "Statistical Error: " << statError << endl;
+        cout << "Systematic Error: " << sysError << endl;
+        cout << "Uncorrelated Systematic Error: " << sysUncorrError << endl;
+        cout << endl;
+    }
 }

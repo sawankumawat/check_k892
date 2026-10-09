@@ -87,7 +87,7 @@ void SpectraRatio_pTDiffKstarKa()
     fitFcn1->SetParameter(2, 0.493677);
     fitFcn1->SetParameter(3, 0.25);
     fitFcn1->SetParNames("n", "dn/dy", "mass", "T");
-    fitFcn1->SetLineColor(kRed + 1);
+    fitFcn1->SetLineColor(kRed);
     fitFcn1->SetLineStyle(2);
     fitFcn1->SetLineWidth(2);
 
@@ -269,11 +269,13 @@ void SpectraRatio_pTDiffKstarKa()
         // ---------------------------------------------------------
         double kstarYieldHM = hKstar_statHM->GetBinContent(ibin);
         double kstar_stat_errHM = hKstar_statHM->GetBinError(ibin);
-        double kstar_sys_errHM = hKstar_sysUncorrHM->GetBinError(ibin); // uncorrelated systematic error
+        double kstar_sys_UncorrerrHM = hKstar_sysUncorrHM->GetBinError(ibin); // uncorrelated systematic error
+        double kstar_sys_errHM = hKstar_sysHM->GetBinError(ibin);             // total systematic error
 
         double kstarYieldLM = hKstar_statLM->GetBinContent(ibin);
         double kstar_stat_errLM = hKstar_statLM->GetBinError(ibin);
-        double kstar_sys_errLM = hKstar_sysUncorrLM->GetBinError(ibin); // uncorrelated systematic error
+        double kstar_sys_UncorrerrLM = hKstar_sysUncorrLM->GetBinError(ibin); // uncorrelated systematic error
+        double kstar_sys_errLM = hKstar_sysLM->GetBinError(ibin);             // total systematic error
 
         // ---------------------------------------------------------
         // K* bin boundaries
@@ -343,7 +345,7 @@ void SpectraRatio_pTDiffKstarKa()
         // =========================================================
         // 2. SYSTEMATIC UNCERTAINTY
         //
-        // K*   -> uncorrelated systematic
+        // K*   -> total systematic
         // KaonYieldHM -> total systematic
         // =========================================================
 
@@ -366,12 +368,14 @@ void SpectraRatio_pTDiffKstarKa()
         // =========================================================
         double kaon_sysUncorr_errHM = getKaonErr(hKaon_sysUncorrHM, xLow, xHigh);
         double rel_kaon_sysUncorrHM = kaon_sysUncorr_errHM / kaonYieldHM;
+        double rel_kstar_sysUncorrHM = kstar_sys_UncorrerrHM / kstarYieldHM;
 
         double kaon_sysUncorr_errLM = getKaonErr(hKaon_sysUncorrLM, xLow, xHigh);
         double rel_kaon_sysUncorrLM = kaon_sysUncorr_errLM / kaonYieldLM;
+        double rel_kstar_sysUncorrLM = kstar_sys_UncorrerrLM / kstarYieldLM;
 
-        double ratio_sysUncorr_errHM = ratioHM * std::sqrt(rel_kstar_sysHM * rel_kstar_sysHM + rel_kaon_sysUncorrHM * rel_kaon_sysUncorrHM);
-        double ratio_sysUncorr_errLM = ratioLM * std::sqrt(rel_kstar_sysLM * rel_kstar_sysLM + rel_kaon_sysUncorrLM * rel_kaon_sysUncorrLM);
+        double ratio_sysUncorr_errHM = ratioHM * std::sqrt(rel_kstar_sysUncorrHM * rel_kstar_sysUncorrHM + rel_kaon_sysUncorrHM * rel_kaon_sysUncorrHM);
+        double ratio_sysUncorr_errLM = ratioLM * std::sqrt(rel_kstar_sysUncorrLM * rel_kstar_sysUncorrLM + rel_kaon_sysUncorrLM * rel_kaon_sysUncorrLM);
 
         // =========================================================
         // Store
@@ -412,16 +416,21 @@ void SpectraRatio_pTDiffKstarKa()
     hKstarKaRatioHM_stat->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarKaRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hKstarKaRatioHM_stat->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hKstarKaRatioHM_stat->GetYaxis()->SetRangeUser(-0.03, 0.59);
+    hKstarKaRatioHM_stat->GetYaxis()->SetRangeUser(-0.03, 0.53);
     hKstarKaRatioHM_stat->GetXaxis()->SetRangeUser(0.2, 3.0);
-    hKstarKaRatioHM_stat->SetMarkerColor(kRed + 1);
-    hKstarKaRatioHM_stat->SetLineColor(kRed + 1);
+    hKstarKaRatioHM_stat->SetMarkerColor(kRed);
+    hKstarKaRatioHM_stat->SetLineColor(kRed);
     hKstarKaRatioHM_stat->Draw("pe");
     SetHistoQA(hKstarKaRatioHM_sys);
     hKstarKaRatioHM_sys->SetFillStyle(0);
-    hKstarKaRatioHM_sys->SetLineColor(kRed + 1);
-    hKstarKaRatioHM_sys->SetMarkerColor(kRed + 1);
+    hKstarKaRatioHM_sys->SetLineColor(kRed);
+    hKstarKaRatioHM_sys->SetMarkerColor(kRed);
     hKstarKaRatioHM_sys->Draw("e2 same");
+    hKstarKaRatioHM_Uncorr->SetFillStyle(1001);
+    hKstarKaRatioHM_Uncorr->SetFillColorAlpha(kRed, 0.3);
+    hKstarKaRatioHM_Uncorr->SetMarkerStyle(20);
+    hKstarKaRatioHM_Uncorr->SetMarkerColor(kRed);
+    hKstarKaRatioHM_Uncorr->Draw("e2 same");
 
     SetHistoQA(hKstarKaRatioLM_stat);
     SetHistoQA(hKstarKaRatioLM_sys);
@@ -434,14 +443,125 @@ void SpectraRatio_pTDiffKstarKa()
     hKstarKaRatioLM_sys->SetLineColor(kBlue + 1);
     hKstarKaRatioLM_sys->SetMarkerColor(kBlue + 1);
     hKstarKaRatioLM_sys->Draw("e2 same");
+    hKstarKaRatioLM_Uncorr->SetFillStyle(1001);
+    hKstarKaRatioLM_Uncorr->SetFillColorAlpha(kBlue + 1, 0.3);
+    hKstarKaRatioLM_Uncorr->SetMarkerStyle(21);
+    hKstarKaRatioLM_Uncorr->SetMarkerColor(kBlue + 1);
+    hKstarKaRatioLM_Uncorr->Draw("e2 same");
 
-    TLegend *legendRatio = new TLegend(0.64, 0.78, 0.80, 0.92);
+    // Plot EPOS results
+    // First to check if the multiplicity values are compatible or not
+    TFile *fEPOS = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
+    TGraphErrors *gEPOS_KstardNdy_UrQMDOff = (TGraphErrors *)fEPOS->Get("g_dNdy_opt0");
+    int totalPoints = gEPOS_KstardNdy_UrQMDOff->GetN();
+    for (int i = 0; i < totalPoints; ++i)
+    {
+        double x, y;
+        gEPOS_KstardNdy_UrQMDOff->GetPoint(i, x, y);
+        cout << "Multiplicity: " << x << ", EPOS K* dN/dy: " << y << endl;
+    }
+
+    // Now open the spectra file in EPOS
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_Spectra.root");
+    TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
+    TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent0");
+
+    TH1F *hEPOS_UrQMDOFF_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
+    TH1F *hEPOS_UrQMDOFF_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
+    TH1F *hEPOS_UrQMDON_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
+    TH1F *hEPOS_UrQMDON_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
+
+    TH1F *hEPOS_UrQMDOFF_KstarKaRatioHM = (TH1F *)hEPOS_UrQMDOFF_KstarHM->Clone("hEPOS_UrQMDOFF_KstarKaRatioHM");
+    hEPOS_UrQMDOFF_KstarKaRatioHM->Divide(hEPOS_UrQMDOFF_KaonHM);
+    hEPOS_UrQMDOFF_KstarKaRatioHM->Scale(0.5); // Since kstar was average but not kaon
+    TH1F *hEPOS_UrQMDOFF_KstarKaRatioLM = (TH1F *)hEPOS_UrQMDOFF_KstarLM->Clone("hEPOS_UrQMDOFF_KstarKaRatioLM");
+    hEPOS_UrQMDOFF_KstarKaRatioLM->Divide(hEPOS_UrQMDOFF_KaonLM);
+    hEPOS_UrQMDOFF_KstarKaRatioLM->Scale(0.5); // Since kstar was average but not kaon
+
+    TH1F *hEPOS_UrQMDON_KstarKaRatioHM = (TH1F *)hEPOS_UrQMDON_KstarHM->Clone("hEPOS_UrQMDON_KstarKaRatioHM");
+    hEPOS_UrQMDON_KstarKaRatioHM->Divide(hEPOS_UrQMDON_KaonHM);
+    hEPOS_UrQMDON_KstarKaRatioHM->Scale(0.5); // Since kstar was average but not kaon
+    TH1F *hEPOS_UrQMDON_KstarKaRatioLM = (TH1F *)hEPOS_UrQMDON_KstarLM->Clone("hEPOS_UrQMDON_KstarKaRatioLM");
+    hEPOS_UrQMDON_KstarKaRatioLM->Divide(hEPOS_UrQMDON_KaonLM);
+    hEPOS_UrQMDON_KstarKaRatioLM->Scale(0.5); // Since kstar was average but not kaon
+
+    hEPOS_UrQMDOFF_KstarKaRatioHM->Smooth(2);
+    hEPOS_UrQMDOFF_KstarKaRatioLM->Smooth(2);
+    hEPOS_UrQMDON_KstarKaRatioHM->Smooth(2);
+    hEPOS_UrQMDON_KstarKaRatioLM->Smooth(2);
+
+    // Build a line + band that extend to the outer bin edges
+    auto makeCurve = [](TH1 *h, Color_t col, Style_t lstyle, TGraph *&gLine, TGraphErrors *&gBand)
+    {
+        gLine = new TGraph();
+        gBand = new TGraphErrors();
+        const int n = h->GetNbinsX();
+
+        // first/last filled bins
+        int first = -1, last = -1;
+        for (int i = 1; i <= n; ++i)
+            if (h->GetBinContent(i) > 0)
+            {
+                if (first < 0)
+                    first = i;
+                last = i;
+            }
+        if (first < 0)
+            return;
+
+        auto add = [&](double x, int ibin)
+        {
+            gLine->SetPoint(gLine->GetN(), x, h->GetBinContent(ibin));
+            int k = gBand->GetN();
+            gBand->SetPoint(k, x, h->GetBinContent(ibin));
+            gBand->SetPointError(k, 0, h->GetBinError(ibin));
+        };
+
+        add(h->GetXaxis()->GetXmin(), first); // left edge
+        for (int i = first; i <= last; ++i)
+            if (h->GetBinContent(i) > 0)
+                add(h->GetBinCenter(i), i);  // bin centers
+        add(h->GetXaxis()->GetXmax(), last); // right edge (10 GeV/c)
+
+        gLine->SetLineColor(col);
+        gLine->SetLineWidth(2);
+        gLine->SetLineStyle(lstyle);
+        gBand->SetFillColorAlpha(col, 0.3);
+        gBand->SetLineColor(col);
+    };
+
+    // Create graphs for the different datasets
+    TGraph *gHM, *gLM;
+    TGraphErrors *bHM, *bLM;
+    makeCurve(hEPOS_UrQMDOFF_KstarKaRatioHM, kRed + 1, 1, gHM, bHM);
+    makeCurve(hEPOS_UrQMDOFF_KstarKaRatioLM, kBlue + 1, 1, gLM, bLM);
+    bHM->Draw("3 same");
+    bLM->Draw("3 same"); // bands
+    gHM->Draw("L same");
+    gLM->Draw("L same"); // lines
+
+    TGraph *gHM_ON, *gLM_ON;
+    TGraphErrors *bHM_ON, *bLM_ON;
+    makeCurve(hEPOS_UrQMDON_KstarKaRatioHM, kRed + 1, 7, gHM_ON, bHM_ON);
+    makeCurve(hEPOS_UrQMDON_KstarKaRatioLM, kBlue + 1, 7, gLM_ON, bLM_ON);
+    bHM_ON->Draw("3 same");
+    bLM_ON->Draw("3 same"); // bands
+    gHM_ON->Draw("L same");
+    gLM_ON->Draw("L same"); // lines
+
+    TLegend *legendRatio = new TLegend(0.5, 0.04, 0.80, 0.36);
     legendRatio->SetBorderSize(0);
     legendRatio->SetFillStyle(0);
     legendRatio->SetTextFont(42);
-    legendRatio->SetTextSize(0.05);
+    legendRatio->SetTextSize(0.04);
     legendRatio->AddEntry(hKstarKaRatioHM_stat, "FT0M: 0-1%", "p");
     legendRatio->AddEntry(hKstarKaRatioLM_stat, "FT0M: 70-100%", "p");
+    legendRatio->AddEntry(gHM, "EPOS UrQMD OFF: 0-1%", "l");
+    legendRatio->AddEntry(gLM, "EPOS UrQMD OFF: 70-100%", "l");
+    legendRatio->AddEntry(gHM_ON, "EPOS UrQMD ON: 0-1%", "l");
+    legendRatio->AddEntry(gLM_ON, "EPOS UrQMD ON: 70-100%", "l");
     legendRatio->Draw();
 
     lat.SetTextSize(0.05);
@@ -466,21 +586,44 @@ void SpectraRatio_pTDiffKstarKa()
     hDoubleRatioStat->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetYaxis()->SetRangeUser(0.35, 1.29);
     hDoubleRatioStat->GetXaxis()->SetRangeUser(0.2, 3.0);
-    hDoubleRatioStat->SetMarkerColor(kRed + 1);
-    hDoubleRatioStat->SetLineColor(kRed + 1);
+    hDoubleRatioStat->SetMarkerColor(kRed);
+    hDoubleRatioStat->SetLineColor(kRed);
     hDoubleRatioStat->GetYaxis()->SetNdivisions(505);
     hDoubleRatioStat->Draw("pe");
     SetHistoQA(hDoubleRatioSys);
     hDoubleRatioSys->SetFillStyle(0);
-    hDoubleRatioSys->SetLineColor(kRed + 1);
-    hDoubleRatioSys->SetMarkerColor(kRed + 1);
+    hDoubleRatioSys->SetLineColor(kRed);
+    hDoubleRatioSys->SetMarkerColor(kRed);
     hDoubleRatioSys->Draw("e2 same");
 
     TLine *line = new TLine(0.2, 1.0, 3.0, 1.0);
-    line->SetLineColor(kBlack);
+    line->SetLineColor(kGray + 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);
     line->Draw();
+
+    TH1F *hRatio_HM_LM = (TH1F *)hEPOS_UrQMDOFF_KstarKaRatioHM->Clone("hRatio_HM_LM");
+    hRatio_HM_LM->Divide(hEPOS_UrQMDOFF_KstarKaRatioLM);
+
+    TGraph *gRatio_HM_LM = new TGraph(hRatio_HM_LM);
+
+    TH1F *hRatio_HM_LM_ON = (TH1F *)hEPOS_UrQMDON_KstarKaRatioHM->Clone("hRatio_HM_LM_ON");
+    hRatio_HM_LM_ON->Divide(hEPOS_UrQMDON_KstarKaRatioLM);
+
+    TGraph *gRatio_HM_LM_ON = new TGraph(hRatio_HM_LM_ON);
+
+    TGraph *gRatio_HM_LM_On, *gRatio_HM_LM_Off;
+    TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
+    makeCurve(hRatio_HM_LM, kRed + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
+    makeCurve(hRatio_HM_LM_ON, kBlue + 1, 1, gRatio_HM_LM_On, bRatio_HM_LM_On);
+
+    bRatio_HM_LM_Off->Draw("3 same");
+    bRatio_HM_LM_On->Draw("3 same"); // bands
+
+    gRatio_HM_LM_Off->SetLineStyle(7);
+    gRatio_HM_LM_Off->Draw("L same");
+    gRatio_HM_LM_On->SetLineStyle(1);
+    gRatio_HM_LM_On->Draw("L same"); // lines
 
     cRatio->SaveAs("Plots/KstarKaRatio.png");
 
@@ -516,9 +659,7 @@ void SpectraRatio_pTDiffKstarKa()
         double pt = hDoubleRatioSignificance->GetBinCenter(ibin);
         double significance = hDoubleRatioSignificance->GetBinContent(ibin);
 
-        cout << "pT = " << pt
-             << " GeV/c, significance = "
-             << significance << endl;
+        cout << "pT = " << pt << " GeV/c, significance = " << significance << endl;
     }
 }
 

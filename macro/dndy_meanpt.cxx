@@ -76,10 +76,12 @@ void dndy_meanpt()
             double absUnc = relUnc * yield;
 
             // dN/dy uncertainty (delta_dNdy = delta_yield * ptBinWidth + yield * delta_ptBinWidth, but delta_ptBinWidth is 0, so delta_dNdy = YieldUncertainty * ptBinWidth)
-            dndy_uncorr += TMath::Power(absUnc * ptBinWidth, 2);
+            // dndy_uncorr += TMath::Power(absUnc * ptBinWidth, 2);
+            dndy_uncorr += TMath::Power(absUnc, 2); // It already had pT bin width in the yield
 
             // <pT> uncertainty (Note that in <pt> error calculation in the formula A/B both A and B are correlated, so there is minus sign in the formula. It is calculated as error = (deltaA * B - A * deltaB)/B^2, where A = sum(pt * yield * ptBinWidth), B = sum(yield * ptBinWidth))
             double contrib = absUnc * ptBinWidth * (pt - meanpt) / TotalYield;
+            // double contrib = absUnc * (pt - meanpt) / TotalYield; // It already had pT bin width in the yield
             meanpt_unc2 += contrib * contrib;
         }
 

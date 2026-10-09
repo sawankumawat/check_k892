@@ -26,7 +26,7 @@ void kstar_sparse()
     // string kbkg = "pol2";
     // string kbkg = "pol3WoChebyshev";
 
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
@@ -108,7 +108,7 @@ void kstar_sparse()
         return;
     }
 
-    TFile *fTemplateFile = (isINEL) ? TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ") : TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
+    TFile *fTemplateFile = (isINEL) ? TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ") : TFile::Open(Form("template/buildTemplate/template/764341/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
 
     // Form Norm range variations the normalization range in the template was also shifted
     //  TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s_Norm2.root", kResBkg.c_str(), kvariation.c_str()), "READ");

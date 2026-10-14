@@ -26,9 +26,12 @@ TFile *OpenFile(const string &path)
 
 void SpectraRatio_pTDiffKstarKshort()
 {
+    bool showEPOS = true;
     gStyle->SetOptStat(0);
+
     TFile *fKstar = OpenFile("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/KstarSpectra.root");
-    TFile *fKshort = OpenFile("K0s_Run3_Results/Spectra_K0Short.root");
+    TFile *fKshort = OpenFile("K0s_Run3_Results/Spectra_K0Short.root"); // Run 3
+    // TFile *fKshort = OpenFile("K0s_Run2_Results/K0s_Run2_Spectra.root"); // Run 2
 
     TH1F *hKstar_statHM = (TH1F *)fKstar->Get("SpectraStat_0_1");
     TH1F *hKstar_sysHM = (TH1F *)fKstar->Get("SpectraSys_0_1");
@@ -38,6 +41,7 @@ void SpectraRatio_pTDiffKstarKshort()
     TH1F *hKstar_sysLM = (TH1F *)fKstar->Get("SpectraSys_70_100");
     TH1F *hKstar_sysUncorrLM = (TH1F *)fKstar->Get("SpectraUncorrSys_70_100");
 
+    // Run 3 K0s results
     TH1F *hKshort_statHM = (TH1F *)fKshort->Get("hK0s_0_1");
     TH1F *hKshort_sysHM = (TH1F *)fKshort->Get("hK0sSyst_0_1");
     TH1F *hKshort_sysUncorrHM = (TH1F *)fKshort->Get("hK0sSyst_0_1"); // Does not have uncorrelated systematic, so using total systematic
@@ -46,13 +50,57 @@ void SpectraRatio_pTDiffKstarKshort()
     TH1F *hKshort_sysLM = (TH1F *)fKshort->Get("hK0sSyst_70_100");
     TH1F *hKshort_sysUncorrLM = (TH1F *)fKshort->Get("hK0sSyst_70_100"); // Does not have uncorrelated systematic, so using total systematic
 
+    // ////Run 2 K0s results
+    // TH1F *hKshortHM = (TH1F *)fKshort->Get("Table 1/Hist1D_y1");
+    // TH1F *hKshort_statHM = (TH1F *)fKshort->Get("Table 1/Hist1D_y1_e1");
+    // TH1F *hKshort_sysHM = (TH1F *)fKshort->Get("Table 1/Hist1D_y1_e2");
+    // TH1F *hKshort_sysUncorrHM = (TH1F *)fKshort->Get("Table 1/Hist1D_y1_e3");
+
+    // TH1F *hKshortLM = (TH1F *)fKshort->Get("Table 1/Hist1D_y10");
+    // TH1F *hKshort_statLM = (TH1F *)fKshort->Get("Table 1/Hist1D_y10_e1");
+    // TH1F *hKshort_sysLM = (TH1F *)fKshort->Get("Table 1/Hist1D_y10_e2");
+    // TH1F *hKshort_sysUncorrLM = (TH1F *)fKshort->Get("Table 1/Hist1D_y10_e3");
+
+    // for (int ibin = 1; ibin <= hKshortLM->GetNbinsX() - 1; ++ibin)
+    // {
+    //     double binContent = hKshortLM->GetBinContent(ibin);
+    //     double binErrorStat = hKshort_statLM->GetBinContent(ibin);
+    //     double binErrorSys = hKshort_sysLM->GetBinContent(ibin);
+    //     double binErrorSysUncorr = hKshort_sysUncorrLM->GetBinContent(ibin);
+
+    //     hKshort_statLM->SetBinContent(ibin, binContent);
+    //     hKshort_statLM->SetBinError(ibin, binErrorStat);
+
+    //     hKshort_sysLM->SetBinContent(ibin, binContent);
+    //     hKshort_sysLM->SetBinError(ibin, binErrorSys);
+
+    //     hKshort_sysUncorrLM->SetBinContent(ibin, binContent);
+    //     hKshort_sysUncorrLM->SetBinError(ibin, binErrorSysUncorr);
+
+    //     double binContentHM = hKshortHM->GetBinContent(ibin);
+    //     double binErrorStatHM = hKshort_statHM->GetBinContent(ibin);
+    //     double binErrorSysHM = hKshort_sysHM->GetBinContent(ibin);
+    //     double binErrorSysUncorrHM = hKshort_sysUncorrHM->GetBinContent(ibin);
+
+    //     hKshort_statHM->SetBinContent(ibin, binContentHM);
+    //     hKshort_statHM->SetBinError(ibin, binErrorStatHM);
+
+    //     hKshort_sysHM->SetBinContent(ibin, binContentHM);
+    //     hKshort_sysHM->SetBinError(ibin, binErrorSysHM);
+
+    //     hKshort_sysUncorrHM->SetBinContent(ibin, binContentHM);
+    //     hKshort_sysUncorrHM->SetBinError(ibin, binErrorSysUncorrHM);
+
+    //     cout << "K0s bin " << ibin << ", yield LM: " << binContent << ", yield HM: " << binContentHM << endl;
+    // }
+
     cout << "Number of kaon bins in HM: " << hKshort_statHM->GetNbinsX() << endl;
     cout << "Number of kaon bins in LM: " << hKshort_statLM->GetNbinsX() << endl;
 
     int TotalBinsKaon = hKshort_statHM->GetNbinsX();
 
     TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 10.0, 4);
-    fitFcn1->SetParameter(0, 6.6);
+    fitFcn1->SetParameter(0, 4.6);
     fitFcn1->SetParameter(1, 0.2);
     fitFcn1->SetParameter(2, 0.493677);
     fitFcn1->SetParameter(3, 0.18);
@@ -62,7 +110,7 @@ void SpectraRatio_pTDiffKstarKshort()
     fitFcn1->SetLineWidth(2);
 
     TF1 *fitFcn2 = new TF1("fitfunc2", FuncLavy, 0.0, 10.0, 4);
-    fitFcn2->SetParameter(0, 6.6);
+    fitFcn2->SetParameter(0, 4.6);
     fitFcn2->SetParameter(1, 0.2);
     fitFcn2->SetParameter(2, 0.493677);
     fitFcn2->SetParameter(3, 0.18);
@@ -77,11 +125,23 @@ void SpectraRatio_pTDiffKstarKshort()
     Double_t hiprecision = 0.5;
     Option_t *opt = "RI0+";
     TString logfilename = "log.root";
-    Double_t minfit = 0;
+    Double_t minfit = 0.1;
     Double_t maxfit = 10;
 
     TH1 *hout = YieldMean(hKshort_statHM, hKshort_sysHM, fitFcn1, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
     TH1 *hout2 = YieldMean(hKshort_statLM, hKshort_sysLM, fitFcn2, min, max, loprecision, hiprecision, opt, logfilename, minfit, maxfit);
+
+    cout << "Fit parameters for HM: " << endl;
+    for (int i = 0; i < fitFcn1->GetNpar(); ++i)
+    {
+        cout << "Parameter " << i << ": " << fitFcn1->GetParameter(i) << endl;
+    }
+
+    cout << "Fit parameters for LM: " << endl;
+    for (int i = 0; i < fitFcn2->GetNpar(); ++i)
+    {
+        cout << "Parameter " << i << ": " << fitFcn2->GetParameter(i) << endl;
+    }
 
     fitFcn1->SetNpx(500);
     fitFcn2->SetNpx(500);
@@ -91,68 +151,68 @@ void SpectraRatio_pTDiffKstarKshort()
     lat.SetTextSize(0.03);
     lat.SetTextFont(42);
 
-    // TCanvas *c1 = new TCanvas("c1", "HM histograms", 720, 720);
-    // SetCanvasStyle(c1, 0.18, 0.06, 0.06, 0.13);
-    // hKstar_statHM->SetMarkerStyle(21);
-    // hKstar_statHM->SetMarkerSize(1.3);
-    // hKstar_statHM->SetMaximum(5.0);
-    // hKstar_statHM->SetMinimum(9e-5);
-    // hKstar_statHM->GetXaxis()->SetRangeUser(0, 10.0);
-    // hKstar_statHM->Draw("pe");
-    // SetHistoQA(hKshort_statHM);
-    // gPad->SetLogy(1);
-    // hKshort_statHM->SetMarkerColor(kBlue + 1);
-    // hKshort_statHM->SetLineColor(kBlue + 1);
-    // hKshort_statHM->SetMarkerSize(1.3);
-    // hKshort_statHM->Draw("pe same");
-    // fitFcn1->Draw("same");
+    TCanvas *c1 = new TCanvas("c1", "HM histograms", 720, 720);
+    SetCanvasStyle(c1, 0.18, 0.06, 0.06, 0.13);
+    hKstar_statHM->SetMarkerStyle(21);
+    hKstar_statHM->SetMarkerSize(1.3);
+    hKstar_statHM->SetMaximum(5.0);
+    hKstar_statHM->SetMinimum(9e-5);
+    hKstar_statHM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statHM->Draw("pe");
+    SetHistoQA(hKshort_statHM);
+    gPad->SetLogy(1);
+    hKshort_statHM->SetMarkerColor(kBlue + 1);
+    hKshort_statHM->SetLineColor(kBlue + 1);
+    hKshort_statHM->SetMarkerSize(1.3);
+    hKshort_statHM->Draw("pe same");
+    fitFcn1->Draw("same");
 
-    // TLegend *legend = new TLegend(0.7, 0.7, 0.80, 0.92);
-    // legend->SetBorderSize(0);
-    // legend->SetFillStyle(0);
-    // legend->SetTextFont(42);
-    // legend->SetTextSize(0.03);
-    // legend->SetHeader("FT0M: 0-1%");
-    // legend->AddEntry(hKstar_statHM, "K*(892)^{0}", "p");
-    // legend->AddEntry(hKshort_statHM, "K^{0}_{S}", "p");
-    // legend->AddEntry(fitFcn1, "Levy-Tsallis", "l");
-    // legend->Draw();
+    TLegend *legend = new TLegend(0.7, 0.7, 0.80, 0.92);
+    legend->SetBorderSize(0);
+    legend->SetFillStyle(0);
+    legend->SetTextFont(42);
+    legend->SetTextSize(0.03);
+    legend->SetHeader("FT0M: 0-1%");
+    legend->AddEntry(hKstar_statHM, "K*(892)^{0}", "p");
+    legend->AddEntry(hKshort_statHM, "K^{0}_{S}", "p");
+    legend->AddEntry(fitFcn1, "Levy-Tsallis", "l");
+    legend->Draw();
 
-    // lat.DrawLatex(0.45, 0.89, "ALICE");
-    // lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
-    // lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.45, 0.89, "ALICE");
+    lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
+    lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
     // c1->SaveAs("Plots/KstarK0sSpectra_HM.png");
 
-    // TCanvas *c2 = new TCanvas("c2", "LM histograms", 720, 720);
-    // SetCanvasStyle(c2, 0.18, 0.06, 0.06, 0.13);
-    // hKstar_statLM->SetMarkerStyle(21);
-    // hKstar_statLM->SetMarkerSize(1.3);
-    // hKstar_statLM->SetMaximum(0.7);
-    // hKstar_statLM->SetMinimum(2e-6);
-    // hKstar_statLM->GetXaxis()->SetRangeUser(0, 10.0);
-    // hKstar_statLM->Draw("pe");
-    // SetHistoQA(hKshort_statLM);
-    // gPad->SetLogy(1);
-    // hKshort_statLM->SetMarkerColor(kBlue + 1);
-    // hKshort_statLM->SetLineColor(kBlue + 1);
-    // hKshort_statLM->SetMarkerSize(1.3);
-    // hKshort_statLM->Draw("pe same");
-    // fitFcn2->Draw("same");
+    TCanvas *c2 = new TCanvas("c2", "LM histograms", 720, 720);
+    SetCanvasStyle(c2, 0.18, 0.06, 0.06, 0.13);
+    hKstar_statLM->SetMarkerStyle(21);
+    hKstar_statLM->SetMarkerSize(1.3);
+    hKstar_statLM->SetMaximum(0.7);
+    hKstar_statLM->SetMinimum(2e-6);
+    hKstar_statLM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statLM->Draw("pe");
+    SetHistoQA(hKshort_statLM);
+    gPad->SetLogy(1);
+    hKshort_statLM->SetMarkerColor(kBlue + 1);
+    hKshort_statLM->SetLineColor(kBlue + 1);
+    hKshort_statLM->SetMarkerSize(1.3);
+    hKshort_statLM->Draw("pe same");
+    fitFcn2->Draw("same");
 
-    // TLegend *legend2 = new TLegend(0.7, 0.7, 0.80, 0.92);
-    // legend2->SetBorderSize(0);
-    // legend2->SetFillStyle(0);
-    // legend2->SetTextFont(42);
-    // legend2->SetTextSize(0.03);
-    // legend2->SetHeader("FT0M: 70-100%");
-    // legend2->AddEntry(hKstar_statLM, "K*(892)^{0}", "p");
-    // legend2->AddEntry(hKshort_statLM, "K^{0}_{S}", "p");
-    // legend2->AddEntry(fitFcn2, "Levy-Tsallis", "l");
-    // legend2->Draw();
+    TLegend *legend2 = new TLegend(0.7, 0.7, 0.80, 0.92);
+    legend2->SetBorderSize(0);
+    legend2->SetFillStyle(0);
+    legend2->SetTextFont(42);
+    legend2->SetTextSize(0.03);
+    legend2->SetHeader("FT0M: 70-100%");
+    legend2->AddEntry(hKstar_statLM, "K*(892)^{0}", "p");
+    legend2->AddEntry(hKshort_statLM, "K^{0}_{S}", "p");
+    legend2->AddEntry(fitFcn2, "Levy-Tsallis", "l");
+    legend2->Draw();
 
-    // lat.DrawLatex(0.45, 0.89, "ALICE");
-    // lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
-    // lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.45, 0.89, "ALICE");
+    lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
+    lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
     // c2->SaveAs("Plots/KstarK0sSpectra_LM.png");
 
     TH1F *hKstarK0sRatioHM_stat = (TH1F *)hKstar_statHM->Clone("hKstarK0sRatioHM_stat");
@@ -447,7 +507,7 @@ void SpectraRatio_pTDiffKstarKshort()
     hKstarK0sRatioHM_Uncorr->SetMarkerStyle(20);
     hKstarK0sRatioHM_Uncorr->SetMarkerColor(kRed + 1);
     hKstarK0sRatioHM_Uncorr->SetFillColorAlpha(kRed + 1, 0.35);
-    hKstarK0sRatioHM_Uncorr->Draw("e2 same");
+    // hKstarK0sRatioHM_Uncorr->Draw("e2 same");
 
     SetHistoQA(hKstarK0sRatioLM_stat);
     SetHistoQA(hKstarK0sRatioLM_sys);
@@ -464,10 +524,10 @@ void SpectraRatio_pTDiffKstarKshort()
     hKstarK0sRatioLM_Uncorr->SetMarkerStyle(21);
     hKstarK0sRatioLM_Uncorr->SetMarkerColor(kBlue + 1);
     hKstarK0sRatioLM_Uncorr->SetFillColorAlpha(kBlue + 1, 0.35);
-    hKstarK0sRatioLM_Uncorr->Draw("e2 same");
+    // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_Spectra.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026.root");
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
@@ -610,10 +670,13 @@ void SpectraRatio_pTDiffKstarKshort()
     TGraphErrors *bHM, *bLM;
     makeCurve(hEPOS_UrQMDOFF_KstarK0sRatioHM, kRed + 1, 1, gHM, bHM);
     makeCurve(hEPOS_UrQMDOFF_KstarK0sRatioLM, kBlue + 1, 1, gLM, bLM);
-    bHM->Draw("3 same");
-    bLM->Draw("3 same"); // bands
-    gHM->Draw("L same");
-    gLM->Draw("L same"); // lines
+    if (showEPOS)
+    {
+        bHM->Draw("3 same");
+        bLM->Draw("3 same"); // bands
+        gHM->Draw("L same");
+        gLM->Draw("L same"); // lines
+    }
 
     // ============================================================
     // UrQMD ON K* / K0s ratio using pT-integrated bins
@@ -691,12 +754,15 @@ void SpectraRatio_pTDiffKstarKshort()
     TGraphErrors *bHM_UrQMDON, *bLM_UrQMDON;
     makeCurve(hEPOS_UrQMDON_KstarK0sRatioHM, kRed + 1, 1, gHM_UrQMDON, bHM_UrQMDON);
     makeCurve(hEPOS_UrQMDON_KstarK0sRatioLM, kBlue + 1, 1, gLM_UrQMDON, bLM_UrQMDON);
-    bHM_UrQMDON->Draw("3 same");
-    bLM_UrQMDON->Draw("3 same"); // bands
-    gHM_UrQMDON->SetLineStyle(7);
-    gLM_UrQMDON->SetLineStyle(7);
-    gHM_UrQMDON->Draw("L same");
-    gLM_UrQMDON->Draw("L same"); // lines
+    if (showEPOS)
+    {
+        bHM_UrQMDON->Draw("3 same");
+        bLM_UrQMDON->Draw("3 same"); // bands
+        gHM_UrQMDON->SetLineStyle(7);
+        gLM_UrQMDON->SetLineStyle(7);
+        gHM_UrQMDON->Draw("L same");
+        gLM_UrQMDON->Draw("L same"); // lines
+    }
 
     TLegend *legendRatio = new TLegend(0.5, 0.04, 0.80, 0.36);
     legendRatio->SetBorderSize(0);
@@ -705,10 +771,13 @@ void SpectraRatio_pTDiffKstarKshort()
     legendRatio->SetTextSize(0.04);
     legendRatio->AddEntry(hKstarK0sRatioHM_stat, "FT0M: 0-1%", "p");
     legendRatio->AddEntry(hKstarK0sRatioLM_stat, "FT0M: 70-100%", "p");
-    legendRatio->AddEntry(gHM, "EPOS UrQMD OFF: 0-1%", "l");
-    legendRatio->AddEntry(gLM, "EPOS UrQMD OFF: 70-100%", "l");
-    legendRatio->AddEntry(gHM_UrQMDON, "EPOS UrQMD ON: 0-1%", "l");
-    legendRatio->AddEntry(gLM_UrQMDON, "EPOS UrQMD ON: 70-100%", "l");
+    if (showEPOS)
+    {
+        legendRatio->AddEntry(gHM, "EPOS UrQMD OFF: 0-1%", "l");
+        legendRatio->AddEntry(gLM, "EPOS UrQMD OFF: 70-100%", "l");
+        legendRatio->AddEntry(gHM_UrQMDON, "EPOS UrQMD ON: 0-1%", "l");
+        legendRatio->AddEntry(gLM_UrQMDON, "EPOS UrQMD ON: 70-100%", "l");
+    }
     legendRatio->Draw();
 
     lat.SetTextSize(0.05);
@@ -716,6 +785,7 @@ void SpectraRatio_pTDiffKstarKshort()
     lat.DrawLatex(0.22, 0.83, "|y| < 0.5");
     lat.DrawLatex(0.22, 0.76, "pp #sqrt{#it{s}} = 13.6 TeV");
     cRatio->cd(2);
+    gPad->SetGridy();
     TH1F *hDoubleRatioStat = (TH1F *)hKstarK0sRatioHM_stat->Clone("hDoubleRatioStat");
     hDoubleRatioStat->Divide(hKstarK0sRatioLM_stat);
     TH1F *hDoubleRatioSys = (TH1F *)hKstarK0sRatioHM_Uncorr->Clone("hDoubleRatioSys");
@@ -751,11 +821,14 @@ void SpectraRatio_pTDiffKstarKshort()
     TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
     makeCurve(hRatio_HM_LM, kRed + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
     makeCurve(hRatio_HM_LM_ON, kBlue + 1, 1, gRatio_HM_LM_On, bRatio_HM_LM_On);
-    bRatio_HM_LM_Off->Draw("3 same");
-    bRatio_HM_LM_On->Draw("3 same"); // bands
-    gRatio_HM_LM_Off->SetLineStyle(7);
-    gRatio_HM_LM_Off->Draw("L same");
-    gRatio_HM_LM_On->Draw("L same"); // lines
+    if (showEPOS)
+    {
+        bRatio_HM_LM_Off->Draw("3 same");
+        bRatio_HM_LM_On->Draw("3 same"); // bands
+        gRatio_HM_LM_Off->SetLineStyle(7);
+        gRatio_HM_LM_Off->Draw("L same");
+        gRatio_HM_LM_On->Draw("L same"); // lines
+    }
 
     TLine *line = new TLine(0.0, 1.0, 10.0, 1.0);
     line->SetLineColor(kGray + 1);

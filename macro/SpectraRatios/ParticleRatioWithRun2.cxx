@@ -53,7 +53,7 @@ void ParticleRatioWithRun2()
     TFile *fPiKp = OpenFile("ConversionCodes/ppRun3_PiKpHEP.root");
 
     TFile *fKstarRun2 = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
-    TFile *fPhi = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
+    TFile *fPhiRun2 = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
     TFile *fChKstar = OpenFile("ConversionCodes/pp13TeV_ChKstar.root");
     TFile *fMultStrange = OpenFile("ConversionCodes/pp13TeV_MultStrange.root");
     TFile *fXiStarSigma = OpenFile("ConversionCodes/pp13TeV_XiStarSigma.root");
@@ -63,13 +63,14 @@ void ParticleRatioWithRun2()
     TFile *fLambda1520 = OpenFile("LambdaRun3/Sawan/ResultsLambda1520.root");
     TFile *fRho = OpenFile("Rho_Run3_Results/Sawan/ResultsRho.root");
     TFile *fKshortRun3 = OpenFile("K0s_Run3_Results/Sawan/ResultsK0s.root");
+    TFile *fPhiRun3 = OpenFile("PhiResults/Sawan/ResultsPhi.root");
 
     // ALICE Run2 results
     TFile *fpp13TeV = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
     TFile *fpp7TeV = OpenFile("ConversionCodes/pp7TeVALICE.root");
 
-    TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3];
-    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3];
+    TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3], gMPtPhiRun3[3];
+    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3], *gMYieldPhiRun3[3];
 
     TGraphErrors *gMPtKshortRun3[3], *gMYieldKshortRun3[3];
 
@@ -88,6 +89,9 @@ void ParticleRatioWithRun2()
         gMPtKstar[i] = GetGraph(fKstar, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", suffix.c_str()));
 
+        gMPtPhiRun3[i] = GetGraph(fPhiRun3, Form("gMeanpTRun3%s", suffix.c_str()));
+        gMYieldPhiRun3[i] = GetGraph(fPhiRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
+
         gKstar_MeanpT_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanpT%s", suffix.c_str()));
         gKstar_Yield_13TeV[i] = GetGraph(fpp13TeV, Form("gKstar_MeanYield%s", suffix.c_str()));
 
@@ -100,7 +104,7 @@ void ParticleRatioWithRun2()
         // gMPtProton[i] = GetGraph(fPiKp, Form("gProton_MeanpT%s", suffix.c_str()));
 
         gMPtKstarRun2[i] = GetGraph(fKstarRun2, Form("gKstar_MeanpT%s", suffix.c_str()));
-        gMPtPhiRun2[i] = GetGraph(fPhi, Form("gPhi_MeanpT%s", suffix.c_str()));
+        gMPtPhiRun2[i] = GetGraph(fPhiRun2, Form("gPhi_MeanpT%s", suffix.c_str()));
         gMPtChKstarRun2[i] = GetGraph(fChKstar, Form("gChKstar_MeanpT%s", suffix.c_str()));
         gMPtKshortRun2[i] = GetGraph(fMultStrange, Form("gKshort_MeanpT%s", suffix.c_str()));
         gMPtLambdaRun2[i] = GetGraph(fMultStrange, Form("gLambda_MeanpT%s", suffix.c_str()));
@@ -119,7 +123,7 @@ void ParticleRatioWithRun2()
         // gMYieldProton[i] = GetGraph(fPiKp, Form("gProton_MeanYield%s", suffix.c_str()));
 
         gMYieldKstarRun2[i] = GetGraph(fKstarRun2, Form("gKstar_MeanYield%s", suffix.c_str()));
-        gMYieldPhiRun2[i] = GetGraph(fPhi, Form("gPhi_MeanYield%s", suffix.c_str()));
+        gMYieldPhiRun2[i] = GetGraph(fPhiRun2, Form("gPhi_MeanYield%s", suffix.c_str()));
         gMYieldChKstarRun2[i] = GetGraph(fChKstar, Form("gChKstar_MeanYield%s", suffix.c_str()));
         gMYieldKshortRun2[i] = GetGraph(fMultStrange, Form("gKshort_MeanYield%s", suffix.c_str()));
         gMYieldLambdaRun2[i] = GetGraph(fMultStrange, Form("gLambda_MeanYield%s", suffix.c_str()));
@@ -130,7 +134,7 @@ void ParticleRatioWithRun2()
         gMYieldLambda1520[i] = GetGraph(fLambda1520Run2, Form("gLambda_MeanYield%s", suffix.c_str()));
 
         // Particle ratios in run2
-        gYieldPhiKaRatio[i] = GetGraph(fPhi, Form("gPhi_KaRatio%s", suffix.c_str()));
+        gYieldPhiKaRatio[i] = GetGraph(fPhiRun2, Form("gPhi_KaRatio%s", suffix.c_str()));
         gYieldChKstarKshortRatio[i] = GetGraph(fChKstar, Form("gChKstarKaRatio%s", suffix.c_str()));
         gYieldSigmaLambdaRatio[i] = GetGraph(fXiStarSigma, Form("gSigma1385_to_LambdaRatio%s", suffix.c_str()));
         gYieldXiStarXiRatio[i] = GetGraph(fXiStarSigma, Form("gXi1530_to_XiRatio%s", suffix.c_str()));

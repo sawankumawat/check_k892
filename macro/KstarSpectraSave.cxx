@@ -18,10 +18,10 @@ void KstarSpectraSave()
 
     TFile *fSpectraSave = new TFile(SpectraPath + "/KstarSpectra.root", "RECREATE");
 
-    for (int imult = 0; imult < multBins; imult++)
+    for (int imult = 0; imult < multBins + 1; imult++)
     {
-        int multlow = mult_classes[imult];
-        int multhigh = mult_classes[imult + 1];
+        int multlow = (imult == 0) ? 0 : mult_classes[imult - 1];
+        int multhigh = (imult == 0) ? 100 : mult_classes[imult];
 
         TFile *fSpectra = new TFile(SpectraPath + Form("/corrected_spectra_%d_%d.root", multlow, multhigh), "read");
         if (fSpectra->IsZombie())
@@ -38,8 +38,12 @@ void KstarSpectraSave()
         }
 
         TH1F *hTotalUncert = (TH1F *)fTotalUncert->Get(Form("hTotalSysSmoothed_%d_%d", multlow, multhigh));
-        TH1F *hUncorrUncert = (TH1F *)fUncorrUncert->Get(Form("hUncorrelatedUncertaintySmoothed_mult_%d_%d", multlow, multhigh));
-        if (!hTotalUncert || !hUncorrUncert)
+        TH1F *hUncorrUncert;
+
+        if (imult > 0)
+            hUncorrUncert = (TH1F *)fUncorrUncert->Get(Form("hUncorrelatedUncertaintySmoothed_mult_%d_%d", multlow, multhigh));
+
+        if (!hTotalUncert)
         {
             cerr << "Error: Uncertainty histograms not found for multiplicity bin " << multlow << "-" << multhigh << endl;
             continue;
@@ -52,16 +56,19 @@ void KstarSpectraSave()
         {
             double content = hSpectra->GetBinContent(i);
             double totalUncert = hTotalUncert->GetBinContent(i);
-            double uncorrUncert = hUncorrUncert->GetBinContent(i);
-
             hSpectraTotalUncert->SetBinError(i, totalUncert * content);
-            hSpectraUncorrUncert->SetBinError(i, uncorrUncert * content);
-        }
 
+            if (imult > 0)
+            {
+                double uncorrUncert = hUncorrUncert->GetBinContent(i);
+                hSpectraUncorrUncert->SetBinError(i, uncorrUncert * content);
+            }
+        }
 
         fSpectraSave->cd();
         hSpectra->Write(Form("SpectraStat_%d_%d", multlow, multhigh));
         hSpectraTotalUncert->Write(Form("SpectraSys_%d_%d", multlow, multhigh));
-        hSpectraUncorrUncert->Write(Form("SpectraUncorrSys_%d_%d", multlow, multhigh));
+        if (imult > 0)
+            hSpectraUncorrUncert->Write(Form("SpectraUncorrSys_%d_%d", multlow, multhigh));
     }
 }

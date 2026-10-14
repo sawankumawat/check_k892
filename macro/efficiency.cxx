@@ -9,7 +9,7 @@ void efficiency()
 {
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "pdf"; // pdf, eps
+    string outputtype = "png"; // pdf, eps
     bool isINEL = false;
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -71,9 +71,9 @@ void efficiency()
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
         // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
-        // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
+        string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
         // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
-        string data_path = "764308/kstarqa_ptDepDCA1/hInvMass"; // DCA variation check (pT-dependent DCA check)
+        // string data_path = "764308/kstarqa/hInvMass"; // DCA variation check (pT-dependent DCA check)
 
         if (ivar == 6)
         {
@@ -121,7 +121,7 @@ void efficiency()
         // string MCpath = "679883.root"; // 2024 MC (Material budget -10%) (without override)
         // string MCpath = "679868.root"; // 2024 MC (Material budget +10%) (without override)
         // string MCpath = "679882.root"; // 2024 MC (Material budget -10%)
-        string MCpath = "679867.root"; // 2024 MC (Material budget +10%)
+        // string MCpath = "679867.root"; // 2024 MC (Material budget +10%)
         // string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
         // string MCpath = "683085.root"; // 2024 MC (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
 
@@ -136,7 +136,7 @@ void efficiency()
         // string MCpath = "697699.root"; // Only INEL
         // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
         // string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
-        // string MCpath = "750013.root"; // INEL>0, latest train with systematics
+        string MCpath = "750013.root"; // INEL>0, latest train with systematics
         // string MCpath = "755334.root"; // INEL, latest train with systematics
         // string MCpath = "764341.root"; //DCA variation check (pT-dependent DCA check)
 
@@ -155,8 +155,8 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa_noShift/hInvMass";
-        const string recpath = "kstarqa_noShift/hInvMass";
+        const string genpath = "kstarqa/hInvMass";
+        const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -213,8 +213,8 @@ void efficiency()
             // TH1F *hGen1Rec = (TH1F *)fileeff->Get(Form("%s/hAllGenCollisions1Rec", recpath.c_str())); // Numerator
 
             vector<double> nChParticlesFromMult;
-            // int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
-            int multLoopEnd = 1;
+            int multLoopEnd = (isINEL) ? 1 : nmultbins + 1;
+            // int multLoopEnd = 1;
             int multlow, multhigh;
 
             // TFile *spectra = (isINEL) ? new TFile((data_path + "/corrected_spectra_INEL.root").c_str(), "RECREATE") : new TFile((data_path + "/corrected_spectra.root").c_str(), "RECREATE");
@@ -307,7 +307,7 @@ void efficiency()
                 {
                     hEventSplit->SetBinContent(imult, eventSplitting);
                     hEventSplit->SetBinError(imult, 0.00000001);
-                    cout << "Multiplicity bin " << multlow << "-" << multhigh << ", Event Splitting " << eventSplitting << endl;
+                    // cout << "Multiplicity bin " << multlow << "-" << multhigh << ", Event Splitting " << eventSplitting << endl;
                 }
                 else if (imult == 0)
                 {
@@ -335,7 +335,7 @@ void efficiency()
                     double nrec = h1rec->Integral(h1rec->GetXaxis()->FindBin(lowpt), h1rec->GetXaxis()->FindBin(highpt));
                     double ngen = h1gen->Integral(h1gen->GetXaxis()->FindBin(lowpt), h1gen->GetXaxis()->FindBin(highpt));
                     double efficiency = nrec / ngen;
-                    cout << "Multiplicity bin " << multlow << "-" << multhigh << ", pT bin " << lowpt << "-" << highpt << ", Efficiency " << efficiency << endl;
+                    // cout << "Multiplicity bin " << multlow << "-" << multhigh << ", pT bin " << lowpt << "-" << highpt << ", Efficiency " << efficiency << endl;
                     double efficiencyerr = sqrt(abs(((nrec + 1) / (ngen + 2)) * ((nrec + 2) / (ngen + 3) - (nrec + 1) / (ngen + 2))));
 
                     // cout << "Efficiency: " << efficiency << " +/- " << efficiencyerr << endl;
@@ -357,7 +357,8 @@ void efficiency()
                     {
                         heventloss[imult]->SetBinContent(i + 1, eventLossNum / eventLossDen);
                         heventloss[imult]->SetBinError(i + 1, 0);
-                        // cout << "Event Loss (Multiplicity " << multlow << "-" << multhigh << "): " << heventloss[imult]->GetBinContent(imult) << endl;
+                        if (i == 0)
+                            cout << "Event Loss (Multiplicity " << multlow << "-" << multhigh << "): " << eventLossNum / eventLossDen << endl;
                     }
 
                     // Signal loss calculations

@@ -14,11 +14,21 @@ void spectraSumClosure()
     TH1D *hSpectra[totalMultBins];
     double eventsperMultBin[totalMultBins];
     double minimumBiasEvents = 0;
+    double eventLoss[] = {0.707802, 0.680640, 0.674949, 0.667825, 0.659018, 0.641315, 0.620520, 0.603644, 0.559658, 0.394608};
+    double eventLossMinBias = 0.594455;
+    double eventLossSum = 0.0;
+
+    for (int i = 0; i < 10; i++)
+    {
+        eventLossSum += eventLoss[i];
+    }
 
     TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/data/kstar/LHC22o_pass7/749276.root", "read");
     string multpath = "kstarqa";
     TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
     minimumBiasEvents = hmult->Integral(hmult->GetXaxis()->FindBin(0.0 + 1e-5), hmult->GetXaxis()->FindBin(100.0 - 1e-5));
+
+    double totalBefore30 = 0.0;
 
     for (int imult = 0; imult < totalMultBins; imult++)
     {
@@ -26,38 +36,27 @@ void spectraSumClosure()
         int multHigh = mult_classes[imult + 1];
 
         eventsperMultBin[imult] = hmult->Integral(hmult->GetXaxis()->FindBin(multLow + 1e-5), hmult->GetXaxis()->FindBin(multHigh - 1e-5));
+        // cout << "Total events in multiplicity bin " << multLow << "-" << multHigh << " = " << eventsperMultBin[imult] << ", corrected events = " << eventsperMultBin[imult] * eventLoss[imult] << endl;
 
-        TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_%d_%d.root", multLow, multHigh), "read");
-        hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/corrected_spectra_Integral_final", multLow, multHigh));
+        // if (imult < 6)
+        //     totalBefore30 += eventsperMultBin[imult] * eventLoss[imult];
 
-        // double YieldTimespT = 0.0;
-        // double TotalYield = 0.0;
+        // if (imult == totalMultBins - 1)
+        //     cout << "Total events before 30 = " << totalBefore30 << endl;
 
-        // for (int ibin = 1; ibin <= hSpectra[imult]->GetNbinsX(); ibin++)
-        // {
-        //     double yield = hSpectra[imult]->GetBinContent(ibin);
-        //     double pt = hSpectra[imult]->GetBinCenter(ibin);
-        //     double ptBinWidth = hSpectra[imult]->GetBinWidth(ibin);
+        // TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_%d_%d.root", multLow, multHigh), "read");
+        // hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/corrected_spectra_Integral_final", multLow, multHigh));
 
-        //     TotalYield += yield * ptBinWidth;
-        //     YieldTimespT += pt * yield * ptBinWidth;
-        // }
-
-        if (imult > 0)
-        {
-            hSpectra[0]->Add(hSpectra[imult]);
-        }
-
-        // double meanpt = (TotalYield > 0) ? (YieldTimespT / TotalYield) : 0.0;
-
-        // cout << "\nRESULTS FOR yield " << multLow << "-" << multHigh << endl;
-        // cout << "dN/dy value = " << TotalYield << endl;
-        // cout << "<pT> value = " << meanpt << endl;
+        TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_%d_%d.root", multLow, multHigh), "read");
+        hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/yield_integral", multLow, multHigh));
     }
 
-    // compare with minimum bias spectra
-    TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_0_100.root", "read");
-    TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/corrected_spectra_Integral_final");
+    // // compare with minimum bias spectra
+    // TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_0_100.root", "read");
+    // TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/corrected_spectra_Integral_final");
+
+    TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100.root", "read");
+    TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/yield_integral");
 
     double pad1Size, pad2Size;
 
@@ -67,17 +66,23 @@ void spectraSumClosure()
     gPad->SetLogy();
 
     TH1D *hSum = (TH1D *)hSpectra[0]->Clone("hSum");
-    double weightHM = (eventsperMultBin[0]) / (minimumBiasEvents);
-    cout << "Minimum Bias Events = " << minimumBiasEvents << endl;
-    cout << "Weight for HM (0-1) = " << weightHM << endl;
-    hSum->Scale(weightHM);
+
+    // hSum->Scale((eventsperMultBin[0] / eventLoss[0]) / (minimumBiasEvents / eventLossMinBias));
+    // hSum->Scale(eventLoss[0]);
+    // hSum->Scale((mult_classes[1] - mult_classes[0]) / eventLoss[0]);
+    hSum->Scale(mult_classes[1] - mult_classes[0]);
 
     for (int imult = 1; imult < totalMultBins; imult++)
     {
-        double weight = (eventsperMultBin[imult]) / (minimumBiasEvents);
-        cout << "Weight for mult bin " << mult_classes[imult] << "-" << mult_classes[imult + 1] << " = " << weight << endl;
+        double weight = (mult_classes[imult + 1] - mult_classes[imult]);
+        // double weight = eventLoss[imult];
+        // double weight = (eventsperMultBin[imult] / eventLoss[imult]) / (minimumBiasEvents / eventLossMinBias);
+        // double weight = (mult_classes[imult + 1] - mult_classes[imult]) / eventLoss[imult];
+
         hSum->Add(hSpectra[imult], weight);
     }
+
+    hSum->Scale(1.0 / 100);
 
     hSum->SetLineColor(kRed);
     hSum->SetLineWidth(2);
@@ -120,11 +125,12 @@ void spectraSumClosure()
     hRatio->GetYaxis()->SetLabelSize(0.03 / pad2Size);
     hRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     hRatio->GetYaxis()->SetTitleOffset(0.55);
-    hRatio->SetMinimum(0.85);
-    hRatio->SetMaximum(1.48);
+    hRatio->GetYaxis()->SetNdivisions(505);
+    hRatio->SetMinimum(0.76);
+    hRatio->SetMaximum(1.34);
     hRatio->Draw("pe");
 
-    cSpectra->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/SpectraClosure/SpectraClosure.png");
+    // cSpectra->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/SpectraClosure/SpectraClosureRaw.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

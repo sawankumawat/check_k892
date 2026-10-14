@@ -462,7 +462,7 @@ void SpectraRatio_pTDiffKstarKa()
     }
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_Spectra.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");

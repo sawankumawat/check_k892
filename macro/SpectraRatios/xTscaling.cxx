@@ -789,7 +789,7 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
         // double y2 = splineY.Eval(xT);
         // double ey2 = splineEY.Eval(xT);
 
-        double y2 = g2Central.Eval(xT, 0, "L");
+        double y2 = g2Central.Eval(xT, 0, "L"); // Linear interpolation
         double ey2 = g2Errors.Eval(xT, 0, "L");
 
         if (y1 <= 0 || y2 <= 0)
@@ -800,9 +800,7 @@ TGraphErrors *CalculateN(TGraphErrors *g1, TGraphErrors *g2,
         double n = -log(y1 / y2) / denominator;
 
         // Error propagation
-        double en = (1.0 / fabs(denominator)) *
-                    sqrt(pow(ey1 / y1, 2) +
-                         pow(ey2 / y2, 2));
+        double en = (1.0 / fabs(denominator)) * sqrt(pow(ey1 / y1, 2) + pow(ey2 / y2, 2));
 
         int point = gN->GetN();
 

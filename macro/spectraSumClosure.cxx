@@ -14,9 +14,14 @@ void spectraSumClosure()
     TH1D *hSpectra[totalMultBins];
     double eventsperMultBin[totalMultBins];
     double minimumBiasEvents = 0;
-    double eventLoss[] = {0.707802, 0.680640, 0.674949, 0.667825, 0.659018, 0.641315, 0.620520, 0.603644, 0.559658, 0.394608};
-    double eventLossMinBias = 0.594455;
+    // double eventLoss[] = {0.707802, 0.680640, 0.674949, 0.667825, 0.659018, 0.641315, 0.620520, 0.603644, 0.559658, 0.394608}; // Default
+    double eventLoss[] = {0.723197, 0.718152, 0.714390, 0.711143, 0.708311, 0.703969, 0.697424, 0.688330, 0.662817, 0.492254}; // lf-mc-centrality
+
+    // double eventLossMinBias = 0.594455; // Default
+    double eventLossMinBias = 0.592687; // lf-mc-centrality
+
     double eventLossSum = 0.0;
+    double rawEventsSum = 0.0;
 
     for (int i = 0; i < 10; i++)
     {
@@ -37,6 +42,7 @@ void spectraSumClosure()
 
         eventsperMultBin[imult] = hmult->Integral(hmult->GetXaxis()->FindBin(multLow + 1e-5), hmult->GetXaxis()->FindBin(multHigh - 1e-5));
         // cout << "Total events in multiplicity bin " << multLow << "-" << multHigh << " = " << eventsperMultBin[imult] << ", corrected events = " << eventsperMultBin[imult] * eventLoss[imult] << endl;
+        rawEventsSum += eventsperMultBin[imult];
 
         // if (imult < 6)
         //     totalBefore30 += eventsperMultBin[imult] * eventLoss[imult];
@@ -44,19 +50,19 @@ void spectraSumClosure()
         // if (imult == totalMultBins - 1)
         //     cout << "Total events before 30 = " << totalBefore30 << endl;
 
-        // TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_%d_%d.root", multLow, multHigh), "read");
-        // hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/corrected_spectra_Integral_final", multLow, multHigh));
+        TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_%d_%d.root", multLow, multHigh), "read");
+        hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/corrected_spectra_Integral_final", multLow, multHigh));
 
-        TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_%d_%d.root", multLow, multHigh), "read");
-        hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/yield_integral", multLow, multHigh));
+        // TFile *fSpectra = new TFile(Form("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_%d_%d.root", multLow, multHigh), "read");
+        // hSpectra[imult] = (TH1D *)fSpectra->Get(Form("mult_%d-%d/yield_integral", multLow, multHigh));
     }
 
-    // // compare with minimum bias spectra
-    // TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_0_100.root", "read");
-    // TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/corrected_spectra_Integral_final");
+    // compare with minimum bias spectra
+    TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_0_100.root", "read");
+    TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/corrected_spectra_Integral_final");
 
-    TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100.root", "read");
-    TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/yield_integral");
+    // TFile *fMinBias = new TFile("../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100.root", "read");
+    // TH1D *hMinBias = (TH1D *)fMinBias->Get("mult_0-100/yield_integral");
 
     double pad1Size, pad2Size;
 
@@ -67,22 +73,25 @@ void spectraSumClosure()
 
     TH1D *hSum = (TH1D *)hSpectra[0]->Clone("hSum");
 
-    // hSum->Scale((eventsperMultBin[0] / eventLoss[0]) / (minimumBiasEvents / eventLossMinBias));
+    hSum->Scale((eventsperMultBin[0] / eventLoss[0]) / (minimumBiasEvents / eventLossMinBias));
+    // hSum->Scale(eventsperMultBin[0] / eventLoss[0]);
     // hSum->Scale(eventLoss[0]);
     // hSum->Scale((mult_classes[1] - mult_classes[0]) / eventLoss[0]);
-    hSum->Scale(mult_classes[1] - mult_classes[0]);
+    // hSum->Scale(mult_classes[1] - mult_classes[0]);
 
     for (int imult = 1; imult < totalMultBins; imult++)
     {
-        double weight = (mult_classes[imult + 1] - mult_classes[imult]);
+        // double weight = (mult_classes[imult + 1] - mult_classes[imult]);
         // double weight = eventLoss[imult];
-        // double weight = (eventsperMultBin[imult] / eventLoss[imult]) / (minimumBiasEvents / eventLossMinBias);
+        double weight = (eventsperMultBin[imult] / eventLoss[imult]) / (minimumBiasEvents / eventLossMinBias);
+        // double weight = (eventsperMultBin[imult] / eventLoss[imult]);
         // double weight = (mult_classes[imult + 1] - mult_classes[imult]) / eventLoss[imult];
 
         hSum->Add(hSpectra[imult], weight);
     }
 
-    hSum->Scale(1.0 / 100);
+    // hSum->Scale(1.0 / 100);
+    // hSum->Scale(eventLossSum / rawEventsSum);
 
     hSum->SetLineColor(kRed);
     hSum->SetLineWidth(2);
@@ -126,11 +135,11 @@ void spectraSumClosure()
     hRatio->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     hRatio->GetYaxis()->SetTitleOffset(0.55);
     hRatio->GetYaxis()->SetNdivisions(505);
-    hRatio->SetMinimum(0.76);
-    hRatio->SetMaximum(1.34);
+    hRatio->SetMinimum(0.55);
+    hRatio->SetMaximum(1.45);
     hRatio->Draw("pe");
 
-    // cSpectra->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/SpectraClosure/SpectraClosureRaw.png");
+    cSpectra->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/SpectraClosure/SpectraClosure.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

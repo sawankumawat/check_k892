@@ -469,7 +469,9 @@ void SpectraRatio_pTDiffKstarPhi()
     // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
@@ -595,9 +597,9 @@ void SpectraRatio_pTDiffKstarPhi()
         add(h->GetXaxis()->GetXmax(), last); // right edge (10 GeV/c)
 
         gLine->SetLineColor(col);
-        gLine->SetLineWidth(2);
+        gLine->SetLineWidth(3);
         gLine->SetLineStyle(lstyle);
-        gBand->SetFillColorAlpha(col, 0.3);
+        gBand->SetFillColorAlpha(col, 0.2);
         gBand->SetLineColor(col);
     };
 
@@ -754,13 +756,13 @@ void SpectraRatio_pTDiffKstarPhi()
 
     TGraph *gRatio_HM_LM_On, *gRatio_HM_LM_Off;
     TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
-    makeCurve(hRatio_HM_LM, kRed + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
-    makeCurve(hRatio_HM_LM_ON, kBlue + 1, 1, gRatio_HM_LM_On, bRatio_HM_LM_On);
+    makeCurve(hRatio_HM_LM, kBlue + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
+    makeCurve(hRatio_HM_LM_ON, kRed + 1, 7, gRatio_HM_LM_On, bRatio_HM_LM_On);
     if (plotEPOS)
     {
         bRatio_HM_LM_Off->Draw("3 same");
         bRatio_HM_LM_On->Draw("3 same"); // bands
-        gRatio_HM_LM_Off->SetLineStyle(7);
+
         gRatio_HM_LM_Off->Draw("L same");
         gRatio_HM_LM_On->Draw("L same"); // lines
     }

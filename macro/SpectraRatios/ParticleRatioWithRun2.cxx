@@ -69,7 +69,7 @@ void ParticleRatioWithRun2()
     TFile *fpp13TeV = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
     TFile *fpp7TeV = OpenFile("ConversionCodes/pp7TeVALICE.root");
 
-    TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3], gMPtPhiRun3[3];
+    TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3], *gMPtPhiRun3[3];
     TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3], *gMYieldPhiRun3[3];
 
     TGraphErrors *gMPtKshortRun3[3], *gMYieldKshortRun3[3];
@@ -459,10 +459,12 @@ void ParticleRatioWithRun2()
     //======================================================
 
     ////Epos results for K*0, Pi,K,p and K0s and ratios of K*0 with stable particles
-    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResultsMoreBins.root");
-    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
-    // TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults.root");
-    // TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults.root");
+    // TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResultsMoreBins.root");
+    // TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
+
+    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_stat8.root");
+    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_stat8.root");
+
     TGraphErrors *gEPOS_KstardNdy_UrQMDOff = GetGraph(fEPOS_New, "g_dNdy_opt0");
     TGraphErrors *gEPOS_KstardNdy_UrQMDOn = GetGraph(fEPOS_New, "g_dNdy_opt1");
     TGraphErrors *gEPOS_KstarMeanpT_UrQMDOff = GetGraph(fEPOS_New, "g_pT_opt0");
@@ -1910,11 +1912,18 @@ void ParticleRatioWithRun2()
     for (int i = 0; i < graphPointsEPOSNew; i++)
     {
         double xK0s, yK0s, yKaon, yPion, yKstarOff, yKstarOn;
+        double yK0sON, yKaonON, yPionON;
         gdNdy_Kstar_Off->GetPoint(i, xK0s, yKstarOff);
         gdNdy_Kstar_On->GetPoint(i, xK0s, yKstarOn);
+
         gdNdy_K0s_Off->GetPoint(i, xK0s, yK0s);
         gdNdy_Kaon_Off->GetPoint(i, xK0s, yKaon);
         gdNdy_Pion_Off->GetPoint(i, xK0s, yPion);
+
+        gdNdy_K0s_On->GetPoint(i, xK0s, yK0sON);
+        gdNdy_Kaon_On->GetPoint(i, xK0s, yKaonON);
+        gdNdy_Pion_On->GetPoint(i, xK0s, yPionON);
+
         gKstarKaRatio_EPOSNew_UrQMDOff->SetPoint(i, xK0s, yKstarOff / yKaon);
         gKstarKaRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yKstarOn / yKaon);
         gKstarPiRatio_EPOSNew_UrQMDOff->SetPoint(i, xK0s, yKstarOff / yPion);

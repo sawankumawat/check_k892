@@ -7,7 +7,8 @@ void phiMassShiftMC()
 {
     gStyle->SetOptStat(0);
 
-    TString dataPath = "/home/sawan/Storage/check_k892/phiMC";
+    // TString dataPath = "/home/sawan/Storage/check_k892/phiMC";
+    TString dataPath = "/home/sawan/Downloads";
     TFile *fLHC25ac = new TFile(dataPath + "/AnalysisResults25_ac.root");
     TFile *fLHC25ai = new TFile(dataPath + "/AnalysisResults25_ai.root");
     if (!fLHC25ac || !fLHC25ai)

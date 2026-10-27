@@ -99,7 +99,7 @@ void SpectraRatio_pTDiffKstarPhi()
     hKstar_statHM->SetMarkerSize(1.3);
     hKstar_statHM->SetMaximum(5.0);
     hKstar_statHM->SetMinimum(9e-5);
-    hKstar_statHM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statHM->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstar_statHM->Draw("pe");
     SetHistoQA(hPhi_statHM);
     gPad->SetLogy(1);
@@ -131,7 +131,7 @@ void SpectraRatio_pTDiffKstarPhi()
     hKstar_statLM->SetMarkerSize(1.3);
     hKstar_statLM->SetMaximum(0.7);
     hKstar_statLM->SetMinimum(2e-6);
-    hKstar_statLM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statLM->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstar_statLM->Draw("pe");
     SetHistoQA(hPhi_statLM);
     gPad->SetLogy(1);
@@ -435,8 +435,9 @@ void SpectraRatio_pTDiffKstarPhi()
     hKstarK0sRatioHM_stat->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(-2.8, 9.25);
-    hKstarK0sRatioHM_stat->GetXaxis()->SetRangeUser(0.0, 10.0);
+    // hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(-2.8, 9.25);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(0.8, 5.25);
+    hKstarK0sRatioHM_stat->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstarK0sRatioHM_stat->SetMarkerColor(kRed + 1);
     hKstarK0sRatioHM_stat->SetLineColor(kRed + 1);
     hKstarK0sRatioHM_stat->Draw("pe");
@@ -470,23 +471,30 @@ void SpectraRatio_pTDiffKstarPhi()
 
     // Now open the spectra file in EPOS
     // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
 
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
     TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent0");
 
-    TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
-    TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
-    TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent9");
-    TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
+    TH1F *hEPOS_UrQMDOFF_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent9");
+    TH1F *hEPOS_UrQMDON_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
+
+    // Correct for branching ratio of phi for UrQMD ON case only
+    double phiBR = 0.489; // PDG 2022
+    hEPOS_UrQMDON_PhiHM->Scale(1.0 / phiBR);
+    hEPOS_UrQMDON_PhiLM->Scale(1.0 / phiBR);
 
     // ============================================================
     // EPOS K* / K0s ratio using pT-integrated bins
     // ============================================================
 
-    double mergedBins[] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
+    // double mergedBins[] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
+    double mergedBins[] = {0.3, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0,  10.0};
 
     const int nMergedBins = sizeof(mergedBins) / sizeof(double) - 1;
 
@@ -525,10 +533,10 @@ void SpectraRatio_pTDiffKstarPhi()
 
         // HM
         getIntegral(hEPOS_UrQMDOFF_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
-        getIntegral(hEPOS_UrQMDOFF_K0sHM, xLow, xHigh, k0sHM, k0sErrHM);
+        getIntegral(hEPOS_UrQMDOFF_PhiHM, xLow, xHigh, k0sHM, k0sErrHM);
         // LM
         getIntegral(hEPOS_UrQMDOFF_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
-        getIntegral(hEPOS_UrQMDOFF_K0sLM, xLow, xHigh, k0sLM, k0sErrLM);
+        getIntegral(hEPOS_UrQMDOFF_PhiLM, xLow, xHigh, k0sLM, k0sErrLM);
         // --------------------------------------------------------
         // HM ratio
         // --------------------------------------------------------
@@ -643,13 +651,13 @@ void SpectraRatio_pTDiffKstarPhi()
         // HM
         // --------------------------------------------------------
         getIntegral(hEPOS_UrQMDON_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
-        getIntegral(hEPOS_UrQMDON_K0sHM, xLow, xHigh, k0sHM, k0sErrHM);
+        getIntegral(hEPOS_UrQMDON_PhiHM, xLow, xHigh, k0sHM, k0sErrHM);
 
         // --------------------------------------------------------
         // LM
         // --------------------------------------------------------
         getIntegral(hEPOS_UrQMDON_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
-        getIntegral(hEPOS_UrQMDON_K0sLM, xLow, xHigh, k0sLM, k0sErrLM);
+        getIntegral(hEPOS_UrQMDON_PhiLM, xLow, xHigh, k0sLM, k0sErrLM);
 
         // ========================================================
         // HM ratio
@@ -701,7 +709,8 @@ void SpectraRatio_pTDiffKstarPhi()
         gLM_UrQMDON->Draw("L same"); // lines
     }
 
-    TLegend *legendRatio = new TLegend(0.5, 0.04, 0.80, 0.36);
+    // TLegend *legendRatio = new TLegend(0.5, 0.04, 0.80, 0.36);
+    TLegend *legendRatio = new TLegend(0.5, 0.02, 0.80, 0.22);
     legendRatio->SetBorderSize(0);
     legendRatio->SetFillStyle(0);
     legendRatio->SetTextFont(42);
@@ -738,7 +747,7 @@ void SpectraRatio_pTDiffKstarPhi()
     hDoubleRatioStat->GetYaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetYaxis()->SetRangeUser(0.45, 1.75);
-    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.5, 6.0);
     hDoubleRatioStat->SetMarkerColor(kRed + 1);
     hDoubleRatioStat->SetLineColor(kRed + 1);
     hDoubleRatioStat->GetYaxis()->SetNdivisions(505);
@@ -767,7 +776,7 @@ void SpectraRatio_pTDiffKstarPhi()
         gRatio_HM_LM_On->Draw("L same"); // lines
     }
 
-    TLine *line = new TLine(0.0, 1.0, 10.0, 1.0);
+    TLine *line = new TLine(0.5, 1.0, 6.0, 1.0);
     line->SetLineColor(kGray + 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);

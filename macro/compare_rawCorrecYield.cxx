@@ -7,22 +7,27 @@ TH1F *RebinFirst10Bins(TH1F *h, const char *newName = "hRebinned");
 
 void compare_rawCorrecYield()
 {
-    bool isCorrectedYield = true;
+    bool isCorrectedYield = false;
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     bool isINEL = false;
 
-    string defaultName = "DCA_{xy,z} < 0.1 cm";
-    string variationName = "DCA_{xy,z} < 0.0105 + #frac{0.035}{#it{p}_{T}^{1.1}} cm";
+    // string defaultName = "DCA_{xy,z} < 0.1 cm";
+    // string variationName = "DCA_{xy,z} < 0.0105 + #frac{0.035}{#it{p}_{T}^{1.1}} cm";
     // string variationName = "DCA_{xy,z} < 0.004 + #frac{0.013}{#it{p}_{T}} cm";
 
-    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/764308/kstarqa/hInvMass/ROTATED";             // Default1
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/764308/kstarqa_ptDepDCA2/hInvMass/ROTATED"; // Variation
 
-    // string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/ROTATED"; // Default
-    // string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Variation
+    string defaultName = "Default";
+    string variationName = "Width Variation 4";
 
-    TString outputPath = path2;
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED";             // Default1
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/WidthFree3"; // Variation
+
+    // string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default
+    // string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/Backup/OldCorrectedFiles"; // Variation
+
+
+    TString outputPath = path1;
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
@@ -51,6 +56,14 @@ void compare_rawCorrecYield()
         hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
 
+        int nBinsDefault = hmult1[imult]->GetNbinsX();
+        int nBinsVariation = hmult2[imult]->GetNbinsX();
+        if (nBinsDefault != nBinsVariation)
+        {
+            cout << "Error: Number of bins in default and variation histograms do not match for mult " << multlow << "-" << multhigh << endl;
+            return;
+        }
+
         // TH1F *hmult2_temp = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
 
         // // Lets rebin the variation histogram
@@ -62,8 +75,8 @@ void compare_rawCorrecYield()
             return;
         }
 
-        TH1F *hratio1 = (TH1F *)hmult2[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
-        hratio1->Divide(hmult1[imult]);
+        TH1F *hratio1 = (TH1F *)hmult1[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
+        hratio1->Divide(hmult2[imult]);
 
         TCanvas *c1 = new TCanvas(Form("c1_mult_%.0f-%.0f", multlow, multhigh), "c1", 720, 720);
         SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
@@ -105,7 +118,7 @@ void compare_rawCorrecYield()
         latex->DrawLatex(0.20, 0.78, "|y| < 0.5");
 
         c1->cd(2);
-        TH1F *hdummy = (TH1F *)hmult1[0]->Clone();
+        TH1F *hdummy = (TH1F *)hmult1[imult]->Clone();
         for (int i = 0; i < hdummy->GetNbinsX(); i++)
         {
             hdummy->SetBinContent(i + 1, 0);
@@ -124,7 +137,8 @@ void compare_rawCorrecYield()
         hratio1->SetLineColor(kBlue);
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
-        hratio1->GetYaxis()->SetTitle("Var/Def");
+        // hratio1->GetYaxis()->SetTitle("Var/Def");
+        hratio1->GetYaxis()->SetTitle("After/Before");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
         hratio1->GetYaxis()->SetTitleOffset(0.6);
@@ -135,7 +149,8 @@ void compare_rawCorrecYield()
         // hratio1->GetXaxis()->SetRangeUser(0, 20);
         // hratio1->GetYaxis()->SetRangeUser(0.98, 1.11);
         // hratio1->GetYaxis()->SetRangeUser(0.34, 1.69);
-        hratio1->GetYaxis()->SetRangeUser(0.94, 1.05);
+        // hratio1->GetYaxis()->SetRangeUser(0.94, 1.05);
+        hratio1->GetYaxis()->SetRangeUser(0.78, 1.24);
         hratio1->GetYaxis()->SetNdivisions(508);
         hratio1->Draw("p");
 
@@ -144,14 +159,16 @@ void compare_rawCorrecYield()
         line->SetLineWidth(3);
         line->SetLineColor(1);
         line->Draw();
-        if (isCorrectedYield)
-        {
-            c1->SaveAs(outputPath + Form("/CorrectedYield_%.0f-%.0f.png", multlow, multhigh));
-        }
-        else
-        {
-            c1->SaveAs(outputPath + Form("/RawYield_%.0f-%.0f.png", multlow, multhigh));
-        }
+        // if (isCorrectedYield)
+        // {
+        //     c1->SaveAs(outputPath + Form("/spectra_compare/CorrectedYield_compare_%.0f-%.0f.png", multlow, multhigh));
+        // }
+        // else
+        // {
+        //     c1->SaveAs(outputPath + Form("/spectra_compare/RawYield_compare_%.0f-%.0f.png", multlow, multhigh));
+        // }
+            c1->SaveAs(outputPath + Form("/spectra_compare/RawYield_compare_WidthVar3%.0f-%.0f.png", multlow, multhigh));
+
     }
 }
 

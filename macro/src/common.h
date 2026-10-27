@@ -6,44 +6,8 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-kstar892analysis";
 // const string kfoldername_temp = "lf-k892analysis";
 
-// const string kvariation = "";
-// const string kvariation = "_MC_closure";
-// const string kvariation = "_MC_closure_MID0p3";
-// const string kvariation = "_MC_closure_MID";
-// const string kvariation = "_MC_closure_NoITSROF";
-// const string kvariation = "_MC_closure_PVContributor";
-// const string kvariation = "_MC_closure_WithoutTOFShift";
-// const string kvariation = "_MC_closure_OnlyTPC";
-// const string kvariation = "_INEL";
-// const string kvariation = "_INELgt0";
-// const string kvariation = "_DeepAngle";
-// const string kvariation = "_PVContributor";
-// const string kvariation = "_LoosePID";
-// const string kvariation = "_pTDepPID";
-// const string kvariation = "_pTDepPIDTOF";
-// const string kvariation = "_MID";
-// const string kvariation = "_MID_small";
-// const string kvariation = "_MID_verySmall";
-// const string kvariation = "_MIDptDep";
-// const string kvariation = "_MIDptDep2";
-// const string kvariation = "_MIDptDep2_small";
-// const string kvariation = "_MIDptDep2_verySmall";
-// const string kvariation = "_TOF3";
-// const string kvariation = "_TOF3_withoutSquareCut";
-// const string kvariation = "_id35679";
-// const string kvariation = "_OnlyTPC";
-// const string kvariation = "_TOFshift";
-// const string kvariation = "_MIDptDep2_0p3_TOF3";
-// const string kvariation = "_MIDptDep2_small_TOF3";
-// const string kvariation = "_MIDptDep2_TOF3";
-// const string kvariation = "_MIDptDep2_verySmall_TOF3";
-// const string kvariation = "_MIDNew_TOF2";
-// const string kvariation = "_MIDNew_TOF3";
-// const string kvariation = "_SquarePID_TOF2";
-// const string kvariation = "_SquarePID_TOF3";
-
 //// Systematic variations
-// const string kvariation = "";
+const string kvariation = "";
 // const string kvariation = "_FT0C";
 // const string kvariation = "_FV0A";
 // const string kvariation = "_TPC1p5_combined2";
@@ -51,7 +15,7 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
 // const string kvariation = "_NoPVContributor";
-const string kvariation = "_pTDepDCA1";
+// const string kvariation = "_pTDepDCA1";
 // const string kvariation = "_ptDepDCA2";
 ////********************************************************************************************
 
@@ -109,12 +73,12 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "697595.root"; // INEL only
 // const string kDataFilename_temp2 = "707551.root"; // INEL only (upto 100 GeV pT range)
 // const string kDataFilename_temp2 = "708297.root"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV)
-// const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
+const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
 // const string kDataFilename_temp2 = "750862.root"; // INEL>0, latest train with systematics (Trk selection not available)
 // const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
-// const string kDataFilename_temp2 = "756343.root"; // INEL file with all systemattics available
+// const string kDataFilename_temp2 = "756343.root"; // INEL file with all systematics available
 // const string kDataFilename_temp2 = "755334.root"; // INEL (for MC closure)
-const string kDataFilename_temp2 = "764308.root"; // INEL (for pT-dependent DCA check)
+// const string kDataFilename_temp2 = "764308.root"; // INEL (for pT-dependent DCA check)
 
 #endif
 
@@ -142,6 +106,42 @@ float widthpdg = 0.0471; // in 1 sigma GeV/c^2
 //                                   OLD Checks                                   //
 //                                                                                //
 ////////////////////////////////////////////////////////////////////////////////////
+// const string kvariation = "";
+// const string kvariation = "_MC_closure";
+// const string kvariation = "_MC_closure_MID0p3";
+// const string kvariation = "_MC_closure_MID";
+// const string kvariation = "_MC_closure_NoITSROF";
+// const string kvariation = "_MC_closure_PVContributor";
+// const string kvariation = "_MC_closure_WithoutTOFShift";
+// const string kvariation = "_MC_closure_OnlyTPC";
+// const string kvariation = "_INEL";
+// const string kvariation = "_INELgt0";
+// const string kvariation = "_DeepAngle";
+// const string kvariation = "_PVContributor";
+// const string kvariation = "_LoosePID";
+// const string kvariation = "_pTDepPID";
+// const string kvariation = "_pTDepPIDTOF";
+// const string kvariation = "_MID";
+// const string kvariation = "_MID_small";
+// const string kvariation = "_MID_verySmall";
+// const string kvariation = "_MIDptDep";
+// const string kvariation = "_MIDptDep2";
+// const string kvariation = "_MIDptDep2_small";
+// const string kvariation = "_MIDptDep2_verySmall";
+// const string kvariation = "_TOF3";
+// const string kvariation = "_TOF3_withoutSquareCut";
+// const string kvariation = "_id35679";
+// const string kvariation = "_OnlyTPC";
+// const string kvariation = "_TOFshift";
+// const string kvariation = "_MIDptDep2_0p3_TOF3";
+// const string kvariation = "_MIDptDep2_small_TOF3";
+// const string kvariation = "_MIDptDep2_TOF3";
+// const string kvariation = "_MIDptDep2_verySmall_TOF3";
+// const string kvariation = "_MIDNew_TOF2";
+// const string kvariation = "_MIDNew_TOF3";
+// const string kvariation = "_SquarePID_TOF2";
+// const string kvariation = "_SquarePID_TOF3";
+
 //******************************MC Closure******************************/
 // const string kDataFilename_temp2 = "474414.root"; // LHC23_pass4_thin_small dataset, INEL > 0
 // const string kDataFilename_temp2 = "476106.root"; // LHC23_pass4_thin_small dataset, INEL > 0

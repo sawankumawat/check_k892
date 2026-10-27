@@ -9,7 +9,7 @@ void SaveModelPrediction()
 {
     const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
-    TFile *fOutput = new TFile("ModelResults_old.root", "recreate");
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults_latest.root", "recreate");
 
     for (const auto &modelName : modelNames)
     {
@@ -21,13 +21,22 @@ void SaveModelPrediction()
             return;
         }
 
-        TH2D *hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
+        TH2D *hNch05VsFT0M;
+        if (modelName == "EPOS_Hydro_latest")
+        {
+            hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction_id53739/multiplicity/vsETA05/FT0AC");
+        }
+        else
+        {
+            hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
+        }
+
         if (hNch05VsFT0M == nullptr)
         {
-            cout << "Error: histograms not found" << endl;
+            cout << "Error: Correlation histograms not found for the file " << modelName << endl;
             return;
         }
-        double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
+        double dnch_detaRun3[] = {21.212, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296};
         int nBins = sizeof(dnch_detaRun3) / sizeof(dnch_detaRun3[0]);
         vector<double> ft0mBinCenter;
         vector<double> meanNchPerFt0mBin;
@@ -62,7 +71,16 @@ void SaveModelPrediction()
             TDirectory *particleDir = modelDir->mkdir(particleType.c_str());
             particleDir->cd();
 
-            TH2D *hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleType.c_str()));
+            TH2D *hParticlevsFT0M;
+            if (modelName == "EPOS_Hydro_latest")
+            {
+                hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction_id53739/prediction/pt/FT0AC/%s", particleType.c_str()));
+            }
+            else
+            {
+                hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleType.c_str()));
+            }
+            
             if (hParticlevsFT0M == nullptr)
             {
                 cout << "Error: particle histogram not found for " << modelName << "/" << particleType << endl;

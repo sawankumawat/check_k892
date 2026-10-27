@@ -261,12 +261,12 @@ void analyze_kstar_spectra_pythia()
     hphiSpectra13->GetYaxis()->SetTitleSize(0.044 / pad1Size);
     hphiSpectra13->GetXaxis()->SetLabelSize(0.04 / pad1Size);
     hphiSpectra13->GetYaxis()->SetLabelSize(0.04 / pad1Size);
-    hphiSpectra13->GetXaxis()->SetRangeUser(0, 15);
+    hphiSpectra13->GetXaxis()->SetRangeUser(0, 10);
     hphiSpectra13->Draw("pe");
     hphiSpectra13p6->Draw("pe same");
     leg->Clear();
     leg->AddEntry((TObject *)0, "Pythia simulations", "");
-    leg->AddEntry((TObject *)0, "#phi(1020) #rightarrow K^{+}#K^{-}, |y|<0.5", "");
+    leg->AddEntry((TObject *)0, "#phi(1020) #rightarrow K^{+}K^{-}, |y|<0.5", "");
     leg->AddEntry(hphiSpectra13p6, "pp 13.6 TeV", "p");
     leg->AddEntry(hphiSpectra13, "pp 13 TeV", "p");
     leg->Draw();
@@ -282,7 +282,7 @@ void analyze_kstar_spectra_pythia()
     ratioSpectraPhiYcut->GetYaxis()->SetTitleSize(0.037 / pad2Size);
     ratioSpectraPhiYcut->GetXaxis()->SetLabelSize(0.04 / pad2Size);
     ratioSpectraPhiYcut->GetYaxis()->SetLabelSize(0.04 / pad2Size);
-    ratioSpectraPhiYcut->GetXaxis()->SetRangeUser(0, 15);
+    ratioSpectraPhiYcut->GetXaxis()->SetRangeUser(0, 10);
     ratioSpectraPhiYcut->GetYaxis()->SetRangeUser(0.945, 1.07);
     ratioSpectraPhiYcut->GetXaxis()->SetNdivisions(510);
     ratioSpectraPhiYcut->GetYaxis()->SetNdivisions(505);

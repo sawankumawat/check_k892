@@ -13,12 +13,14 @@ void plotResultsPhi()
         return;
     }
 
-    TGraphErrors *hYieldStat = (TGraphErrors *)fResults->Get("YieldMean/dNdy/gYieldStat");
-    TGraphErrors *hMeanpTStat = (TGraphErrors *)fResults->Get("YieldMean/MeanPt/gMeanStat");
-    TGraphErrors *hYieldSys = (TGraphErrors *)fResults->Get("YieldMean/dNdy/gYieldSys");
-    TGraphErrors *hMeanpTSys = (TGraphErrors *)fResults->Get("YieldMean/MeanPt/gMeanSys");
+    TGraphErrors *hYieldStat = (TGraphErrors *)fResults->Get("YieldMean/dNdy/gdNdyStat");
+    TGraphErrors *hMeanpTStat = (TGraphErrors *)fResults->Get("YieldMean/MeanPt/gMeanPtStat");
+    TGraphErrors *hYieldSys = (TGraphErrors *)fResults->Get("YieldMean/dNdy/gdNdySysTotal");
+    TGraphErrors *hMeanpTSys = (TGraphErrors *)fResults->Get("YieldMean/MeanPt/gMeanPtSysTotal");
+    TGraphErrors *hYieldSysUncorr = (TGraphErrors *)fResults->Get("YieldMean/dNdy/gdNdySysUncorrelated");
+    TGraphErrors *hMeanpTSysUncorr = (TGraphErrors *)fResults->Get("YieldMean/MeanPt/gMeanPtSysUncorrelated");
 
-    if (hYieldStat == nullptr || hMeanpTStat == nullptr || hYieldSys == nullptr || hMeanpTSys == nullptr)
+    if (hYieldStat == nullptr || hMeanpTStat == nullptr || hYieldSys == nullptr || hMeanpTSys == nullptr || hYieldSysUncorr == nullptr || hMeanpTSysUncorr == nullptr)
     {
         cout << "Error: graphs not found" << endl;
         return;
@@ -37,5 +39,7 @@ void plotResultsPhi()
     hYieldStat->Write("gMeanYieldRun3_stat");
     hMeanpTSys->Write("gMeanpTRun3_sys");
     hYieldSys->Write("gMeanYieldRun3_sys");
+    hMeanpTSysUncorr->Write("gMeanpTRun3_sysuncorr");
+    hYieldSysUncorr->Write("gMeanYieldRun3_sysuncorr");
     fOutput->Close();
 }

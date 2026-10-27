@@ -27,6 +27,7 @@ TFile *OpenFile(const string &path)
 void SpectraRatio_pTDiffKstarKshort()
 {
     bool showEPOS = true;
+    bool savePlots = true;
     gStyle->SetOptStat(0);
 
     TFile *fKstar = OpenFile("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/KstarSpectra.root");
@@ -45,6 +46,10 @@ void SpectraRatio_pTDiffKstarKshort()
     TH1F *hKshort_statHM = (TH1F *)fKshort->Get("hK0s_0_1");
     TH1F *hKshort_sysHM = (TH1F *)fKshort->Get("hK0sSyst_0_1");
     TH1F *hKshort_sysUncorrHM = (TH1F *)fKshort->Get("hK0sSyst_0_1"); // Does not have uncorrelated systematic, so using total systematic
+
+    // TH1F *hKshort_statHM = (TH1F *)fKshort->Get("hK0sMB");
+    // TH1F *hKshort_sysHM = (TH1F *)fKshort->Get("hK0sMBSyst");
+    // TH1F *hKshort_sysUncorrHM = (TH1F *)fKshort->Get("hK0sMBSyst"); // Does not have uncorrelated systematic, so using total systematic
 
     TH1F *hKshort_statLM = (TH1F *)fKshort->Get("hK0s_70_100");
     TH1F *hKshort_sysLM = (TH1F *)fKshort->Get("hK0sSyst_70_100");
@@ -181,7 +186,8 @@ void SpectraRatio_pTDiffKstarKshort()
     lat.DrawLatex(0.45, 0.89, "ALICE");
     lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
     lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
-    // c1->SaveAs("Plots/KstarK0sSpectra_HM.png");
+    if (savePlots)
+        c1->SaveAs("Plots/KstarK0sSpectra_HM.png");
 
     TCanvas *c2 = new TCanvas("c2", "LM histograms", 720, 720);
     SetCanvasStyle(c2, 0.18, 0.06, 0.06, 0.13);
@@ -213,7 +219,8 @@ void SpectraRatio_pTDiffKstarKshort()
     lat.DrawLatex(0.45, 0.89, "ALICE");
     lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
     lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
-    // c2->SaveAs("Plots/KstarK0sSpectra_LM.png");
+    if (savePlots)
+        c2->SaveAs("Plots/KstarK0sSpectra_LM.png");
 
     TH1F *hKstarK0sRatioHM_stat = (TH1F *)hKstar_statHM->Clone("hKstarK0sRatioHM_stat");
     TH1F *hKstarK0sRatioHM_sys = (TH1F *)hKstar_sysHM->Clone("hKstarK0sRatioHM_sys");
@@ -488,7 +495,7 @@ void SpectraRatio_pTDiffKstarKshort()
     hKstarK0sRatioHM_stat->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hKstarK0sRatioHM_stat->SetMarkerStyle(20);
     hKstarK0sRatioHM_stat->SetMarkerSize(1.45);
-    hKstarK0sRatioHM_stat->GetYaxis()->SetTitleOffset(1.60 * pad1Size);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetTitleOffset(1.90 * pad1Size);
     hKstarK0sRatioHM_stat->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
@@ -534,9 +541,9 @@ void SpectraRatio_pTDiffKstarKshort()
     TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent0");
 
     // TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
-    // TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
+    // TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent3");
     // TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
-    // TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
+    // TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent3");
 
     TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent0");
@@ -789,6 +796,7 @@ void SpectraRatio_pTDiffKstarKshort()
     lat.DrawLatex(0.22, 0.89, "ALICE");
     lat.DrawLatex(0.22, 0.83, "|y| < 0.5");
     lat.DrawLatex(0.22, 0.76, "pp #sqrt{#it{s}} = 13.6 TeV");
+
     cRatio->cd(2);
     gPad->SetGridy();
     TH1F *hDoubleRatioStat = (TH1F *)hKstarK0sRatioHM_stat->Clone("hDoubleRatioStat");
@@ -805,7 +813,7 @@ void SpectraRatio_pTDiffKstarKshort()
     hDoubleRatioStat->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     hDoubleRatioStat->GetYaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.45, 1.75);
+    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.32, 1.75);
     hDoubleRatioStat->GetXaxis()->SetRangeUser(0.0, 10.0);
     hDoubleRatioStat->SetMarkerColor(kRed + 1);
     hDoubleRatioStat->SetLineColor(kRed + 1);
@@ -828,8 +836,8 @@ void SpectraRatio_pTDiffKstarKshort()
     makeCurve(hRatio_HM_LM_ON, kRed + 1, 7, gRatio_HM_LM_On, bRatio_HM_LM_On);
     if (showEPOS)
     {
-        // bRatio_HM_LM_Off->Draw("3 same");
-        // bRatio_HM_LM_On->Draw("3 same"); // bands
+        bRatio_HM_LM_Off->Draw("3 same");
+        bRatio_HM_LM_On->Draw("3 same"); // bands
         gRatio_HM_LM_Off->Draw("L same");
         gRatio_HM_LM_On->Draw("L same"); // lines
     }
@@ -840,66 +848,117 @@ void SpectraRatio_pTDiffKstarKshort()
     line->SetLineWidth(2);
     line->Draw();
 
-    cRatio->SaveAs("Plots/pTDiff_Ratios/KstarK0sRatio.png");
+    // ============================================
+    // Pad 3: Significance of deviation from unity
+    // ============================================
+    cRatio->cd(3);
+    // gPad->SetGridy();
 
-    // // ---------------------------------------------------------
-    // // Calculate significance with respect to unity
-    // // significance = (value - 1) / systematic error
-    // // ---------------------------------------------------------
-    // TH1F *hDoubleRatioSignificance = (TH1F *)hDoubleRatioSys->Clone("hDoubleRatioSignificance");
+    TH1F *hSignificance = (TH1F *)hDoubleRatioStat->Clone("hSignificance");
+    // hSignificance->Reset("ICES");
+    double maximumSignificance = 0.0;
 
-    // hDoubleRatioSignificance->Reset();
+    for (int i = 1; i <= hDoubleRatioStat->GetNbinsX(); i++)
+    {
+        double ratio = hDoubleRatioStat->GetBinContent(i);
 
-    // int nBins = hDoubleRatioSys->GetNbinsX();
+        double statErr = hDoubleRatioStat->GetBinError(i);
+        double sysErr = hDoubleRatioSys->GetBinError(i);
 
-    // for (int ibin = 1; ibin <= nBins; ++ibin)
-    // {
-    //     double value = hDoubleRatioSys->GetBinContent(ibin);
-    //     double sysErr = hDoubleRatioSys->GetBinError(ibin);
-    //     double statErr = hDoubleRatioStat->GetBinError(ibin);
+        double totalErr = sqrt(statErr * statErr + sysErr * sysErr);
 
-    //     double significance = 0.0;
+        double significance = 0.0;
 
-    //     if (sysErr > 0)
-    //     {
-    //         significance = abs(value - 1.0) / sysErr;
-    //     }
+        if (totalErr > 0.0)
+            significance = abs(ratio - 1.0) / totalErr;
 
-    //     hDoubleRatioSignificance->SetBinContent(ibin, significance);
-    //     hDoubleRatioSignificance->SetBinError(ibin, 0.0);
-    // }
+        hSignificance->SetBinContent(i, significance);
+        hSignificance->SetBinError(i, 0.0);
 
-    // for (int ibin = 1; ibin <= nBins; ++ibin)
-    // {
-    //     double pt = hDoubleRatioSignificance->GetBinCenter(ibin);
-    //     double significance = hDoubleRatioSignificance->GetBinContent(ibin);
+        if (significance > maximumSignificance)
+            maximumSignificance = significance;
+    }
+    cout << "Maximum significance: " << maximumSignificance << endl;
 
-    //     cout << "pT = " << pt << " GeV/c, significance = " << significance << endl;
-    // }
+    SetHistoQA(hSignificance);
+    hSignificance->SetTitle("");
+    hSignificance->SetLineColor(kRed + 1);
+
+    hSignificance->GetYaxis()->SetTitle("n#sigma");
+    hSignificance->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+
+    hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hSignificance->GetYaxis()->SetTitleSize(0.04 / 0.20);
+    hSignificance->GetYaxis()->SetLabelSize(0.035 / 0.20);
+    hSignificance->GetXaxis()->SetTitleSize(0.04 / 0.20);
+    hSignificance->GetXaxis()->SetLabelSize(0.035 / 0.20);
+
+    hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hSignificance->GetYaxis()->SetTitleOffset(1.60 * 0.20);
+    hSignificance->GetYaxis()->SetNdivisions(505);
+
+    hSignificance->SetMinimum(0.0);
+    hSignificance->SetMaximum(13.0);
+
+    hSignificance->Draw("HIST");
+
+    TLine *phiLine = new TLine(0.0, 3.58291, 10.0, 3.58291);
+    phiLine->SetLineColor(kGray + 1);
+    phiLine->SetLineStyle(2);
+    phiLine->SetLineWidth(3);
+    phiLine->Draw("same");
+
+    if (savePlots)
+        cRatio->SaveAs("Plots/pTDiff_Ratios/KstarK0sRatio_70_100_significance.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 {
     SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
-    c->Divide(1, 2, 0, 0);
+
+    c->Divide(1, 3, 0, 0);
+
     TPad *pad1 = (TPad *)c->GetPad(1);
     TPad *pad2 = (TPad *)c->GetPad(2);
-    pad2Size = 0.3; // Size of the first pad
-    pad1Size = 1 - pad2Size;
+    TPad *pad3 = (TPad *)c->GetPad(3);
 
-    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
-    pad2->SetPad(0, 0, 1, 0.3);
+    // Relative pad heights
+    pad1Size = 0.60;
+    pad2Size = 0.20;
+    double pad3Size = 0.20;
+
+    // Set pad positions: (x1, y1, x2, y2)
+    pad1->SetPad(0, pad2Size + pad3Size, 1, 1);
+    pad2->SetPad(0, pad3Size, 1, pad2Size + pad3Size);
+    pad3->SetPad(0, 0, 1, pad3Size);
+
+    // Right margins
     pad1->SetRightMargin(0.06);
     pad2->SetRightMargin(0.06);
-    pad2->SetBottomMargin(0.33);
+    pad3->SetRightMargin(0.06);
+
+    // Left margins
     pad1->SetLeftMargin(0.16);
     pad2->SetLeftMargin(0.16);
-    pad1->SetTopMargin(0.02);
-    pad1->SetBottomMargin(0.001);
-    pad2->SetTopMargin(0.001);
+    pad3->SetLeftMargin(0.16);
 
+    // Top margins
+    pad1->SetTopMargin(0.02);
+    pad2->SetTopMargin(0.001);
+    pad3->SetTopMargin(0.00);
+
+    // Bottom margins
+    pad1->SetBottomMargin(0.001);
+    pad2->SetBottomMargin(0.00);
+    pad3->SetBottomMargin(0.20);
+
+    // Ticks on all pads
     pad1->SetTickx(1);
     pad1->SetTicky(1);
+
     pad2->SetTickx(1);
     pad2->SetTicky(1);
+
+    pad3->SetTickx(1);
+    pad3->SetTicky(1);
 }

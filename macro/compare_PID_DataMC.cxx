@@ -67,7 +67,8 @@ void compare_PID_DataMC()
     TString mcPath = "/home/sawan/Storage/check_k892/mc/LHC24f3c";
 
     TFile *fData = new TFile(dataPath + "/751768.root", "read");
-    TFile *fMC = new TFile(mcPath + "/750013.root", "read");
+    TFile *fMC = new TFile(mcPath + "/CalibratedMCchecks/780946.root", "read");
+    // TFile *fMC = new TFile(mcPath + "/750013.root", "read");
     // TFile *fMC = new TFile(mcPath + "/734009.root", "read");
 
     // TFile *fData = new TFile(dataPath + "/679906.root", "read");
@@ -83,7 +84,7 @@ void compare_PID_DataMC()
     }
 
     // string multpathMC = "kstarqa_WithoutTOFShift";
-    string multpathMC = "kstarqa";
+    string multpathMC = "kstarqa_ServiceWagon";
     string multpathData = "kstarqa";
 
     // Fetch DCA histograms (Data & MC)
@@ -112,10 +113,10 @@ void compare_PID_DataMC()
     }
 
     // Binning definitions
-    double pTrangesForTPCandTOF[] = {0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0};
+    double pTrangesForTPCandTOF[] = {0.0, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0};
     const int nPtBins = 6;
 
-    double multLow = 0.0;
+    double multLow = 70.0;
     double multHigh = 100.0;
     int lowBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multLow + 0.001);
     int highBinMult = hNsigmaTPCKaon->GetYaxis()->FindBin(multHigh - 0.001);

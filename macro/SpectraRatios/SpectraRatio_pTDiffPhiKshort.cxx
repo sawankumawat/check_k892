@@ -26,8 +26,9 @@ TFile *OpenFile(const string &path)
 
 void SpectraRatio_pTDiffPhiKshort()
 {
+    bool plotEPOS = true;
     gStyle->SetOptStat(0);
-    TFile *fPhi =  OpenFile("PhiResults/PhiAnalysisResults_pprun3.root");
+    TFile *fPhi = OpenFile("PhiResults/PhiAnalysisResults_pprun3.root");
     TFile *fKshort = OpenFile("K0s_Run3_Results/Spectra_K0Short.root"); // Run 3
     // TFile *fKshort = OpenFile("K0s_Run2_Results/K0s_Run2_Spectra.root"); // Run 2
 
@@ -155,7 +156,7 @@ void SpectraRatio_pTDiffPhiKshort()
     hKstar_statHM->SetMarkerSize(1.3);
     hKstar_statHM->SetMaximum(5.0);
     hKstar_statHM->SetMinimum(9e-5);
-    hKstar_statHM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statHM->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstar_statHM->Draw("pe");
     SetHistoQA(hKshort_statHM);
     gPad->SetLogy(1);
@@ -187,7 +188,7 @@ void SpectraRatio_pTDiffPhiKshort()
     hKstar_statLM->SetMarkerSize(1.3);
     hKstar_statLM->SetMaximum(0.7);
     hKstar_statLM->SetMinimum(2e-6);
-    hKstar_statLM->GetXaxis()->SetRangeUser(0, 10.0);
+    hKstar_statLM->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstar_statLM->Draw("pe");
     SetHistoQA(hKshort_statLM);
     gPad->SetLogy(1);
@@ -486,13 +487,13 @@ void SpectraRatio_pTDiffPhiKshort()
     hKstarK0sRatioHM_stat->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hKstarK0sRatioHM_stat->SetMarkerStyle(20);
     hKstarK0sRatioHM_stat->SetMarkerSize(1.45);
-    hKstarK0sRatioHM_stat->GetYaxis()->SetTitleOffset(1.60 * pad1Size);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetTitleOffset(1.90 * pad1Size);
     hKstarK0sRatioHM_stat->GetYaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(0.02, 0.65);
-    hKstarK0sRatioHM_stat->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(0.02, 0.49);
+    hKstarK0sRatioHM_stat->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstarK0sRatioHM_stat->SetMarkerColor(kRed + 1);
     hKstarK0sRatioHM_stat->SetLineColor(kRed + 1);
     hKstarK0sRatioHM_stat->Draw("pe");
@@ -525,21 +526,47 @@ void SpectraRatio_pTDiffPhiKshort()
     // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest.root");
-    TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
-    TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
-    TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
-    TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent0");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
 
-    TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
-    TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
-    TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
-    TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
+    // TH1F *hEPOS_UrQMDOFF_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
+    // TH1F *hEPOS_UrQMDOFF_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
+    // TH1F *hEPOS_UrQMDON_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent9");
+    // TH1F *hEPOS_UrQMDON_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
 
-    // TH1F *hEPOS_UrQMDOFF_KstarK0sRatioHM = (TH1F *)hEPOS_UrQMDOFF_KstarHM->Clone("hEPOS_UrQMDOFF_KstarK0sRatioHM");
+    TH1F *hEPOS_UrQMDOFF_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent9");
+    TH1F *hEPOS_UrQMDON_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
+
+    TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent0");
+
+    //     TH1F *hEPOS_UrQMDOFF_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
+    // TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
+    // TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
+    // TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
+
+    double phiBR = 0.489; // Branching ratio for Phi(1020) -> K+ K-
+    hEPOS_UrQMDON_PhiHM->Scale(1 / phiBR);
+    hEPOS_UrQMDON_PhiLM->Scale(1 / phiBR);
+
+    if (!hEPOS_UrQMDOFF_PhiHM || !hEPOS_UrQMDOFF_PhiLM || !hEPOS_UrQMDON_PhiHM || !hEPOS_UrQMDON_PhiLM)
+    {
+        std::cerr << "Error: One or more Phi histograms not found in the EPOS spectra file." << std::endl;
+        return;
+    }
+    if (!hEPOS_UrQMDOFF_K0sHM || !hEPOS_UrQMDOFF_K0sLM || !hEPOS_UrQMDON_K0sHM || !hEPOS_UrQMDON_K0sLM)
+    {
+        std::cerr << "Error: One or more K0s histograms not found in the EPOS spectra file." << std::endl;
+        return;
+    }
+
+    // TH1F *hEPOS_UrQMDOFF_KstarK0sRatioHM = (TH1F *)hEPOS_UrQMDOFF_PhiHM->Clone("hEPOS_UrQMDOFF_KstarK0sRatioHM");
     // hEPOS_UrQMDOFF_KstarK0sRatioHM->Divide(hEPOS_UrQMDOFF_K0sHM);
     // hEPOS_UrQMDOFF_KstarK0sRatioHM->Scale(0.5); // Since kstar was average but not K0s
-    // TH1F *hEPOS_UrQMDOFF_KstarK0sRatioLM = (TH1F *)hEPOS_UrQMDOFF_KstarLM->Clone("hEPOS_UrQMDOFF_KstarK0sRatioLM");
+    // TH1F *hEPOS_UrQMDOFF_KstarK0sRatioLM = (TH1F *)hEPOS_UrQMDOFF_PhiLM->Clone("hEPOS_UrQMDOFF_KstarK0sRatioLM");
     // hEPOS_UrQMDOFF_KstarK0sRatioLM->Divide(hEPOS_UrQMDOFF_K0sLM);
     // hEPOS_UrQMDOFF_KstarK0sRatioLM->Scale(0.5); // Since kstar was average but not K0s
 
@@ -547,7 +574,8 @@ void SpectraRatio_pTDiffPhiKshort()
     // EPOS K* / K0s ratio using pT-integrated bins
     // ============================================================
 
-    double mergedBins[] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
+    // double mergedBins[] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
+    double mergedBins[] = {0.3, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
 
     const int nMergedBins = sizeof(mergedBins) / sizeof(double) - 1;
 
@@ -585,17 +613,17 @@ void SpectraRatio_pTDiffPhiKshort()
         double k0sLM, k0sErrLM;
 
         // HM
-        getIntegral(hEPOS_UrQMDOFF_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
+        getIntegral(hEPOS_UrQMDOFF_PhiHM, xLow, xHigh, kstarHM, kstarErrHM);
         getIntegral(hEPOS_UrQMDOFF_K0sHM, xLow, xHigh, k0sHM, k0sErrHM);
         // LM
-        getIntegral(hEPOS_UrQMDOFF_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
+        getIntegral(hEPOS_UrQMDOFF_PhiLM, xLow, xHigh, kstarLM, kstarErrLM);
         getIntegral(hEPOS_UrQMDOFF_K0sLM, xLow, xHigh, k0sLM, k0sErrLM);
         // --------------------------------------------------------
         // HM ratio
         // --------------------------------------------------------
         if (kstarHM > 0 && k0sHM > 0)
         {
-            double ratioHM = 0.5 * kstarHM / k0sHM;
+            double ratioHM = kstarHM / k0sHM;
             double relKstarHM = kstarErrHM / kstarHM;
             double relK0sHM = k0sErrHM / k0sHM;
 
@@ -610,7 +638,7 @@ void SpectraRatio_pTDiffPhiKshort()
         // --------------------------------------------------------
         if (kstarLM > 0 && k0sLM > 0)
         {
-            double ratioLM = 0.5 * kstarLM / k0sLM;
+            double ratioLM = kstarLM / k0sLM;
 
             double relKstarLM = kstarErrLM / kstarLM;
             double relK0sLM = k0sErrLM / k0sLM;
@@ -668,10 +696,13 @@ void SpectraRatio_pTDiffPhiKshort()
     TGraphErrors *bHM, *bLM;
     makeCurve(hEPOS_UrQMDOFF_KstarK0sRatioHM, kRed + 1, 1, gHM, bHM);
     makeCurve(hEPOS_UrQMDOFF_KstarK0sRatioLM, kBlue + 1, 1, gLM, bLM);
-    // bHM->Draw("3 same");
-    // bLM->Draw("3 same"); // bands
-    // gHM->Draw("L same");
-    // gLM->Draw("L same"); // lines
+    if (plotEPOS)
+    {
+        bHM->Draw("3 same");
+        bLM->Draw("3 same"); // bands
+        gHM->Draw("L same");
+        gLM->Draw("L same"); // lines
+    }
 
     // ============================================================
     // UrQMD ON K* / K0s ratio using pT-integrated bins
@@ -700,13 +731,13 @@ void SpectraRatio_pTDiffPhiKshort()
         // --------------------------------------------------------
         // HM
         // --------------------------------------------------------
-        getIntegral(hEPOS_UrQMDON_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
+        getIntegral(hEPOS_UrQMDON_PhiHM, xLow, xHigh, kstarHM, kstarErrHM);
         getIntegral(hEPOS_UrQMDON_K0sHM, xLow, xHigh, k0sHM, k0sErrHM);
 
         // --------------------------------------------------------
         // LM
         // --------------------------------------------------------
-        getIntegral(hEPOS_UrQMDON_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
+        getIntegral(hEPOS_UrQMDON_PhiLM, xLow, xHigh, kstarLM, kstarErrLM);
         getIntegral(hEPOS_UrQMDON_K0sLM, xLow, xHigh, k0sLM, k0sErrLM);
 
         // ========================================================
@@ -714,8 +745,8 @@ void SpectraRatio_pTDiffPhiKshort()
         // ========================================================
         if (kstarHM > 0 && k0sHM > 0)
         {
-            double ratioHM = 0.5 * kstarHM / k0sHM;
-            double relKstarHM = 0.5 * kstarErrHM / kstarHM;
+            double ratioHM = kstarHM / k0sHM;
+            double relKstarHM = kstarErrHM / kstarHM;
 
             double relK0sHM = k0sErrHM / k0sHM;
 
@@ -730,8 +761,8 @@ void SpectraRatio_pTDiffPhiKshort()
         // ========================================================
         if (kstarLM > 0 && k0sLM > 0)
         {
-            double ratioLM = 0.5 * kstarLM / k0sLM;
-            double relKstarLM = 0.5 * kstarErrLM / kstarLM;
+            double ratioLM = kstarLM / k0sLM;
+            double relKstarLM = kstarErrLM / kstarLM;
 
             double relK0sLM = k0sErrLM / k0sLM;
 
@@ -747,14 +778,15 @@ void SpectraRatio_pTDiffPhiKshort()
 
     TGraph *gHM_UrQMDON, *gLM_UrQMDON;
     TGraphErrors *bHM_UrQMDON, *bLM_UrQMDON;
-    makeCurve(hEPOS_UrQMDON_KstarK0sRatioHM, kRed + 1, 1, gHM_UrQMDON, bHM_UrQMDON);
-    makeCurve(hEPOS_UrQMDON_KstarK0sRatioLM, kBlue + 1, 1, gLM_UrQMDON, bLM_UrQMDON);
-    // bHM_UrQMDON->Draw("3 same");
-    // bLM_UrQMDON->Draw("3 same"); // bands
-    // gHM_UrQMDON->SetLineStyle(7);
-    // gLM_UrQMDON->SetLineStyle(7);
-    // gHM_UrQMDON->Draw("L same");
-    // gLM_UrQMDON->Draw("L same"); // lines
+    makeCurve(hEPOS_UrQMDON_KstarK0sRatioHM, kRed + 1, 7, gHM_UrQMDON, bHM_UrQMDON);
+    makeCurve(hEPOS_UrQMDON_KstarK0sRatioLM, kBlue + 1, 7, gLM_UrQMDON, bLM_UrQMDON);
+    if (plotEPOS)
+    {
+        bHM_UrQMDON->Draw("3 same");
+        bLM_UrQMDON->Draw("3 same"); // bands
+        gHM_UrQMDON->Draw("L same");
+        gLM_UrQMDON->Draw("L same"); // lines
+    }
 
     TLegend *legendRatio = new TLegend(0.5, 0.04, 0.80, 0.36);
     legendRatio->SetBorderSize(0);
@@ -763,18 +795,22 @@ void SpectraRatio_pTDiffPhiKshort()
     legendRatio->SetTextSize(0.04);
     legendRatio->AddEntry(hKstarK0sRatioHM_stat, "FT0M: 0-1%", "p");
     legendRatio->AddEntry(hKstarK0sRatioLM_stat, "FT0M: 70-100%", "p");
-    // legendRatio->AddEntry(gHM, "EPOS UrQMD OFF: 0-1%", "l");
-    // legendRatio->AddEntry(gLM, "EPOS UrQMD OFF: 70-100%", "l");
-    // legendRatio->AddEntry(gHM_UrQMDON, "EPOS UrQMD ON: 0-1%", "l");
-    // legendRatio->AddEntry(gLM_UrQMDON, "EPOS UrQMD ON: 70-100%", "l");
+    if (plotEPOS)
+    {
+        legendRatio->AddEntry(gHM, "EPOS UrQMD OFF: 0-1%", "l");
+        legendRatio->AddEntry(gLM, "EPOS UrQMD OFF: 70-100%", "l");
+        legendRatio->AddEntry(gHM_UrQMDON, "EPOS UrQMD ON: 0-1%", "l");
+        legendRatio->AddEntry(gLM_UrQMDON, "EPOS UrQMD ON: 70-100%", "l");
+    }
     legendRatio->Draw();
 
     lat.SetTextSize(0.05);
     lat.DrawLatex(0.22, 0.89, "ALICE");
     lat.DrawLatex(0.22, 0.83, "|y| < 0.5");
     lat.DrawLatex(0.22, 0.76, "pp #sqrt{#it{s}} = 13.6 TeV");
+
     cRatio->cd(2);
-    gPad->SetGridy();
+    // gPad->SetGridy();
     TH1F *hDoubleRatioStat = (TH1F *)hKstarK0sRatioHM_stat->Clone("hDoubleRatioStat");
     hDoubleRatioStat->Divide(hKstarK0sRatioLM_stat);
     TH1F *hDoubleRatioSys = (TH1F *)hKstarK0sRatioHM_Uncorr->Clone("hDoubleRatioSys");
@@ -789,8 +825,8 @@ void SpectraRatio_pTDiffPhiKshort()
     hDoubleRatioStat->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     hDoubleRatioStat->GetYaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.45, 1.75);
-    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.32, 1.75);
+    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.5, 6.0);
     hDoubleRatioStat->SetMarkerColor(kRed + 1);
     hDoubleRatioStat->SetLineColor(kRed + 1);
     hDoubleRatioStat->GetYaxis()->SetNdivisions(505);
@@ -809,79 +845,131 @@ void SpectraRatio_pTDiffPhiKshort()
     TGraph *gRatio_HM_LM_On, *gRatio_HM_LM_Off;
     TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
     makeCurve(hRatio_HM_LM, kRed + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
-    makeCurve(hRatio_HM_LM_ON, kBlue + 1, 1, gRatio_HM_LM_On, bRatio_HM_LM_On);
-    // bRatio_HM_LM_Off->Draw("3 same");
-    // bRatio_HM_LM_On->Draw("3 same"); // bands
-    // gRatio_HM_LM_Off->SetLineStyle(7);
-    // gRatio_HM_LM_Off->Draw("L same");
-    // gRatio_HM_LM_On->Draw("L same"); // lines
+    makeCurve(hRatio_HM_LM_ON, kBlue + 1, 7, gRatio_HM_LM_On, bRatio_HM_LM_On);
 
-    TLine *line = new TLine(0.0, 1.0, 10.0, 1.0);
+    if (plotEPOS)
+    {
+        bRatio_HM_LM_Off->Draw("3 same");
+        bRatio_HM_LM_On->Draw("3 same"); // bands
+        gRatio_HM_LM_Off->Draw("L same");
+        gRatio_HM_LM_On->Draw("L same"); // lines
+    }
+
+    TLine *line = new TLine(0.5, 1.0, 6.0, 1.0);
     line->SetLineColor(kGray + 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);
     line->Draw();
 
-    cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio.png");
+    // ============================================
+    // Pad 3: Significance of deviation from unity
+    // ============================================
+    cRatio->cd(3);
+    // gPad->SetGridy();
 
-    // // ---------------------------------------------------------
-    // // Calculate significance with respect to unity
-    // // significance = (value - 1) / systematic error
-    // // ---------------------------------------------------------
-    // TH1F *hDoubleRatioSignificance = (TH1F *)hDoubleRatioSys->Clone("hDoubleRatioSignificance");
+    TH1F *hSignificance = (TH1F *)hDoubleRatioStat->Clone("hSignificance");
+    // hSignificance->Reset("ICES");
+    double maximumSignificance = 0.0;
 
-    // hDoubleRatioSignificance->Reset();
+    for (int i = 1; i <= hDoubleRatioStat->GetNbinsX(); i++)
+    {
+        double ratio = hDoubleRatioStat->GetBinContent(i);
 
-    // int nBins = hDoubleRatioSys->GetNbinsX();
+        double statErr = hDoubleRatioStat->GetBinError(i);
+        double sysErr = hDoubleRatioSys->GetBinError(i);
 
-    // for (int ibin = 1; ibin <= nBins; ++ibin)
-    // {
-    //     double value = hDoubleRatioSys->GetBinContent(ibin);
-    //     double sysErr = hDoubleRatioSys->GetBinError(ibin);
-    //     double statErr = hDoubleRatioStat->GetBinError(ibin);
+        double totalErr = sqrt(statErr * statErr + sysErr * sysErr);
 
-    //     double significance = 0.0;
+        double significance = 0.0;
 
-    //     if (sysErr > 0)
-    //     {
-    //         significance = abs(value - 1.0) / sysErr;
-    //     }
+        if (totalErr > 0.0)
+            significance = abs(ratio - 1.0) / totalErr;
 
-    //     hDoubleRatioSignificance->SetBinContent(ibin, significance);
-    //     hDoubleRatioSignificance->SetBinError(ibin, 0.0);
-    // }
+        hSignificance->SetBinContent(i, significance);
+        hSignificance->SetBinError(i, 0.0);
 
-    // for (int ibin = 1; ibin <= nBins; ++ibin)
-    // {
-    //     double pt = hDoubleRatioSignificance->GetBinCenter(ibin);
-    //     double significance = hDoubleRatioSignificance->GetBinContent(ibin);
+        if (significance > maximumSignificance)
+            maximumSignificance = significance;
+    }
+    cout << "Maximum significance: " << maximumSignificance << endl;
 
-    //     cout << "pT = " << pt << " GeV/c, significance = " << significance << endl;
-    // }
+    SetHistoQA(hSignificance);
+    hSignificance->SetTitle("");
+    hSignificance->SetLineColor(kRed + 1);
+
+    hSignificance->GetYaxis()->SetTitle("n#sigma");
+    hSignificance->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+
+    hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
+    hSignificance->GetYaxis()->SetTitleSize(0.04 / 0.20);
+    hSignificance->GetYaxis()->SetLabelSize(0.035 / 0.20);
+    hSignificance->GetXaxis()->SetTitleSize(0.04 / 0.20);
+    hSignificance->GetXaxis()->SetLabelSize(0.035 / 0.20);
+
+    hSignificance->GetXaxis()->SetRangeUser(0.5, 6.0);
+    hSignificance->GetYaxis()->SetTitleOffset(1.60 * 0.20);
+    hSignificance->GetYaxis()->SetNdivisions(505);
+
+    hSignificance->SetMinimum(0.0);
+    hSignificance->SetMaximum(13.0);
+    hSignificance->Draw("HIST");
+
+    TLine *phiLine = new TLine(0.5, 3.58291, 6.0, 3.58291);
+    phiLine->SetLineColor(kGray + 1);
+    phiLine->SetLineStyle(2);
+    phiLine->SetLineWidth(3);
+    phiLine->Draw("same");
+
+    cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio_significance.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 {
     SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
-    c->Divide(1, 2, 0, 0);
+
+    c->Divide(1, 3, 0, 0);
+
     TPad *pad1 = (TPad *)c->GetPad(1);
     TPad *pad2 = (TPad *)c->GetPad(2);
-    pad2Size = 0.3; // Size of the first pad
-    pad1Size = 1 - pad2Size;
+    TPad *pad3 = (TPad *)c->GetPad(3);
 
-    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
-    pad2->SetPad(0, 0, 1, 0.3);
+    // Relative pad heights
+    pad1Size = 0.60;
+    pad2Size = 0.20;
+    double pad3Size = 0.20;
+
+    // Set pad positions: (x1, y1, x2, y2)
+    pad1->SetPad(0, pad2Size + pad3Size, 1, 1);
+    pad2->SetPad(0, pad3Size, 1, pad2Size + pad3Size);
+    pad3->SetPad(0, 0, 1, pad3Size);
+
+    // Right margins
     pad1->SetRightMargin(0.06);
     pad2->SetRightMargin(0.06);
-    pad2->SetBottomMargin(0.33);
+    pad3->SetRightMargin(0.06);
+
+    // Left margins
     pad1->SetLeftMargin(0.16);
     pad2->SetLeftMargin(0.16);
-    pad1->SetTopMargin(0.02);
-    pad1->SetBottomMargin(0.001);
-    pad2->SetTopMargin(0.001);
+    pad3->SetLeftMargin(0.16);
 
+    // Top margins
+    pad1->SetTopMargin(0.02);
+    pad2->SetTopMargin(0.001);
+    pad3->SetTopMargin(0.00);
+
+    // Bottom margins
+    pad1->SetBottomMargin(0.001);
+    pad2->SetBottomMargin(0.00);
+    pad3->SetBottomMargin(0.20);
+
+    // Ticks on all pads
     pad1->SetTickx(1);
     pad1->SetTicky(1);
+
     pad2->SetTickx(1);
     pad2->SetTicky(1);
+
+    pad3->SetTickx(1);
+    pad3->SetTicky(1);
 }

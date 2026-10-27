@@ -49,7 +49,7 @@ void plot_spectra()
     bool plotOnlyRaw = false;
     gStyle->SetPalette(kRainBow);
     gStyle->SetOptStat(0);
-    TString outputType = "pdf"; // pdf, png
+    TString outputType = "png"; // pdf, png
     double fitRangeMax = 20.0;
     bool systematicsExist = true;
 
@@ -401,7 +401,7 @@ void plot_spectra()
             // double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
             // double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
-            double dnch_detaRun3[] = {21.642, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; //updated uncertainties (matching correction)
+            double dnch_detaRun3[] = {21.212, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; //updated uncertainties (matching correction)
             double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // using same as previous one
 
             double dndyRun3_UncorrSys[] = {0.0171542, 0.0123024, 0.00913457, 0.00922026, 0.00625093, 0.00683177, 0.00451025, 0.00377954, 0.00191806, 0.00171489};

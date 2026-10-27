@@ -60,15 +60,16 @@ void compare_yield_inel()
 
     //==============First lets calcuate signal loss for INEL=======================
     TFile *fSigLoss;
+    // fSigLoss = new TFile("../../mc/LHC24f3c/697699.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
+    // fSigLoss = new TFile("../../mc/LHC24f3c/755334.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
+    fSigLoss = new TFile("../../mc/LHC24f3c/788007.root", "READ"); // 2024 MC INEL lf-mc-centrality
+
     string pathNum, pathDen;
     THnSparseF *hSpraseGenAll, *hSpraseGenVzSel;
     TH1D *hGenAll, *hGenVzSel, *hSignalLoss;
     double eventLoss{1};
     if (!compareUsingINELgt0SigLoss)
     {
-        // fSigLoss = new TFile("../../mc/LHC24f3c/697699.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
-        fSigLoss = new TFile("../../mc/LHC24f3c/755334.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
-
         pathNum = "kstarqa_AllEventsVz"; // vZ only
         pathDen = "kstarqa_Vz_sel8";     // vZ + Sel8
 
@@ -110,9 +111,16 @@ void compare_yield_inel()
         hSignalLoss->SetMaximum(1.38);
         hSignalLoss->SetMinimum(1.28);
         hSignalLoss->Draw("pe");
-        cSignalLoss->SaveAs(outputPath + "/SignalLoss.png");
+        // cSignalLoss->SaveAs(outputPath + "/SignalLoss.png");
         //=================Signal loss end=======================
     }
+
+    TH1F *hDen = (TH1F *)fSigLoss->Get("kstarqa/hInvMass/MCcorrections/MultiplicityGen");
+    TH1F *hNum = (TH1F *)fSigLoss->Get("kstarqa/hInvMass/MCcorrections/MultiplicityRec");
+    double eventLossNum = hNum->Integral();
+    double eventLossDen = hDen->Integral();
+    eventLoss = eventLossNum / eventLossDen;
+    cout << "Event Loss for INEL: " << eventLoss << endl;
 
     TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_0_120.root").c_str(), "read");
 
@@ -133,7 +141,7 @@ void compare_yield_inel()
 
     if (compareUsingINELgt0SigLoss)
     {
-        hmult1 = (TH1F *)fspectra1->Get("mult_0-120/corrected_spectra_Integral_final");
+        hmult1 = (TH1F *)fspectra1->Get("mult_0-120/corrected_spectra_BinCount_final");
     }
     else
     {
@@ -145,7 +153,12 @@ void compare_yield_inel()
         cout << "Error: histograms not found in the corrected spectra root file" << endl;
         return;
     }
-    hmult1->Scale(2.0); // for INEL it is K* + K*_bar and not their avearge (but confirm it once)
+    hmult1->Scale(2.0);               // for INEL it is K* + K*_bar and not their avearge
+    hmult1->Scale(1.0 / eventLoss);   // removing event loss
+    hmult1->Scale(1.0 / 1.351224015); // Total selected events --> TVX events
+    hmult1->Scale(1.0 / 0.948231192);   // Fraction of TVX events with |Vz| < 10 cm
+
+    cout << "All scale factors " << 1.0 / (eventLoss * 1.351224015 * 0.948231192) << endl;
 
     if (!compareUsingINELgt0SigLoss)
     {
@@ -220,8 +233,7 @@ void compare_yield_inel()
 
             double error1_stat = sqrt(pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
 
-            double error1_sys = sqrt(pow(sysError_fit / yield_run2, 2) +
-                                     pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
+            double error1_sys = sqrt(pow(sysError_fit / yield_run2, 2) + pow(thisanalysis1 * y_error_run2 / (yield_run2 * yield_run2), 2));
 
             gratio1->SetPoint(i, x_run2, thisanalysis1 / yield_run2);
             gratio1->SetPointError(i, x_error, error1_stat);
@@ -231,7 +243,7 @@ void compare_yield_inel()
             double xBand = (x_error > 0) ? x_error : 0.10;
             gratio1_sys->SetPointError(i, xBand, error1_sys);
 
-            cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
+            // cout << "Ratio 1 is " << thisanalysis1 / yield_run2 << endl;
         }
     }
     else
@@ -369,6 +381,6 @@ void compare_yield_inel()
     box->SetFillStyle(3003);
     box->Draw("same");
 
-    TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.pdf" : "YieldRatioINEL.pdf";
-    c1->SaveAs(outputPath + "/" + saveName);
+    TString saveName = (removeNormFactorsRun2) ? "YieldRatioINEL_woNormFactorsRun2.pdf" : "YieldRatioINEL_newMC.png";
+    // c1->SaveAs(outputPath + "/" + saveName);
 }

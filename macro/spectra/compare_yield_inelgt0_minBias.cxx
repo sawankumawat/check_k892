@@ -322,7 +322,7 @@ void compare_yield_inelgt0_minBias()
     box->SetFillColor(kGray + 2);
     box->SetFillStyle(3003);
     box->Draw("same");
-    c1->SaveAs(outputPath + "/YieldMinBiasRatio.pdf");
+    c1->SaveAs(outputPath + "/YieldMinBiasRatio.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

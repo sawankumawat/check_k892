@@ -23,7 +23,7 @@ void efficiency()
     // gStyle->SetOptStat(1110);
     gStyle->SetOptStat(0);
 
-    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
+    int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7, kBlue};
 
     // ****************Data files ********************
     string common_data_path = "../output/kstar/LHC22o_pass7/";
@@ -59,8 +59,6 @@ void efficiency()
         // string data_path = "672297/kstarqa/hInvMass"; // (Base (2sigma TOF), MIDptDep2_0p3_TOF3, MIDptDep2_small_TOF3, MIDptDep2_TOF3, MIDptDep2_verySmall_TOF3)
         // string data_path = "MC_closure/669655/kstarqa_MC_closure/hInvMass"; // (MC_closure)
         // string data_path = "675391/kstarqa_SquarePID_TOF3_noTOFshift/hInvMass"; // (MIDNew_TOF2, MIDNew_TOF3, SquarePID_TOF2, SquarePID_TOF3)
-
-        //===========2024 data==============
         // string data_path = "658306/kstarqa_INELgt0/hInvMass"; // 2024 (with DeepAngle, PV Contributor, INELgt0)
         // string data_path = "660943/kstarqa/hInvMass"; // 2024 (Base, INEL, MID, MIDptDep, pTDepPID, pTDepPIDTOF, LoosePID)
         // string data_path = "663738/kstarqa/hInvMass"; // 2024 (Base, OnlyTPC)
@@ -69,11 +67,14 @@ void efficiency()
         // string data_path = "697595/kstarqa/hInvMass"; // INEL only
         // string data_path = "707551/kstarqa/hInvMass"; // INEL only (upto 100 GeV/c pT range)
         // string data_path = "708297/kstarqa/hInvMass"; // INEL only (lowest pT ranges 0-0.1 and upto 100 GeV/c pT range)
+        // string data_path = "764308/kstarqa/hInvMass"; // DCA variation check (pT-dependent DCA check)
+
+        //===========2024 data==============
+
+        // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
         string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
         // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
-        // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
-        // string data_path = "764308/kstarqa/hInvMass"; // DCA variation check (pT-dependent DCA check)
 
         if (ivar == 6)
         {
@@ -124,10 +125,6 @@ void efficiency()
         // string MCpath = "679867.root"; // 2024 MC (Material budget +10%)
         // string MCpath = "679945.root"; // 2024 MC (Sys train: Base (3sigma TOF), FT0C, FV0A, TPC1p5_combined2, TPC2p5_combined3p5)
         // string MCpath = "683085.root"; // 2024 MC (Sys. train2: DCAvar1, DCAvar2, NoPVContributor)
-        string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
-
-
-        //==========2024 MC===========
         // string MCpath = "658377.root"; // 2024 MC (QA+PID checks with INEL)
         // string MCpath = "663903.root"; // 2024 MC (Base, OnlyTPC)
         // string MCpath = "664785.root"; // 2024 MC (Base, TOFshift, TOFshiftMID)
@@ -138,9 +135,13 @@ void efficiency()
         // string MCpath = "697699.root"; // Only INEL
         // string MCpath = "707707.root"; // Only INEL (upto 100 GeV/c)
         // string MCpath = "708422.root"; // Only INEL (lowest pT ranges 0-0.1 and upto 100 GeV/c)
+
+        //==========2024 MC===========
+        // string MCpath = "788007.root"; // INEL, latest train with systematics (lf-mc-centrality wagon)
         // string MCpath = "750013.root"; // INEL>0, latest train with systematics
-        // string MCpath = "755334.root"; // INEL, latest train with systematics
+        // string MCpath = "755334.root"; // INEL, with systematics
         // string MCpath = "764341.root"; //DCA variation check (pT-dependent DCA check)
+        string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -159,6 +160,9 @@ void efficiency()
 
         const string genpath = "kstarqa_ServiceWagon/hInvMass";
         const string recpath = "kstarqa_ServiceWagon/hInvMass";
+
+        // const string genpath = "kstarqa/hInvMass";
+        // const string recpath = "kstarqa/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
@@ -611,6 +615,8 @@ void efficiency()
             // lineEventLoss->Draw();
             cEventLoss->SaveAs(outputfolder + "/event_loss." + outputtype);
 
+            TFile *fileEventSigLoss = new TFile(outputfolder + "/EventSignalLoss.root", "RECREATE");
+
             TCanvas *cSignalLoss = new TCanvas("", "", 720, 720);
             SetCanvasStyle(cSignalLoss, 0.16, 0.06, 0.01, 0.14);
             TLegend *legall2 = new TLegend(0.45, 0.68, 0.92, 0.96);
@@ -649,6 +655,9 @@ void efficiency()
                 heventloss[imult]->Draw("l same PLC PMC");
                 legall2->AddEntry(hSignalLoss[imult], Form("%d-%d%%", multlow, multhigh), "p");
                 // legall2->AddEntry(hSignalLoss[imult], "Signal Loss", "p");
+
+                hSignalLoss[imult]->Write(Form("hSignalLoss_%d", imult));
+                heventloss[imult]->Write(Form("hEventLoss_%d", imult));
             }
             legall2->AddEntry(heventloss[0], "Event Loss", "l");
             legall2->Draw();

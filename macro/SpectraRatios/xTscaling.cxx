@@ -172,15 +172,23 @@ void xTscaling()
     pol0->SetLineColor(kBlack);
     pol0->SetLineStyle(2);
     gN_all->Fit(pol0, "REBMS0");
+    cout << "Default fit: Chi2/NDF = " << pol0->GetChisquare() << "/" << pol0->GetNDF() << endl;
 
     // Vary the fit range to calculate the systematic uncertainty on the average n(xT) value
-    TF1 *pol0_sys1 = new TF1("pol0_sys1", "[0]", 1.3e-3, 3.8e-3);
+    TF1 *pol0_sys1 = new TF1("pol0_sys1", "[0]", 1.3e-3, 3.4e-3);
     pol0_sys1->SetParameter(0, 4.7);
-    gN_all->Fit(pol0_sys1, "REBMS0");
+    pol0_sys1->SetLineColor(kBlue + 2);
+    pol0_sys1->SetLineWidth(3);
+    pol0_sys1->SetLineStyle(7);
+    gN_all->Fit(pol0_sys1, "REBMS");
+    cout << "Fit with range 1.3e-3 to 3.4e-3: Chi2/NDF = " << pol0_sys1->GetChisquare() << "/" << pol0_sys1->GetNDF() << endl;
 
     TF1 *pol0_sys2 = new TF1("pol0_sys2", "[0]", 1.9e-3, 4.4e-3);
     pol0_sys2->SetParameter(0, 4.7);
-    gN_all->Fit(pol0_sys2, "REBMS0");
+    pol0_sys2->SetLineColor(kRed + 2);
+    pol0_sys2->SetLineWidth(3);
+    gN_all->Fit(pol0_sys2, "REBMS");
+    cout << "Fit with range 1.9e-3 to 4.4e-3: Chi2/NDF = " << pol0_sys2->GetChisquare() << "/" << pol0_sys2->GetNDF() << endl;
 
     // Calculate the systematic uncertainty
     double nAverage = pol0->GetParameter(0);
@@ -220,6 +228,8 @@ void xTscaling()
     }
 
     pol0->Draw("same");
+    pol0_sys1->Draw("same");
+    pol0_sys2->Draw("same");
     legendN->AddEntry(pol0, "Pol 0", "l");
     legendN->Draw("same");
 
@@ -230,7 +240,17 @@ void xTscaling()
     lat.DrawLatex(0.25, 0.91, "K*^{0}");
     lat.DrawLatex(0.25, 0.85, "pp, INEL");
     lat.DrawLatex(0.25, 0.79, "|y| < 0.5");
-    cN->SaveAs("Plots/n_xTDistributions.pdf");
+
+    TLegend *legendFitLines = new TLegend(0.35, 0.48, 0.65, 0.64);
+    legendFitLines->SetBorderSize(0);
+    legendFitLines->SetFillStyle(0);
+    legendFitLines->SetTextSize(0.025);
+    legendFitLines->AddEntry(pol0, Form("Default fit: n = %.2f, #chi^{2}/NDF = %.1f", nAverage, pol0->GetChisquare() / pol0->GetNDF()), "l");
+    legendFitLines->AddEntry(pol0_sys1, Form("Fit range 1: n = %.2f, #chi^{2}/NDF = %.1f", nAverage_sys1, pol0_sys1->GetChisquare() / pol0_sys1->GetNDF()), "l");
+    legendFitLines->AddEntry(pol0_sys2, Form("Fit range 2: n = %.2f, #chi^{2}/NDF = %.1f", nAverage_sys2, pol0_sys2->GetChisquare() / pol0_sys2->GetNDF()), "l");
+    legendFitLines->Draw("same");
+
+    cN->SaveAs("Plots/n_xTDistributions.png");
 
     auto gXT136 = HistToXTGraph(hSpectraINELStat, hRelUncert, sqrts136, sigma_inel136, pow(sqrts136, nAverage), false, 2.0); // Since in 13 TeV it is just sum and not average
     auto gXT13 = GraphToXTGraph(gSpectraRun13TeV, hStatError, hTotalSysError, sqrts13, sigma_inel13, pow(sqrts13, nAverage), false, 1.0);

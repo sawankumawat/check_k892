@@ -31,9 +31,15 @@ void compareSpectraHyperloop()
     int multClasses[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
     TH1D *hSpectra[11];
     TH1D *hSpectraSys[11];
-    string sysPath = "../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/SystematicsPlots/SysUncert.root";
+    TH1D *hSpectraPhi[11];
+    TH1D *hSpectraPhiSys[11];
+    string sysPath = "../../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/SystematicsPlots/SysUncert.root";
     TFile *fSystematics = OpenFile(sysPath);
     TH1D *hRelUncert = GetHisto(fSystematics, "hTotalSysSmoothed_0_100");
+
+    TFile *fSpectraPhi = OpenFile("PhiResults/PhiAnalysisResults_pprun3.root");
+
+    string folderPhi[] = {"MB", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10"};
 
     for (int i = 0; i < 11; i++)
     {
@@ -48,7 +54,7 @@ void compareSpectraHyperloop()
             multLow = multClasses[i - 1];
             multHigh = multClasses[i];
         }
-        fSpectras[i] = OpenFile(Form("../../output/kstar/LHC22o_pass7/679906/kstarqa/hInvMass/corrected_spectra_%.0f_%.0f.root", multLow, multHigh));
+        fSpectras[i] = OpenFile(Form("../../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/corrected_spectra_%.0f_%.0f.root", multLow, multHigh));
         hSpectra[i] = GetHisto(fSpectras[i], Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multLow, multHigh));
         hSpectraSys[i] = (TH1D *)hSpectra[i]->Clone(Form("hSpectraSys_%.0f-%.0f", multLow, multHigh));
         for (int bin = 1; bin <= hSpectraSys[i]->GetNbinsX(); ++bin)
@@ -57,6 +63,15 @@ void compareSpectraHyperloop()
             double relUncert = hRelUncert->GetBinContent(bin);
             double sysError = content * relUncert;
             hSpectraSys[i]->SetBinError(bin, sysError);
+        }
+
+        hSpectraPhi[i] = GetHisto(fSpectraPhi, Form("Spectra/%s/hStat", folderPhi[i].c_str()));
+        hSpectraPhiSys[i] = GetHisto(fSpectraPhi, Form("Spectra/%s/hSys", folderPhi[i].c_str()));
+
+        if (hSpectra[i] == nullptr || hSpectraSys[i] == nullptr || hSpectraPhi[i] == nullptr || hSpectraPhiSys[i] == nullptr)
+        {
+            cout << "Error: One or more histograms not found for multiplicity class " << multLow << "-" << multHigh << endl;
+            return;
         }
     }
 
@@ -84,15 +99,15 @@ void compareSpectraHyperloop()
         "Pythia Shoving",
         "Pythia Monash Rescattering"};
 
-    string hyperloopModels[kNModels] = {"EPOS_Hydro2", "Pythia_CR2", "Pythia_Monash2", "Pythia_Ropes2", "Pythia_Shoving2", "Pythia_Monash_Rescattering2"};
+    string hyperloopModels[kNModels] = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
 
-    TGraphErrors *gYield[kNModels];
+    TGraphErrors *gYield[kNModels], *gYieldPhi[kNModels];
     int centrality[11] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
     double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
 
     vector<vector<double>> dNdEtaPythia(kNModels, vector<double>(11, 0.0));
 
-    int colorsPythia[kNModels + 100] = {kBrown, kAzure + 7, kMagenta, kGray + 2, kGreen + 2, kBlue + 1, kOrange + 2};
+    int colorsPythia[kNModels + 100] = {kBrown, kAzure + 7, kMagenta,  kGreen + 2, kBlue + 1, kOrange + 2, kGray + 2};
 
     TH1D *hSpectraModel[10][kNModels];
     TH1D *hSpecRebinned[10][kNModels];
@@ -222,14 +237,14 @@ void compareSpectraHyperloop()
         // spRopes->Draw("SAME");
         // spEPOS->Draw("SAME");
 
-        MakeGraph(hGenSpectraRebinned)->Draw("L SAME");
+        // MakeGraph(hGenSpectraRebinned)->Draw("L SAME");
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaMonash])->Draw("L SAME");
-        hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(1);
+        hSpecRebinned[WhichCent - 1][kPythiaRopes]->SetLineStyle(2);
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaRopes])->Draw("L SAME");
-        hSpecRebinned[WhichCent - 1][kPythiaShoving]->SetLineStyle(1);
+        hSpecRebinned[WhichCent - 1][kPythiaShoving]->SetLineStyle(2);
         MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaShoving])->Draw("L SAME");
         // MakeGraph(hSpecRebinned[WhichCent - 1][kEPOS_Hydro])->Draw("L SAME");
-        MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering])->Draw("L SAME");
+        // MakeGraph(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering])->Draw("L SAME");
 
         // hGenSpectraRebinned->Draw("L SAME");
         // hSpecRebinned[WhichCent - 1][kPythiaMonash]->Draw("L SAME");
@@ -244,14 +259,14 @@ void compareSpectraHyperloop()
         SetLegendStyle(legend);
         legend->SetTextSize(0.04);
         legend->AddEntry(hSpectra[WhichCent], Form("pp, %d-%d%%", centrality[WhichCent - 1], centrality[WhichCent]), "pe");
-        legend->AddEntry(hGenSpectraRebinned, "Pythia Monash (Central Prod.)", "l");
+        // legend->AddEntry(hGenSpectraRebinned, "Pythia Monash (Central Prod.)", "l");
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonash], modelLabel[kPythiaMonash], "l");
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaShoving], modelLabel[kPythiaShoving], "l");
         legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaRopes], modelLabel[kPythiaRopes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRes], modelLabel[kPythiaMonashRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent -1][kPythiaRes], modelLabel[kPythiaRes], "l");
         // legend->AddEntry(hSpecRebinned[WhichCent - 1][kEPOS_Hydro], "EPOS", "l");
-        legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering], modelLabel[kPythiaMonashRescattering], "l");
+        // legend->AddEntry(hSpecRebinned[WhichCent - 1][kPythiaMonashRescattering], modelLabel[kPythiaMonashRescattering], "l");
         legend->Draw();
 
         //============================================
@@ -298,7 +313,7 @@ void compareSpectraHyperloop()
         line->SetLineStyle(8);
         line->Draw("SAME");
 
-        hRatioGen->Draw("HIST SAME"); // Central production
+        // hRatioGen->Draw("HIST SAME"); // Central production
         hRatioMonash->Draw("HIST SAME");
         hRatioShoving->Draw("HIST SAME");
         // hRatioMonashRes->Draw("HIST SAME");
@@ -306,7 +321,7 @@ void compareSpectraHyperloop()
         // hRatioEPOS->GetXaxis()->SetRangeUser(0.0, 6.0);
         // hRatioEPOS->Draw("HIST SAME");
         // RestrictHistogramX(hRatioEPOS, 0.0, 6.0, Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh))->Draw("HIST SAME");
-        hRatioMonashRescattering->Draw("HIST SAME");
+        // hRatioMonashRescattering->Draw("HIST SAME");
 
         cPythiaCentral->SaveAs(Form("Plots/SpectraCompare/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
 

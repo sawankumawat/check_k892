@@ -446,6 +446,7 @@ void systematics_Uncorrelated()
         legUncorr->SetBorderSize(0);
         legUncorr->SetFillStyle(0);
         legUncorr->SetTextSize(0.027);
+        legUncorr->SetHeader(Form("Multiplicity: %d-%d", multLow, multHigh));
         legUncorr->AddEntry(hTotalUncert, "Total Sys. Uncertainty", "l");
         legUncorr->AddEntry(hUncorrOriginal, "Uncorr. Sys. Uncertainty", "l");
         legUncorr->AddEntry(hUncorrSmoothed, "Smoothed Uncorr. Sys. Uncertainty", "l");

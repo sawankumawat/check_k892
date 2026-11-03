@@ -342,10 +342,10 @@ void systematics_New_INEL()
             }
         }
 
-        TCanvas *cPlotBarlowAll = new TCanvas("", "Barlow Checks", 1080, 720);
+        TCanvas *cPlotBarlowAll = new TCanvas("", "Barlow Checks", 720, 720);
         SetCanvasStyle(cPlotBarlowAll, 0.15, 0.03, 0.06, 0.15);
         cPlotBarlowAll->Divide(4, 4);
-        TCanvas *cRatioAll = new TCanvas("", "Spectra ratio (Variation / Default)", 1080, 720);
+        TCanvas *cRatioAll = new TCanvas("", "Spectra ratio (Variation / Default)", 720, 720);
         SetCanvasStyle(cRatioAll, 0.15, 0.03, 0.06, 0.15);
         cRatioAll->Divide(4, 4);
         counter = 0;
@@ -428,7 +428,7 @@ void systematics_New_INEL()
         TH1D *hRelUncertPIDVars = operations.RelativeUncertainty(hMB_DefaultSpectra, PIDVariationHists);
         TH1D *hRelUncertMaterialBudgetVars = operations.RelativeUncertainty(hSpectraMaterialBudgetVars[0], MaterialBudgetVariationHists);
 
-        TCanvas *cRelUncert = new TCanvas("", "Relative Uncertainties", 1080, 720);
+        TCanvas *cRelUncert = new TCanvas("", "Relative Uncertainties", 720, 720);
         SetCanvasStyle(cRelUncert, 0.15, 0.03, 0.06, 0.15);
         cRelUncert->Divide(4, 3);
         vector<TH1D *> relUncertHists = {
@@ -522,7 +522,7 @@ void systematics_New_INEL()
 
         string SigExtNames[] = {"Norm. range", "Fit Range", "Combinatorial Bkg", "Residual Bkg", "Width fix/free"};
 
-        TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 1080, 720);
+        TCanvas *cSigExtAll = new TCanvas("", "Systematic Uncertainties from all sources", 720, 720);
         SetCanvasStyle(cSigExtAll, 0.14, 0.03, 0.06, 0.13);
         TLegend *legSigExt = new TLegend(0.55, 0.5, 0.91, 0.88);
         legSigExt->SetBorderSize(0);
@@ -557,7 +557,7 @@ void systematics_New_INEL()
         latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
-        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 1080, 720);
+        TCanvas *cTrackSelAll = new TCanvas("", "Systematic Uncertainties from Track Selection", 720, 720);
         SetCanvasStyle(cTrackSelAll, 0.14, 0.03, 0.06, 0.13);
         TLegend *legTrackSel = new TLegend(0.55, 0.5, 0.91, 0.88);
         legTrackSel->SetBorderSize(0);
@@ -589,7 +589,7 @@ void systematics_New_INEL()
         latSys.DrawLatex(0.20, 0.76, "INEL");
         latSys.DrawLatex(0.20, 0.70, "K*(892)^{0}");
 
-        TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 1080, 720);
+        TCanvas *cTotalSys = new TCanvas("", "Total Systematic Uncertainties", 720, 720);
         SetCanvasStyle(cTotalSys, 0.14, 0.03, 0.06, 0.13);
         TLegend *legTotal = new TLegend(0.55, 0.54, 0.91, 0.92);
         legTotal->SetBorderSize(0);
@@ -649,7 +649,7 @@ void systematics_New_INEL()
 
         TH1D *hTotalSysSmoothed = operations.smooth(hTotalSys);
 
-        TCanvas *cSmoothedTotalSys = new TCanvas("", "Smoothed Total Systematic Uncertainties", 1080, 720);
+        TCanvas *cSmoothedTotalSys = new TCanvas("", "Smoothed Total Systematic Uncertainties", 720, 720);
         SetCanvasStyle(cSmoothedTotalSys, 0.14, 0.03, 0.06, 0.13);
         for (int i = 0; i < smoothedTotalVec.size(); i++)
         {
@@ -675,12 +675,12 @@ void systematics_New_INEL()
         hTotalSysSmoothed->Write(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
 
         // Save all the plots
-        cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations_INEL.pdf");
-        cRatioAll->SaveAs(savePath + "Ratio_AllVariations_INEL.pdf");
-        cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources_INEL.pdf");
-        cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics_INEL.pdf");
-        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics_INEL.pdf");
-        cTotalSys->SaveAs(savePath + "TotalSystematics_INEL.pdf");
-        cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics_INEL.pdf");
+        cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations_INEL.png");
+        cRatioAll->SaveAs(savePath + "Ratio_AllVariations_INEL.png");
+        cRelUncert->SaveAs(savePath + "RelativeUncertainties_AllSources_INEL.png");
+        cSigExtAll->SaveAs(savePath + "SignalExtractionSystematics_INEL.png");
+        cTrackSelAll->SaveAs(savePath + "TrackSelectionSystematics_INEL.png");
+        cTotalSys->SaveAs(savePath + "TotalSystematics_INEL.png");
+        cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics_INEL.png");
     }
 }

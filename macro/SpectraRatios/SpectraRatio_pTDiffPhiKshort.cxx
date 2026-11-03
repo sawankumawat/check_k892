@@ -526,7 +526,8 @@ void SpectraRatio_pTDiffPhiKshort()
     // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix2.root");
 
     // TH1F *hEPOS_UrQMDOFF_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
     // TH1F *hEPOS_UrQMDOFF_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
@@ -920,7 +921,7 @@ void SpectraRatio_pTDiffPhiKshort()
     phiLine->SetLineWidth(3);
     phiLine->Draw("same");
 
-    cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio_significance.png");
+    // cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio_significance.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)

@@ -9,7 +9,7 @@ void efficiency()
 {
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
-    string outputtype = "png"; // pdf, eps
+    string outputtype = "pdf"; // pdf, eps
     bool isINEL = false;
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
@@ -72,6 +72,7 @@ void efficiency()
         //===========2024 data==============
 
         // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
+        // string data_path = "788987/kstarqa/hInvMass"; // INEL (lf-mc-centrailty)
         string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
         // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
@@ -138,8 +139,9 @@ void efficiency()
 
         //==========2024 MC===========
         // string MCpath = "788007.root"; // INEL, latest train with systematics (lf-mc-centrality wagon)
-        // string MCpath = "750013.root"; // INEL>0, latest train with systematics
         // string MCpath = "755334.root"; // INEL, with systematics
+        // string MCpath = "790177.root"; // INEL, with systematics (lf-mc-centrality)
+        // string MCpath = "750013.root"; // INEL>0, latest train with systematics
         // string MCpath = "764341.root"; //DCA variation check (pT-dependent DCA check)
         string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
 
@@ -413,10 +415,18 @@ void efficiency()
                 TH1F *hlossCorrected_integral = (TH1F *)hyieldIntegral->Clone("hlossCorrected_integral");
                 TH1F *hlossCorrected_bincount = (TH1F *)hyieldBinCount->Clone("hlossCorrected_bincount");
 
-                hlossCorrected_integral->Multiply(hRatioEvBySig[imult]); // Event/Signal loss correction
-                hlossCorrected_bincount->Multiply(hRatioEvBySig[imult]);
-                hlossCorrected_integral->Scale(1.0 / eventSplitting); // Event splitting correction
-                hlossCorrected_bincount->Scale(1.0 / eventSplitting);
+                // if (!isINEL)
+                {
+                    hlossCorrected_integral->Multiply(hRatioEvBySig[imult]); // Event/Signal loss correction
+                    hlossCorrected_bincount->Multiply(hRatioEvBySig[imult]);
+                    hlossCorrected_integral->Scale(1.0 / eventSplitting); // Event splitting correction
+                    hlossCorrected_bincount->Scale(1.0 / eventSplitting);
+                }
+                // else
+                // {
+                //     hlossCorrected_integral->Divide(hSignalLoss[imult]); // Event/Signal loss correction
+                //     hlossCorrected_bincount->Divide(hSignalLoss[imult]);
+                // }
 
                 TDirectory *dir = spectra->mkdir(Form("mult_%d-%d", multlow, multhigh));
                 dir->cd();

@@ -1,177 +1,232 @@
 #include <iostream>
-#include <iomanip>
-#include "../src/style.h"
-#include "../src/fitfunc.h"
-#include "../src/initializations.h"
+#include <vector>
+#include <string>
+#include <map>
+#include "TFile.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TGraphErrors.h"
 #include "TDirectory.h"
+#include "TMath.h"
+
+using namespace std;
 
 void SaveModelPrediction()
 {
     const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
-    TFile *fOutput = new TFile("ModelRootFiles/ModelResults_latest.root", "recreate");
+
+    const map<string, double> branchingRatios = {
+        {"Kstar", 1.0},
+        {"Phi", 1.0},
+        {"Pion", 1.0},
+        {"Kaon", 1.0},
+        {"Proton", 1.0},
+        {"PionMinus", 1.0},
+        {"KaonMinus", 1.0},
+        {"AntiProton", 1.0},
+        {"Xi1530", 1.0},
+        {"Kshort", 1.0},
+        {"KstarPM", 1.0}};
+
+    // float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
+    const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);
+
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2.root", "recreate");
+    if (fOutput->IsZombie())
+    {
+        cout << "Error: cannot create output file ModelResults2.root" << endl;
+        return;
+    }
 
     for (const auto &modelName : modelNames)
     {
-
-        TFile *fmodel = new TFile(Form("ModelRootFiles/%s.root", modelName.c_str()), "read");
-        if (fmodel->IsZombie())
+        TFile *fModel = new TFile(Form("ModelRootFiles/modelLarge/%s.root", modelName.c_str()), "read");
+        if (fModel->IsZombie())
         {
-            cout << "Error: file not found" << endl;
-            return;
+            cout << "Error: file not found for model " << modelName << endl;
+            delete fModel;
+            continue;
         }
 
-        TH2D *hNch05VsFT0M;
-        if (modelName == "EPOS_Hydro_latest")
-        {
-            hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction_id53739/multiplicity/vsETA05/FT0AC");
-        }
-        else
-        {
-            hNch05VsFT0M = (TH2D *)fmodel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
-        }
-
+        TH2D *hNch05VsFT0M = (TH2D *)fModel->Get("mc-particle-prediction/multiplicity/vsETA05/FT0AC");
         if (hNch05VsFT0M == nullptr)
         {
-            cout << "Error: Correlation histograms not found for the file " << modelName << endl;
-            return;
+            cout << "Error: multiplicity histogram not found for model " << modelName << endl;
+            fModel->Close();
+            delete fModel;
+            continue;
         }
-        double dnch_detaRun3[] = {21.212, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296};
-        int nBins = sizeof(dnch_detaRun3) / sizeof(dnch_detaRun3[0]);
-        vector<double> ft0mBinCenter;
-        vector<double> meanNchPerFt0mBin;
-        // const int nXBins = hNch05VsFT0M->GetNbinsX();
-        const int nXBins = 157; // After 157th bin, all entries are mostly 0.
 
-        // Build per-bin (not cumulative) mean Nch map
-        for (int xbin = 1; xbin <= nXBins; ++xbin)
+        TH1D *hFT0M = (TH1D *)hNch05VsFT0M->ProjectionX(Form("hFT0M_%s", modelName.c_str()));
+        hFT0M->SetDirectory(nullptr);
+        const double totalArea = hFT0M->Integral();
+        cout << "Model: " << modelName << " | Total number of events = " << hFT0M->GetEntries() << " | Total FT0M integral = " << totalArea << endl;
+        if (totalArea <= 0)
         {
-            TH1D *projY = hNch05VsFT0M->ProjectionY(Form("py_%s_%d", modelName.c_str(), xbin), xbin, xbin); // Single bin projection
-            projY->SetDirectory(nullptr);
-            ft0mBinCenter.push_back(hNch05VsFT0M->GetXaxis()->GetBinCenter(xbin));
-            meanNchPerFt0mBin.push_back(projY->GetMean());
-            delete projY;
-            // cout << "FT0M bin " << xbin << " (center=" << hNch05VsFT0M->GetXaxis()->GetBinCenter(xbin) << ") has mean Nch in |eta|<0.5 as " << projY->GetMean() << endl;
+            cout << "Warning: zero FT0M integral for model " << modelName << endl;
+            delete hFT0M;
+            fModel->Close();
+            delete fModel;
+            continue;
         }
 
-        // For each experimental dNch/deta, find the FT0M multiplicity by interpolation
-        cout << left
-             << setw(15) << "dNch/deta"
-             << setw(12) << "y1"
-             << setw(10) << "y2"
-             << setw(15) << "FT0M value"
-             << setw(18) << "bin range"
-             << setw(12) << "entries" << endl;
-        cout << string(90, '-') << endl;
+        vector<int> boundaryBins(nPercentiles, -1);
+        boundaryBins[0] = hFT0M->GetNbinsX();
+
+        double cumulativePercent = 0.0;
+        int percentileIndex = 1;
+
+        for (int ibin = hFT0M->GetNbinsX(); ibin >= 1 && percentileIndex < nPercentiles; --ibin)
+        {
+            cumulativePercent += hFT0M->GetBinContent(ibin) * 100.0 / totalArea;
+            while (percentileIndex < nPercentiles && cumulativePercent >= percentilesRun3[percentileIndex])
+            {
+                boundaryBins[percentileIndex] = ibin;
+                percentileIndex++;
+            }
+        }
+
+        boundaryBins[nPercentiles - 1] = 1;
+
+        // Fill any unresolved boundaries with nearest valid bin to avoid invalid projections.
+        for (int i = 1; i < nPercentiles - 1; ++i)
+        {
+            if (boundaryBins[i] < 1)
+            {
+                boundaryBins[i] = boundaryBins[i - 1];
+            }
+        }
+
         fOutput->cd();
         TDirectory *modelDir = fOutput->mkdir(modelName.c_str());
+        if (modelDir == nullptr)
+        {
+            cout << "Error: cannot create output directory for model " << modelName << endl;
+            delete hFT0M;
+            fModel->Close();
+            delete fModel;
+            continue;
+        }
+
+        cout << "\nModel: " << modelName << endl;
+        for (int i = 0; i < nPercentiles - 1; ++i)
+        {
+            cout << percentilesRun3[i] << "-" << percentilesRun3[i + 1] << "% : bins " << boundaryBins[i] << " -> " << boundaryBins[i + 1] << endl;
+        }
+
         for (const auto &particleType : particleTypes)
         {
-            modelDir->cd();
-            TDirectory *particleDir = modelDir->mkdir(particleType.c_str());
-            particleDir->cd();
-
-            TH2D *hParticlevsFT0M;
-            if (modelName == "EPOS_Hydro_latest")
-            {
-                hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction_id53739/prediction/pt/FT0AC/%s", particleType.c_str()));
-            }
-            else
-            {
-                hParticlevsFT0M = (TH2D *)fmodel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleType.c_str()));
-            }
-            
+            TH2D *hParticlevsFT0M = (TH2D *)fModel->Get(Form("mc-particle-prediction/prediction/pt/FT0AC/%s", particleType.c_str()));
             if (hParticlevsFT0M == nullptr)
             {
-                cout << "Error: particle histogram not found for " << modelName << "/" << particleType << endl;
-                return;
+                cout << "Warning: particle histogram not found for " << modelName << "/" << particleType << endl;
+                continue;
             }
 
-            TGraphErrors *gMeanpT = new TGraphErrors(nBins);
-            TGraphErrors *gMeanYield = new TGraphErrors(nBins);
-
-            vector<double> matchedFt0m(nBins, -1.0);
-            vector<double> matchedY1(nBins, -1.0);
-            vector<double> matchedY2(nBins, -1.0);
-            vector<int> matchedBin(nBins, -1);
-            vector<double> targetNchVec(nBins, -1.0);
-
-            for (int ich = nBins - 1; ich >= 0; --ich)
+            modelDir->cd();
+            TDirectory *particleDir = modelDir->mkdir(particleType.c_str());
+            if (particleDir == nullptr)
             {
-                const double targetNch = dnch_detaRun3[ich];
-                targetNchVec[ich] = targetNch;
-                // Find the bin where mean Nch is closest to target, or bracket for interpolation
-                for (size_t ibin = 0; ibin + 1 < meanNchPerFt0mBin.size(); ++ibin)
-                {
-                    const double y1 = meanNchPerFt0mBin[ibin];
-                    const double y2 = meanNchPerFt0mBin[ibin + 1];
-
-                    if ((targetNch >= y1 && targetNch <= y2) || (targetNch >= y2 && targetNch <= y1))
-                    {
-                        const double x1 = ft0mBinCenter[ibin];
-                        const double x2 = ft0mBinCenter[ibin + 1];
-                        matchedY1[ich] = y1;
-                        matchedY2[ich] = y2;
-
-                        if (fabs(y2 - y1) > 1e-10)
-                        {
-                            matchedFt0m[ich] = x1 + (targetNch - y1) * (x2 - x1) / (y2 - y1);
-                        }
-                        else
-                        {
-                            matchedFt0m[ich] = x1;
-                        }
-                        matchedBin[ich] = ibin;
-                        break;
-                    }
-                }
+                cout << "Warning: cannot create particle directory for " << modelName << "/" << particleType << endl;
+                continue;
             }
-
-            for (int ich = nBins - 1; ich >= 0; --ich)
-            {
-                if (matchedFt0m[ich] >= 0.0)
-                {
-                    TH1D *hFT0MMinBias = hNch05VsFT0M->ProjectionY(Form("hFT0M_MinBias_%s", modelName.c_str()), 1, hNch05VsFT0M->GetNbinsX());
-                    hFT0MMinBias->SetDirectory(nullptr);
-                    const double totalArea = hFT0MMinBias->Integral();
-                    TH1D *hPtMinimumBiashPtMinimumBias = hParticlevsFT0M->ProjectionX(Form("hPt_%s_MinBias_%s", modelName.c_str(), particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
-                    hPtMinimumBiashPtMinimumBias->SetDirectory(nullptr);
-                    if (totalArea > 0)
-                    {
-                        hPtMinimumBiashPtMinimumBias->Scale(1.0 / totalArea);
-                    }
-                    if (ich == nBins - 1)
-                    {
-                        hPtMinimumBiashPtMinimumBias->Write(Form("hPt_%s_MinBias", particleType.c_str()));
-                    }
-
-                    const int matchedFt0mBin = hParticlevsFT0M->GetYaxis()->FindBin(matchedFt0m[ich]);
-                    TH1D *hPtDistribution = hParticlevsFT0M->ProjectionX(Form("hPtDist_%s_%s_%d", modelName.c_str(), particleType.c_str(), ich), matchedFt0mBin, matchedFt0mBin);
-                    hPtDistribution->SetDirectory(nullptr);
-
-                    TH1F *hFT0M1Ddist = (TH1F *)hNch05VsFT0M->ProjectionY(Form("hFT0M1D_%s_%d", modelName.c_str(), ich), matchedBin[ich], matchedBin[ich]);
-                    hFT0M1Ddist->SetDirectory(nullptr);
-                    const int entriesTemp = hFT0M1Ddist->GetEntries();
-
-                    if (entriesTemp > 0)
-                    {
-                        gMeanpT->SetPoint(nBins - 1 - ich, targetNchVec[ich], hPtDistribution->GetMean());
-                        gMeanpT->SetPointError(nBins - 1 - ich, 0, hPtDistribution->GetRMS() / sqrt(hPtDistribution->GetEntries()));
-                        const double meanYield = hPtDistribution->Integral() / entriesTemp;
-                        gMeanYield->SetPoint(nBins - 1 - ich, targetNchVec[ich], meanYield);
-                        gMeanYield->SetPointError(nBins - 1 - ich, 0, sqrt(meanYield * (1 + meanYield) / entriesTemp));
-                    }
-
-                    delete hPtDistribution;
-                    delete hFT0M1Ddist;
-                }
-            }
-
             particleDir->cd();
-            gMeanYield->Write(Form("gMeanYield_%s", particleType.c_str()));
-            gMeanpT->Write(Form("gMeanpT_%s", particleType.c_str()));
-            delete gMeanYield;
-            delete gMeanpT;
+
+            TGraphErrors *gMeanpTvsNch = new TGraphErrors(nPercentiles - 1);
+            TGraphErrors *gMeanYieldvsNch = new TGraphErrors(nPercentiles - 1);
+
+            const double br = branchingRatios.count(particleType) ? branchingRatios.at(particleType) : 1.0;
+
+            TH1D *hPtMinimumBias = hParticlevsFT0M->ProjectionX(Form("hPt_%s_MinBias_%s", modelName.c_str(), particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
+            hPtMinimumBias->SetDirectory(nullptr);
+            const double nEventsMinimumBias = hFT0M->Integral();
+            if (nEventsMinimumBias > 0)
+            {
+                hPtMinimumBias->Scale(1.0 / nEventsMinimumBias);
+            }
+            hPtMinimumBias->Write(Form("hPt_%s_MinBias", particleType.c_str()));
+
+            for (int icent = 0; icent < nPercentiles - 1; ++icent)
+            {
+                int binHigh = boundaryBins[icent];
+                int binLow = boundaryBins[icent + 1];
+                if (binLow > binHigh)
+                {
+                    std::swap(binLow, binHigh);
+                }
+
+                TH1D *hNch = hNch05VsFT0M->ProjectionY(Form("hNch_%s_%s_%d", modelName.c_str(), particleType.c_str(), icent), binLow, binHigh);
+                hNch->SetDirectory(nullptr);
+                const double meanNch = hNch->GetMean();
+
+                const double nEvents = hFT0M->Integral(binLow, binHigh);
+                if (nEvents <= 0)
+                {
+                    gMeanpTvsNch->SetPoint(icent, meanNch, 0.0);
+                    gMeanpTvsNch->SetPointError(icent, 0.0, 0.0);
+                    gMeanYieldvsNch->SetPoint(icent, meanNch, 0.0);
+                    gMeanYieldvsNch->SetPointError(icent, 0.0, 0.0);
+                    delete hNch;
+                    continue;
+                }
+
+                TH1D *hPt = hParticlevsFT0M->ProjectionX(Form("hPt_%s_%s_%d", modelName.c_str(), particleType.c_str(), icent), binLow, binHigh);
+                hPt->SetDirectory(nullptr);
+                hPt->Scale(1.0 / nEvents);
+                hPt->Write(Form("hPt_%s_%d", particleType.c_str(), icent));
+
+                // const double meanPt = hPt->GetMean();
+                // const double yield = hPt->Integral() / br;
+
+                // gMeanpTvsNch->SetPoint(icent, meanNch, meanPt);
+                // gMeanpTvsNch->SetPointError(icent, 0.0, 0.0);
+                // gMeanYieldvsNch->SetPoint(icent, meanNch, yield);
+                // gMeanYieldvsNch->SetPointError(icent, 0.0, 0.0);
+
+                const double meanPt = hPt->GetMean();
+                const double meanPtError = hPt->GetMeanError();
+
+                double integralError = 0.0;
+                const double integralPt = hPt->IntegralAndError(1, hPt->GetNbinsX(), integralError);
+
+                const double yield = integralPt / br;
+                const double yieldStatError = integralError / br;
+
+                const double relativeStatError = (yield != 0.0) ? 100.0 * yieldStatError / yield : 0.0;
+                const double relativeMeanPtError = (meanPt != 0.0) ? 100.0 * meanPtError / meanPt : 0.0;
+
+                cout << modelName << " | " << particleType << " | "
+                     << percentilesRun3[icent] << "-" << percentilesRun3[icent + 1] << "% | "
+                     << "Yield = " << yield
+                     << " | stat. err = " << relativeStatError << "%"
+                     << " | Mean pT = " << meanPt
+                     << " | stat. err = " << relativeMeanPtError << "%"
+                     << endl;
+
+                gMeanpTvsNch->SetPoint(icent, meanNch, meanPt);
+                gMeanpTvsNch->SetPointError(icent, 0.0, meanPtError);
+                gMeanYieldvsNch->SetPoint(icent, meanNch, yield);
+                gMeanYieldvsNch->SetPointError(icent, 0.0, yieldStatError);
+
+                delete hPt;
+                delete hNch;
+            }
+
+            gMeanpTvsNch->Write(Form("gMeanpT_%s", particleType.c_str()));
+            gMeanYieldvsNch->Write(Form("gMeanYield_%s", particleType.c_str()));
+
+            delete hPtMinimumBias;
+            delete gMeanpTvsNch;
+            delete gMeanYieldvsNch;
         }
+
+        delete hFT0M;
+        fModel->Close();
+        delete fModel;
     }
+
+    fOutput->Close();
+    delete fOutput;
 }

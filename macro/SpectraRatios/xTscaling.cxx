@@ -250,7 +250,7 @@ void xTscaling()
     legendFitLines->AddEntry(pol0_sys2, Form("Fit range 2: n = %.2f, #chi^{2}/NDF = %.1f", nAverage_sys2, pol0_sys2->GetChisquare() / pol0_sys2->GetNDF()), "l");
     legendFitLines->Draw("same");
 
-    cN->SaveAs("Plots/n_xTDistributions.png");
+    // cN->SaveAs("Plots/n_xTDistributions.png");
 
     auto gXT136 = HistToXTGraph(hSpectraINELStat, hRelUncert, sqrts136, sigma_inel136, pow(sqrts136, nAverage), false, 2.0); // Since in 13 TeV it is just sum and not average
     auto gXT13 = GraphToXTGraph(gSpectraRun13TeV, hStatError, hTotalSysError, sqrts13, sigma_inel13, pow(sqrts13, nAverage), false, 1.0);
@@ -362,7 +362,7 @@ void xTscaling()
     leg2->AddEntry(fitPL, "power-law (ax^{b}(1+x)^{c})", "l");
     // leg2->AddEntry((TObject *)0, "", "");
     leg2->Draw();
-    cXT->SaveAs("Plots/xT_scaling.pdf");
+    // cXT->SaveAs("Plots/xT_scaling.pdf");
 
     /*
     // ============================================================

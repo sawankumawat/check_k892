@@ -33,10 +33,10 @@ void kstar_sparse()
     bool calcInvMass = true;
     const bool multipanel_plots = 0;
     const bool save_plots = 1;
-    bool isINEL = false;
+    bool isINEL = true;
     bool widthFixed = true; // width fixed to PDG value
 
-    double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535};                                                                              // INEL>0
+    double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535}; // INEL>0
     // double ResolutionMCtrue[] = {0.00505649, 0.00599644, 0.00454035, 0.00391939, 0.00643856, 0.00734738, 0.00707784, 0.00663234, 0.00653067, 0.00599724, 0.00559724, 0.00523105, 0.00537785, 0.00554987, 0.00558288, 0.0056433, 0.00593335, 0.006188, 0.0062433, 0.00681146, 0.00689146, 0.00698454, 0.00725093, 0.00741099, 0.00803745, 0.0083834, 0.00863335, 0.00916256, 0.0096846, 0.0113199, 0.0123187}; // INEL
 
     // double ResolutionMCtrue[] = {0.009, 0.0057, 0.0065543, 0.0034, 0.0032, 0.0030, 0.0037, 0.0011, 0.00014, 0.00032, 0.0003, 0.0007, 0.0033, 0.0042, 0.0048, 0.0054, 0.0061, 0.0063, 0.0069, 0.0075, 0.0099, 0.011, 0.012};
@@ -126,17 +126,21 @@ void kstar_sparse()
     // TH1F *hmult = (TH1F *)fInputFile->Get("kstarqa/eventSelection/hMultiplicity");
     string multpath = kfoldername.substr(0, kfoldername.length() - 9);
     TH1F *hmult = (TH1F *)fInputFile->Get(Form("%s/eventSelection/hMultiplicity", multpath.c_str()));
+    TH1F *hEventsTVX = (TH1F *)fInputFile->Get("eventselection-run3/eventselection/hColCounterTVX");
+    double EventsTVX = hEventsTVX->GetEntries();
+
     // cout << "Given path is " << kfoldername << endl;
     if (hmult == nullptr)
     {
         cerr << "Histogram not found" << endl;
         return;
     }
-    double Event = hmult->GetEntries();
-    cout << "*****************number of events********************:" << Event << endl;
+    double EventAll = hmult->GetEntries();
+    cout << "*****************number of events********************:" << EventAll << endl;
+    cout << "*****************number of TVX events********************:" << EventsTVX << endl;
 
-    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    // float mult_classes[] = {0.0};
+    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -204,8 +208,8 @@ void kstar_sparse()
             // }
         }
 
-        // for (int imult = 0; imult < nmultbins + 1; imult++)
-        for (int imult = 1; imult < 2; imult++)
+        for (int imult = 0; imult < nmultbins + 1; imult++)
+        // for (int imult = 1; imult < 2; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -247,9 +251,15 @@ void kstar_sparse()
                 filecmp = new TFile((koutputfolder + "/" + sysVars[ivar].Data() + kbkgFolder + +Form("/yield_%d_%d.root", multlow, multhigh)).c_str(), "RECREATE");
             }
 
-            double Event = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 1e-5), hmult->GetXaxis()->FindBin(multhigh - 1e-5));
+            double Event;
+            // if (!isINEL)
+            Event = hmult->Integral(hmult->GetXaxis()->FindBin(multlow + 1e-5), hmult->GetXaxis()->FindBin(multhigh - 1e-5));
+            // else
+            //     Event = EventsTVX;
+
             cout << "Event in mult bin " << imult << " is " << Event << endl;
             TString outputfolder_mult;
+
             if (ivar == 0)
             {
                 outputfolder_mult = kSignalOutput + "/" + kfoldername + resBkgFolder + kbkgFolder + Form("/mult_%d-%d", multlow, multhigh);

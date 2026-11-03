@@ -54,7 +54,7 @@ void compare_yield_inel()
     double f_norm_run3 = 0.677; //(52.8 / 77.904) (https://indico.cern.ch/event/1649731/contributions/6943855/attachments/3222296/5743342/Gagliardi_APW_180226.pdf)
 
     // string path1 = "../../output/kstar/LHC22o_pass7/697595/kstarqa/hInvMass";
-    string path1 = "../../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED";
+    string path1 = "../../output/kstar/LHC22o_pass7/788987/kstarqa/hInvMass/ROTATED";
     TString outputPath = path1 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -62,7 +62,7 @@ void compare_yield_inel()
     TFile *fSigLoss;
     // fSigLoss = new TFile("../../mc/LHC24f3c/697699.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
     // fSigLoss = new TFile("../../mc/LHC24f3c/755334.root", "READ"); // 2024 MC INEL (TOF_overrideFT0)
-    fSigLoss = new TFile("../../mc/LHC24f3c/788007.root", "READ"); // 2024 MC INEL lf-mc-centrality
+    fSigLoss = new TFile("../../mc/LHC24f3c/790177.root", "READ"); // 2024 MC INEL lf-mc-centrality
 
     string pathNum, pathDen;
     THnSparseF *hSpraseGenAll, *hSpraseGenVzSel;
@@ -117,10 +117,15 @@ void compare_yield_inel()
 
     TH1F *hDen = (TH1F *)fSigLoss->Get("kstarqa/hInvMass/MCcorrections/MultiplicityGen");
     TH1F *hNum = (TH1F *)fSigLoss->Get("kstarqa/hInvMass/MCcorrections/MultiplicityRec");
+    TH1F *hNumExcludingTVX = (TH1F *)fSigLoss->Get("kstarqa/hInvMass/MCcorrections/MultiplicityRecINEL");
+
     double eventLossNum = hNum->Integral();
     double eventLossDen = hDen->Integral();
+    double eventLossNumExcludingTVX = hNumExcludingTVX->Integral();
     eventLoss = eventLossNum / eventLossDen;
+    double eventLossExcludingTVX = eventLossNumExcludingTVX / eventLossDen;
     cout << "Event Loss for INEL: " << eventLoss << endl;
+    cout << "Event Loss for INEL excluding TVX: " << eventLossExcludingTVX << endl;
 
     TFile *fspectra1 = new TFile((path1 + "/corrected_spectra_0_120.root").c_str(), "read");
 
@@ -153,10 +158,15 @@ void compare_yield_inel()
         cout << "Error: histograms not found in the corrected spectra root file" << endl;
         return;
     }
-    hmult1->Scale(2.0);               // for INEL it is K* + K*_bar and not their avearge
+    hmult1->Scale(2.0); // for INEL it is K* + K*_bar and not their average
     hmult1->Scale(1.0 / eventLoss);   // removing event loss
-    hmult1->Scale(1.0 / 1.351224015); // Total selected events --> TVX events
-    hmult1->Scale(1.0 / 0.948231192);   // Fraction of TVX events with |Vz| < 10 cm
+    // hmult1->Scale(eventLossExcludingTVX); // (Based on MC excluding TVX)
+
+    // hmult1->Scale(1.0 / 1.351); // Total selected events --> TVX events
+    // hmult1->Scale(1.0523); // Fraction of TVX events with |Vz| < 10 cm
+
+    // hmult1->Scale(1.0/ 0.95); // removing the double correction of TriggerTVX is there in both event loss and visible cross section
+    hmult1->Scale(0.74);
 
     cout << "All scale factors " << 1.0 / (eventLoss * 1.351224015 * 0.948231192) << endl;
 

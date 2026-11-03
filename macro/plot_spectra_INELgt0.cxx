@@ -20,7 +20,7 @@ using namespace std;
 
 void plot_spectra_INELgt0()
 {
-    bool isRaw = false;
+    bool isRaw = true;
 
     string filePath = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/";
     TFile *fINELgt0 = (isRaw) ? OpenFile(filePath + "yield_0_100.root") : OpenFile(filePath + "corrected_spectra_0_100.root");

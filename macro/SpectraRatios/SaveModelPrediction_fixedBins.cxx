@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void SaveModelPrediction2()
+void SaveModelPrediction_fixedBins()
 {
     const vector<string> modelNames = {"EPOS_Hydro", "Pythia_CR", "Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving", "Pythia_Monash_Rescattering"};
     const vector<string> particleTypes = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
@@ -40,11 +40,14 @@ void SaveModelPrediction2()
         {"Kshort", 1.0},
         {"KstarPM", 1.0}};
 
-    // float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
-    float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
+    const double pT_bins[] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0};
+    const int nPtBins = sizeof(pT_bins) / sizeof(pT_bins[0]) - 1;
+
+    float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
+    // float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
     const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);
 
-    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2.root", "recreate");
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2_fixedBins.root", "recreate");
     if (fOutput->IsZombie())
     {
         cout << "Error: cannot create output file ModelResults2.root" << endl;
@@ -73,6 +76,7 @@ void SaveModelPrediction2()
         TH1D *hFT0M = (TH1D *)hNch05VsFT0M->ProjectionX(Form("hFT0M_%s", modelName.c_str()));
         hFT0M->SetDirectory(nullptr);
         const double totalArea = hFT0M->Integral();
+        cout << "Model: " << modelName << " | Total number of events = " << hFT0M->GetEntries() << " | Total FT0M integral = " << totalArea << endl;
         if (totalArea <= 0)
         {
             cout << "Warning: zero FT0M integral for model " << modelName << endl;
@@ -149,14 +153,32 @@ void SaveModelPrediction2()
 
             const double br = branchingRatios.count(particleType) ? branchingRatios.at(particleType) : 1.0;
 
-            TH1D *hPtMinimumBias = hParticlevsFT0M->ProjectionX(Form("hPt_%s_MinBias_%s", modelName.c_str(), particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
+            // TH1D *hPtMinimumBias = hParticlevsFT0M->ProjectionX(Form("hPt_%s_MinBias_%s", modelName.c_str(), particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
+            // hPtMinimumBias->SetDirectory(nullptr);
+            // const double nEventsMinimumBias = hFT0M->Integral();
+            // if (nEventsMinimumBias > 0)
+            // {
+            //     hPtMinimumBias->Scale(1.0 / nEventsMinimumBias);
+            // }
+            // hPtMinimumBias->Write(Form("hPt_%s_MinBias", particleType.c_str()));
+
+            TH1D *hPtMinimumBiasRaw = hParticlevsFT0M->ProjectionX(Form("hPtMBRaw_%s", particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
+            hPtMinimumBiasRaw->SetDirectory(nullptr);
+
+            TH1D *hPtMinimumBias = (TH1D *)hPtMinimumBiasRaw->Rebin(nPtBins, Form("hPtMBRebinned_%s", particleType.c_str()), pT_bins);
             hPtMinimumBias->SetDirectory(nullptr);
+            delete hPtMinimumBiasRaw;
+
             const double nEventsMinimumBias = hFT0M->Integral();
+
             if (nEventsMinimumBias > 0)
             {
                 hPtMinimumBias->Scale(1.0 / nEventsMinimumBias);
+                hPtMinimumBias->Scale(1.0, "width");
             }
+
             hPtMinimumBias->Write(Form("hPt_%s_MinBias", particleType.c_str()));
+            // delete hPtMinimumBias;
 
             for (int icent = 0; icent < nPercentiles - 1; ++icent)
             {
@@ -182,18 +204,87 @@ void SaveModelPrediction2()
                     continue;
                 }
 
-                TH1D *hPt = hParticlevsFT0M->ProjectionX(Form("hPt_%s_%s_%d", modelName.c_str(), particleType.c_str(), icent), binLow, binHigh);
+                // TH1D *hPt = hParticlevsFT0M->ProjectionX(Form("hPt_%s_%s_%d", modelName.c_str(), particleType.c_str(), icent), binLow, binHigh);
+                // hPt->SetDirectory(nullptr);
+                // hPt->Scale(1.0 / nEvents);
+                // hPt->Write(Form("hPt_%s_%d", particleType.c_str(), icent));
+
+                // // const double meanPt = hPt->GetMean();
+                // // const double yield = hPt->Integral() / br;
+
+                // // gMeanpTvsNch->SetPoint(icent, meanNch, meanPt);
+                // // gMeanpTvsNch->SetPointError(icent, 0.0, 0.0);
+                // // gMeanYieldvsNch->SetPoint(icent, meanNch, yield);
+                // // gMeanYieldvsNch->SetPointError(icent, 0.0, 0.0);
+
+                // const double meanPt = hPt->GetMean();
+                // const double meanPtError = hPt->GetMeanError();
+
+                // double integralError = 0.0;
+                // const double integralPt = hPt->IntegralAndError(1, hPt->GetNbinsX(), integralError);
+
+                // const double yield = integralPt / br;
+                // const double yieldStatError = integralError / br;
+
+                // const double relativeStatError = (yield != 0.0) ? 100.0 * yieldStatError / yield : 0.0;
+                // const double relativeMeanPtError = (meanPt != 0.0) ? 100.0 * meanPtError / meanPt : 0.0;
+
+                // cout << modelName << " | " << particleType << " | "
+                //      << percentilesRun3[icent] << "-" << percentilesRun3[icent + 1] << "% | "
+                //      << "Yield = " << yield
+                //      << " | stat. err = " << relativeStatError << "%"
+                //      << " | Mean pT = " << meanPt
+                //      << " | stat. err = " << relativeMeanPtError << "%"
+                //      << endl;
+
+                // gMeanpTvsNch->SetPoint(icent, meanNch, meanPt);
+                // gMeanpTvsNch->SetPointError(icent, 0.0, meanPtError);
+                // gMeanYieldvsNch->SetPoint(icent, meanNch, yield);
+                // gMeanYieldvsNch->SetPointError(icent, 0.0, yieldStatError);
+
+                // delete hPt;
+                // delete hNch;
+
+                TH1D *hPtRaw = hParticlevsFT0M->ProjectionX(Form("hPtRaw_%s_%d", particleType.c_str(), icent), binLow, binHigh);
+                hPtRaw->SetDirectory(nullptr);
+
+                TH1D *hPt = (TH1D *)hPtRaw->Rebin(nPtBins, Form("hPtRebinned_%s_%d", particleType.c_str(), icent), pT_bins);
                 hPt->SetDirectory(nullptr);
+                delete hPtRaw;
+
+                // Normalize particle counts by the number of events.
                 hPt->Scale(1.0 / nEvents);
+
+                // Calculate mean pT from the rebinned per-event counts.
+                const double meanPt = hPt->GetMean();
+                const double meanPtError = hPt->GetMeanError();
+
+                // Calculate integrated yield before dividing by bin width.
+                double integralError = 0.0;
+                const double integralPt = hPt->IntegralAndError(1, nPtBins, integralError);
+
+                const double yield = integralPt / br;
+                const double yieldStatError = integralError / br;
+
+                const double relativeStatError = (yield != 0.0) ? 100.0 * yieldStatError / yield : 0.0;
+                const double relativeMeanPtError = (meanPt != 0.0) ? 100.0 * meanPtError / meanPt : 0.0;
+
+                // Save the spectrum as (1/N_events) dN/dpT.
+                hPt->Scale(1.0, "width");
                 hPt->Write(Form("hPt_%s_%d", particleType.c_str(), icent));
 
-                const double meanPt = hPt->GetMean();
-                const double yield = hPt->Integral() / br;
+                cout << modelName << " | " << particleType << " | "
+                     << percentilesRun3[icent] << "-" << percentilesRun3[icent + 1] << "% | "
+                     << "Yield = " << yield
+                     << " | stat. err = " << relativeStatError << "%"
+                     << " | Mean pT = " << meanPt
+                     << " | stat. err = " << relativeMeanPtError << "%"
+                     << endl;
 
                 gMeanpTvsNch->SetPoint(icent, meanNch, meanPt);
-                gMeanpTvsNch->SetPointError(icent, 0.0, 0.0);
+                gMeanpTvsNch->SetPointError(icent, 0.0, meanPtError);
                 gMeanYieldvsNch->SetPoint(icent, meanNch, yield);
-                gMeanYieldvsNch->SetPointError(icent, 0.0, 0.0);
+                gMeanYieldvsNch->SetPointError(icent, 0.0, yieldStatError);
 
                 delete hPt;
                 delete hNch;

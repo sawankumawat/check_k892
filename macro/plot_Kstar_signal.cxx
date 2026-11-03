@@ -9,22 +9,22 @@
 #include "TLatex.h"
 #include "TStyle.h"
 #include "TMath.h"
-#include "src/style.h"
+#include "src/style.h" // Can remove it
 
 void plot_Kstar_signal()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
 
+    //=======Plese change these paths according to your system=========
     TString savepath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/InvMassPlot";
-    // 1. Configurable Parameters (Single pT & Multiplicity Bin)
     const std::string dataFilePath = "/home/sawan/Storage/check_k892/data/kstar/LHC22o_pass7/749276.root";
-    const std::string templFilePath = "template/buildTemplate/template/ROTATED/SignalMinusTrue.root";
-    const std::string folderName = "kstarqa/hInvMass";
+    const std::string templFilePath = "template/buildTemplate/template/ROTATED/SignalMinusTrue_Norm1.root";
 
-    double multLow = 15.0, multHigh = 20.0;
-    double ptLow = 2.5, ptHigh = 3.0;
-    double normLow = 1.4, normHigh = 1.5;
+    ////To select multiplicity and pT range for kstar invariant mass plot
+    double multLow = 20.0, multHigh = 30.0;
+    double ptLow = 1.0, ptHigh = 1.2;
+    double normLow = 1.20, normHigh = 1.30;
     double fitLow = 0.75, fitHigh = 1.06;
     int rebinVal = 1;
 
@@ -40,6 +40,7 @@ void plot_Kstar_signal()
         return;
     }
 
+    const std::string folderName = "kstarqa/hInvMass";
     THnSparseF *hSparseNum = (THnSparseF *)fInput->Get(Form("%s/h3KstarInvMassUnlikeSign", folderName.c_str()));
     THnSparseF *hSparseRot = (THnSparseF *)fInput->Get(Form("%s/h3KstarInvMassRotated", folderName.c_str()));
 
@@ -84,15 +85,17 @@ void plot_Kstar_signal()
 
     hSigBkg->SetTitle(Form(Form(";M_{K^{#pm}#pi^{#mp}} (GeV/#it{c}^{2});Counts/(%.3f GeV/#it{c}^{2})", binWidthFit)));
     hSigBkg->SetMarkerStyle(20);
-    hSigBkg->SetMarkerSize(1.0);
-    hSigBkg->SetMaximum(hSigBkg->GetMaximum() * 1.18);
-    hSigBkg->SetMinimum(0.13e6);
+    hSigBkg->SetMarkerSize(1.2);
+    hSigBkg->SetMaximum(hSigBkg->GetMaximum() * 1.42);
+    hSigBkg->GetXaxis()->SetRangeUser(0.75, 1.05);
+    hSigBkg->SetMinimum(1.36e6);
     hSigBkg->Draw("E");
 
     hBkgScaled->SetMarkerStyle(24);
-    hBkgScaled->SetMarkerSize(1.0);
+    hBkgScaled->SetMarkerSize(1.2);
     hBkgScaled->SetMarkerColor(kRed);
     hBkgScaled->SetLineColor(kRed);
+    hBkgScaled->GetXaxis()->SetRangeUser(0.75, 1.05);
     hBkgScaled->Draw("E SAME");
 
     TH1D *hNormRegion = (TH1D *)hBkgScaled->Clone("hNormRegion");
@@ -107,7 +110,7 @@ void plot_Kstar_signal()
     hNormRegion->SetLineWidth(0);
     hNormRegion->Draw("BAR SAME");
 
-    TLegend *leg1 = new TLegend(0.36, 0.20, 0.70, 0.40);
+    TLegend *leg1 = new TLegend(0.32, 0.20, 0.68, 0.40);
     leg1->SetBorderSize(0);
     leg1->SetFillStyle(0);
     leg1->SetTextFont(42);
@@ -122,15 +125,14 @@ void plot_Kstar_signal()
     ltx.SetTextFont(42);
     ltx.SetTextSize(0.04);
     // ltx.DrawLatex(0.18, 0.82, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", ptLow, ptHigh));
-    ltx.DrawLatex(0.17, 0.85, "ALICE");
-    ltx.DrawLatex(0.17, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
-    ltx.DrawLatex(0.17, 0.73, Form("|#it{y}| < 0.5"));
+    ltx.DrawLatex(0.59, 0.88, "ALICE");
+    ltx.DrawLatex(0.59, 0.82, "pp #sqrt{#it{s}} = 13.6 TeV");
+    ltx.DrawLatex(0.59, 0.76, Form("|#it{y}| < 0.5"));
+    ltx.DrawLatex(0.59, 0.70, "K*(892)^{0} #rightarrow K^{#pm} + #pi^{#mp}");
+    ltx.DrawLatex(0.59, 0.64, Form("FT0M class: (%d - %d)%%", (int)multLow, (int)multHigh));
+    ltx.DrawLatex(0.59, 0.58, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", ptLow, ptHigh));
 
-    ltx.DrawLatex(0.59, 0.85, "K*(892)^{0} #rightarrow K^{#pm} + #pi^{#mp}");
-    ltx.DrawLatex(0.59, 0.79, Form("FT0M class: (%d - %d)%%", (int)multLow, (int)multHigh));
-    ltx.DrawLatex(0.59, 0.73, Form("%.1f < #it{p}_{T} < %.1f GeV/#it{c}", ptLow, ptHigh));
-
-    c1->SaveAs(savepath + "/SigPlusBkg.png");   
+    // c1->SaveAs(savepath + "/SigPlusBkg.png");
     // =========================================================================
     // PLOT 2: Background-Subtracted Signal Fit (Voigtian + Template + Pol3)
     // =========================================================================
@@ -269,5 +271,5 @@ void plot_Kstar_signal()
     leg2->Draw();
     ltx.SetTextSize(0.03);
     ltx.DrawLatex(0.690544, 0.607639, "(Background)");
-    c2->SaveAs(savepath + "/SubtractedFit.png");
+    // c2->SaveAs(savepath + "/SubtractedFit.png");
 }

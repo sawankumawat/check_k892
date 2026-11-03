@@ -11,25 +11,24 @@ void mc_closure()
 {
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
-    bool isMinBias = true;
-    bool isINEL = true;
+    bool isMinBias = false;
+    bool isINEL = false;
     bool compareAfterEfficiencyCorrection = false;
 
-    // string MCfile = "750013"; // INEL>0
-    string MCfile = "755334"; // INEL
+    string MCfile = "750013"; // INEL>0
+    // string MCfile = "755334"; // INEL
 
-    // string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC) (INEL>0)
-    // string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
+    string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC) (INEL>0)
+    string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
 
-    string path1 = "../output/kstar/LHC22o_pass7/755334/kstarqa/hInvMass/ROTATED"; // INEL
-    string path2 = "../data/kstar/LHC22o_pass7/";                                  // MC file path
+    // string path1 = "../output/kstar/LHC22o_pass7/755334/kstarqa/hInvMass/ROTATED"; // INEL
+    // string path2 = "../data/kstar/LHC22o_pass7/";                                  // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
 
-    TFile *fspectra1 = new TFile((path1 + ((isINEL) ? "/yield_0_120.root" : "/yield_0_100.root")).c_str(), "read");
     TFile *fspectra2 = new TFile((path2 + MCfile + ".root").c_str(), "read");
-    if (fspectra1->IsZombie() || fspectra2->IsZombie())
+    if (fspectra2->IsZombie())
     {
         cout << "Error: files not found" << endl;
         return;
@@ -59,7 +58,7 @@ void mc_closure()
     TCanvas *cEfficiency = new TCanvas("cEfficiency", "cEfficiency", 720, 720);
     SetCanvasStyle(cEfficiency, 0.15, 0.03, 0.03, 0.15);
     TFile *fOutput = new TFile((savePath + "/MCClosure.root"), "RECREATE");
-
+    
     for (int imult = 0; imult < numofmultbins + 1; imult++)
     {
         fOutput->cd();
@@ -75,6 +74,7 @@ void mc_closure()
             multlow = mult_classes[imult - 1];
             multhigh = mult_classes[imult];
         }
+        TFile *fspectra1 = new TFile((path1 + ((isINEL) ? Form("/yield_%.0f_%.0f.root", multlow, multhigh) : Form("/yield_%.0f_%.0f.root", multlow, multhigh))).c_str(), "read");
 
         // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
         hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
@@ -198,7 +198,7 @@ void mc_closure()
         line->SetLineWidth(2);
         line->SetLineColor(1);
         line->Draw();
-        c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.pdf", multlow, multhigh));
+        // c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.pdf", multlow, multhigh));
 
         cEfficiency->cd();
         heff[imult]->SetMarkerStyle(20);

@@ -16,18 +16,19 @@ void compare_rawCorrecYield()
     // string variationName = "DCA_{xy,z} < 0.0105 + #frac{0.035}{#it{p}_{T}^{1.1}} cm";
     // string variationName = "DCA_{xy,z} < 0.004 + #frac{0.013}{#it{p}_{T}} cm";
 
+    // string defaultName = "Default";
+    // string variationName = "Width Variation 5";
 
-    string defaultName = "Default";
-    string variationName = "Width Variation 4";
+    string defaultName = "Bincount: 2#Gamma";
+    string variationName = "Bincount 3#Gamma";
 
-    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED";             // Default1
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/WidthFree3"; // Variation
+    string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default1
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED";                        // Variation
 
     // string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // Default
     // string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/Backup/OldCorrectedFiles"; // Variation
 
-
-    TString outputPath = path1;
+    TString outputPath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED";
 
     float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
     const int numofmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1;
@@ -45,7 +46,7 @@ void compare_rawCorrecYield()
         double multhigh = (imult == 0) ? (isINEL) ? 120 : 100 : mult_classes[imult];
 
         TFile *fspectra1 = (isCorrectedYield) ? new TFile((path1 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path1 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
-        TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path2 + Form("/yield_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read");
+        TFile *fspectra2 = (isCorrectedYield) ? new TFile((path2 + Form("/corrected_spectra_%d_%d.root", (int)multlow, (int)multhigh)).c_str(), "read") : new TFile((path2 + Form("/yield_%d_%d_3Gamma.root", (int)multlow, (int)multhigh)).c_str(), "read");
 
         if (fspectra1->IsZombie() || fspectra2->IsZombie())
         {
@@ -53,8 +54,8 @@ void compare_rawCorrecYield()
             return;
         }
 
-        hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
-        hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
+        hmult1[imult] = (isCorrectedYield) ? (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
+        hmult2[imult] = (isCorrectedYield) ? (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/corrected_spectra_Integral_final", multlow, multhigh)) : (TH1F *)fspectra2->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
 
         int nBinsDefault = hmult1[imult]->GetNbinsX();
         int nBinsVariation = hmult2[imult]->GetNbinsX();
@@ -75,8 +76,8 @@ void compare_rawCorrecYield()
             return;
         }
 
-        TH1F *hratio1 = (TH1F *)hmult1[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
-        hratio1->Divide(hmult2[imult]);
+        TH1F *hratio1 = (TH1F *)hmult2[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
+        hratio1->Divide(hmult1[imult]);
 
         TCanvas *c1 = new TCanvas(Form("c1_mult_%.0f-%.0f", multlow, multhigh), "c1", 720, 720);
         SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
@@ -127,7 +128,7 @@ void compare_rawCorrecYield()
 
         SetHistoQA(hratio1);
         gPad->SetGrid(1, 1);
-        hratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+        hratio1->GetYaxis()->SetTitleSize(0.03 / pad2Size);
         hratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
         hratio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
@@ -138,10 +139,11 @@ void compare_rawCorrecYield()
         // hratio1->GetYaxis()->SetTitle("#frac{This Analysis}{Published}");
         // hratio1->GetYaxis()->SetTitle("#frac{2023 data}{2022 data}");
         // hratio1->GetYaxis()->SetTitle("Var/Def");
-        hratio1->GetYaxis()->SetTitle("After/Before");
+        // hratio1->GetYaxis()->SetTitle("Variation / Default");
+        hratio1->GetYaxis()->SetTitle("2#Gamma / 3#Gamma");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
-        hratio1->GetYaxis()->SetTitleOffset(0.6);
+        hratio1->GetYaxis()->SetTitleOffset(0.7);
         hratio1->GetXaxis()->SetTitleOffset(1.15);
         hratio1->GetYaxis()->SetNdivisions(510);
         // hratio1->SetMaximum(hratio1->GetMaximum() * 1.3);
@@ -149,8 +151,8 @@ void compare_rawCorrecYield()
         // hratio1->GetXaxis()->SetRangeUser(0, 20);
         // hratio1->GetYaxis()->SetRangeUser(0.98, 1.11);
         // hratio1->GetYaxis()->SetRangeUser(0.34, 1.69);
-        // hratio1->GetYaxis()->SetRangeUser(0.94, 1.05);
-        hratio1->GetYaxis()->SetRangeUser(0.78, 1.24);
+        hratio1->GetYaxis()->SetRangeUser(0.95, 1.05);
+        // hratio1->GetYaxis()->SetRangeUser(0.78, 1.24);
         hratio1->GetYaxis()->SetNdivisions(508);
         hratio1->Draw("p");
 
@@ -167,8 +169,8 @@ void compare_rawCorrecYield()
         // {
         //     c1->SaveAs(outputPath + Form("/spectra_compare/RawYield_compare_%.0f-%.0f.png", multlow, multhigh));
         // }
-            c1->SaveAs(outputPath + Form("/spectra_compare/RawYield_compare_WidthVar3%.0f-%.0f.png", multlow, multhigh));
-
+        // c1->SaveAs(outputPath + Form("/spectra_compare/RawYield_compare_WidthVar2_%.0f-%.0f.png", multlow, multhigh));
+        c1->SaveAs(outputPath + Form("/spectra_compare/BinCountVariation/Compare_%.0f-%.0f.png", multlow, multhigh));
     }
 }
 

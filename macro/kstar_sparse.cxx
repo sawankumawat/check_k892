@@ -16,6 +16,7 @@ void kstar_sparse()
     timer.Start();
     //*************************** change here ***************************************
     // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree"};
+    // TString sysVars[] = {"", "WidthFree5"};
     TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
     // const string kResBkg = "MIX";
@@ -27,14 +28,15 @@ void kstar_sparse()
     // string kbkg = "pol3WoChebyshev";
 
     string outputtype = "pdf";     // pdf, eps
+    bool showFit = true;          // show fit on the plots
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
-    const bool multipanel_plots = 0;
+    const bool multipanel_plots = 1;
     const bool save_plots = 1;
-    bool isINEL = true;
-    bool widthFixed = true; // width fixed to PDG value
+    bool isINEL = false;
+    bool widthFixed = false; // width fixed to PDG value
 
     double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535}; // INEL>0
     // double ResolutionMCtrue[] = {0.00505649, 0.00599644, 0.00454035, 0.00391939, 0.00643856, 0.00734738, 0.00707784, 0.00663234, 0.00653067, 0.00599724, 0.00559724, 0.00523105, 0.00537785, 0.00554987, 0.00558288, 0.0056433, 0.00593335, 0.006188, 0.0062433, 0.00681146, 0.00689146, 0.00698454, 0.00725093, 0.00741099, 0.00803745, 0.0083834, 0.00863335, 0.00916256, 0.0096846, 0.0113199, 0.0123187}; // INEL
@@ -108,12 +110,14 @@ void kstar_sparse()
         return;
     }
 
+    ////Default
     TFile *fTemplateFile = (isINEL) ? TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ") : TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
 
-    // Form Norm range variations the normalization range in the template was also shifted
+    //// For Norm range variations the normalization range in the template was also shifted
     //  TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/INEL/%s/SignalMinusTrue%s_Norm2.root", kResBkg.c_str(), kvariation.c_str()), "READ");
 
-    // TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/MCClosure/SignalMinusTrue%s.root", kvariation.c_str()), "READ");
+    // ////For MC closure
+    // TFile *fTemplateFile = TFile::Open(Form("template/buildTemplate/template/%s/SignalMinusTrueClosure%s.root", kResBkg.c_str(), kvariation.c_str()), "READ");
 
     if (!fTemplateFile || fTemplateFile->IsZombie())
     {
@@ -139,8 +143,8 @@ void kstar_sparse()
     cout << "*****************number of events********************:" << EventAll << endl;
     cout << "*****************number of TVX events********************:" << EventsTVX << endl;
 
-    // float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
-    float mult_classes[] = {0.0};
+    float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+    // float mult_classes[] = {0.0};
     int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins
     int rebin_value;
 
@@ -177,7 +181,7 @@ void kstar_sparse()
     }
 
     for (int ivar = 0; ivar < nSysVars; ivar++)
-    // for (int ivar = 5; ivar < 6; ivar++)
+    // for (int ivar = 1; ivar < 2; ivar++)
     {
         if (nSysVars > 1 && (kResBkg != "ROTATED" || kbkg != "pol3"))
         {
@@ -208,8 +212,8 @@ void kstar_sparse()
             // }
         }
 
-        for (int imult = 0; imult < nmultbins + 1; imult++)
-        // for (int imult = 1; imult < 2; imult++)
+        // for (int imult = 0; imult < nmultbins + 1; imult++)
+        for (int imult = 9; imult < 10; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -469,6 +473,73 @@ void kstar_sparse()
 
                     fHistTotal[ip]->Rebin(rebin_value);
 
+                    // =====================================================================
+                    // Background subtraction only: save QA plots and histograms
+                    // =====================================================================
+                    if (!showFit)
+                    {
+                        // Set histogram styles
+                        fHistTotal[ip]->SetMarkerStyle(20);
+                        fHistTotal[ip]->SetMarkerColor(kBlack);
+                        fHistTotal[ip]->SetLineColor(kBlack);
+                        fHistTotal[ip]->SetMarkerSize(0.8);
+                        fHistTotal[ip]->SetStats(0);
+
+                        hfbkg->SetMarkerStyle(24);
+                        hfbkg->SetMarkerColor(kRed + 1);
+                        hfbkg->SetLineColor(kRed + 1);
+                        hfbkg->SetMarkerSize(0.8);
+                        hfbkg->SetStats(0);
+
+                        hfsig->SetMarkerStyle(20);
+                        hfsig->SetMarkerColor(kBlack);
+                        hfsig->SetLineColor(kBlack);
+                        hfsig->SetMarkerSize(0.8);
+                        hfsig->SetStats(0);
+
+                        fHistTotal[ip]->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
+                        fHistTotal[ip]->GetYaxis()->SetTitle("Counts");
+
+                        hfsig->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
+                        hfsig->GetYaxis()->SetTitle("Counts");
+
+                        hfbkg->GetXaxis()->SetTitle("M_{K#pi} (GeV/c^{2})");
+                        hfbkg->GetYaxis()->SetTitle("Counts");
+
+                        // -------------------------------------------------------------
+                        // 2. Plot after background subtraction
+                        // -------------------------------------------------------------
+                        TCanvas *cAfter = new TCanvas(Form("cAfter_pt%d", ip), "", 720, 720);
+                        SetCanvasStyle(cAfter, 0.15, 0.05, 0.08, 0.13);
+
+                        hfsig->SetTitle(Form("%.1f < p_{T} < %.1f GeV/c", lowpt, highpt));
+                        hfsig->Draw("E");
+
+                        TLine *lineUnity = new TLine(0.7, 0, 1.3, 0);
+                        lineUnity->SetLineStyle(2);
+                        lineUnity->SetLineWidth(2);
+                        lineUnity->SetLineColor(kGray + 4);
+                        lineUnity->Draw();
+
+                        cAfter->SaveAs(Cenoutputfolder + Form("/AfterBkgSub_pt%d.%s", ip, outputtype.c_str()));
+
+                        // -------------------------------------------------------------
+                        // 3. Save histograms in ROOT file
+                        // -------------------------------------------------------------
+                        subdir->cd();
+
+                        fHistTotal[ip]->Write(Form("hSigBkg_pt%d", ip), TObject::kOverwrite);
+                        hfbkg->Write(Form("hNormalizedBkg_pt%d", ip), TObject::kOverwrite);
+                        hfsig->Write(Form("hBkgSubtracted_pt%d", ip), TObject::kOverwrite);
+
+                        cout << "Saved background subtraction plots and histograms for pT bin "
+                             << lowpt << " - " << highpt << " GeV/c" << endl;
+
+                        delete cAfter;
+
+                        continue; // Skip all fitting operations
+                    }
+
                     //**** pt binwidth************x*****************************
                     ptbinwidth[ip] = pT_bins[ip + 1] - pT_bins[ip];
                     // cout<<"the value of pt bin width is "<<ptbinwidth[ip]<<endl;
@@ -716,39 +787,47 @@ void kstar_sparse()
                     fTotal->SetParameter(1, masspdg);
                     fTotal->SetParLimits(1, masspdg - 0.010, masspdg + 0.010);
 
-                    if (sysVars[ivar] == "WidthFree")
-                    {
-                        widthFixed = false;
-                    }
-                    else
-                    {
-                        widthFixed = true;
-                    }
-
-                    // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
-                    fTotal->SetParameter(2, widthpdg);
-                    if (widthFixed)
-                        fTotal->FixParameter(2, widthpdg);
-                    else
-                        fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
-
+                    // if (sysVars[ivar] == "WidthFree")
+                    // {
+                    //     widthFixed = false;
+                    // }
                     // else
-                    //     fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
+                    // {
+                    //     widthFixed = true;
+                    // }
 
-                    // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
-                    //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
+                    // // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
+                    // fTotal->SetParameter(2, widthpdg);
+                    // if (widthFixed)
+                    //     fTotal->FixParameter(2, widthpdg);
+                    // else
+                    //     fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
 
-                    // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
-                    if (widthFixed)
-                    {
-                        fTotal->SetParameter(3, 0.002);
-                        fTotal->SetParLimits(3, 0.00005, 0.030); // Allow up to 30 MeV for high-pT smearing
-                    }
-                    else
-                    {
-                        fTotal->FixParameter(3, ResolutionMCtrue[ip]); // Fix to MC resolution
-                    }
+                    // // else
+                    // //     fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
 
+                    // // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
+                    // //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
+
+                    // // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
+                    // if (widthFixed)
+                    // {
+                    //     fTotal->SetParameter(3, 0.002);
+                    //     fTotal->SetParLimits(3, 0.00005, 0.030); // Allow up to 30 MeV for high-pT smearing
+                    // }
+                    // else
+                    // {
+                    //     fTotal->FixParameter(3, ResolutionMCtrue[ip]); // Fix to MC resolution
+                    // }
+
+                    // For WidthFree5 systematic
+                    fTotal->SetParameter(2, widthpdg);
+                    fTotal->SetParLimits(2, 0.0001, 0.12);
+                    // fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
+                    fTotal->SetParameter(3, ResolutionMCtrue[ip]);
+                    fTotal->SetParLimits(3, 0.0001, 0.030); // Allow up to 30 MeV for high-pT smearing
+
+                    // --- SLOT 4: MC CORRELATED TEMPLATE NORMALIZATION ---
                     fTotal->SetParameter(4, std::min(std::max(N_temp_0, 0.0), max_corr));
                     fTotal->SetParLimits(4, 0.0, 2 * N_temp_0);
                     fTotal->SetParameter(5, total_in_fit * 0.30);
@@ -903,7 +982,7 @@ void kstar_sparse()
                     };
 
                     double m5lo = masspdg - 5 * width_fit, m5hi = masspdg + 5 * width_fit;
-                    double m2lo = masspdg - 2 * width_fit, m2hi = masspdg + 2 * width_fit;
+                    double m2lo = masspdg - 3 * width_fit, m2hi = masspdg + 3 * width_fit;
 
                     // Numerically integrate the exact fitted Voigtian shape
                     TF1 fTempVoigt("fTempVoigt", "[0]*TMath::Voigt(x - [1], [3], [2])", 0.0, 2.0);
@@ -936,8 +1015,8 @@ void kstar_sparse()
                     // =====================================================================
                     // Significance
                     // =====================================================================
-                    bmin = hfsig->GetXaxis()->FindBin(masspdg - 2 * width_fit);
-                    bmax = hfsig->GetXaxis()->FindBin(masspdg + 2 * width_fit);
+                    bmin = hfsig->GetXaxis()->FindBin(masspdg - 3 * width_fit);
+                    bmax = hfsig->GetXaxis()->FindBin(masspdg + 3 * width_fit);
                     significance_num = N_sig_2g;
                     significance_den = TMath::Sqrt(std::max(1.0, (double)fHistTotal[ip]->Integral(bmin, bmax)));
                     ratio = significance_num / significance_den;

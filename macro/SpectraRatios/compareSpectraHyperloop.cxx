@@ -78,7 +78,7 @@ void compareSpectraHyperloop()
     //===============================================
     // ===========Pythia and EPOS from hyperloop================
     //===============================================
-    TFile *ModelsHyperloop = OpenFile("ModelRootFiles/ModelResults2.root");
+    TFile *ModelsHyperloop = OpenFile("ModelRootFiles/ModelResults2_moreBins.root");
 
     enum Model
     {
@@ -122,28 +122,28 @@ void compareSpectraHyperloop()
             int totalPoints = gYield[imodel]->GetN();
             if (ialice == 0)
             {
-                cout << "Model: " << modelLabel[imodel] << ", Total points: " << totalPoints << endl;
+                // cout << "Model: " << modelLabel[imodel] << ", Total points: " << totalPoints << endl;
 
                 for (int ipoint = 0; ipoint < totalPoints; ipoint++)
                 {
                     double x, y;
                     gYield[imodel]->GetPoint(ipoint, x, y);
-                    cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
+                    // cout << "Point " << ipoint << ": Multiplicity " << x << ", Yield: " << y << endl;
                 }
-                cout << endl;
+                // cout << endl;
             }
             ClosestMultiplicity match = FindClosestMultiplicity(gYield[imodel], dnch_detaRun3[ialice]);
             dNdEtaPythia[imodel][ialice] = match.value;
 
-            if (match.useAverage)
-            {
-                cout << modelLabel[imodel] << " : Average of points " << match.idx1 << " and " << match.idx2 << " (value = " << match.value << ")" << endl;
-            }
-            else
-            {
-                cout << modelLabel[imodel] << " : Closest point " << match.idx1 << " (value = " << match.value << ")" << endl;
-            }
-            cout << endl;
+            // if (match.useAverage)
+            // {
+            //     cout << modelLabel[imodel] << " : Average of points " << match.idx1 << " and " << match.idx2 << " (value = " << match.value << ")" << endl;
+            // }
+            // else
+            // {
+            //     cout << modelLabel[imodel] << " : Closest point " << match.idx1 << " (value = " << match.value << ")" << endl;
+            // }
+            // cout << endl;
 
             hSpectraModel[ialice][imodel] = BuildSpectrum(ModelsHyperloop, match, hyperloopModels[imodel].c_str());
             hSpecRebinned[ialice][imodel] = RebinToMatch(hSpectraModel[ialice][imodel], hSpectra[ialice], Form("hSpec_%d_%s", ialice, modelLabel[imodel]));
@@ -153,6 +153,11 @@ void compareSpectraHyperloop()
             hSpecRebinned[ialice][imodel]->SetLineColor(colorsPythia[imodel]);
             hSpecRebinned[ialice][imodel]->SetLineStyle(2);
             hSpecRebinned[ialice][imodel]->SetLineWidth(3);
+
+            //Print the final charged particle multiplicity for each model and centrality class
+            cout << "Centrality: " << centrality[ialice] << "-" << centrality[ialice + 1] << "% | "
+                 << "dNch/deta (Run 3) = " << dnch_detaRun3[ialice] << " | "
+                 << modelLabel[imodel] << " dNch/deta = " << dNdEtaPythia[imodel][ialice] << endl;
         }
     }
 
@@ -323,7 +328,7 @@ void compareSpectraHyperloop()
         // RestrictHistogramX(hRatioEPOS, 0.0, 6.0, Form("hRatioEPOS_%.0f_%.0f", multlow, multhigh))->Draw("HIST SAME");
         // hRatioMonashRescattering->Draw("HIST SAME");
 
-        cPythiaCentral->SaveAs(Form("Plots/SpectraCompare/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
+        cPythiaCentral->SaveAs(Form("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/SpectraCompareWithModel/SpectraCompare_%.0f_%.0f.png", multlow, multhigh));
 
         hGenSparse->GetAxis(1)->SetRange(0, -1);
     }

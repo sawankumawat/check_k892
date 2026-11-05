@@ -15,11 +15,12 @@ void efficiency()
     // const string kResBkg = "LIKE";
     const string kResBkg = "ROTATED";
     // TString sysVars[] = {"", "Norm1", "Norm2", "FitRange1", "FitRange2", "WidthFree", "pol2"};
+    // TString sysVars[] = {"", "WidthFree5"};
     TString sysVars[] = {""};
     int nSysVars = sizeof(sysVars) / sizeof(sysVars[0]);
 
     gStyle->SetOptFit(1111);
-    gStyle->SetPalette(kRainBow);
+    // gStyle->SetPalette(kRainBow);
     // gStyle->SetOptStat(1110);
     gStyle->SetOptStat(0);
 
@@ -30,7 +31,7 @@ void efficiency()
     string common_MC_path = "../mc/LHC24f3c/";
 
     for (int ivar = 0; ivar < nSysVars; ivar++)
-    // for (int ivar = 5; ivar < 6; ivar++)
+    // for (int ivar = 1; ivar < 2; ivar++)
     {
 
         if (ivar > 1 && kResBkg != "ROTATED")
@@ -144,6 +145,7 @@ void efficiency()
         // string MCpath = "750013.root"; // INEL>0, latest train with systematics
         // string MCpath = "764341.root"; //DCA variation check (pT-dependent DCA check)
         string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
+        // string MCpath = "793191.root"; // lf-mc-centrality with systematics
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
         // if (fileraw->IsZombie())
@@ -1074,6 +1076,7 @@ void efficiency()
             latPID.SetNDC();
             latPID.SetTextFont(42);
             latPID.SetTextSize(0.06);
+            latPID.SetTextColor(kCyan);
 
             for (int i = 0; i < 6; i++)
             {

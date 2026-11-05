@@ -841,6 +841,7 @@ void ParticleRatio_simple()
     TCanvas *cRatioKstarPhi = new TCanvas("cRatioKstarPhi", "cRatioKstarPhi", 720, 720);
     SetCanvasStyle(cRatioKstarPhi, 0.15, 0.03, 0.03, 0.15);
     TGraphErrors **gRatioKstarPhi = MakeRatioUncorr(gMYieldKstar, gMYieldPhiRun3, 1.0, 3);
+    // TGraphErrors **gRatioKstarPhiRun2 = MakeRatioUncorr(gMYieldKstarRun2, gMYieldPhiRun2, 1.0, 3);
     gRatioKstarPhi[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
     gRatioKstarPhi[0]->GetYaxis()->SetTitle("dN / dy ratio");
     SetGraphErrorStyle(gRatioKstarPhi[0]);
@@ -856,6 +857,15 @@ void ParticleRatio_simple()
     gRatioKstarPhi[2]->SetFillStyle(1001);
     gRatioKstarPhi[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioKstarPhi[2]->Draw("E2 same");
+    // gRatioKstarPhiRun2[0]->SetMarkerStyle(21);
+    // gRatioKstarPhiRun2[0]->SetMarkerColor(kBlue);
+    // gRatioKstarPhiRun2[0]->SetLineColor(kBlue);
+    // gRatioKstarPhiRun2[0]->SetLineWidth(3);
+    // gRatioKstarPhiRun2[0]->Draw("PE same");
+    // gRatioKstarPhiRun2[1]->SetLineColor(kBlue);
+    // gRatioKstarPhiRun2[1]->SetFillStyle(0);
+    // gRatioKstarPhiRun2[1]->SetLineWidth(3);
+    // gRatioKstarPhiRun2[1]->Draw("5 same");
 
     // calculate the significance of the difference between HM and LM for K*0/Phi ratio
     int totalPointsKstarPhiRatio = gRatioKstarPhi[0]->GetN();
@@ -906,7 +916,7 @@ void ParticleRatio_simple()
     latex.DrawLatex(0.22, 0.9, "ALICE");
     latex.DrawLatex(0.22, 0.85, "pp, #sqrt{s} = 13.6 TeV");
     latex.DrawLatex(0.22, 0.80, "|y| < 0.5");
-    latex.DrawLatex(0.22, 0.75, "K*^{0} / #Phi");
+    // latex.DrawLatex(0.22, 0.75, "K*^{0} / #Phi");
 
     legendRatioKstarPhi->Draw();
 

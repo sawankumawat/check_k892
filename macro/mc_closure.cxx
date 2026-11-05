@@ -3,9 +3,9 @@
 #include "src/fitfunc.h"
 #include "src/initializations.h"
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
+void create_subpads(TPad *parentPad, TPad *&pad1, TPad *&pad2, double &pad1Size, double &pad2Size);
 void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, int multlow1, int multhigh1);
-int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7};
+int colors[] = {kBlue + 2, kRed + 1, kGreen + 2, kMagenta + 2, kCyan + 2, kOrange + 7, kViolet + 3, kPink + 1, kAzure + 7, kTeal + 7, kYellow + 2};
 
 void mc_closure()
 {
@@ -15,14 +15,10 @@ void mc_closure()
     bool isINEL = false;
     bool compareAfterEfficiencyCorrection = false;
 
-    string MCfile = "750013"; // INEL>0
-    // string MCfile = "755334"; // INEL
+    string MCfile = "793191"; // INEL>0
 
-    string path1 = "../output/kstar/LHC22o_pass7/750013/kstarqa/hInvMass/ROTATED"; // path for yield.root file (from rec MC) (INEL>0)
-    string path2 = "../data/kstar/LHC22o_pass7/";                           // MC file path
-
-    // string path1 = "../output/kstar/LHC22o_pass7/755334/kstarqa/hInvMass/ROTATED"; // INEL
-    // string path2 = "../data/kstar/LHC22o_pass7/";                                  // MC file path
+    string path1 = "../output/kstar/LHC22o_pass7/793191/kstarqa/hInvMass/ROTATED"; // path for yield.root file
+    string path2 = "../data/kstar/LHC22o_pass7/";                                  // MC file path
 
     TString savePath = path1 + "/MC_closure_plots";
     gSystem->mkdir(savePath, kTRUE);
@@ -55,10 +51,15 @@ void mc_closure()
 
     TH1D *h1recmult = (TH1D *)fspectra2->Get("kstarqa/hInvMass/h1RecMult");
     double multhigh, multlow;
+
+    // Main 4x3 grid canvas for all 11 plots
+    TCanvas *cGrid = new TCanvas("cGrid", "MC Closure 4x3 Grid", 1440, 720);
+    cGrid->Divide(4, 3, 0.002, 0.002);
+
     TCanvas *cEfficiency = new TCanvas("cEfficiency", "cEfficiency", 720, 720);
     SetCanvasStyle(cEfficiency, 0.15, 0.03, 0.03, 0.15);
     TFile *fOutput = new TFile((savePath + "/MCClosure.root"), "RECREATE");
-    
+
     for (int imult = 0; imult < numofmultbins + 1; imult++)
     {
         fOutput->cd();
@@ -76,7 +77,6 @@ void mc_closure()
         }
         TFile *fspectra1 = new TFile((path1 + ((isINEL) ? Form("/yield_%.0f_%.0f.root", multlow, multhigh) : Form("/yield_%.0f_%.0f.root", multlow, multhigh))).c_str(), "read");
 
-        // hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_bincount", multlow, multhigh));
         hmult1[imult] = (TH1F *)fspectra1->Get(Form("mult_%.0f-%.0f/yield_integral", multlow, multhigh));
         if (hmult1[imult] == nullptr)
         {
@@ -95,27 +95,17 @@ void mc_closure()
 
         TH1D *h1rec_Original = hSparseRec->Projection(0, "E");
         TH1F *h1rec = (TH1F *)h1rec_Original->Rebin(Npt, Form("h1rec_rebinned_mult_%.0f-%.0f", multlow, multhigh), pT_bins);
-        // cout << "Number of bins in h1rec after rebinning is " << h1rec->GetNbinsX() << endl;
 
         int entries = h1recmult->Integral(h1recmult->GetXaxis()->FindBin(multlow + 1e-5), h1recmult->GetXaxis()->FindBin(multhigh - 1e-5));
-        cout << "multiplicity class " << multlow << " - " << multhigh << " : " << entries << endl;
 
         for (int i = 0; i < hmult1[imult]->GetNbinsX(); i++)
         {
-            //// Both methods are same if we first rebin the h1rec or we integrate to take the yield value.
-            // float highpt = pT_bins[i + 1];
-            // float lowpt = pT_bins[i];
-            // float ptbinwidth = highpt - lowpt;
-            // // cout << "pT bin " << lowpt << " - " << highpt << endl;
-
             float BR = 0.67;
             float ptbinwidth = h1rec->GetBinWidth(i + 1);
             double yield = h1rec->GetBinContent(i + 1);
             double err = h1rec->GetBinError(i + 1) / (ptbinwidth * BR * entries);
             double nrec = yield / (ptbinwidth * BR * entries);
-            cout << "ptbinwidth " << ptbinwidth << " yield " << yield << " err " << err << endl;
 
-            // double nrec = h1rec->Integral(h1rec->GetXaxis()->FindBin(lowpt + 1e-5), h1rec->GetXaxis()->FindBin(highpt - 1e-5)) / (ptbinwidth * BR * entries);
             hmult2[imult]->SetBinContent(i + 1, nrec);
             hmult2[imult]->SetBinError(i + 1, err);
         }
@@ -123,83 +113,83 @@ void mc_closure()
         TH1F *hratio1 = (TH1F *)hmult1[imult]->Clone(Form("ratio_mult_%.0f-%.0f", multlow, multhigh));
         hratio1->Divide(hmult2[imult]);
 
-        TCanvas *c1 = new TCanvas("c1", "c1", 720, 720);
-        SetCanvasStyle(c1, 0.25, 0.03, 0.03, 0.15);
+        // Draw in the 4x3 grid pad (imult + 1)
+        cGrid->cd(imult + 1);
+        TPad *gridCell = (TPad *)gPad;
+
+        TPad *pad1 = nullptr;
+        TPad *pad2 = nullptr;
         double pad1Size, pad2Size;
-        canvas_style(c1, pad1Size, pad2Size);
-        c1->cd(1);
+        create_subpads(gridCell, pad1, pad2, pad1Size, pad2Size);
+
+        // --- Upper Pad: Spectra ---
+        pad1->cd();
         gPad->SetLogy(1);
-        SetHistoStyle(hmult1[imult], 1, 53, 1, 0.05, 0.05, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
+        SetHistoStyle(hmult1[imult], 1, 53, 1, 0.04, 0.04, 0.04 / pad1Size, 0.04 / pad1Size, 1.13, 1.8);
         hmult1[imult]->GetYaxis()->SetTitleSize(0.04 / pad1Size);
         hmult1[imult]->SetMaximum(hmult1[imult]->GetMaximum() * 18);
         hmult1[imult]->SetMinimum(hmult1[imult]->GetMinimum() * 0.6);
-        hmult1[imult]->GetYaxis()->SetTitleOffset(1.30);
-        hmult1[imult]->GetXaxis()->SetTitleOffset(1.02);
+        hmult1[imult]->GetYaxis()->SetTitleOffset(1.10);
         hmult1[imult]->SetMarkerStyle(20);
-        hmult1[imult]->SetMarkerSize(1);
-        // hmult1[imult]->GetXaxis()->SetRangeUser(0, 15);
+        hmult1[imult]->SetMarkerSize(0.8);
         hmult1[imult]->Draw("pe");
+
         hmult2[imult]->SetMarkerStyle(21);
-        hmult2[imult]->SetMarkerSize(1);
+        hmult2[imult]->SetMarkerSize(0.8);
         hmult2[imult]->SetMarkerColor(kBlue);
         hmult2[imult]->SetLineColor(kBlue);
         hmult2[imult]->SetLineWidth(2);
         hmult2[imult]->Draw("pe same");
+
+        fOutput->cd();
         hmult1[imult]->Write("FitYield");
         hmult2[imult]->Write("ReconstructedSpectra");
 
-        TLegend *leg = new TLegend(0.50, 0.75, 0.9, 0.95);
+        TLegend *leg = new TLegend(0.54, 0.62, 0.92, 0.90);
         SetLegendStyle(leg);
         leg->SetHeader(Form("FT0M: %.0f-%.0f%%", multlow, multhigh));
         leg->AddEntry(hmult2[imult], "MC Generated", "lpe");
         leg->AddEntry(hmult1[imult], "MC Rec. (AxE corrected)", "lpe");
-        leg->SetTextSize(0.04);
+        leg->SetTextSize(0.06);
         leg->Draw();
 
         TLatex *latex = new TLatex();
         latex->SetNDC();
-        latex->SetTextSize(0.04);
+        latex->SetTextSize(0.05);
         latex->SetTextFont(42);
-        latex->DrawLatex(0.21, 0.91, "#bf{ALICE}");
-        latex->DrawLatex(0.21, 0.85, "pp, #sqrt{#it{s}} = 13.6 TeV");
+        latex->DrawLatex(0.20, 0.85, "#bf{ALICE}");
 
-        c1->cd(2);
+        // --- Lower Pad: Ratio ---
+        pad2->cd();
         gPad->SetGridy(1);
-        TH1F *hdummy = (TH1F *)hmult1[0]->Clone();
-        for (int i = 0; i < hdummy->GetNbinsX(); i++)
-        {
-            hdummy->SetBinContent(i + 1, 0);
-            hdummy->SetBinError(i + 1, 0);
-        }
 
         SetHistoQA(hratio1);
-        hratio1->GetYaxis()->SetTitleSize(0.035 / pad2Size);
+        hratio1->GetYaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetXaxis()->SetTitleSize(0.04 / pad2Size);
         hratio1->GetYaxis()->SetLabelSize(0.04 / pad2Size);
         hratio1->GetXaxis()->SetLabelSize(0.04 / pad2Size);
         hratio1->SetMarkerStyle(20);
-        hratio1->SetMarkerSize(1.1);
-        // hratio1->SetMarkerColor(kBlue);
-        // hratio1->SetLineColor(kBlue);
+        hratio1->SetMarkerSize(0.8);
         hratio1->GetYaxis()->SetTitle("#frac{MC Rec.}{MC Gen.}");
         hratio1->GetXaxis()->SetTitle("#it{p}_{T} (GeV/c)");
         hratio1->GetXaxis()->CenterTitle(1);
-        hratio1->GetYaxis()->SetTitleOffset(0.6);
-        hratio1->GetXaxis()->SetTitleOffset(1.1);
+        hratio1->GetYaxis()->SetTitleOffset(0.5);
+        hratio1->GetXaxis()->SetTitleOffset(0.9);
         hratio1->GetYaxis()->SetNdivisions(505);
         hratio1->SetMaximum(1.31);
         hratio1->SetMinimum(0.69);
-        // hratio1->GetXaxis()->SetRangeUser(0, 15);
         hratio1->Draw("p");
+
+        fOutput->cd();
         hratio1->Write("Ratio");
 
-        TLine *line = new TLine(0, 1, 20, 1);
+        TLine *line = new TLine(hratio1->GetXaxis()->GetXmin(), 0.99, hratio1->GetXaxis()->GetXmax(), 0.99);
         line->SetLineStyle(2);
         line->SetLineWidth(2);
         line->SetLineColor(1);
         line->Draw();
-        // c1->SaveAs(savePath + Form("/MCclosure_%.0f-%.0f.pdf", multlow, multhigh));
 
+        // Efficiency canvas filling
         cEfficiency->cd();
         heff[imult]->SetMarkerStyle(20);
         heff[imult]->SetMarkerSize(1.2);
@@ -209,78 +199,41 @@ void mc_closure()
         heff[imult]->Draw("pe same");
     }
 
+    // Save single combined 4x3 grid plot
+    cGrid->SaveAs(savePath + "/MCclosure_Grid_4x3.pdf");
+    cGrid->SaveAs(savePath + "/MCclosure_Grid_4x3.png");
+
     cout << "\n\nSelections: " << endl;
     cout << "Is minimum bias: " << ((isMinBias) ? "✅" : "❌") << endl;
     cout << "Is INEL: " << (isINEL ? "✅" : "❌") << endl;
     cout << "Comparing after efficiency correction: " << (compareAfterEfficiencyCorrection ? "✅" : "❌") << endl;
 }
 
-void calculateEfficiency(TFile *fileEff, TH1F *hyieldIntegral, TH1F *heff, int multlow1, int multhigh1)
+// Helper function to split a grid cell pad into top (spectra) and bottom (ratio) sub-pads
+void create_subpads(TPad *parentPad, TPad *&pad1, TPad *&pad2, double &pad1Size, double &pad2Size)
 {
+    parentPad->cd();
+    pad2Size = 0.30;
+    pad1Size = 1.0 - pad2Size;
 
-    THnSparseF *hSpraseGen = (THnSparseF *)fileEff->Get("kstarqa/hInvMass/hk892GenpTCalib1");
-    THnSparseF *hSparseRec = (THnSparseF *)fileEff->Get("kstarqa/hInvMass/h2KstarRecptCalib1");
-    if (hSpraseGen == nullptr || hSparseRec == nullptr)
-    {
-        cout << "Error reading efficiency histograms " << "kstarqa/hInvMass/hk892GenpTCalib1" << endl;
-        return;
-    }
-    TH1D *h1gen;
-    TH1D *h1rec;
+    TString name1 = Form("%s_pad1", parentPad->GetName());
+    TString name2 = Form("%s_pad2", parentPad->GetName());
 
-    int lowbinMultGen = hSpraseGen->GetAxis(1)->FindBin(multlow1 + 1e-5);
-    int highbinMultGen = hSpraseGen->GetAxis(1)->FindBin(multhigh1 - 1e-5);
-    hSpraseGen->GetAxis(1)->SetRange(lowbinMultGen, highbinMultGen);
+    pad1 = new TPad(name1, name1, 0.0, pad2Size, 1.0, 1.0);
+    pad2 = new TPad(name2, name2, 0.0, 0.0, 1.0, pad2Size);
 
-    int lowbinMultRec = hSparseRec->GetAxis(1)->FindBin(multlow1 + 1e-5);
-    int highbinMultRec = hSparseRec->GetAxis(1)->FindBin(multhigh1 - 1e-5);
-    hSparseRec->GetAxis(1)->SetRange(lowbinMultRec, highbinMultRec);
-
-    h1gen = hSpraseGen->Projection(0, "E");
-    h1rec = hSparseRec->Projection(0, "E");
-
-    for (int i = 0; i < heff->GetNbinsX(); i++)
-    {
-        double lowpt = pT_bins[i];
-        double highpt = pT_bins[i + 1];
-
-        double nrec = h1rec->Integral(h1rec->GetXaxis()->FindBin(lowpt), h1rec->GetXaxis()->FindBin(highpt));
-        double ngen = h1gen->Integral(h1gen->GetXaxis()->FindBin(lowpt), h1gen->GetXaxis()->FindBin(highpt));
-        double efficiency = nrec / ngen;
-        double efficiencyerr = sqrt(abs(((nrec + 1) / (ngen + 2)) * ((nrec + 2) / (ngen + 3) - (nrec + 1) / (ngen + 2))));
-
-        cout << "Efficiency: " << efficiency << " +/- " << efficiencyerr << endl;
-
-        heff->SetBinContent(i + 1, efficiency);
-        heff->SetBinError(i + 1, efficiencyerr);
-        hyieldIntegral->SetBinContent(i + 1, hyieldIntegral->GetBinContent(i + 1) / (efficiency));
-
-        double errorinyieldIntegral = hyieldIntegral->GetBinError(i + 1);
-        double rawyieldvalueIntegral = hyieldIntegral->GetBinContent(i + 1);
-        hyieldIntegral->SetBinError(i + 1, sqrt(pow(errorinyieldIntegral / efficiency, 2) + pow(rawyieldvalueIntegral * efficiencyerr / (efficiency * efficiency), 2)));
-    }
-}
-
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
-{
-    SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
-    c->Divide(1, 2, 0, 0);
-    TPad *pad1 = (TPad *)c->GetPad(1);
-    TPad *pad2 = (TPad *)c->GetPad(2);
-    pad2Size = 0.3; // Size of the first pad
-    pad1Size = 1 - pad2Size;
-
-    pad1->SetPad(0, 0.3, 1, 1); // x1, y1, x2, y2 (top pad)
-    pad2->SetPad(0, 0, 1, 0.3);
-    pad1->SetRightMargin(0.06);
-    pad2->SetRightMargin(0.06);
-    pad2->SetBottomMargin(0.33);
-    pad1->SetLeftMargin(0.16);
-    pad2->SetLeftMargin(0.16);
-    pad1->SetTopMargin(0.02);
+    pad1->SetRightMargin(0.04);
+    pad2->SetRightMargin(0.04);
+    pad1->SetLeftMargin(0.18);
+    pad2->SetLeftMargin(0.18);
+    pad1->SetTopMargin(0.04);
     pad1->SetBottomMargin(0.001);
     pad2->SetTopMargin(0.001);
+    pad2->SetBottomMargin(0.35);
 
     pad1->SetTicks(1, 1);
     pad2->SetTicks(1, 1);
+
+    pad1->Draw();
+    pad2->Draw();
 }

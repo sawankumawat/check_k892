@@ -32,6 +32,12 @@ void compare_SpectraDiffBins()
     TH1F *hSpectra1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
     TH1F *hSpectra2 = (TH1F *)fspectra2->Get("mult_0-120/corrected_spectra_Integral_final");
 
+    cout << "Total bins in INEL spectra: " << hSpectra2->GetNbinsX() << endl;
+    hSpectra2->SetBinContent(27, hSpectra2->GetBinContent(27) * 1.05);
+    hSpectra2->SetBinContent(28, hSpectra2->GetBinContent(28) * 1.05);
+    hSpectra2->SetBinContent(29, hSpectra2->GetBinContent(29) * 1.05);
+    hSpectra2->Scale(1.0/ 0.94);
+
     // Fit the spectra with Levy function
     TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 20.0, 4);
     fitFcn1->SetParameter(0, 5.0);
@@ -315,7 +321,7 @@ void compare_SpectraDiffBins()
     line2->SetLineWidth(2);
     line2->SetLineColor(kBlack);
     line2->Draw();
-    c1->SaveAs(outputPath + "/SpectraRatio.png");
+    c1->SaveAs(outputPath + "/SpectraRatioINEL_INELGt0.png");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size)

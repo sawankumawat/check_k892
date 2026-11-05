@@ -4,6 +4,7 @@
 
 #define INELgt0
 // #define INEL
+// #define MCClosure
 
 #ifdef INELgt0
 // For INEL>0 dataset
@@ -15,6 +16,11 @@ double pT_bins[Npt + 1] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0
 // // For INEL dataset
 const Int_t Npt = 31;
 double pT_bins[Npt + 1] = {0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0}; // INEL with even higher pT bins
+#endif
+
+#ifdef MCClosure
+const Int_t Npt = 10;                                                               // For MC closure
+double pT_bins[Npt + 1] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0}; // For MC closure
 #endif
 
 const int pt_start = 0;
@@ -97,5 +103,21 @@ const std::vector<vector<float>> kNormRangepT = {
     {1.20, 1.30}, // 20.0 - 25.0
     {1.20, 1.30}  // 25.0 - 30.0
 
+};
+#endif
+
+#ifdef MCClosure
+// Normalisation Range
+const std::vector<vector<float>> kNormRangepT = {
+    {1.3, 1.4}, // 0.0 - 0.4
+    {1.3, 1.4}, // 0.4 - 0.8
+    {1.3, 1.4}, // 0.8 - 1.2
+    {1.3, 1.4}, // 1.2 - 1.6
+    {1.3, 1.4}, // 1.6 - 2.0
+    {1.3, 1.4}, // 2.0 - 3.0
+    {1.3, 1.4}, // 3.0 - 4.0
+    {1.3, 1.4}, // 4.0 - 6.0
+    {1.3, 1.4}, // 6.0 - 8.0
+    {1.3, 1.4}  // 8.0 - 10.0
 };
 #endif

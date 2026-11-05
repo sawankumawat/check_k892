@@ -135,16 +135,17 @@ void plot_spectra()
         hmult[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         // int multiplicationFactors[] = {9, 8, 7, 5, 4, 3, 2, 1, 0}; // 6 is skipped because the multiplicity bin 10-15 and 15-20 are merged (in run 2)
 
-        for (int i = 1; i < numofmultbins + 1; i++)
+        for (int i = 0; i < numofmultbins + 1; i++)
         {
             SetHistoQA(hmult[i]);
             hmult[i]->SetMarkerSize(1.2);
-            hmult[i]->Scale(pow(2, numofmultbins - i));
+            if (i > 0)
+                hmult[i]->Scale(pow(2, numofmultbins - i));
             hmult[i]->GetXaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleOffset(1.3);
             // hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
-            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 200);
+            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 50000);
             hmult[i]->SetMinimum(3e-8);
             hmult[i]->SetMarkerStyle(markers[i]);
             hmult[i]->SetLineColor(colors[i]);
@@ -161,7 +162,7 @@ void plot_spectra()
         leg->SetTextFont(42);
         leg->SetTextSize(0.035);
         leg->SetHeader("FT0M Multiplicity Event Classes");
-        // leg->AddEntry(hmult[0], "0-100%", "lpe");
+        leg->AddEntry(hmult[0], "0-100%", "lpe");
         for (int i = 1; i < numofmultbins + 1; i++)
         {
             leg->AddEntry(hmult[i], Form("%.0f-%.0f%%(#times2^{%d})", mult_classes[i - 1], mult_classes[i], numofmultbins - i), "lpe");
@@ -321,7 +322,7 @@ void plot_spectra()
                 }
 
                 gRatioSys[i - 1]->SetFillColorAlpha(colors[i], 0.25);
-                // gRatioSys[i - 1]->SetFillStyle(0);   
+                // gRatioSys[i - 1]->SetFillStyle(0);
                 gRatioSys[i - 1]->SetLineColor(colors[i]);
                 gRatioSys[i - 1]->SetLineWidth(1);
 

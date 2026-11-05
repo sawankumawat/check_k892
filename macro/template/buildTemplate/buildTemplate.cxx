@@ -16,9 +16,9 @@ void buildTemplate()
     timer.Start();
 
     //*************************** change here ***************************************
-    // const string kResBkg = "MIX";
+    const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    const string kResBkg = "ROTATED";
+    // const string kResBkg = "ROTATED";
     TString outputtype = "png";
     const float txtsize = 0.045; // text size in the plots
     bool isINEL = false;
@@ -45,8 +45,10 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
-    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/CalibratedMCchecks/780946.root", "Read"); // INEL>0 (updated one)
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/CalibratedMCchecks/780946.root", "Read"); // INEL>0 (updated one)
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/793191.root", "Read"); // For MC closure (INEL>0)
+
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/790177.root", "Read"); // INEL (lf-mc-centrality)
 
@@ -57,21 +59,21 @@ void buildTemplate()
         return;
     }
 
-    TH1F *hcent = (TH1F *)fInputFile->Get(Form("kstarqa_ServiceWagon%s/eventSelection/hMultiplicity", kvariation.Data()));
-    // TH1F *hcent = (TH1F *)fInputFile->Get(Form("kstarqa%s/eventSelection/hMultiplicity", kvariation.Data()));
+    // TH1F *hcent = (TH1F *)fInputFile->Get(Form("kstarqa_ServiceWagon%s/eventSelection/hMultiplicity", kvariation.Data()));
+    TH1F *hcent = (TH1F *)fInputFile->Get(Form("kstarqa%s/eventSelection/hMultiplicity", kvariation.Data()));
     if (hcent == nullptr)
     {
         cerr << "Histogram not found" << endl;
         return;
     }
 
-    const string recpath = Form("kstarqa_ServiceWagon%s/hInvMass/h3KstarMassRec", kvariation.Data());
-    // const string recpath = Form("kstarqa%s/hInvMass/h3KstarMassRec", kvariation.Data());
+    // const string recpath = Form("kstarqa_ServiceWagon%s/hInvMass/h3KstarMassRec", kvariation.Data());
+    const string recpath = Form("kstarqa%s/hInvMass/h3KstarMassRec", kvariation.Data());
     THnSparseF *hRec = (THnSparseF *)fInputFile->Get(recpath.c_str());
 
     //**Invariant mass histograms for sig+bkg and mixed event bg*****************************************
-    auto fDirectory = (TDirectoryFile *)fInputFile->Get(Form("kstarqa_ServiceWagon%s/hInvMass", kvariation.Data()));
-    // auto fDirectory = (TDirectoryFile *)fInputFile->Get(Form("kstarqa%s/hInvMass", kvariation.Data()));
+    // auto fDirectory = (TDirectoryFile *)fInputFile->Get(Form("kstarqa_ServiceWagon%s/hInvMass", kvariation.Data()));
+    auto fDirectory = (TDirectoryFile *)fInputFile->Get(Form("kstarqa%s/hInvMass", kvariation.Data()));
     THnSparseF *fHistLikeMM = (THnSparseF *)fDirectory->Get("h3KstarInvMasslikeSignMM");
     THnSparseF *fHistLikePP = (THnSparseF *)fDirectory->Get("h3KstarInvMasslikeSignPP");
     THnSparseF *fHistUnlike = (THnSparseF *)fDirectory->Get("h3KstarInvMassUnlikeSign");
@@ -86,7 +88,7 @@ void buildTemplate()
 
     // TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/764341/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
 
-    TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/%s/SignalMinusTrue_%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
+    TFile *outPutSigMinusTrue = (isINEL) ? new TFile(Form("template/INEL/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE") : new TFile(Form("template/%s/SignalMinusTrue%s.root", kResBkg.c_str(), kvariation.Data()), "RECREATE");
 
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {

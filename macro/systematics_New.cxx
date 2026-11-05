@@ -94,6 +94,10 @@ void systematics_New()
     SetCanvasStyle(cTotalSysMult, 0.15, 0.05, 0.08, 0.13);
     cTotalSysMult->Divide(4, 3);
 
+    TCanvas *cTotalSysMultSmoothed = new TCanvas("cTotalSysMultSmoothed", "cTotalSysMultSmoothed", 1440, 1080);
+    SetCanvasStyle(cTotalSysMultSmoothed, 0.15, 0.05, 0.08, 0.13);
+    cTotalSysMultSmoothed->Divide(4, 3);
+
     for (int imult = 0; imult < nmultbins + 1; imult++)
     {
         int multLow, multHigh;
@@ -684,6 +688,13 @@ void systematics_New()
         latSys.DrawLatex(0.25, 0.85, Form("%d-%d%%", multLow, multHigh));
         latSys.SetTextSize(0.04);
 
+        //write the plots before smoothing
+        hSignalExtTotalSys->Write(Form("hSignalExtTotalSys_%d_%d", multLow, multHigh));
+        hTrackSelTotalSys->Write(Form("hTrackSelTotalSys_%d_%d", multLow, multHigh));
+        hPIDTotalSys->Write(Form("hPIDTotalSys_%d_%d", multLow, multHigh));
+        hMaterialBudgetTotalSys->Write(Form("hMaterialBudgetTotalSys_%d_%d", multLow, multHigh));
+        hHadronicInteractionTotalSys->Write(Form("hHadronicInteractionTotalSys_%d_%d", multLow, multHigh));
+
         // smoothing procedure on separate sources
         int Iterations = 2;
         TH1D *hSignalExtTotalSysSmoothed = operations.smooth(hSignalExtTotalSys, Iterations);
@@ -727,6 +738,32 @@ void systematics_New()
 
         hTotalSysSmoothed->Write(Form("hTotalSysSmoothed_%d_%d", multLow, multHigh));
 
+        cTotalSysMultSmoothed->cd(imult + 1);
+        gPad->SetLeftMargin(0.15);
+        gPad->SetBottomMargin(0.14);
+        gPad->SetRightMargin(0.03);
+        gPad->SetTopMargin(0.08);
+        for (int i = 0; i < smoothedTotalVec.size(); i++)
+        {
+            SetHistoQA(smoothedTotalVec[i]);
+            smoothedTotalVec[i]->GetYaxis()->SetTitle("Relative Uncertainty");
+            smoothedTotalVec[i]->SetStats(0);
+            smoothedTotalVec[i]->SetMaximum(0.185);
+            smoothedTotalVec[i]->SetMinimum(0);
+            smoothedTotalVec[i]->SetLineColor(lineColors[i]);
+            smoothedTotalVec[i]->SetLineWidth(2);
+            smoothedTotalVec[i]->GetYaxis()->SetTitleOffset(1.6);
+            smoothedTotalVec[i]->Draw("HIST SAME");
+        }
+        hTotalSysSmoothed->Draw("HIST SAME");
+        if (imult == 0)
+        {
+            legTotal->Draw();
+        }
+        latSys.SetTextSize(0.07);
+        latSys.DrawLatex(0.25, 0.85, Form("%d-%d%%", multLow, multHigh));
+        latSys.SetTextSize(0.04);
+
         // Save all the plots
         cPlotBarlowAll->SaveAs(savePath + "BarlowChecks_AllVariations.png");
         cRatioAll->SaveAs(savePath + "Ratio_AllVariations.png");
@@ -737,4 +774,5 @@ void systematics_New()
         cSmoothedTotalSys->SaveAs(savePath + "SmoothedTotalSystematics.png");
     }
     cTotalSysMult->SaveAs((basePathSigExt + "SystematicsPlots/TotalSystematics_Mult.png").c_str());
+    cTotalSysMultSmoothed->SaveAs((basePathSigExt + "SystematicsPlots/SmoothedTotalSystematics_Mult.png").c_str());
 }

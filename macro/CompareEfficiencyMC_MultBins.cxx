@@ -8,6 +8,7 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TCanvas.h"
+#include "TPad.h"
 #include "TLegend.h"
 #include "TStyle.h"
 #include "TH1.h"
@@ -21,6 +22,8 @@ using namespace std;
 
 void CompareEfficiencyMC_MultBins()
 {
+
+    TString savePath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/EfficiencyCompare";
     // ================= MC FILES =================
     vector<string> files = {
         "/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root",
@@ -138,7 +141,7 @@ void CompareEfficiencyMC_MultBins()
             TH1D *hRecProjection = hRecPt->Projection(0, "E");
 
             hEfficiency[m][i] = new TH1D(Form("hEfficiency_m%d_mc%d", m, i),
-                                         Form("%s;#it{p}_{T} (GeV/#it{c});Acceptance #times efficiency", multLabel.Data()), Npt, pT_bins);
+                                         Form("%s;;Acceptance #times efficiency", multLabel.Data()), Npt, pT_bins);
             hEfficiency[m][i]->SetDirectory(nullptr);
             hEfficiency[m][i]->Sumw2();
 
@@ -182,7 +185,7 @@ void CompareEfficiencyMC_MultBins()
             double eventLoss = (nGenEvents > 0.0) ? nRecEvents / nGenEvents : 0.0;
 
             hEventLoss[m][i] = new TH1D(Form("hEventLoss_m%d_mc%d", m, i),
-                                        Form("%s;#it{p}_{T} (GeV/#it{c});Event loss factor", multLabel.Data()), Npt, pT_bins);
+                                        Form("%s;;Event loss factor", multLabel.Data()), Npt, pT_bins);
             hEventLoss[m][i]->SetDirectory(nullptr);
             for (int j = 1; j <= Npt; ++j)
                 hEventLoss[m][i]->SetBinContent(j, eventLoss);
@@ -199,7 +202,7 @@ void CompareEfficiencyMC_MultBins()
             TH1D *hSignalDenPt = hSignalDen->ProjectionX(Form("hSignalDenPt_m%d_mc%d", m, i), signalDenLow, signalDenHigh);
 
             hSignalLoss[m][i] = new TH1D(Form("hSignalLoss_m%d_mc%d", m, i),
-                                         Form("%s;#it{p}_{T} (GeV/#it{c});Signal loss factor", multLabel.Data()), Npt, pT_bins);
+                                         Form("%s;;Signal loss factor", multLabel.Data()), Npt, pT_bins);
             hSignalLoss[m][i]->SetDirectory(nullptr);
 
             for (int j = 0; j < Npt; ++j)
@@ -223,7 +226,7 @@ void CompareEfficiencyMC_MultBins()
 
             // ============== EVENT LOSS / SIGNAL LOSS ==============
             hEventLossOverSignalLoss[m][i] = new TH1D(Form("hEventLossOverSignalLoss_m%d_mc%d", m, i),
-                                                      Form("%s;#it{p}_{T} (GeV/#it{c});Event loss / Signal loss", multLabel.Data()), Npt, pT_bins);
+                                                      Form("%s;;Event loss / Signal loss", multLabel.Data()), Npt, pT_bins);
             hEventLossOverSignalLoss[m][i]->SetDirectory(nullptr);
             for (int j = 1; j <= Npt; ++j)
             {
@@ -251,7 +254,7 @@ void CompareEfficiencyMC_MultBins()
         delete f;
     }
 
-    // ================= DRAW MULTI-PAD CANVAS (5x2) =================
+    // ================= DRAW MULTI-PAD CANVAS (5x2 with Ratios) =================
     struct PlotSpec
     {
         const char *name;
@@ -268,21 +271,36 @@ void CompareEfficiencyMC_MultBins()
 
     for (const auto &plot : plots)
     {
-        TCanvas *c = new TCanvas(Form("c_%s_Divided", plot.name), plot.title, 2000, 900);
+        TCanvas *c = new TCanvas(Form("c_%s_Divided", plot.name), plot.title, 2200, 1100);
         c->Divide(5, 2);
 
         for (int m = 0; m < Nmult; ++m)
         {
-            c->cd(m + 1);
-            gPad->SetLeftMargin(0.12);
-            gPad->SetRightMargin(0.04);
-            gPad->SetTopMargin(0.08);
-            gPad->SetBottomMargin(0.12);
+            TVirtualPad *parentPad = c->cd(m + 1);
 
-            TLegend *leg = new TLegend(0.40, 0.65, 0.90, 0.88);
+            // Create Sub-Pads for Upper (Distribution) and Lower (Ratio) panels
+            TPad *padUpper = new TPad(Form("padUpper_%s_m%d", plot.name, m), "padUpper", 0.0, 0.3, 1.0, 1.0);
+            TPad *padLower = new TPad(Form("padLower_%s_m%d", plot.name, m), "padLower", 0.0, 0.0, 1.0, 0.3);
+
+            padUpper->SetTopMargin(0.08);
+            padUpper->SetBottomMargin(0.02);
+            padUpper->SetLeftMargin(0.14);
+            padUpper->SetRightMargin(0.04);
+
+            padLower->SetTopMargin(0.02);
+            padLower->SetBottomMargin(0.35);
+            padLower->SetLeftMargin(0.14);
+            padLower->SetRightMargin(0.04);
+
+            padUpper->Draw();
+            padLower->Draw();
+
+            // ------------------ UPPER PANEL ------------------
+            padUpper->cd();
+            TLegend *leg = new TLegend(0.35, 0.58, 0.92, 0.88);
             leg->SetBorderSize(0);
             leg->SetFillStyle(0);
-            leg->SetTextSize(0.035);
+            leg->SetTextSize(0.05);
 
             bool first = true;
             for (int i = 0; i < nFiles; ++i)
@@ -291,10 +309,14 @@ void CompareEfficiencyMC_MultBins()
                 if (!h)
                     continue;
 
-                h->GetXaxis()->SetTitleSize(0.045);
-                h->GetYaxis()->SetTitleSize(0.045);
-                h->GetXaxis()->SetLabelSize(0.04);
-                h->GetYaxis()->SetLabelSize(0.04);
+                // Adjust font sizes for split-pad scaling
+                h->GetYaxis()->SetTitleSize(0.06);
+                h->GetYaxis()->SetTitleOffset(1.0);
+                h->GetYaxis()->SetLabelSize(0.05);
+
+                // Hide X-axis details on top panel to prevent overlap
+                h->GetXaxis()->SetTitle("");
+                h->GetXaxis()->SetLabelSize(0.0);
 
                 h->Draw(first ? (plot.isEventLoss ? "HIST" : "E1") : (plot.isEventLoss ? "HIST SAME" : "E1 SAME"));
 
@@ -305,15 +327,64 @@ void CompareEfficiencyMC_MultBins()
 
                 first = false;
             }
-
             leg->Draw();
+
+            // ------------------ LOWER PANEL (RATIOS) ------------------
+            padLower->cd();
+
+            TH1D *hRef = (*(plot.hists))[m][0];
+            bool firstRatio = true;
+
+            if (hRef)
+            {
+                for (int i = 0; i < nFiles; ++i)
+                {
+                    TH1D *hCurr = (*(plot.hists))[m][i];
+                    if (!hCurr)
+                        continue;
+
+                    TH1D *hRatio = (TH1D *)hCurr->Clone(Form("hRatio_%s_m%d_mc%d", plot.name, m, i));
+                    hRatio->SetDirectory(nullptr);
+                    hRatio->Divide(hRef);
+
+                    hRatio->SetLineColor(colors[i]);
+                    hRatio->SetMarkerColor(colors[i]);
+                    hRatio->SetMarkerStyle(markers[i]);
+                    hRatio->SetMarkerSize(0.8);
+                    hRatio->SetLineWidth(2);
+
+                    hRatio->SetTitle("");
+                    hRatio->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+                    hRatio->GetXaxis()->SetTitleSize(0.12);
+                    hRatio->GetXaxis()->SetTitleOffset(1.1);
+                    hRatio->GetXaxis()->SetLabelSize(0.10);
+
+                    hRatio->GetYaxis()->SetTitle("Ratio to Ref");
+                    hRatio->GetYaxis()->SetTitleSize(0.10);
+                    hRatio->GetYaxis()->SetTitleOffset(0.6);
+                    hRatio->GetYaxis()->SetLabelSize(0.09);
+                    hRatio->GetYaxis()->SetNdivisions(505);
+
+                    hRatio->SetMinimum(0.7);
+                    hRatio->SetMaximum(1.3);
+
+                    hRatio->Draw(firstRatio ? (plot.isEventLoss ? "HIST" : "E1") : (plot.isEventLoss ? "HIST SAME" : "E1 SAME"));
+                    firstRatio = false;
+                }
+
+                TLine *lineOne = new TLine(pT_bins[0], 1.0, pT_bins[Npt], 1.0);
+                lineOne->SetLineStyle(2);
+                lineOne->SetLineWidth(1);
+                lineOne->SetLineColor(kBlack);
+                lineOne->Draw("SAME");
+            }
         }
 
-        TString output = Form("Compare_%s_MultBins_Divided.png", plot.name);
+        TString output = Form("%s/Compare_%s_MultBins_Divided.png", savePath.Data(), plot.name);
         c->SaveAs(output);
         delete c;
     }
 
     cout << "\nComparison completed for all multiplicity classes.\n";
-    cout << "Generated 4 divided (5x2) canvas plots.\n";
+    cout << "Generated 4 divided (5x2) canvas plots with bottom ratio panels.\n";
 }

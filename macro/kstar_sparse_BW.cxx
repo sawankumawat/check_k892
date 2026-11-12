@@ -579,7 +579,8 @@ void kstar_sparse_BW()
                 pag->Draw();
 
                 // TLegend *pag2 = new TLegend(0.2, 0.7, 0.45, 0.9);
-                TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
+                // TLegend *pag2 = new TLegend(0.7, 0.65, 0.9, 0.9);
+                TLegend *pag2 = new TLegend(0.7, 0.2, 0.9, 0.3);
                 pag2->SetBorderSize(0);
                 pag2->SetTextFont(42);
                 pag2->SetTextSize(0.035);
@@ -588,6 +589,17 @@ void kstar_sparse_BW()
                 pag2->AddEntry(fitFcn1, "BW", "l");
                 pag2->AddEntry(fitFcn2, "pol3", "l");
                 pag2->Draw();
+
+                TLegend *legFitParams = new TLegend(0.53, 0.65, 0.9, 0.9);
+                legFitParams->SetBorderSize(0);
+                legFitParams->SetTextFont(42);
+                legFitParams->SetTextSize(0.035);
+                legFitParams->SetFillStyle(0);
+                legFitParams->AddEntry((TObject *)0, Form("Mass: %.3f #pm %.3f GeV/#it{c}^{2}", Mass[ip], ErrorMass[ip]), "");
+                legFitParams->AddEntry((TObject *)0, Form("Width: %.3f #pm %.3f GeV/#it{c}^{2} (fixed)", Width[ip], ErrorWidth[ip]), "");
+                // legFitParams->AddEntry((TObject *)0, Form("Yield: %.1e #pm %.1e", yieldcalc * Event, yielderror * Event), "");
+                legFitParams->AddEntry((TObject *)0, Form("#Chi^{2}/NDF: %.2f ", chibyndf), "");
+                legFitParams->Draw();
 
                 pad1->Modified();
                 pad1->Update();

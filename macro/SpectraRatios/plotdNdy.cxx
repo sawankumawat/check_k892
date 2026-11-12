@@ -121,7 +121,7 @@ void plotdNdy()
     legdNdyKstar->AddEntry(gMYieldKstarOld[0], "Old spectra", "lp");
 
     legdNdyKstar->Draw();
-    cdNdyKstar->SaveAs("Plots/dNdyKstar_compare_optmiseSpectra.png");
+    // cdNdyKstar->SaveAs("Plots/dNdyKstar_compare_optmiseSpectra.png");
 
     TCanvas *cMeanpTKstar = new TCanvas("cMeanpTKstar", "cMeanpTKstar", 720, 720);
     SetCanvasStyle(cMeanpTKstar, 0.15, 0.03, 0.03, 0.15);
@@ -156,7 +156,7 @@ void plotdNdy()
     gMPtKstarOld[2]->Draw("E2 same");
 
     legdNdyKstar->Draw();
-    cMeanpTKstar->SaveAs("Plots/MeanpTKstar_compare_optmiseSpectra.png");
+    // cMeanpTKstar->SaveAs("Plots/MeanpTKstar_compare_optmiseSpectra.png");
 }
 
 TFile *OpenFile(const string &path)

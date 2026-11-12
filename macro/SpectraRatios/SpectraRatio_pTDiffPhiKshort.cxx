@@ -5,7 +5,7 @@
 #include "../spectra/YieldMean.C"
 using namespace std;
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size);
 
 Double_t FuncLavy(Double_t *x, Double_t *par)
 {
@@ -478,8 +478,8 @@ void SpectraRatio_pTDiffPhiKshort()
 
     TCanvas *cRatio = new TCanvas("cRatio", "cRatio", 720, 720);
     SetCanvasStyle(cRatio, 0.16, 0.06, 0.06, 0.13);
-    double pad1Size, pad2Size;
-    canvas_style(cRatio, pad1Size, pad2Size);
+    double pad1Size, pad2Size, pad3Size;
+    canvas_style(cRatio, pad1Size, pad2Size, pad3Size);
     cRatio->cd(1);
 
     SetHistoQA(hKstarK0sRatioHM_stat);
@@ -527,7 +527,7 @@ void SpectraRatio_pTDiffPhiKshort()
 
     // Now open the spectra file in EPOS
     // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix2.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix3.root");
 
     // TH1F *hEPOS_UrQMDOFF_PhiHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
     // TH1F *hEPOS_UrQMDOFF_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
@@ -549,7 +549,7 @@ void SpectraRatio_pTDiffPhiKshort()
     // TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent9");
     // TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_status0/hK0s_Pt_status0_Cent0");
 
-    double phiBR = 0.489; // Branching ratio for Phi(1020) -> K+ K-
+    double phiBR = 0.415; // Branching ratio for Phi(1020) -> K+ K-
     hEPOS_UrQMDON_PhiHM->Scale(1 / phiBR);
     hEPOS_UrQMDON_PhiLM->Scale(1 / phiBR);
 
@@ -848,13 +848,13 @@ void SpectraRatio_pTDiffPhiKshort()
     makeCurve(hRatio_HM_LM, kRed + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
     makeCurve(hRatio_HM_LM_ON, kBlue + 1, 7, gRatio_HM_LM_On, bRatio_HM_LM_On);
 
-    if (plotEPOS)
-    {
-        bRatio_HM_LM_Off->Draw("3 same");
-        bRatio_HM_LM_On->Draw("3 same"); // bands
-        gRatio_HM_LM_Off->Draw("L same");
-        gRatio_HM_LM_On->Draw("L same"); // lines
-    }
+    // if (plotEPOS)
+    // {
+    //     bRatio_HM_LM_Off->Draw("3 same");
+    //     bRatio_HM_LM_On->Draw("3 same"); // bands
+    //     gRatio_HM_LM_Off->Draw("L same");
+    //     gRatio_HM_LM_On->Draw("L same"); // lines
+    // }
 
     TLine *line = new TLine(0.5, 1.0, 6.0, 1.0);
     line->SetLineColor(kGray + 1);
@@ -902,13 +902,13 @@ void SpectraRatio_pTDiffPhiKshort()
     hSignificance->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
 
     hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
-    hSignificance->GetYaxis()->SetTitleSize(0.04 / 0.20);
-    hSignificance->GetYaxis()->SetLabelSize(0.035 / 0.20);
-    hSignificance->GetXaxis()->SetTitleSize(0.04 / 0.20);
-    hSignificance->GetXaxis()->SetLabelSize(0.035 / 0.20);
+    hSignificance->GetYaxis()->SetTitleSize(0.04 / pad3Size);
+    hSignificance->GetYaxis()->SetLabelSize(0.035 / pad3Size);
+    hSignificance->GetXaxis()->SetTitleSize(0.04 / pad3Size);
+    hSignificance->GetXaxis()->SetLabelSize(0.035 / pad3Size);
 
     hSignificance->GetXaxis()->SetRangeUser(0.5, 6.0);
-    hSignificance->GetYaxis()->SetTitleOffset(1.60 * 0.20);
+    hSignificance->GetYaxis()->SetTitleOffset(1.60 * pad3Size);
     hSignificance->GetYaxis()->SetNdivisions(505);
 
     hSignificance->SetMinimum(0.0);
@@ -921,10 +921,10 @@ void SpectraRatio_pTDiffPhiKshort()
     phiLine->SetLineWidth(3);
     phiLine->Draw("same");
 
-    // cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio_significance.png");
+    cRatio->SaveAs("Plots/pTDiff_Ratios/PhiK0sRatio_WithModel.png");
 }
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size)
 {
     SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
 
@@ -936,8 +936,8 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
     // Relative pad heights
     pad1Size = 0.60;
-    pad2Size = 0.20;
-    double pad3Size = 0.20;
+    pad2Size = 0.15;
+    pad3Size = 0.25;
 
     // Set pad positions: (x1, y1, x2, y2)
     pad1->SetPad(0, pad2Size + pad3Size, 1, 1);
@@ -962,7 +962,7 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     // Bottom margins
     pad1->SetBottomMargin(0.001);
     pad2->SetBottomMargin(0.00);
-    pad3->SetBottomMargin(0.20);
+    pad3->SetBottomMargin(0.43);
 
     // Ticks on all pads
     pad1->SetTickx(1);

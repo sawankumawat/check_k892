@@ -1,5 +1,7 @@
 #include <iostream>
 #include <iomanip>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
 #include "../src/style.h"
 using namespace std;
 
@@ -63,6 +65,73 @@ TGraphErrors *NormalizeGraphByX(TGraphErrors *gr, const char *name)
     return grNorm;
 }
 
+TGraphErrors *NormalizeYieldByMB(TGraphErrors *gr, double yieldMB, double yieldMBErr, double multMB, double multMBErr, const char *name)
+{
+    if (!gr || yieldMB <= 0 || multMB <= 0)
+        return nullptr;
+
+    TGraphErrors *grNorm = new TGraphErrors();
+    grNorm->SetName(name);
+
+    for (int i = 0; i < gr->GetN(); i++)
+    {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        double ex = gr->GetErrorX(i);
+        double ey = gr->GetErrorY(i);
+
+        double xNorm = x / multMB;
+        double yNorm = y / yieldMB;
+        // double exNorm = sqrt(pow(ex / multMB, 2) + pow(x * multMBErr / (multMB * multMB), 2));
+        double exNorm = ex / multMB;
+        double eyNorm = sqrt(pow(ey / yieldMB, 2) + pow(y * yieldMBErr / (yieldMB * yieldMB), 2));
+
+        int ip = grNorm->GetN();
+        grNorm->SetPoint(ip, xNorm, yNorm);
+        grNorm->SetPointError(ip, exNorm, eyNorm);
+    }
+
+    grNorm->SetLineColor(gr->GetLineColor());
+    grNorm->SetLineStyle(gr->GetLineStyle());
+    grNorm->SetLineWidth(gr->GetLineWidth());
+    grNorm->SetMarkerColor(gr->GetMarkerColor());
+    grNorm->SetMarkerStyle(gr->GetMarkerStyle());
+    grNorm->SetMarkerSize(gr->GetMarkerSize());
+    return grNorm;
+}
+
+TGraphAsymmErrors *NormalizeYieldSysByMB(TGraphErrors *gr, TGraphAsymmErrors *grMB, double yieldMB, double multMB, double multMBErr, const char *name)
+{
+    if (!gr || !grMB || yieldMB <= 0 || multMB <= 0 || grMB->GetN() < 1)
+        return nullptr;
+
+    double xMB, yMB;
+    grMB->GetPoint(0, xMB, yMB);
+    TGraphAsymmErrors *grNorm = new TGraphAsymmErrors();
+    grNorm->SetName(name);
+
+    for (int i = 0; i < gr->GetN(); i++)
+    {
+        double x, y;
+        gr->GetPoint(i, x, y);
+        double ex = gr->GetErrorX(i);
+        double ey = gr->GetErrorY(i);
+
+        double xNorm = x / multMB;
+        double yNorm = y / yieldMB;
+        // double exNorm = sqrt(pow(ex / multMB, 2) + pow(x * multMBErr / (multMB * multMB), 2));
+        double exNorm = ex / multMB;
+        double eyLow = sqrt(pow(ey / yieldMB, 2) + pow(y * grMB->GetErrorYlow(0) / (yieldMB * yieldMB), 2));
+        double eyHigh = sqrt(pow(ey / yieldMB, 2) + pow(y * grMB->GetErrorYhigh(0) / (yieldMB * yieldMB), 2));
+
+        int ip = grNorm->GetN();
+        grNorm->SetPoint(ip, xNorm, yNorm);
+        grNorm->SetPointError(ip, exNorm, exNorm, eyLow, eyHigh);
+    }
+
+    return grNorm;
+}
+
 void setStyle(TGraphErrors *gr, int color, int style)
 {
     gr->SetLineColor(color);
@@ -120,6 +189,8 @@ void ParticleRatio_QA()
         gMPtKstar[i] = GetGraph(fKstar, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldKstar[i] = GetGraph(fKstar, Form("gMeanYieldRun3%s", suffix.c_str()));
 
+        // Minimum-bias reference graphs saved in the Kstar Results.root file.
+
         gMPtPhiRun3[i] = GetGraph(fPhiRun3, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldPhiRun3[i] = GetGraph(fPhiRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
 
@@ -171,6 +242,14 @@ void ParticleRatio_QA()
 
         gMPtKshortRun3[i] = GetGraph(fKshortRun3, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldKshortRun3[i] = GetGraph(fKshortRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
+    }
+
+    TGraphErrors *gMeanYieldMB_stat = GetGraph(fKstar, "gMeanYieldMB_stat");
+    TGraphAsymmErrors *gMeanYieldMB_sys = (TGraphAsymmErrors *)fKstar->Get("gMeanYieldMB_sys");
+    if (!gMeanYieldMB_stat || !gMeanYieldMB_sys || gMeanYieldMB_stat->GetN() < 1 || gMeanYieldMB_sys->GetN() < 1)
+    {
+        cout << "Error: minimum-bias yield graphs not found in " << fKstar->GetName() << endl;
+        return;
     }
 
     TGraphErrors *gKstarKshortRatio_13TeV[2], *gPhiKshortRatio_13TeV[2], *gPhiPiRatio_13TeV[2], *gKstarKaRatio_13TeV[2], *gKstarPiRatio_13TeV[2], *gPhiKaRatio_13TeV[2], *gPhiPrRatio_13TeV[2], *gPhiLambdaRatio_13TeV[2];
@@ -316,26 +395,28 @@ void ParticleRatio_QA()
     //==============EPOS Model========================
     //================================================
 
-    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix2.root");
-    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix2.root");
+    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix3.root");
+    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix3.root");
 
     TGraphErrors *gEPOS_KstardNdy_UrQMDOff = GetGraph(fEPOS_New, "g_dNdy_opt0");
     TGraphErrors *gEPOS_KstardNdy_UrQMDOn = GetGraph(fEPOS_New, "g_dNdy_opt1");
     TGraphErrors *gEPOS_KstarMeanpT_UrQMDOff = GetGraph(fEPOS_New, "g_pT_opt0");
     TGraphErrors *gEPOS_KstarMeanpT_UrQMDOn = GetGraph(fEPOS_New, "g_pT_opt1");
-    // RestrictModelXaxis(gEPOS_KstardNdy_UrQMDOff, 3.3, 23.5);
-    // RestrictModelXaxis(gEPOS_KstardNdy_UrQMDOn, 3.3, 24.5);
-    // RestrictModelXaxis(gEPOS_KstarMeanpT_UrQMDOff, 3.3, 23.5);
-    // RestrictModelXaxis(gEPOS_KstarMeanpT_UrQMDOn, 3.3, 24.5);
+
+    TGraphErrors *gEPOS_KstardNdy_UrQMDOffMB = GetGraph(fEPOS_New2, "g_dNdy_MB_opt0");
+    TGraphErrors *gEPOS_KstardNdy_UrQMDOnMB = GetGraph(fEPOS_New2, "g_dNdy_MB_opt1");
+    TGraphErrors *gEPOS_KstarMeanpT_UrQMDOffMB = GetGraph(fEPOS_New2, "g_pT_MB_opt0");
+    TGraphErrors *gEPOS_KstarMeanpT_UrQMDOnMB = GetGraph(fEPOS_New2, "g_pT_MB_opt1");
 
     TGraphErrors *gEPOS_PhidNdy_UrQMDOff = GetGraph(fEPOS_New, "g_phi_dNdy_opt0");
     TGraphErrors *gEPOS_PhidNdy_UrQMDOn = GetGraph(fEPOS_New, "g_phi_dNdy_opt1");
     TGraphErrors *gEPOS_PhiMeanpT_UrQMDOff = GetGraph(fEPOS_New, "g_phi_pT_opt0");
     TGraphErrors *gEPOS_PhiMeanpT_UrQMDOn = GetGraph(fEPOS_New, "g_phi_pT_opt1");
-    // RestrictModelXaxis(gEPOS_PhidNdy_UrQMDOff, 3.3, 23.5);
-    // RestrictModelXaxis(gEPOS_PhidNdy_UrQMDOn, 3.3, 24.5);
-    // RestrictModelXaxis(gEPOS_PhiMeanpT_UrQMDOff, 3.3, 23.5);
-    // RestrictModelXaxis(gEPOS_PhiMeanpT_UrQMDOn, 3.3, 24.5);
+
+    TGraphErrors *gEPOS_PhidNdy_UrQMDOffMB = GetGraph(fEPOS_New2, "g_phi_dNdy_MB_opt0");
+    TGraphErrors *gEPOS_PhidNdy_UrQMDOnMB = GetGraph(fEPOS_New2, "g_phi_dNdy_MB_opt1");
+    TGraphErrors *gEPOS_PhiMeanpT_UrQMDOffMB = GetGraph(fEPOS_New2, "g_phi_pT_MB_opt0");
+    TGraphErrors *gEPOS_PhiMeanpT_UrQMDOnMB = GetGraph(fEPOS_New2, "g_phi_pT_MB_opt1");
 
     for (int i = gEPOS_PhidNdy_UrQMDOff->GetN() - 1; i >= 0; --i)
     {
@@ -343,6 +424,11 @@ void ParticleRatio_QA()
         gEPOS_PhidNdy_UrQMDOn->SetPointError(i, 0, 0);    // Remove error
         gEPOS_PhiMeanpT_UrQMDOff->SetPointError(i, 0, 0); // Remove error
         gEPOS_PhiMeanpT_UrQMDOn->SetPointError(i, 0, 0);  // Remove error
+
+        gEPOS_PhidNdy_UrQMDOffMB->SetPointError(i, 0, 0);   // Remove error
+        gEPOS_PhidNdy_UrQMDOnMB->SetPointError(i, 0, 0);    // Remove error
+        gEPOS_PhiMeanpT_UrQMDOffMB->SetPointError(i, 0, 0); // Remove error
+        gEPOS_PhiMeanpT_UrQMDOnMB->SetPointError(i, 0, 0);  // Remove error
     }
 
     int counter = 0;
@@ -871,6 +957,532 @@ void ParticleRatio_QA()
     if (isSavePlots)
         cNormYieldKstar->SaveAs("Plots/NormalizedYield_Kstar.png");
 
+    //=========================================================
+    // ===== dN/dy normalized to MB vs dNch/deta normalized MB
+    //=========================================================
+
+    double xMB, yieldMB;
+    gMeanYieldMB_stat->GetPoint(0, xMB, yieldMB);
+    const double dNchdetaMB = 7.087;
+    const double dNchdetaMBErr = 0.18;
+    const double dNchdetaMB_run2 = 6.89;
+    double yieldMBStatErr = gMeanYieldMB_stat->GetErrorY(0);
+
+    TGraphErrors *gNormYieldKstarToMB_stat = NormalizeYieldByMB(gMYieldKstar[0], yieldMB, yieldMBStatErr, dNchdetaMB, dNchdetaMBErr, "gNormYieldKstarToMB_stat");
+    TGraphAsymmErrors *gNormYieldKstarToMB_sys = NormalizeYieldSysByMB(gMYieldKstar[1], gMeanYieldMB_sys, yieldMB, dNchdetaMB, dNchdetaMBErr, "gNormYieldKstarToMB_sys");
+    TGraphAsymmErrors *gNormYieldKstarToMB_sysUncorr = new TGraphAsymmErrors();
+    gNormYieldKstarToMB_sysUncorr->SetName("gNormYieldKstarToMB_sysuncorr");
+
+    TGraphErrors *gNormYieldKstarToMBRun2_stat = NormalizeYieldByMB(gKstar_Yield_13TeV[0], yieldMB, yieldMBStatErr, dNchdetaMB_run2, dNchdetaMBErr, "gNormYieldKstarToMBRun2_stat");
+    TGraphAsymmErrors *gNormYieldKstarToMBRun2_sys = NormalizeYieldSysByMB(gKstar_Yield_13TeV[1], gMeanYieldMB_sys, yieldMB, dNchdetaMB_run2, dNchdetaMBErr, "gNormYieldKstarToMBRun2_sys");
+    TGraphAsymmErrors *gNormYieldKstarToMBRun2_sysUncorr = new TGraphAsymmErrors();
+    gNormYieldKstarToMBRun2_sysUncorr->SetName("gNormYieldKstarToMBRun2_sysuncorr");
+
+    TGraphErrors *gMBYieldPythiaKstar[3], *gMBYieldPythiaPhi[3];
+    TGraphErrors *gNormalizeYieldKstarPythia[3], *gNormalizeYieldPhiPythia[3];
+
+    string tempModelNames[3] = {"Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving"};
+
+    for (int i = 0; i < 3; i++)
+    {
+        gMBYieldPythiaKstar[i] = GetGraph(ModelsHyperloop, Form("%s/Kstar/gMeanYield_Kstar_MB", tempModelNames[i].c_str()));
+        gMBYieldPythiaPhi[i] = GetGraph(ModelsHyperloop, Form("%s/Phi/gMeanYield_Phi_MB", tempModelNames[i].c_str()));
+
+        if (!gMBYieldPythiaKstar[i] || !gMBYieldPythiaPhi[i])
+        {
+            cout << "Error: Could not retrieve MB yield graph for model " << tempModelNames[i] << endl;
+            return;
+        }
+
+        // Kstar MB values
+        double modelMultMB_Kstar, modelYieldMB_Kstar;
+        gMBYieldPythiaKstar[i]->GetPoint(0, modelMultMB_Kstar, modelYieldMB_Kstar);
+
+        double modelMultMBErr_Kstar = gMBYieldPythiaKstar[i]->GetErrorX(0);
+        double modelYieldMBErr_Kstar = gMBYieldPythiaKstar[i]->GetErrorY(0);
+
+        // Phi MB values
+        double modelMultMB_Phi, modelYieldMB_Phi;
+        gMBYieldPythiaPhi[i]->GetPoint(0, modelMultMB_Phi, modelYieldMB_Phi);
+
+        double modelMultMBErr_Phi = gMBYieldPythiaPhi[i]->GetErrorX(0);
+        double modelYieldMBErr_Phi = gMBYieldPythiaPhi[i]->GetErrorY(0);
+
+        // Normalize multiplicity-dependent model graphs using their own MB values
+        gNormalizeYieldKstarPythia[i] = NormalizeYieldByMB(gMYield[i][kKstar], modelYieldMB_Kstar, modelYieldMBErr_Kstar, modelMultMB_Kstar, modelMultMBErr_Kstar, Form("gNormYieldKstarPythia_%d", i));
+
+        gNormalizeYieldPhiPythia[i] = NormalizeYieldByMB(gMYield[i][kPhi], modelYieldMB_Phi, modelYieldMBErr_Phi, modelMultMB_Phi, modelMultMBErr_Phi, Form("gNormYieldPhiPythia_%d", i));
+    }
+
+    double yieldMB_EPOSOff, yieldMBStatErr_EPOSOff, xMBOff, xMBOff_err, xMBOn, xMBOn_err, yieldMB_EPOSOn, yieldMBStatErr_EPOSOn;
+    gEPOS_KstardNdy_UrQMDOffMB->GetPoint(0, xMBOff, yieldMB_EPOSOff);
+    yieldMBStatErr_EPOSOff = gEPOS_KstardNdy_UrQMDOffMB->GetErrorY(0);
+    gEPOS_KstardNdy_UrQMDOnMB->GetPoint(0, xMBOn, yieldMB_EPOSOn);
+    yieldMBStatErr_EPOSOn = gEPOS_KstardNdy_UrQMDOnMB->GetErrorY(0);
+    xMBOff_err = gEPOS_KstardNdy_UrQMDOffMB->GetErrorX(0);
+    xMBOn_err = gEPOS_KstardNdy_UrQMDOnMB->GetErrorX(0);
+
+    TGraphErrors *gNormYieldKstarToMB_EPOSOn = NormalizeYieldByMB(gEPOS_KstardNdy_UrQMDOn, yieldMB_EPOSOn, yieldMBStatErr_EPOSOn, xMBOn, xMBOn_err, "gNormYieldKstarToMB_EPOSOn");
+
+    TGraphErrors *gNormYieldKstarToMB_EPOSOff = NormalizeYieldByMB(gEPOS_KstardNdy_UrQMDOff, yieldMB_EPOSOff, yieldMBStatErr_EPOSOff, xMBOff, xMBOff_err, "gNormYieldKstarToMB_EPOSOff");
+
+    double yieldMB_EPOSOff_Phi, yieldMBStatErr_EPOSOff_Phi, xMBOff_Phi, xMBOff_err_Phi, xMBOn_Phi, xMBOn_err_Phi, yieldMB_EPOSOn_Phi, yieldMBStatErr_EPOSOn_Phi;
+    gEPOS_PhidNdy_UrQMDOffMB->GetPoint(0, xMBOff_Phi, yieldMB_EPOSOff_Phi);
+    yieldMBStatErr_EPOSOff_Phi = gEPOS_PhidNdy_UrQMDOffMB->GetErrorY(0);
+    gEPOS_PhidNdy_UrQMDOnMB->GetPoint(0, xMBOn_Phi, yieldMB_EPOSOn_Phi);
+    yieldMBStatErr_EPOSOn_Phi = gEPOS_PhidNdy_UrQMDOnMB->GetErrorY(0);
+    xMBOff_err_Phi = gEPOS_PhidNdy_UrQMDOffMB->GetErrorX(0);
+    xMBOn_err_Phi = gEPOS_PhidNdy_UrQMDOnMB->GetErrorX(0);
+
+    TGraphErrors *gNormYieldPhiToMB_EPOSOn = NormalizeYieldByMB(gEPOS_PhidNdy_UrQMDOn, yieldMB_EPOSOn_Phi, yieldMBStatErr_EPOSOn_Phi, xMBOn_Phi, xMBOn_err_Phi, "gNormYieldPhiToMB_EPOSOn");
+    TGraphErrors *gNormYieldPhiToMB_EPOSOff = NormalizeYieldByMB(gEPOS_PhidNdy_UrQMDOff, yieldMB_EPOSOff_Phi, yieldMBStatErr_EPOSOff_Phi, xMBOff_Phi, xMBOff_err_Phi, "gNormYieldPhiToMB_EPOSOff");
+
+    for (int i = 0; i < gMYieldKstar[2]->GetN(); i++)
+    {
+        double x, y;
+        gMYieldKstar[2]->GetPoint(i, x, y);
+        double ex = gMYieldKstar[2]->GetErrorX(i);
+        double ey = gMYieldKstar[2]->GetErrorY(i);
+        double xNorm = x / dNchdetaMB;
+        double yNorm = y / yieldMB;
+        // double exNorm = sqrt(pow(ex / dNchdetaMB, 2) + pow(x * dNchdetaMBErr / (dNchdetaMB * dNchdetaMB), 2));
+        double exNorm = ex / dNchdetaMB;
+        double eyNorm = ey / yieldMB;
+        int ip = gNormYieldKstarToMB_sysUncorr->GetN();
+        gNormYieldKstarToMB_sysUncorr->SetPoint(ip, xNorm, yNorm);
+        gNormYieldKstarToMB_sysUncorr->SetPointError(ip, exNorm, exNorm, eyNorm, eyNorm);
+    }
+
+    for (int i = 0; i < gKstar_Yield_13TeV[2]->GetN(); i++)
+    {
+        double x, y;
+        gKstar_Yield_13TeV[2]->GetPoint(i, x, y);
+        double ex = gKstar_Yield_13TeV[2]->GetErrorX(i);
+        double ey = gKstar_Yield_13TeV[2]->GetErrorY(i);
+        double xNorm = x / dNchdetaMB_run2;
+        double yNorm = y / yieldMB;
+        // double exNorm = sqrt(pow(ex / dNchdetaMB, 2) + pow(x * dNchdetaMBErr / (dNchdetaMB * dNchdetaMB), 2));
+        double exNorm = ex / dNchdetaMB_run2;
+        double eyNorm = ey / yieldMB;
+        int ip = gNormYieldKstarToMBRun2_sysUncorr->GetN();
+        gNormYieldKstarToMBRun2_sysUncorr->SetPoint(ip, xNorm, yNorm);
+        gNormYieldKstarToMBRun2_sysUncorr->SetPointError(ip, exNorm, exNorm, eyNorm, eyNorm);
+    }
+
+    // Fit the Run-2 normalized yield and evaluate it at the Run-3 multiplicity points.
+    double fitXmin = 1e9, fitXmax = -1e9;
+    for (int i = 0; i < gNormYieldKstarToMBRun2_stat->GetN(); i++)
+    {
+        double x, y;
+        gNormYieldKstarToMBRun2_stat->GetPoint(i, x, y);
+        if (y > 0)
+        {
+            fitXmin = TMath::Min(fitXmin, x);
+            fitXmax = TMath::Max(fitXmax, x);
+        }
+    }
+
+    if (fitXmin >= fitXmax)
+    {
+        cout << "Error: insufficient positive Run-2 points for the normalized-yield fit." << endl;
+        return;
+    }
+
+    TF1 *fitNormYieldRun2 = new TF1("fitNormYieldRun2", "pol1", fitXmin, fitXmax);
+    TFitResultPtr fitResultRun2 = gNormYieldKstarToMBRun2_stat->Fit(fitNormYieldRun2, "QRS0");
+    fitNormYieldRun2->SetLineColor(kBlue + 1);
+    fitNormYieldRun2->SetLineStyle(2);
+    fitNormYieldRun2->SetLineWidth(2);
+
+    // The MB yield is the common normalization denominator for Run 2 and Run 3.
+    // Its relative systematic uncertainty therefore cancels in Run-3 / Run-2.
+    double mbRelSysLow = gMeanYieldMB_sys->GetErrorYlow(0) / yieldMB;
+    double mbRelSysHigh = gMeanYieldMB_sys->GetErrorYhigh(0) / yieldMB;
+
+    // Interpolate the numerator-only systematic uncertainty after removing the
+    // common MB normalization component in quadrature from the normalized graph.
+    auto GetInterpolatedSys = [mbRelSysLow, mbRelSysHigh](TGraphAsymmErrors *gr, double x, double &errLow, double &errHigh)
+    {
+        errLow = 0.0;
+        errHigh = 0.0;
+        if (!gr || gr->GetN() < 1)
+            return;
+
+        int iLow = -1, iHigh = -1;
+        double xLow = -1e30, xHigh = 1e30;
+        for (int ip = 0; ip < gr->GetN(); ip++)
+        {
+            double gx, gy;
+            gr->GetPoint(ip, gx, gy);
+            if (gx <= x && gx > xLow)
+            {
+                xLow = gx;
+                iLow = ip;
+            }
+            if (gx >= x && gx < xHigh)
+            {
+                xHigh = gx;
+                iHigh = ip;
+            }
+        }
+
+        if (iLow < 0 || iHigh < 0)
+            return;
+
+        auto numeratorOnlyError = [&](int ip, bool isLow)
+        {
+            double gx, gy;
+            gr->GetPoint(ip, gx, gy);
+            double totalErr = isLow ? gr->GetErrorYlow(ip) : gr->GetErrorYhigh(ip);
+            double commonMBErr = gy * (isLow ? mbRelSysLow : mbRelSysHigh);
+            return sqrt(TMath::Max(0.0, totalErr * totalErr - commonMBErr * commonMBErr));
+        };
+
+        if (iLow == iHigh || TMath::AreEqualAbs(xLow, xHigh, 1e-12))
+        {
+            errLow = numeratorOnlyError(iLow, true);
+            errHigh = numeratorOnlyError(iLow, false);
+            return;
+        }
+
+        double w = (x - xLow) / (xHigh - xLow);
+        errLow = (1.0 - w) * numeratorOnlyError(iLow, true) + w * numeratorOnlyError(iHigh, true);
+        errHigh = (1.0 - w) * numeratorOnlyError(iLow, false) + w * numeratorOnlyError(iHigh, false);
+    };
+
+    TGraphErrors *gRatioNormYieldRun3Run2_stat = new TGraphErrors();
+    gRatioNormYieldRun3Run2_stat->SetName("gRatioNormYieldRun3Run2_stat");
+    TGraphAsymmErrors *gRatioNormYieldRun3Run2_sys = new TGraphAsymmErrors();
+    gRatioNormYieldRun3Run2_sys->SetName("gRatioNormYieldRun3Run2_sys");
+
+    for (int i = 0; i < gNormYieldKstarToMB_stat->GetN(); i++)
+    {
+        double x, yRun3;
+        gNormYieldKstarToMB_stat->GetPoint(i, x, yRun3);
+        if (x < fitXmin || x > fitXmax)
+            continue;
+
+        double yRun2 = fitNormYieldRun2->Eval(x);
+        if (yRun3 <= 0 || yRun2 <= 0)
+            continue;
+
+        // Statistical uncertainty: Run-3 point and Run-2 fit covariance.
+        double fitVariance = 0.0;
+        if (fitResultRun2.Get() && fitResultRun2->NPar() >= 2)
+            fitVariance = fitResultRun2->CovMatrix(0, 0) + x * x * fitResultRun2->CovMatrix(1, 1) + 2.0 * x * fitResultRun2->CovMatrix(0, 1);
+
+        double eyRun3Stat = gNormYieldKstarToMB_stat->GetErrorY(i);
+        double eyRun2Stat = sqrt(TMath::Max(0.0, fitVariance));
+        double ratio = yRun3 / yRun2;
+        double ratioStatErr = ratio * sqrt(pow(eyRun3Stat / yRun3, 2) + pow(eyRun2Stat / yRun2, 2));
+
+        int ip = gRatioNormYieldRun3Run2_stat->GetN();
+        gRatioNormYieldRun3Run2_stat->SetPoint(ip, x, ratio);
+        gRatioNormYieldRun3Run2_stat->SetPointError(ip, gNormYieldKstarToMB_stat->GetErrorX(i), ratioStatErr);
+
+        // Total systematic uncertainty: combine Run-3 and interpolated Run-2
+        // relative systematic uncertainties in quadrature.
+        double run3SysLowTotal = gNormYieldKstarToMB_sys->GetErrorYlow(i);
+        double run3SysHighTotal = gNormYieldKstarToMB_sys->GetErrorYhigh(i);
+        double run3SysLowMB = yRun3 * mbRelSysLow;
+        double run3SysHighMB = yRun3 * mbRelSysHigh;
+        double run3SysLow = sqrt(TMath::Max(0.0, run3SysLowTotal * run3SysLowTotal - run3SysLowMB * run3SysLowMB));
+        double run3SysHigh = sqrt(TMath::Max(0.0, run3SysHighTotal * run3SysHighTotal - run3SysHighMB * run3SysHighMB));
+
+        double run2SysLow = 0.0, run2SysHigh = 0.0;
+        GetInterpolatedSys(gNormYieldKstarToMBRun2_sys, x, run2SysLow, run2SysHigh);
+
+        double ratioSysLow = ratio * sqrt(pow(run3SysLow / yRun3, 2) + pow(run2SysLow / yRun2, 2));
+        double ratioSysHigh = ratio * sqrt(pow(run3SysHigh / yRun3, 2) + pow(run2SysHigh / yRun2, 2));
+
+        gRatioNormYieldRun3Run2_sys->SetPoint(ip, x, ratio);
+        gRatioNormYieldRun3Run2_sys->SetPointError(ip, gNormYieldKstarToMB_stat->GetErrorX(i), gNormYieldKstarToMB_stat->GetErrorX(i), ratioSysLow, ratioSysHigh);
+    }
+
+    TCanvas *cNormYieldKstarToMB = new TCanvas("cNormYieldKstarToMB", "cNormYieldKstarToMB", 720, 800);
+    TPad *padNormTop = new TPad("padNormTop", "padNormTop", 0, 0.30, 1, 1);
+    TPad *padNormBottom = new TPad("padNormBottom", "padNormBottom", 0, 0, 1, 0.30);
+    padNormTop->SetBottomMargin(0.02);
+    padNormTop->SetLeftMargin(0.17);
+    padNormTop->SetRightMargin(0.03);
+    padNormTop->SetTopMargin(0.07);
+    padNormBottom->SetTopMargin(0.03);
+    padNormBottom->SetBottomMargin(0.30);
+    padNormBottom->SetLeftMargin(0.17);
+    padNormBottom->SetRightMargin(0.03);
+    padNormTop->Draw();
+    padNormBottom->Draw();
+
+    padNormTop->cd();
+    SetGraphErrorStyle(gNormYieldKstarToMB_stat);
+    gNormYieldKstarToMB_stat->GetXaxis()->SetTitle("");
+    gNormYieldKstarToMB_stat->GetYaxis()->SetTitle("(dN/dy) / (dN/dy)_{MB}");
+    gNormYieldKstarToMB_stat->GetXaxis()->SetLimits(0, 3.9);
+    gNormYieldKstarToMB_stat->GetYaxis()->SetRangeUser(0, 4.4);
+    gNormYieldKstarToMB_stat->GetYaxis()->SetTitleOffset(1.55);
+    gNormYieldKstarToMB_stat->GetXaxis()->SetLabelSize(0);
+    gNormYieldKstarToMB_stat->SetMarkerColor(kRed + 1);
+    gNormYieldKstarToMB_stat->SetLineColor(kRed + 1);
+    gNormYieldKstarToMB_stat->SetMarkerStyle(20);
+    gNormYieldKstarToMB_stat->SetMarkerSize(1.2);
+    gNormYieldKstarToMB_stat->SetLineWidth(2);
+    gNormYieldKstarToMB_stat->Draw("APE");
+
+    gNormYieldKstarToMB_sys->SetFillStyle(0);
+    gNormYieldKstarToMB_sys->SetLineColor(kRed + 1);
+    gNormYieldKstarToMB_sys->SetLineWidth(2);
+    gNormYieldKstarToMB_sys->Draw("5 same");
+    gNormYieldKstarToMB_sysUncorr->SetFillColorAlpha(kRed + 1, 0.3);
+    gNormYieldKstarToMB_sysUncorr->SetFillStyle(1001);
+    gNormYieldKstarToMB_sysUncorr->SetLineColor(kRed + 1);
+    gNormYieldKstarToMB_sysUncorr->Draw("E2 same");
+
+    gNormYieldKstarToMBRun2_stat->SetMarkerStyle(21);
+    gNormYieldKstarToMBRun2_stat->SetMarkerColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_stat->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_stat->SetMarkerSize(1.2);
+    gNormYieldKstarToMBRun2_stat->SetLineWidth(2);
+    gNormYieldKstarToMBRun2_stat->Draw("P same");
+    gNormYieldKstarToMBRun2_sys->SetFillStyle(0);
+    gNormYieldKstarToMBRun2_sys->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_sys->SetLineWidth(2);
+    gNormYieldKstarToMBRun2_sys->Draw("5 same");
+    gNormYieldKstarToMBRun2_sysUncorr->SetFillColorAlpha(kBlue + 1, 0.3);
+    gNormYieldKstarToMBRun2_sysUncorr->SetFillStyle(1001);
+    gNormYieldKstarToMBRun2_sysUncorr->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_sysUncorr->Draw("E2 same");
+    fitNormYieldRun2->Draw("same");
+
+    for (int iModel = 0; iModel < 3; iModel++)
+    {
+        ScaleGraph(gNormalizeYieldKstarPythia[iModel], 2.0);
+        gNormalizeYieldKstarPythia[iModel]->SetLineColor(colorsPythia[iModel]);
+        gNormalizeYieldKstarPythia[iModel]->SetLineWidth(2);
+        gNormalizeYieldKstarPythia[iModel]->Draw("l same");
+    }
+
+    gNormYieldKstarToMB_EPOSOn->SetLineColor(kBlue - 6);
+    gNormYieldKstarToMB_EPOSOn->SetLineStyle(9);
+    gNormYieldKstarToMB_EPOSOn->SetLineWidth(2);
+    gNormYieldKstarToMB_EPOSOn->Draw("l same");
+    gNormYieldKstarToMB_EPOSOff->SetLineColor(kGreen + 2);
+    gNormYieldKstarToMB_EPOSOff->SetLineStyle(2);
+    gNormYieldKstarToMB_EPOSOff->SetLineWidth(2);
+    gNormYieldKstarToMB_EPOSOff->Draw("l same");
+
+    TLegend *legNormYieldMB = new TLegend(0.42, 0.74, 0.82, 0.90);
+    SetLegendStyle(legNormYieldMB);
+    legNormYieldMB->AddEntry(gNormYieldKstarToMB_stat, "Run 3, #sqrt{s} = 13.6 TeV", "P");
+    legNormYieldMB->AddEntry(gNormYieldKstarToMBRun2_stat, "Run 2, #sqrt{s} = 13 TeV", "P");
+    legNormYieldMB->AddEntry(fitNormYieldRun2, "Run 2 linear fit", "L");
+    legNormYieldMB->Draw();
+
+    latex.DrawLatex(0.22, 0.9, "ALICE");
+    latex.SetTextFont(22);
+    latex.DrawLatex(0.22, 0.84, "K* (892)^{0}");
+    latex.SetTextFont(42);
+    latex.DrawLatex(0.22, 0.78, "|y| < 0.5");
+
+    padNormBottom->cd();
+    gRatioNormYieldRun3Run2_stat->SetTitle("");
+    gRatioNormYieldRun3Run2_stat->SetMarkerStyle(20);
+    gRatioNormYieldRun3Run2_stat->SetMarkerSize(1.1);
+    gRatioNormYieldRun3Run2_stat->SetMarkerColor(kBlack);
+    gRatioNormYieldRun3Run2_stat->SetLineColor(kBlack);
+    gRatioNormYieldRun3Run2_stat->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT / #LT dN_{ch}/d#eta #GT_{MB}");
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetTitle("Run 3 / Run 2");
+    gRatioNormYieldRun3Run2_stat->GetXaxis()->SetLimits(0, 3.9);
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetRangeUser(0.5, 1.5);
+    gRatioNormYieldRun3Run2_stat->GetXaxis()->SetTitleSize(0.11);
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetTitleSize(0.10);
+    gRatioNormYieldRun3Run2_stat->GetXaxis()->SetLabelSize(0.09);
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetLabelSize(0.085);
+    gRatioNormYieldRun3Run2_stat->GetXaxis()->SetTitleOffset(1.05);
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetTitleOffset(0.72);
+    gRatioNormYieldRun3Run2_stat->GetYaxis()->SetNdivisions(505);
+    gRatioNormYieldRun3Run2_stat->Draw("APE");
+
+    gRatioNormYieldRun3Run2_sys->SetFillColorAlpha(kGray + 1, 0.35);
+    gRatioNormYieldRun3Run2_sys->SetFillStyle(1001);
+    gRatioNormYieldRun3Run2_sys->SetLineColor(kGray + 2);
+    gRatioNormYieldRun3Run2_sys->SetLineWidth(1);
+    gRatioNormYieldRun3Run2_sys->Draw("E2 same");
+    gRatioNormYieldRun3Run2_stat->Draw("PE same");
+
+    TLine *lineNormRun3Run2 = new TLine(0, 1, 3.5, 1);
+    lineNormRun3Run2->SetLineStyle(2);
+    lineNormRun3Run2->SetLineWidth(2);
+    lineNormRun3Run2->Draw("same");
+
+    cNormYieldKstarToMB->cd();
+    if (isSavePlots)
+        cNormYieldKstarToMB->SaveAs("Plots/NormalizedYieldToMB_Kstar_Run3Run2.png");
+
+    //===================================================
+    // Normalized dN/dy Kstar with MB, without ratio panel
+    //===================================================
+    TCanvas *cNormMBYieldKstar = new TCanvas("cNormMBYieldKstar", "cNormMBYieldKstar", 720, 720);
+    SetCanvasStyle(cNormMBYieldKstar, 0.15, 0.03, 0.03, 0.15);
+    SetGraphErrorStyle(gNormYieldKstarToMB_stat);
+    gNormYieldKstarToMB_stat->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT / #LT dN_{ch}/d#eta #GT_{MB}");
+    gNormYieldKstarToMB_stat->GetYaxis()->SetTitle("(dN/dy) / (dN/dy)_{MB}");
+    gNormYieldKstarToMB_stat->GetXaxis()->SetLimits(0, 3.9);
+    gNormYieldKstarToMB_stat->GetYaxis()->SetRangeUser(0, 4.9);
+    gNormYieldKstarToMB_stat->Draw("APE");
+
+    gNormYieldKstarToMB_sys->SetFillStyle(0);
+    gNormYieldKstarToMB_sys->SetLineColor(kRed + 1);
+    gNormYieldKstarToMB_sys->SetLineWidth(2);
+    gNormYieldKstarToMB_sys->Draw("5 same");
+    gNormYieldKstarToMB_sysUncorr->SetFillColorAlpha(kRed + 1, 0.3);
+    gNormYieldKstarToMB_sysUncorr->SetFillStyle(1001);
+    gNormYieldKstarToMB_sysUncorr->SetLineColor(kRed + 1);
+    gNormYieldKstarToMB_sysUncorr->Draw("E2 same");
+
+    gNormYieldKstarToMBRun2_stat->SetMarkerStyle(21);
+    gNormYieldKstarToMBRun2_stat->SetMarkerColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_stat->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_stat->SetMarkerSize(1.2);
+    gNormYieldKstarToMBRun2_stat->SetLineWidth(2);
+    gNormYieldKstarToMBRun2_stat->Draw("P same");
+    gNormYieldKstarToMBRun2_sys->SetFillStyle(0);
+    gNormYieldKstarToMBRun2_sys->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_sys->SetLineWidth(2);
+    gNormYieldKstarToMBRun2_sys->Draw("5 same");
+    gNormYieldKstarToMBRun2_sysUncorr->SetFillColorAlpha(kBlue + 1, 0.3);
+    gNormYieldKstarToMBRun2_sysUncorr->SetFillStyle(1001);
+    gNormYieldKstarToMBRun2_sysUncorr->SetLineColor(kBlue + 1);
+    gNormYieldKstarToMBRun2_sysUncorr->Draw("E2 same");
+
+    for (int iModel = 0; iModel < 3; iModel++)
+    {
+        // ScaleGraph(gNormalizeYieldKstarPythia[iModel], 2.0);
+        gNormalizeYieldKstarPythia[iModel]->SetLineColor(colorsPythia[iModel]);
+        gNormalizeYieldKstarPythia[iModel]->SetLineStyle(lineStylesPythia[iModel]);
+        gNormalizeYieldKstarPythia[iModel]->SetLineWidth(3);
+        gNormalizeYieldKstarPythia[iModel]->Draw("l same");
+    }
+
+    gNormYieldKstarToMB_EPOSOn->SetLineColor(kBlue - 6);
+    gNormYieldKstarToMB_EPOSOn->SetLineStyle(9);
+    gNormYieldKstarToMB_EPOSOn->SetLineWidth(3);
+    gNormYieldKstarToMB_EPOSOn->Draw("l same");
+    gNormYieldKstarToMB_EPOSOff->SetLineColor(kGreen + 2);
+    gNormYieldKstarToMB_EPOSOff->SetLineStyle(2);
+    gNormYieldKstarToMB_EPOSOff->SetLineWidth(3);
+    gNormYieldKstarToMB_EPOSOff->Draw("l same");
+
+    TLegend *legNormYieldMBOnly = new TLegend(0.42, 0.82, 0.82, 0.93);
+    SetLegendStyle(legNormYieldMBOnly);
+    legNormYieldMBOnly->SetTextSize(0.04);
+    legNormYieldMBOnly->SetTextFont(42);
+    legNormYieldMBOnly->AddEntry(gNormYieldKstarToMB_stat, "pp, #sqrt{s} = 13.6 TeV", "P");
+    legNormYieldMBOnly->AddEntry(gNormYieldKstarToMBRun2_stat, "pp, #sqrt{s} = 13 TeV", "P");
+    legNormYieldMBOnly->Draw();
+
+    TLatex latexNormMB;
+    latexNormMB.SetNDC();
+    latexNormMB.SetTextSize(0.04);
+    latexNormMB.SetTextFont(42);
+    latexNormMB.DrawLatex(0.22, 0.9, "ALICE");
+    latexNormMB.DrawLatex(0.22, 0.84, "|y| < 0.5");
+    latexNormMB.SetTextFont(22);
+    latexNormMB.DrawLatex(0.22, 0.78, "K* (892)^{0}");
+
+    if (isSavePlots)
+        cNormMBYieldKstar->SaveAs("Plots/NormalizedYieldToMB_Kstar.png");
+
+    //===================================================
+    // Normalized dN/dy Phi with MB, without ratio panel
+    //===================================================
+    TFile *filePhiMB = new TFile("PhiResults/PAR_plots.root", "READ");
+    if (!filePhiMB || filePhiMB->IsZombie())
+    {
+        cout << "Error: Could not open PhiResults/PAR_plots.root" << endl;
+        return;
+    }
+    TGraphErrors *gNormYieldPhiToMB_stat = (TGraphErrors *)filePhiMB->Get("SelfNormalizedYield/Run3_Stat");
+    TGraphAsymmErrors *gNormYieldPhiToMB_sys = (TGraphAsymmErrors *)filePhiMB->Get("SelfNormalizedYield/Run3_TotalSys");
+    TGraphAsymmErrors *gNormYieldPhiToMB_sysUncorr = (TGraphAsymmErrors *)filePhiMB->Get("SelfNormalizedYield/Run3_UncorrelatedSys");
+    TGraphErrors *gNormYieldPhiToMBRun2_stat = (TGraphErrors *)filePhiMB->Get("SelfNormalizedYield/Run2_Stat");
+    TGraphAsymmErrors *gNormYieldPhiToMBRun2_sys = (TGraphAsymmErrors *)filePhiMB->Get("SelfNormalizedYield/Run2_TotalSys");
+    TGraphAsymmErrors *gNormYieldPhiToMBRun2_sysUncorr = (TGraphAsymmErrors *)filePhiMB->Get("SelfNormalizedYield/Run2_UncorrelatedSys");
+
+    if (!gNormYieldPhiToMB_stat || !gNormYieldPhiToMB_sys || !gNormYieldPhiToMB_sysUncorr ||
+        !gNormYieldPhiToMBRun2_stat || !gNormYieldPhiToMBRun2_sys || !gNormYieldPhiToMBRun2_sysUncorr)
+    {
+        cout << "Error: Could not retrieve normalized Phi yield graphs from file." << endl;
+        return;
+    }
+
+    TCanvas *cNormMBYieldPhi = new TCanvas("cNormMBYieldPhi", "cNormMBYieldPhi", 720, 720);
+    SetCanvasStyle(cNormMBYieldPhi, 0.15, 0.03, 0.03, 0.15);
+    SetGraphErrorStyle(gNormYieldPhiToMB_stat);
+    gNormYieldPhiToMB_stat->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT / #LT dN_{ch}/d#eta #GT_{MB}");
+    gNormYieldPhiToMB_stat->GetYaxis()->SetTitle("(dN/dy) / (dN/dy)_{MB}");
+    gNormYieldPhiToMB_stat->GetXaxis()->SetLimits(0, 3.9);
+    gNormYieldPhiToMB_stat->GetYaxis()->SetRangeUser(0, 4.9);
+    gNormYieldPhiToMB_stat->Draw("APE");
+
+    gNormYieldPhiToMB_sys->SetFillStyle(0);
+    gNormYieldPhiToMB_sys->SetLineColor(kRed + 1);
+    gNormYieldPhiToMB_sys->SetLineWidth(2);
+    gNormYieldPhiToMB_sys->Draw("5 same");
+    gNormYieldPhiToMB_sysUncorr->SetFillColorAlpha(kRed + 1, 0.3);
+    gNormYieldPhiToMB_sysUncorr->SetFillStyle(1001);
+    gNormYieldPhiToMB_sysUncorr->SetLineColor(kRed + 1);
+    gNormYieldPhiToMB_sysUncorr->Draw("E2 same");
+
+    gNormYieldPhiToMBRun2_stat->SetMarkerStyle(21);
+    gNormYieldPhiToMBRun2_stat->SetMarkerColor(kBlue + 1);
+    gNormYieldPhiToMBRun2_stat->SetLineColor(kBlue + 1);
+    gNormYieldPhiToMBRun2_stat->SetMarkerSize(1.2);
+    gNormYieldPhiToMBRun2_stat->SetLineWidth(2);
+    gNormYieldPhiToMBRun2_stat->Draw("P same");
+    gNormYieldPhiToMBRun2_sys->SetFillStyle(0);
+    gNormYieldPhiToMBRun2_sys->SetLineColor(kBlue + 1);
+    gNormYieldPhiToMBRun2_sys->SetLineWidth(2);
+    gNormYieldPhiToMBRun2_sys->Draw("5 same");
+    gNormYieldPhiToMBRun2_sysUncorr->SetFillColorAlpha(kBlue + 1, 0.3);
+    gNormYieldPhiToMBRun2_sysUncorr->SetFillStyle(1001);
+    gNormYieldPhiToMBRun2_sysUncorr->SetLineColor(kBlue + 1);
+    gNormYieldPhiToMBRun2_sysUncorr->Draw("E2 same");
+
+    TLegend *legNormYieldMBOnlyPhi = new TLegend(0.22, 0.68, 0.62, 0.93);
+    SetLegendStyle(legNormYieldMBOnlyPhi);
+    legNormYieldMBOnlyPhi->SetTextSize(0.035);
+    legNormYieldMBOnlyPhi->SetTextFont(42);
+
+    TString pythiaModelNames[3] = {"PYTHIA8 Monash", "PYTHIA8 Shoving", "PYTHIA8 Ropes"};
+
+    for (int iModel = 0; iModel < 3; iModel++)
+    {
+        // ScaleGraph(gNormalizeYieldPhiPythia[iModel], 2.0);
+        gNormalizeYieldPhiPythia[iModel]->SetLineColor(colorsPythia[iModel]);
+        gNormalizeYieldPhiPythia[iModel]->SetLineStyle(lineStylesPythia[iModel]);
+        gNormalizeYieldPhiPythia[iModel]->SetLineWidth(3);
+        gNormalizeYieldPhiPythia[iModel]->Draw("l same");
+        legNormYieldMBOnlyPhi->AddEntry(gNormalizeYieldPhiPythia[iModel], Form("%s", pythiaModelNames[iModel].Data()), "L");
+    }
+
+    gNormYieldPhiToMB_EPOSOn->SetLineColor(kBlue - 6);
+    gNormYieldPhiToMB_EPOSOn->SetLineStyle(9);
+    gNormYieldPhiToMB_EPOSOn->SetLineWidth(3);
+    gNormYieldPhiToMB_EPOSOn->Draw("l same");
+    gNormYieldPhiToMB_EPOSOff->SetLineColor(kGreen + 2);
+    gNormYieldPhiToMB_EPOSOff->SetLineStyle(2);
+    gNormYieldPhiToMB_EPOSOff->SetLineWidth(3);
+    gNormYieldPhiToMB_EPOSOff->Draw("l same");
+
+    legNormYieldMBOnlyPhi->AddEntry(gNormYieldPhiToMB_EPOSOn, "EPOS, UrQMD on", "L");
+    legNormYieldMBOnlyPhi->AddEntry(gNormYieldPhiToMB_EPOSOff, "EPOS, UrQMD off", "L");
+    legNormYieldMBOnlyPhi->Draw();
+
+    latexNormMB.SetTextFont(22);
+    latexNormMB.DrawLatex(0.65, 0.78, "#phi (1020)");
+
+    cNormMBYieldPhi->SaveAs("Plots/NormalizedYieldToMB_Phi.png");
+
     //===================================================
     // ============== Normalized Mean pT Kstar ==========
     //===================================================
@@ -943,7 +1555,7 @@ void ParticleRatio_QA()
     // latex.SetTextFont(42);
     // latex.DrawLatex(0.22, 0.78, "|y| < 0.5");
 
-     legend2->Draw();
+    legend2->Draw();
 
     if (isSavePlots)
         cNormMeanPtKstar->SaveAs("Plots/NormalizedMeanPt_Kstar.png");

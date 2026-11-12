@@ -24,7 +24,8 @@ void GetResolution()
     gStyle->SetOptFit(1111);
     bool isINEL = true;
     // TString MCpath = "../mc/LHC24f3c/750013.root"; // INEL>0, latest train with systematics
-    TString MCpath = "../mc/LHC24f3c/755334.root"; // INEL, latest train with systematics
+    // TString MCpath = "../mc/LHC24f3c/755334.root"; // INEL, latest train with systematics
+    TString MCpath = "../mc/LHC24f3c/793191.root"; // INEL, latest train with systematics
     TFile *fileMC = new TFile(MCpath, "READ");
     THnSparseF *hMCSignal = (THnSparseF *)fileMC->Get("kstarqa/hInvMass/h3KstarMassRec");
     // TString savePath = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ResolutionFromMC"; // INEL>0
@@ -117,7 +118,7 @@ void GetResolution()
             SetHistoQA(hMassProjection);
             hMassProjection->Draw();
             voigtFit->Draw("SAME");
-            cMassFit->SaveAs(Form("%s/mult_%d-%d/MassFit_pt_%.1f_%.1f.png", savePath.Data(), multlow, multhigh, lowpt, highpt));
+            // cMassFit->SaveAs(Form("%s/mult_%d-%d/MassFit_pt_%.1f_%.1f.png", savePath.Data(), multlow, multhigh, lowpt, highpt));
 
             Resolution.push_back(voigtFit->GetParameter(2)); // Sigma is the resolution
         }

@@ -407,7 +407,7 @@ void SpectraRatio_pTDiffPhiKa()
     cRatio->cd(1);
 
     SetHistoQA(hKstarKaRatioHM_stat);
-    hKstarKaRatioHM_stat->GetYaxis()->SetTitle("K^{*0} / K^{#pm}");
+    hKstarKaRatioHM_stat->GetYaxis()->SetTitle("#Phi / K");
     hKstarKaRatioHM_stat->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hKstarKaRatioHM_stat->SetMarkerStyle(20);
     hKstarKaRatioHM_stat->SetMarkerSize(1.45);
@@ -416,8 +416,8 @@ void SpectraRatio_pTDiffPhiKa()
     hKstarKaRatioHM_stat->GetXaxis()->SetTitleSize(0.04 / pad1Size);
     hKstarKaRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hKstarKaRatioHM_stat->GetXaxis()->SetLabelSize(0.04 / pad1Size);
-    hKstarKaRatioHM_stat->GetYaxis()->SetRangeUser(-0.03, 0.53);
-    hKstarKaRatioHM_stat->GetXaxis()->SetRangeUser(0.2, 3.0);
+    hKstarKaRatioHM_stat->GetYaxis()->SetRangeUser(-0.01, 0.23);
+    hKstarKaRatioHM_stat->GetXaxis()->SetRangeUser(0.5, 3.0);
     hKstarKaRatioHM_stat->SetMarkerColor(kRed);
     hKstarKaRatioHM_stat->SetLineColor(kRed);
     hKstarKaRatioHM_stat->Draw("pe");
@@ -427,7 +427,7 @@ void SpectraRatio_pTDiffPhiKa()
     hKstarKaRatioHM_sys->SetMarkerColor(kRed);
     hKstarKaRatioHM_sys->Draw("e2 same");
     hKstarKaRatioHM_Uncorr->SetFillStyle(1001);
-    hKstarKaRatioHM_Uncorr->SetFillColorAlpha(kRed, 0.3);
+    hKstarKaRatioHM_Uncorr->SetFillColorAlpha(kRed, 0.2);
     hKstarKaRatioHM_Uncorr->SetMarkerStyle(20);
     hKstarKaRatioHM_Uncorr->SetMarkerColor(kRed);
     hKstarKaRatioHM_Uncorr->Draw("e2 same");
@@ -444,34 +444,41 @@ void SpectraRatio_pTDiffPhiKa()
     hKstarKaRatioLM_sys->SetMarkerColor(kBlue + 1);
     hKstarKaRatioLM_sys->Draw("e2 same");
     hKstarKaRatioLM_Uncorr->SetFillStyle(1001);
-    hKstarKaRatioLM_Uncorr->SetFillColorAlpha(kBlue + 1, 0.3);
+    hKstarKaRatioLM_Uncorr->SetFillColorAlpha(kBlue + 1, 0.2);
     hKstarKaRatioLM_Uncorr->SetMarkerStyle(21);
     hKstarKaRatioLM_Uncorr->SetMarkerColor(kBlue + 1);
     hKstarKaRatioLM_Uncorr->Draw("e2 same");
 
-    // Plot EPOS results
-    // First to check if the multiplicity values are compatible or not
-    TFile *fEPOS = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
-    TGraphErrors *gEPOS_KstardNdy_UrQMDOff = (TGraphErrors *)fEPOS->Get("g_dNdy_opt0");
-    int totalPoints = gEPOS_KstardNdy_UrQMDOff->GetN();
-    for (int i = 0; i < totalPoints; ++i)
-    {
-        double x, y;
-        gEPOS_KstardNdy_UrQMDOff->GetPoint(i, x, y);
-        cout << "Multiplicity: " << x << ", EPOS K* dN/dy: " << y << endl;
-    }
+    // // Plot EPOS results
+    // // First to check if the multiplicity values are compatible or not
+    // TFile *fEPOS = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
+    // TGraphErrors *gEPOS_KstardNdy_UrQMDOff = (TGraphErrors *)fEPOS->Get("g_dNdy_opt0");
+    // int totalPoints = gEPOS_KstardNdy_UrQMDOff->GetN();
+    // for (int i = 0; i < totalPoints; ++i)
+    // {
+    //     double x, y;
+    //     gEPOS_KstardNdy_UrQMDOff->GetPoint(i, x, y);
+    //     cout << "Multiplicity: " << x << ", EPOS K* dN/dy: " << y << endl;
+    // }
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest.root");
-    TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
-    TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
-    TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");
-    TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent0");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix2.root");
 
-    TH1F *hEPOS_UrQMDOFF_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
-    TH1F *hEPOS_UrQMDOFF_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
-    TH1F *hEPOS_UrQMDON_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
-    TH1F *hEPOS_UrQMDON_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
+    TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_OFF/hPhi_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent9");
+    TH1F *hEPOS_UrQMDON_KstarLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
+
+    // TH1F *hEPOS_UrQMDOFF_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
+    // TH1F *hEPOS_UrQMDOFF_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
+    // TH1F *hEPOS_UrQMDON_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent9");
+    // TH1F *hEPOS_UrQMDON_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_status0/hKaon_Pt_status0_Cent0");
+
+    TH1F *hEPOS_UrQMDOFF_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_OFF/hKaon_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDOFF_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_OFF/hKaon_Pt_OFF_Cent0");
+    TH1F *hEPOS_UrQMDON_KaonHM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_OFF/hKaon_Pt_OFF_Cent9");
+    TH1F *hEPOS_UrQMDON_KaonLM = (TH1F *)fEPOS_spectra->Get("Kaon_Mult_OFF/hKaon_Pt_OFF_Cent0");
 
     if (!hEPOS_UrQMDOFF_KstarHM || !hEPOS_UrQMDOFF_KstarLM || !hEPOS_UrQMDON_KstarHM || !hEPOS_UrQMDON_KstarLM ||
         !hEPOS_UrQMDOFF_KaonHM || !hEPOS_UrQMDOFF_KaonLM || !hEPOS_UrQMDON_KaonHM || !hEPOS_UrQMDON_KaonLM)
@@ -482,17 +489,15 @@ void SpectraRatio_pTDiffPhiKa()
 
     TH1F *hEPOS_UrQMDOFF_KstarKaRatioHM = (TH1F *)hEPOS_UrQMDOFF_KstarHM->Clone("hEPOS_UrQMDOFF_KstarKaRatioHM");
     hEPOS_UrQMDOFF_KstarKaRatioHM->Divide(hEPOS_UrQMDOFF_KaonHM);
-    hEPOS_UrQMDOFF_KstarKaRatioHM->Scale(0.5); // Since kstar was average but not kaon
     TH1F *hEPOS_UrQMDOFF_KstarKaRatioLM = (TH1F *)hEPOS_UrQMDOFF_KstarLM->Clone("hEPOS_UrQMDOFF_KstarKaRatioLM");
     hEPOS_UrQMDOFF_KstarKaRatioLM->Divide(hEPOS_UrQMDOFF_KaonLM);
-    hEPOS_UrQMDOFF_KstarKaRatioLM->Scale(0.5); // Since kstar was average but not kaon
 
     TH1F *hEPOS_UrQMDON_KstarKaRatioHM = (TH1F *)hEPOS_UrQMDON_KstarHM->Clone("hEPOS_UrQMDON_KstarKaRatioHM");
     hEPOS_UrQMDON_KstarKaRatioHM->Divide(hEPOS_UrQMDON_KaonHM);
-    hEPOS_UrQMDON_KstarKaRatioHM->Scale(0.5); // Since kstar was average but not kaon
+    hEPOS_UrQMDON_KstarKaRatioHM->Scale(1.0 / 0.415); // BR correction
     TH1F *hEPOS_UrQMDON_KstarKaRatioLM = (TH1F *)hEPOS_UrQMDON_KstarLM->Clone("hEPOS_UrQMDON_KstarKaRatioLM");
     hEPOS_UrQMDON_KstarKaRatioLM->Divide(hEPOS_UrQMDON_KaonLM);
-    hEPOS_UrQMDON_KstarKaRatioLM->Scale(0.5); // Since kstar was average but not kaon
+    hEPOS_UrQMDON_KstarKaRatioLM->Scale(1.0 / 0.415); // Since kstar was average but not kaon
 
     hEPOS_UrQMDOFF_KstarKaRatioHM->Smooth(2);
     hEPOS_UrQMDOFF_KstarKaRatioLM->Smooth(2);
@@ -535,7 +540,7 @@ void SpectraRatio_pTDiffPhiKa()
         gLine->SetLineColor(col);
         gLine->SetLineWidth(2);
         gLine->SetLineStyle(lstyle);
-        gBand->SetFillColorAlpha(col, 0.3);
+        gBand->SetFillColorAlpha(col, 0.2);
         gBand->SetLineColor(col);
     };
 
@@ -591,8 +596,8 @@ void SpectraRatio_pTDiffPhiKa()
     hDoubleRatioStat->GetXaxis()->SetTitleSize(0.04 / pad2Size);
     hDoubleRatioStat->GetYaxis()->SetLabelSize(0.04 / pad2Size);
     hDoubleRatioStat->GetXaxis()->SetLabelSize(0.04 / pad2Size);
-    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.35, 1.29);
-    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.2, 3.0);
+    hDoubleRatioStat->GetYaxis()->SetRangeUser(0.45, 1.49);
+    hDoubleRatioStat->GetXaxis()->SetRangeUser(0.5, 3.0);
     hDoubleRatioStat->SetMarkerColor(kRed);
     hDoubleRatioStat->SetLineColor(kRed);
     hDoubleRatioStat->GetYaxis()->SetNdivisions(505);
@@ -603,7 +608,7 @@ void SpectraRatio_pTDiffPhiKa()
     hDoubleRatioSys->SetMarkerColor(kRed);
     hDoubleRatioSys->Draw("e2 same");
 
-    TLine *line = new TLine(0.2, 1.0, 3.0, 1.0);
+    TLine *line = new TLine(0.45, 1.0, 3.0, 1.0);
     line->SetLineColor(kGray + 1);
     line->SetLineStyle(2);
     line->SetLineWidth(2);
@@ -632,7 +637,7 @@ void SpectraRatio_pTDiffPhiKa()
     gRatio_HM_LM_On->SetLineStyle(1);
     gRatio_HM_LM_On->Draw("L same"); // lines
 
-    // cRatio->SaveAs("Plots/KstarKaRatio.png");    
+    cRatio->SaveAs("Plots/pTDiff_Ratios/PhiKaRatio.png");
 
     // ---------------------------------------------------------
     // Calculate significance with respect to unity

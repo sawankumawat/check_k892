@@ -5,7 +5,7 @@
 #include "../spectra/YieldMean.C"
 using namespace std;
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size);
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size);
 
 Double_t FuncLavy(Double_t *x, Double_t *par)
 {
@@ -486,8 +486,8 @@ void SpectraRatio_pTDiffKstarKshort()
 
     TCanvas *cRatio = new TCanvas("cRatio", "cRatio", 720, 720);
     SetCanvasStyle(cRatio, 0.16, 0.06, 0.06, 0.13);
-    double pad1Size, pad2Size;
-    canvas_style(cRatio, pad1Size, pad2Size);
+    double pad1Size, pad2Size, pad3Size;
+    canvas_style(cRatio, pad1Size, pad2Size, pad3Size);
     cRatio->cd(1);
 
     SetHistoQA(hKstarK0sRatioHM_stat);
@@ -534,8 +534,8 @@ void SpectraRatio_pTDiffKstarKshort()
     // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
-    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix2.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix3.root");
     
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
@@ -551,6 +551,9 @@ void SpectraRatio_pTDiffKstarKshort()
     TH1F *hEPOS_UrQMDOFF_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_K0sHM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDON_K0sLM = (TH1F *)fEPOS_spectra->Get("K0s_Mult_OFF/hK0s_Pt_OFF_Cent0");
+
+    hEPOS_UrQMDON_KstarHM->Scale(1.0 / 0.667); // Scale to account for branching ratio
+    hEPOS_UrQMDON_KstarLM->Scale(1.0 / 0.667); // Scale to account for branching ratio
 
     // TH1F *hEPOS_UrQMDOFF_KstarK0sRatioHM = (TH1F *)hEPOS_UrQMDOFF_KstarHM->Clone("hEPOS_UrQMDOFF_KstarK0sRatioHM");
     // hEPOS_UrQMDOFF_KstarK0sRatioHM->Divide(hEPOS_UrQMDOFF_K0sHM);
@@ -836,13 +839,13 @@ void SpectraRatio_pTDiffKstarKshort()
     TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
     makeCurve(hRatio_HM_LM, kBlue + 1, 1, gRatio_HM_LM_Off, bRatio_HM_LM_Off);
     makeCurve(hRatio_HM_LM_ON, kRed + 1, 7, gRatio_HM_LM_On, bRatio_HM_LM_On);
-    if (showEPOS)
-    {
-        bRatio_HM_LM_Off->Draw("3 same");
-        bRatio_HM_LM_On->Draw("3 same"); // bands
-        gRatio_HM_LM_Off->Draw("L same");
-        gRatio_HM_LM_On->Draw("L same"); // lines
-    }
+    // if (showEPOS)
+    // {
+    //     bRatio_HM_LM_Off->Draw("3 same");
+    //     bRatio_HM_LM_On->Draw("3 same"); // bands
+    //     gRatio_HM_LM_Off->Draw("L same");
+    //     gRatio_HM_LM_On->Draw("L same"); // lines
+    // }
 
     TLine *line = new TLine(0.0, 1.0, 10.0, 1.0);
     line->SetLineColor(kGray + 1);
@@ -890,13 +893,13 @@ void SpectraRatio_pTDiffKstarKshort()
     hSignificance->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
 
     hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
-    hSignificance->GetYaxis()->SetTitleSize(0.04 / 0.20);
-    hSignificance->GetYaxis()->SetLabelSize(0.035 / 0.20);
-    hSignificance->GetXaxis()->SetTitleSize(0.04 / 0.20);
-    hSignificance->GetXaxis()->SetLabelSize(0.035 / 0.20);
+    hSignificance->GetYaxis()->SetTitleSize(0.04 / pad3Size);
+    hSignificance->GetYaxis()->SetLabelSize(0.035 / pad3Size);
+    hSignificance->GetXaxis()->SetTitleSize(0.04 / pad3Size);
+    hSignificance->GetXaxis()->SetLabelSize(0.035 / pad3Size);
 
     hSignificance->GetXaxis()->SetRangeUser(0.0, 10.0);
-    hSignificance->GetYaxis()->SetTitleOffset(1.60 * 0.20);
+    hSignificance->GetYaxis()->SetTitleOffset(1.60 * pad3Size);
     hSignificance->GetYaxis()->SetNdivisions(505);
 
     hSignificance->SetMinimum(0.0);
@@ -910,11 +913,11 @@ void SpectraRatio_pTDiffKstarKshort()
     phiLine->SetLineWidth(3);
     phiLine->Draw("same");
 
-    // if (savePlots)
-    //     cRatio->SaveAs("Plots/pTDiff_Ratios/KstarK0sRatio_70_100_significance.png");
+    if (savePlots)
+        cRatio->SaveAs("Plots/pTDiff_Ratios/KstarK0sRatio_withModel.png");
 }
 
-void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
+void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size)
 {
     SetCanvasStyle(c, 0.15, 0.005, 0.05, 0.15);
 
@@ -926,8 +929,8 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
 
     // Relative pad heights
     pad1Size = 0.60;
-    pad2Size = 0.20;
-    double pad3Size = 0.20;
+    pad2Size = 0.15;
+    pad3Size = 0.25;
 
     // Set pad positions: (x1, y1, x2, y2)
     pad1->SetPad(0, pad2Size + pad3Size, 1, 1);
@@ -952,7 +955,7 @@ void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size)
     // Bottom margins
     pad1->SetBottomMargin(0.001);
     pad2->SetBottomMargin(0.00);
-    pad3->SetBottomMargin(0.20);
+    pad3->SetBottomMargin(0.43);
 
     // Ticks on all pads
     pad1->SetTickx(1);

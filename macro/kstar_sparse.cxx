@@ -28,15 +28,15 @@ void kstar_sparse()
     // string kbkg = "pol3WoChebyshev";
 
     string outputtype = "pdf";     // pdf, eps
-    bool showFit = true;          // show fit on the plots
+    bool showFit = true;           // show fit on the plots
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
     const bool multipanel_plots = 1;
     const bool save_plots = 1;
-    bool isINEL = false;
-    bool widthFixed = false; // width fixed to PDG value
+    bool isINEL = true;
+    bool widthFixed = true; // width fixed to PDG value
 
     double ResolutionMCtrue[] = {0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034, 0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703, 0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093, 0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358, 0.00850154, 0.00891884, 0.0111535}; // INEL>0
     // double ResolutionMCtrue[] = {0.00505649, 0.00599644, 0.00454035, 0.00391939, 0.00643856, 0.00734738, 0.00707784, 0.00663234, 0.00653067, 0.00599724, 0.00559724, 0.00523105, 0.00537785, 0.00554987, 0.00558288, 0.0056433, 0.00593335, 0.006188, 0.0062433, 0.00681146, 0.00689146, 0.00698454, 0.00725093, 0.00741099, 0.00803745, 0.0083834, 0.00863335, 0.00916256, 0.0096846, 0.0113199, 0.0123187}; // INEL
@@ -213,7 +213,7 @@ void kstar_sparse()
         }
 
         // for (int imult = 0; imult < nmultbins + 1; imult++)
-        for (int imult = 9; imult < 10; imult++)
+        for (int imult = 0; imult < 1; imult++)
         {
             if (isINEL && imult != 0)
                 break;
@@ -787,45 +787,45 @@ void kstar_sparse()
                     fTotal->SetParameter(1, masspdg);
                     fTotal->SetParLimits(1, masspdg - 0.010, masspdg + 0.010);
 
-                    // if (sysVars[ivar] == "WidthFree")
-                    // {
-                    //     widthFixed = false;
-                    // }
-                    // else
-                    // {
-                    //     widthFixed = true;
-                    // }
+                    if (sysVars[ivar] == "WidthFree")
+                    {
+                        widthFixed = false;
+                    }
+                    else
+                    {
+                        widthFixed = true;
+                    }
 
-                    // // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
-                    // fTotal->SetParameter(2, widthpdg);
-                    // if (widthFixed)
-                    //     fTotal->FixParameter(2, widthpdg);
-                    // else
-                    //     fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
-
-                    // // else
-                    // //     fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
-
-                    // // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
-                    // //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
-
-                    // // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
-                    // if (widthFixed)
-                    // {
-                    //     fTotal->SetParameter(3, 0.002);
-                    //     fTotal->SetParLimits(3, 0.00005, 0.030); // Allow up to 30 MeV for high-pT smearing
-                    // }
-                    // else
-                    // {
-                    //     fTotal->FixParameter(3, ResolutionMCtrue[ip]); // Fix to MC resolution
-                    // }
-
-                    // For WidthFree5 systematic
+                    // --- SLOT 2: WIDTH CONFIGURATION FOR SYSTEMATICS ---
                     fTotal->SetParameter(2, widthpdg);
-                    fTotal->SetParLimits(2, 0.0001, 0.12);
-                    // fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
-                    fTotal->SetParameter(3, ResolutionMCtrue[ip]);
-                    fTotal->SetParLimits(3, 0.0001, 0.030); // Allow up to 30 MeV for high-pT smearing
+                    if (widthFixed)
+                        fTotal->FixParameter(2, widthpdg);
+                    else
+                        fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
+
+                    // else
+                    //     fTotal->SetParLimits(2, widthpdg - 0.025, widthpdg + 0.025);
+
+                    // if (ivar == 5 && ip == pt_end - 1 && imult == 10)
+                    //     fTotal->SetParLimits(2, widthpdg - 0.010, widthpdg + 0.015);
+
+                    // --- SLOT 3: GAUSSIAN SIGMA FLOATING ---
+                    if (widthFixed)
+                    {
+                        fTotal->SetParameter(3, 0.002);
+                        fTotal->SetParLimits(3, 0.00005, 0.030); // Allow up to 30 MeV for high-pT smearing
+                    }
+                    else
+                    {
+                        fTotal->FixParameter(3, ResolutionMCtrue[ip]); // Fix to MC resolution
+                    }
+
+                    // // For WidthFree5 systematic
+                    // fTotal->SetParameter(2, widthpdg);
+                    // fTotal->SetParLimits(2, 0.0001, 0.12);
+                    // // fTotal->SetParLimits(2, widthpdg - 0.01, widthpdg + 0.01);
+                    // fTotal->SetParameter(3, ResolutionMCtrue[ip]);
+                    // fTotal->SetParLimits(3, 0.0001, 0.030); // Allow up to 30 MeV for high-pT smearing
 
                     // --- SLOT 4: MC CORRELATED TEMPLATE NORMALIZATION ---
                     fTotal->SetParameter(4, std::min(std::max(N_temp_0, 0.0), max_corr));
@@ -1340,12 +1340,14 @@ void kstar_sparse()
 
                     hRatioFrame->SetMinimum(0.85);
                     hRatioFrame->SetMaximum(1.15);
+                    hRatioFrame->GetXaxis()->SetRangeUser(lowfitrange, highfitrange);
                     hRatioFrame->Draw("AXIS");
 
                     gRatio->SetMarkerStyle(20);
                     gRatio->SetMarkerSize(0.5);
                     gRatio->SetLineColor(kBlack);
                     gRatio->SetMarkerColor(kBlack);
+                    gRatio->GetXaxis()->SetRangeUser(lowfitrange, highfitrange);
                     gRatio->Draw("P SAME");
 
                     TLine *lineRatio = new TLine(lowfitrange, 1.0, highfitrange, 1.0);

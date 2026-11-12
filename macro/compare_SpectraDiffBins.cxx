@@ -22,7 +22,7 @@ void compare_SpectraDiffBins()
     TString legend2 = "INEL";
 
     string path1 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED"; // INEL>0
-    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED"; // INEL
+    string path2 = "/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/788987/kstarqa/hInvMass/ROTATED"; // INEL
     TString outputPath = path1 + "/spectra_compare";
     gSystem->mkdir(outputPath, kTRUE);
 
@@ -32,11 +32,12 @@ void compare_SpectraDiffBins()
     TH1F *hSpectra1 = (TH1F *)fspectra1->Get("mult_0-100/corrected_spectra_Integral_final");
     TH1F *hSpectra2 = (TH1F *)fspectra2->Get("mult_0-120/corrected_spectra_Integral_final");
 
+    double f_norm_run3 = 0.677;
+
     cout << "Total bins in INEL spectra: " << hSpectra2->GetNbinsX() << endl;
-    hSpectra2->SetBinContent(27, hSpectra2->GetBinContent(27) * 1.05);
-    hSpectra2->SetBinContent(28, hSpectra2->GetBinContent(28) * 1.05);
-    hSpectra2->SetBinContent(29, hSpectra2->GetBinContent(29) * 1.05);
-    hSpectra2->Scale(1.0/ 0.94);
+    hSpectra2->Scale(0.6155 / 0.514213);
+    hSpectra2->Scale(f_norm_run3);
+
 
     // Fit the spectra with Levy function
     TF1 *fitFcn1 = new TF1("fitfunc", FuncLavy, 0.0, 20.0, 4);
@@ -57,7 +58,6 @@ void compare_SpectraDiffBins()
     TString logfilename = "log.root";
     Double_t minfit = 0;
     Double_t maxfit = 20;
-
 
     double pT_bins[29 + 1] = {0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.4, 2.8, 3.2, 3.6, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 12.0, 15.0, 20.0}; // INEL with even higher pT bins
 

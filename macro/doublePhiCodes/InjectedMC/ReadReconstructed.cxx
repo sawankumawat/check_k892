@@ -4,7 +4,7 @@
 
 void ReadReconstructed()
 {
-    TFile *file = new TFile("/home/sawan/alice/practice/AnalysisResults.root", "READ");
+    TFile *file = new TFile("/home/sawan/Storage/check_k892/mc/PhiPhi/796450.root", "READ");
     if (file->IsZombie())
     {
         std::cerr << "Error: Could not open the file." << std::endl;

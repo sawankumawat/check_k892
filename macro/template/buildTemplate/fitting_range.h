@@ -2,8 +2,8 @@
 
 // For INEL, earlier I used wrong binning for the initial and last bins, so their the uncertainty is high. The rebin should always be 1 only here.
 
-#define INELgt0
-// #define INEL
+// #define INELgt0
+#define INEL
 // #define MCClosure
 
 #ifdef INELgt0

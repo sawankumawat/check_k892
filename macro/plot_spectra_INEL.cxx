@@ -22,9 +22,17 @@ void plot_spectra_INEL()
 {
     bool isRaw = false;
 
-    string filePath = "../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/ROTATED/";
+    string filePath = "../output/kstar/LHC22o_pass7/788987/kstarqa/hInvMass/ROTATED/";
     TFile *fINEL = (isRaw) ? OpenFile(filePath + "yield_0_120.root") : OpenFile(filePath + "corrected_spectra_0_120.root");
     TH1D *hSpectraINEL = (isRaw) ? GetHisto(fINEL, "mult_0-120/yield_integral") : GetHisto(fINEL, "mult_0-120/corrected_spectra_Integral_final");
+
+    if (!isRaw)
+    {
+        hSpectraINEL->Scale(1.0 / 0.514912); // Event loss removed
+        hSpectraINEL->Scale(1.0 / 0.677);    // Visible cross section ratio
+        double ratioSel_TVX = 9235908442.0 / 12478172244.0;
+        hSpectraINEL->Scale(ratioSel_TVX); // selected events ==> TVX events
+    }
 
     TFile *fSysUncertINELTemp = OpenFile("../output/kstar/LHC22o_pass7/756343/kstarqa/hInvMass/SystematicsPlots/SysUncert.root");
     TH1D *hSysINELTemp = GetHisto(fSysUncertINELTemp, "hTotalSysSmoothed_0_120");
@@ -82,7 +90,7 @@ void plot_spectra_INEL()
     SetCanvasStyle(cSpectraINEL, 0.17, 0.06, 0.01, 0.14);
     gPad->SetLogy();
     SetHistoQA(hSpectraINEL);
-    hSpectraINEL->SetMaximum(0.2);
+    hSpectraINEL->SetMaximum(0.9);
     hSpectraINEL->SetMinimum(8e-9);
     hSpectraINEL->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hSpectraINEL->GetYaxis()->SetTitle("1/#it{N}_{Ev} d^{2}#it{N}/(d#it{y}d#it{p}_{T}) [(GeV/#it{c})^{-1}]");
@@ -99,20 +107,20 @@ void plot_spectra_INEL()
     h2->SetLineColor(kBlack);
     h2->SetFillStyle(0);
     h2->SetLineWidth(2);
-    if (!isRaw)
-    {
-        h2->Draw("e2 same");
-        fitFcn->Draw("l same");
-    }
+    // if (!isRaw)
+    // {
+    //     h2->Draw("e2 same");
+    //     fitFcn->Draw("l same");
+    // }
     TLegend *leg = new TLegend(0.68, 0.8, 0.9, 0.96);
     leg->SetTextSize(0.032);
     leg->SetFillStyle(0);
     leg->SetBorderSize(0);
     leg->AddEntry(hSpectraINEL, "INEL Spectra", "p");
-    if (!isRaw)
-    {
-        leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
-    }
+    // if (!isRaw)
+    // {
+    //     leg->AddEntry(fitFcn, "L#acute{e}vy-Tsallis", "l");
+    // }
 
     // leg->AddEntry((TObject *)0, "|y| < 0.5", "");
     // leg->AddEntry((TObject *)0, "INEL", "");
@@ -128,11 +136,12 @@ void plot_spectra_INEL()
     lat->DrawLatex(0.37, 0.79, "|y| < 0.5");
     lat->DrawLatex(0.37, 0.73, "K*(892)^{0}");
     lat->SetTextSize(0.03);
-    if (!isRaw)
-        lat->DrawLatex(0.2, 0.2, "Uncertainties: Stat. (bars), Sys. (boxes)");
+    // if (!isRaw)
+    //     lat->DrawLatex(0.2, 0.2, "Uncertainties: Stat. (bars), Sys. (boxes)");
 
-    (isRaw) ? cSpectraINEL->SaveAs((filePath + "/Rawspectra_INEL_0-120.png").c_str()) : cSpectraINEL->SaveAs((filePath + "/spectraFit_INEL_0-120.png").c_str());
+    (isRaw) ? cSpectraINEL->SaveAs((filePath + "/Rawspectra_INEL_0-120.png").c_str()) : cSpectraINEL->SaveAs((filePath + "/spectra_INEL_0-120.png").c_str());
 }
+
 TH1D *GetHisto(TFile *f, const string &name)
 {
     TH1D *histo = (TH1D *)f->Get(name.c_str());

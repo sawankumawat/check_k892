@@ -30,11 +30,11 @@ void SaveModelPrediction()
         {"KstarPM", 1.0}};
 
     // float percentilesRun3[] = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};
-    // float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
-    float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 80, 100};
+    float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 100};
+    // float percentilesRun3[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 80, 100};
     const int nPercentiles = sizeof(percentilesRun3) / sizeof(percentilesRun3[0]);
 
-    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2_moreBins.root", "recreate");
+    TFile *fOutput = new TFile("ModelRootFiles/ModelResults2.root", "recreate");
     if (fOutput->IsZombie())
     {
         cout << "Error: cannot create output file ModelResults2.root" << endl;
@@ -139,15 +139,49 @@ void SaveModelPrediction()
             TGraphErrors *gMeanYieldvsNch = new TGraphErrors(nPercentiles - 1);
 
             const double br = branchingRatios.count(particleType) ? branchingRatios.at(particleType) : 1.0;
+            // Minimum-bias multiplicity
+            TH1D *hNchMinimumBias = hNch05VsFT0M->ProjectionY(Form("hNch_MB_%s", modelName.c_str()), 1, hNch05VsFT0M->GetNbinsX());
+            hNchMinimumBias->SetDirectory(nullptr);
+
+            const double meanNch_MB = hNchMinimumBias->GetMean();
 
             TH1D *hPtMinimumBias = hParticlevsFT0M->ProjectionX(Form("hPt_%s_MinBias_%s", modelName.c_str(), particleType.c_str()), 1, hParticlevsFT0M->GetYaxis()->GetNbins());
             hPtMinimumBias->SetDirectory(nullptr);
+
             const double nEventsMinimumBias = hFT0M->Integral();
+
+            TGraphErrors *gMeanYield_particle_MB = new TGraphErrors(1);
+            TGraphErrors *gMeanpT_particle_MB = new TGraphErrors(1);
+
             if (nEventsMinimumBias > 0)
             {
                 hPtMinimumBias->Scale(1.0 / nEventsMinimumBias);
+
+                const double meanPt_MB = hPtMinimumBias->GetMean();
+                const double meanPtError_MB = hPtMinimumBias->GetMeanError();
+
+                double integralError_MB = 0.0;
+                const double integral_MB = hPtMinimumBias->IntegralAndError(1, hPtMinimumBias->GetNbinsX(), integralError_MB);
+
+                const double yield_MB = integral_MB / br;
+                const double yieldError_MB = integralError_MB / br;
+
+                gMeanYield_particle_MB->SetPoint(0, meanNch_MB, yield_MB);
+                gMeanYield_particle_MB->SetPointError(0, 0.0, yieldError_MB);
+
+                gMeanpT_particle_MB->SetPoint(0, meanNch_MB, meanPt_MB);
+                gMeanpT_particle_MB->SetPointError(0, 0.0, meanPtError_MB);
+
+                cout << "MB: " << modelName << " | " << particleType
+                     << " | Mean Nch = " << meanNch_MB
+                     << " | Yield = " << yield_MB
+                     << " | Mean pT = " << meanPt_MB << endl;
             }
+
             hPtMinimumBias->Write(Form("hPt_%s_MinBias", particleType.c_str()));
+
+            gMeanYield_particle_MB->Write(Form("gMeanYield_%s_MB", particleType.c_str()));
+            gMeanpT_particle_MB->Write(Form("gMeanpT_%s_MB", particleType.c_str()));
 
             for (int icent = 0; icent < nPercentiles - 1; ++icent)
             {

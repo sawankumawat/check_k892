@@ -150,7 +150,7 @@ void SpectraRatio_pTDiffKstarKa()
     lat.DrawLatex(0.45, 0.89, "ALICE");
     lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
     lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
-    c1->SaveAs("Plots/KstarKaSpectra_HM.png");
+    // c1->SaveAs("Plots/KstarKaSpectra_HM.png");
 
     TCanvas *c2 = new TCanvas("c2", "LM histograms", 720, 720);
     SetCanvasStyle(c2, 0.18, 0.06, 0.06, 0.13);
@@ -182,7 +182,7 @@ void SpectraRatio_pTDiffKstarKa()
     lat.DrawLatex(0.45, 0.89, "ALICE");
     lat.DrawLatex(0.45, 0.84, "|y| < 0.5");
     lat.DrawLatex(0.45, 0.79, "pp #sqrt{#it{s}} = 13.6 TeV");
-    c2->SaveAs("Plots/KstarKaSpectra_LM.png");
+    // c2->SaveAs("Plots/KstarKaSpectra_LM.png");
 
     TH1F *hKstarKaRatioHM_stat = (TH1F *)hKstar_statHM->Clone("hKstarKaRatioHM_stat");
     TH1F *hKstarKaRatioHM_sys = (TH1F *)hKstar_sysHM->Clone("hKstarKaRatioHM_sys");
@@ -407,7 +407,7 @@ void SpectraRatio_pTDiffKstarKa()
     cRatio->cd(1);
 
     SetHistoQA(hKstarKaRatioHM_stat);
-    hKstarKaRatioHM_stat->GetYaxis()->SetTitle("K^{*0} / K^{#pm}");
+    hKstarKaRatioHM_stat->GetYaxis()->SetTitle("K^{*0} / K");
     hKstarKaRatioHM_stat->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hKstarKaRatioHM_stat->SetMarkerStyle(20);
     hKstarKaRatioHM_stat->SetMarkerSize(1.45);
@@ -449,21 +449,23 @@ void SpectraRatio_pTDiffKstarKa()
     hKstarKaRatioLM_Uncorr->SetMarkerColor(kBlue + 1);
     hKstarKaRatioLM_Uncorr->Draw("e2 same");
 
-    // Plot EPOS results
-    // First to check if the multiplicity values are compatible or not
-    TFile *fEPOS = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_ExactBins.root");
-    TGraphErrors *gEPOS_KstardNdy_UrQMDOff = (TGraphErrors *)fEPOS->Get("g_dNdy_opt0");
-    int totalPoints = gEPOS_KstardNdy_UrQMDOff->GetN();
-    for (int i = 0; i < totalPoints; ++i)
-    {
-        double x, y;
-        gEPOS_KstardNdy_UrQMDOff->GetPoint(i, x, y);
-        cout << "Multiplicity: " << x << ", EPOS K* dN/dy: " << y << endl;
-    }
+    // // Plot EPOS results
+    // // First to check if the multiplicity values are compatible or not
+    // TFile *fEPOS = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    // TGraphErrors *gEPOS_KstardNdy_UrQMDOff = (TGraphErrors *)fEPOS->Get("g_dNdy_opt0");
+    // int totalPoints = gEPOS_KstardNdy_UrQMDOff->GetN();
+    // for (int i = 0; i < totalPoints; ++i)
+    // {
+    //     double x, y;
+    //     gEPOS_KstardNdy_UrQMDOff->GetPoint(i, x, y);
+    //     cout << "Multiplicity: " << x << ", EPOS K* dN/dy: " << y << endl;
+    // }
 
     // Now open the spectra file in EPOS
     // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix2.root");
+
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
     TH1F *hEPOS_UrQMDON_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_ON_reg_res/hKstar_Pt_ON_reg_res_Cent9");

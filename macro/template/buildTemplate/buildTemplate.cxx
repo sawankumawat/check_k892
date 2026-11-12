@@ -16,12 +16,12 @@ void buildTemplate()
     timer.Start();
 
     //*************************** change here ***************************************
-    const string kResBkg = "MIX";
+    // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
-    // const string kResBkg = "ROTATED";
+    const string kResBkg = "ROTATED";
     TString outputtype = "png";
     const float txtsize = 0.045; // text size in the plots
-    bool isINEL = false;
+    bool isINEL = true;
     int rebinFactor = 1; // Keep it 1, since we rebin the histograms in the kstar_sparse.cxx code and want to keep same binning for the inv mass and template.
 
     const TString kvariation = "";
@@ -45,12 +45,12 @@ void buildTemplate()
     //***************************************************************************************************
 
     // Input file
-    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
+    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/750013.root", "Read"); // INEL>0
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/CalibratedMCchecks/780946.root", "Read"); // INEL>0 (updated one)
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/793191.root", "Read"); // For MC closure (INEL>0)
 
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/755334.root", "Read"); // INEL
-    // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/790177.root", "Read"); // INEL (lf-mc-centrality)
+    TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/790177.root", "Read"); // INEL (lf-mc-centrality)
 
     // TFile *fInputFile = new TFile("/home/sawan/Storage/check_k892/mc/LHC24f3c/764341.root", "Read"); // pT-Dependent DCA check
     if (fInputFile->IsZombie())

@@ -64,7 +64,6 @@ void plot_spectra()
 
     TString basePath = "../output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/";
     TFile *fSysUncert = new TFile(basePath + "SystematicsPlots/SysUncert.root", "READ");
-    TFile *fSysUncorr = new TFile(basePath + "SystematicsPlots/SysUncorr.root", "READ");
 
     // for (int ivar = 0; ivar < nSysVars; ivar++)
     {
@@ -135,17 +134,16 @@ void plot_spectra()
         hmult[1]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
         // int multiplicationFactors[] = {9, 8, 7, 5, 4, 3, 2, 1, 0}; // 6 is skipped because the multiplicity bin 10-15 and 15-20 are merged (in run 2)
 
-        for (int i = 0; i < numofmultbins + 1; i++)
+        for (int i = 1; i < numofmultbins + 1; i++)
         {
             SetHistoQA(hmult[i]);
             hmult[i]->SetMarkerSize(1.2);
-            if (i > 0)
-                hmult[i]->Scale(pow(2, numofmultbins - i));
+            hmult[i]->Scale(pow(2, numofmultbins - i));
             hmult[i]->GetXaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleSize(0.045);
             hmult[i]->GetYaxis()->SetTitleOffset(1.3);
             // hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 25);
-            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 50000);
+            hmult[i]->SetMaximum(hmult[1]->GetMaximum() * 200);
             hmult[i]->SetMinimum(3e-8);
             hmult[i]->SetMarkerStyle(markers[i]);
             hmult[i]->SetLineColor(colors[i]);
@@ -162,7 +160,7 @@ void plot_spectra()
         leg->SetTextFont(42);
         leg->SetTextSize(0.035);
         leg->SetHeader("FT0M Multiplicity Event Classes");
-        leg->AddEntry(hmult[0], "0-100%", "lpe");
+        // leg->AddEntry(hmult[0], "0-100%", "lpe");
         for (int i = 1; i < numofmultbins + 1; i++)
         {
             leg->AddEntry(hmult[i], Form("%.0f-%.0f%%(#times2^{%d})", mult_classes[i - 1], mult_classes[i], numofmultbins - i), "lpe");
@@ -185,8 +183,7 @@ void plot_spectra()
                     multhigh = mult_classes[imult];
                 }
 
-                // hTotalSysSmoothed[imult] = (TH1D *)fSysUncert->Get(Form("hTotalSysSmoothed_%d_%d", multlow, multhigh));
-                hTotalSysSmoothed[imult] = (TH1D *)fSysUncorr->Get(Form("hUncorrelatedUncertaintySmoothed_mult_%d_%d", multlow, multhigh));
+                hTotalSysSmoothed[imult] = (TH1D *)fSysUncert->Get(Form("hTotalSysSmoothed_%d_%d", multlow, multhigh));
                 if (hTotalSysSmoothed[imult] == nullptr)
                 {
                     cout << "Systematics histogram not found for multiplicity bin: " << Form("%d-%d", multlow, multhigh) << endl;
@@ -273,8 +270,6 @@ void plot_spectra()
         hratios[0]->GetYaxis()->SetNdivisions(535);
         // hratios[0]->GetXaxis()->SetRangeUser(0, 25);
 
-        TGraphAsymmErrors *gRatioSys[numofmultbins];
-
         for (int i = 1; i < numofmultbins + 1; i++)
         {
             SetHistoQA(hratios[i - 1]);
@@ -287,54 +282,7 @@ void plot_spectra()
             hratios[i - 1]->SetLineColor(colors[i]);
             hratios[i - 1]->SetMarkerColor(colors[i]);
             hratios[i - 1]->Draw("pe same");
-
-            // Systematic uncertainty boxes in the ratio to minimum bias
-            gRatioSys[i - 1] = new TGraphAsymmErrors();
-
-            if (!plotOnlyRaw)
-            {
-                int ipoint = 0;
-
-                for (int ibin = 1; ibin <= hratios[i - 1]->GetNbinsX(); ibin++)
-                {
-                    double ratio = hratios[i - 1]->GetBinContent(ibin);
-
-                    if (ratio <= 0 || hmult[0]->GetBinContent(ibin) <= 0)
-                        continue;
-
-                    double pt = hratios[i - 1]->GetBinCenter(ibin);
-                    double binWidth = hratios[i - 1]->GetBinWidth(ibin);
-
-                    // Relative systematic uncertainty of multiplicity class
-                    double sysMult = hTotalSysSmoothed[i] ? hTotalSysSmoothed[i]->GetBinContent(ibin) : 0.1;
-
-                    // Relative systematic uncertainty of minimum-bias reference
-                    double sysMB = hTotalSysSmoothed[0] ? hTotalSysSmoothed[0]->GetBinContent(ibin) : 0.1;
-
-                    // Systematic uncertainty on the ratio
-                    double relSysRatio = sqrt(sysMult * sysMult + sysMB * sysMB);
-                    double sysRatio = ratio * relSysRatio;
-
-                    gRatioSys[i - 1]->SetPoint(ipoint, pt, ratio);
-                    gRatioSys[i - 1]->SetPointError(ipoint, 0.5 * binWidth, 0.5 * binWidth, sysRatio, sysRatio);
-
-                    ipoint++;
-                }
-
-                gRatioSys[i - 1]->SetFillColorAlpha(colors[i], 0.25);
-                // gRatioSys[i - 1]->SetFillStyle(0);
-                gRatioSys[i - 1]->SetLineColor(colors[i]);
-                gRatioSys[i - 1]->SetLineWidth(1);
-
-                // Draw systematic boxes first
-                gRatioSys[i - 1]->Draw("2 same");
-                hratios[i - 1]->Draw("pe same"); // Draw statistical error bars and markers on top
-            }
-
-            // Draw statistical error bars and markers
-            hratios[i - 1]->Draw("pe same");
         }
-
         TLine *line = new TLine(0, 1, 20, 1);
         line->SetLineStyle(2);
         line->SetLineColor(kBlack);
@@ -342,8 +290,7 @@ void plot_spectra()
         line->Draw();
 
         TString outputfolder = path;
-        TString spectraPath = (plotOnlyRaw) ? outputfolder + "/spectra_raw." + outputType : outputfolder + "/CorrectedSpectra." + outputType;
-        // TString spectraPath = (plotOnlyRaw) ? outputfolder + "/spectra_raw." + outputType : outputfolder + "/CorrectedSpectraWithoutFit." + outputType;
+        TString spectraPath = (plotOnlyRaw) ? outputfolder + "/spectra_raw." + outputType : outputfolder + "/spectra." + outputType;
         c->SaveAs(spectraPath.Data());
 
         if (!plotOnlyRaw)
@@ -454,7 +401,7 @@ void plot_spectra()
             // double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
             // double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
-            double dnch_detaRun3[] = {21.212, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; // updated uncertainties (matching correction)
+            double dnch_detaRun3[] = {21.642, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; // updated uncertainties (matching correction)
             double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06};             // using same as previous one
 
             double dndyRun3_UncorrSys[] = {0.0171542, 0.0123024, 0.00913457, 0.00922026, 0.00625093, 0.00683177, 0.00451025, 0.00377954, 0.00191806, 0.00171489};

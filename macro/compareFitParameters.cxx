@@ -13,7 +13,7 @@ void compareFitParameters()
     gStyle->SetOptStat(0);
 
     TFile *fFixed = TFile::Open("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100_default.root", "READ");
-    TFile *fFree = TFile::Open("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100.root", "READ");
+    TFile *fFree = TFile::Open("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/yield_0_100_WidhtFree.root", "READ");
 
     if (!fFixed || fFixed->IsZombie() || !fFree || fFree->IsZombie())
     {
@@ -36,7 +36,15 @@ void compareFitParameters()
     TH1 *hFixed[3] = {nullptr, nullptr, nullptr};
     TH1 *hFree[3] = {nullptr, nullptr, nullptr};
 
-    for (int i = 0; i < 3; i++)
+    // MC detector resolution
+    double mcResolution[23] = {
+        0.00545008, 0.00565446, 0.0065543, 0.00658792, 0.00583034,
+        0.00517954, 0.00541337, 0.00556974, 0.00557882, 0.00564703,
+        0.00595414, 0.0061774, 0.00648009, 0.0066736, 0.00691093,
+        0.00727043, 0.00718425, 0.0074514, 0.00830118, 0.00842358,
+        0.00850154, 0.00891884, 0.0111535};
+
+       for (int i = 0; i < 3; i++)
     {
 
         TH1 *h1 = (TH1 *)dirFixed->Get(histNames[i]);
@@ -77,6 +85,30 @@ void compareFitParameters()
         }
     }
 
+    // MC detector resolution
+    if (hFixed[1]->GetNbinsX() != 23)
+    {
+        std::cerr << "Error: MC resolution has 23 values, but data histogram has "
+                  << hFixed[1]->GetNbinsX() << " bins!" << std::endl;
+        return;
+    }
+
+    TH1 *hMCResolution = (TH1 *)hFixed[1]->Clone("hMCResolution");
+    hMCResolution->Reset("ICES");
+    hMCResolution->SetDirectory(nullptr);
+
+    for (int i = 0; i < 23; i++)
+    {
+        hMCResolution->SetBinContent(i + 1, mcResolution[i]);
+        hMCResolution->SetBinError(i + 1, 0);
+    }
+
+    hMCResolution->SetLineColor(kBlack);
+    hMCResolution->SetMarkerColor(kBlack);
+    hMCResolution->SetMarkerStyle(21);
+    hMCResolution->SetMarkerSize(1.1);
+    hMCResolution->SetLineWidth(2);
+
     TCanvas *c = new TCanvas("cCompare", "Width fixed vs Width free", 1400, 720);
     c->Divide(3, 1, 0.01, 0.01);
 
@@ -100,8 +132,27 @@ void compareFitParameters()
         {
             hFixed[i]->GetYaxis()->SetRangeUser(-1e-3, 26e-3);
         }
+        // hFixed[i]->Draw("E1");
+        // hFree[i]->Draw("E1 SAME");
+
         hFixed[i]->Draw("E1");
         hFree[i]->Draw("E1 SAME");
+
+        if (i == 1)
+        {
+            hMCResolution->Draw("P SAME");
+
+            TLegend *leg = new TLegend(0.45, 0.68, 0.90, 0.91);
+            leg->SetBorderSize(0);
+            leg->SetFillStyle(0);
+            leg->SetTextSize(0.045);
+
+            leg->AddEntry(hFixed[i], "Data (Width fixed)", "lep");
+            leg->AddEntry(hFree[i], "Data (Width free)", "lep");
+            leg->AddEntry(hMCResolution, "MC", "lep");
+
+            leg->Draw();
+        }
 
         if (i == 0)
         {
@@ -193,7 +244,7 @@ void compareFitParameters()
     c->Update();
 
     // c->SaveAs("WidthFixed_vs_WidthFree.pdf");
-    c->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/WidthFixed_vs_WidthFree.pdf");
+    c->SaveAs("/home/sawan/Storage/check_k892/output/kstar/LHC22o_pass7/749276/kstarqa/hInvMass/ROTATED/WidthFixed_vs_WidthFree_withMC.png");
 
     fFixed->Close();
     fFree->Close();

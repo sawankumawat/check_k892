@@ -88,7 +88,6 @@ void compare_yield_inel()
     hmult1->Scale(1.0 / eventLoss); // removing event loss
 
     // hmult1->Scale(eventLossExcludingTVX);          // Event loss without TriggerTVX
-    // hmult1->Scale(0.75);          // Event loss without TriggerTVX (for Veronika)
 
     // Data-based corrections
     // Selected events: 12478172244

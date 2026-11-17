@@ -2,7 +2,7 @@
 
 // Projection of signal in different pT bins *************************************
 
-#define Default
+// #define Default
 // #define Default2
 // #define DefaultForWidthFree5
 // #define Norm1
@@ -29,13 +29,13 @@
 // #define LikeSign_INEL
 // #define Pol2_INEL
 // #define TPC1p5_INEL
-// #define TPC2p5_INEL
+#define TPC2p5_INEL
 // #define DCAvar_INEL
 // #define PVContributor_INEL
 // #define MCClosure_INEL
 
-#define INELgt0
-// #define INEL
+// #define INELgt0
+#define INEL
 
 #if defined(INELgt0)
 const Int_t Npt = 23;                                                                                                                                   // Finalized pT bins for INEL>0 (with higher bins)
@@ -7448,7 +7448,7 @@ const std::vector<vector<float>> kNormRangepT = {
     {1.20, 1.30}, // 6.0 - 7.0
     {1.20, 1.30}, // 7.0 - 8.0
     {1.20, 1.30}, // 8.0 - 10.0
-    {1.45, 1.55}, // 10.0 - 12.0
+    {1.70, 1.80}, // 10.0 - 12.0
     {1.20, 1.30}, // 12.0 - 15.0
     {1.20, 1.30}, // 15.0 - 20.0
     {1.20, 1.30}, // 20.0 - 25.0
@@ -7488,7 +7488,7 @@ std::vector<std::vector<std::array<float, 2>>> kFitRange = {
         {0.75, 1.05}, // 6.0 - 7.0
         {0.75, 1.06}, // 7.0 - 8.0
         {0.75, 1.05}, // 8.0 - 10.0
-        {0.78, 0.98}, // 10.0 - 12.0
+        {0.77, 0.98}, // 10.0 - 12.0
         {0.71, 1.05}, // 12.0 - 15.0
         {0.71, 1.05}, // 15.0 - 20.0
         {0.71, 1.05}, // 20.0 - 25.0
@@ -7527,7 +7527,7 @@ const std::vector<std::vector<int>>
         {1}, // 6.0-7.0
         {2}, // 7.0-8.0
         {2}, // 8.0-10.0
-        {4}, // 10.0-12.0
+        {3}, // 10.0-12.0
         {4}, // 12.0-15.0
         {4}, // 15.0-20.0
         {4}, // 20.0-25.0
@@ -7606,7 +7606,7 @@ std::vector<std::vector<std::array<float, 2>>> kFitRange = {
         {0.75, 0.99}, // 6.0 - 7.0
         {0.75, 1.06}, // 7.0 - 8.0
         {0.75, 1.05}, // 8.0 - 10.0
-        {0.75, 1.05}, // 10.0 - 12.0
+        {0.75, 1.07}, // 10.0 - 12.0
         {0.75, 1.05}, // 12.0 - 15.0
         {0.75, 1.15}, // 15.0 - 20.0
         {0.75, 1.15}, // 20.0 - 25.0
@@ -7645,7 +7645,7 @@ const std::vector<std::vector<int>>
         {1}, // 6.0-7.0
         {2}, // 7.0-8.0
         {2}, // 8.0-10.0
-        {4}, // 10.0-12.0
+        {3}, // 10.0-12.0
         {4}, // 12.0-15.0
         {4}, // 15.0-20.0
         {4}, // 20.0-25.0

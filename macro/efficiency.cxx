@@ -10,7 +10,7 @@ void efficiency()
     bool makePIDplots = false; // qa plots
     bool skipEfficiencyPlots = false;
     string outputtype = "png"; // pdf, eps
-    bool isINEL = false;
+    bool isINEL = true;
     // const string kResBkg = "MIX";
     // const string kResBkg = "LIKE";
     const string kResBkg = "ROTATED";
@@ -72,9 +72,9 @@ void efficiency()
 
         //===========2024 data==============
 
-        // string data_path = "756343/kstarqa/hInvMass"; // INEL data (all systematics available)
+        string data_path = "756343/kstarqa_TPC2p5_combined3p5/hInvMass"; // INEL data (all systematics available)
         // string data_path = "788987/kstarqa/hInvMass"; // INEL latest data
-        string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
+        // string data_path = "749276/kstarqa/hInvMass"; // INELgt0 (Trk and PID variation not available)
         // string data_path = "750862/kstarqa/hInvMass"; // INELgt0 (Trk variation not available)
         // string data_path = "751768/kstarqa/hInvMass"; // INELgt0 (All available variations)
 
@@ -140,12 +140,12 @@ void efficiency()
 
         //==========2024 MC===========
         // string MCpath = "788007.root"; // INEL, latest train with systematics (lf-mc-centrality wagon)
-        // string MCpath = "755334.root"; // INEL, with systematics
+        string MCpath = "755334.root"; // INEL, with systematics
         // string MCpath = "790177.root"; // INEL, with systematics (lf-mc-centrality)
         // string MCpath = "801014.root"; // INEL, with systematics (lf-mc-centrality) (with separate event loss for INEL histogram)
         // string MCpath = "750013.root"; // INEL>0, latest train with systematics
         // string MCpath = "764341.root"; //DCA variation check (pT-dependent DCA check)
-        string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
+        // string MCpath = "CalibratedMCchecks/780946.root"; // Other wagon for lf-mc-centrality
         // string MCpath = "793191.root"; // lf-mc-centrality with systematics
 
         // TFile *fileraw = (isINEL) ? new TFile((data_path + "/yield_INEL.root").c_str(), "READ") : new TFile((data_path + "/yield.root").c_str(), "READ"); // datafile
@@ -163,11 +163,11 @@ void efficiency()
             return;
         }
 
-        const string genpath = "kstarqa_ServiceWagon/hInvMass";
-        const string recpath = "kstarqa_ServiceWagon/hInvMass";
+        // const string genpath = "kstarqa_ServiceWagon/hInvMass";
+        // const string recpath = "kstarqa_ServiceWagon/hInvMass";
 
-        // const string genpath = "kstarqa/hInvMass";
-        // const string recpath = "kstarqa/hInvMass";
+        const string genpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
+        const string recpath = "kstarqa_TPC2p5_combined3p5/hInvMass";
 
         float mult_classes[] = {0, 1.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
         int nmultbins = sizeof(mult_classes) / sizeof(mult_classes[0]) - 1; // number of multiplicity bins

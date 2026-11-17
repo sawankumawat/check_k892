@@ -7,11 +7,11 @@ const string kfoldername_temp = "kstarqa/hInvMass";
 // const string kfoldername_temp = "lf-k892analysis";
 
 //// Systematic variations
-const string kvariation = "";
+// const string kvariation = "";
 // const string kvariation = "_FT0C";
 // const string kvariation = "_FV0A";
 // const string kvariation = "_TPC1p5_combined2";
-// const string kvariation = "_TPC2p5_combined3p5";
+const string kvariation = "_TPC2p5_combined3p5";
 // const string kvariation = "_DCAvar1";
 // const string kvariation = "_DCAvar2";
 // const string kvariation = "_NoPVContributor";
@@ -76,11 +76,11 @@ const string kDataset_temp = "LHC22o_pass7/";
 // const string kDataFilename_temp2 = "749276.root"; // INEL>0, latest train with systematics (Trk and PID not available)
 // const string kDataFilename_temp2 = "750862.root"; // INEL>0, latest train with systematics (Trk selection not available)
 // const string kDataFilename_temp2 = "751768.root"; // INEL>0, latest train with systematics (All available)
-// const string kDataFilename_temp2 = "756343.root"; // INEL file with all systematics available
+const string kDataFilename_temp2 = "756343.root"; // INEL file with all systematics available
 // const string kDataFilename_temp2 = "755334.root"; // INEL (for MC closure)
 // const string kDataFilename_temp2 = "793191.root"; // INEL (for MC closure) (lf-mc-centrality)
 // const string kDataFilename_temp2 = "764308.root"; // INEL (for pT-dependent DCA check)
-const string kDataFilename_temp2 = "788987.root"; // INEL (with updated event selection histogram)
+// const string kDataFilename_temp2 = "788987.root"; // INEL (with updated event selection histogram)
 
 #endif
 

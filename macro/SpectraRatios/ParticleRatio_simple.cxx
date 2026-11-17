@@ -174,6 +174,8 @@ void ParticleRatio_simple()
         kXi1530,
         kKshort,
         kKstarPM,
+        kXi,
+        kXiMinus,
         kNParticles
     };
 
@@ -194,7 +196,7 @@ void ParticleRatio_simple()
         "Pythia Ropes",
         "Pythia Shoving"};
 
-    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResults2.root", "read");
+    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResultsXi.root", "read");
     if (ModelsHyperloop->IsZombie())
     {
         cout << "Error: Hyperloop model file not found" << endl;
@@ -202,7 +204,7 @@ void ParticleRatio_simple()
     }
 
     string hyperloopModels[kNModels] = {"Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving"};
-    string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
+    string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM", "XiMinus", "XiPlus"};
     int colorsPythia[] = {kCyan + 1, kYellow + 1, kMagenta, kRed + 1, kGreen + 2, kBlue + 1};
     int lineStylesPythia[] = {1, 1, 1, 2, 2, 2};
 
@@ -268,6 +270,13 @@ void ParticleRatio_simple()
             gMYield[iModel][kAntiProton]->GetPoint(i, x, yAntiProton);
             double yProtonTotal = yProton + yAntiProton;
             gMYield[iModel][kProton]->SetPoint(i, x, yProtonTotal);
+
+            // Xi
+            double yXi, yXiMinus;
+            gMYield[iModel][kXi]->GetPoint(i, x, yXi);
+            gMYield[iModel][kXiMinus]->GetPoint(i, x, yXiMinus);
+            double yXiTotal = yXi + yXiMinus;
+            gMYield[iModel][kXi]->SetPoint(i, x, yXiTotal);
         }
     }
 
@@ -275,8 +284,8 @@ void ParticleRatio_simple()
     //==============EPOS Model========================
     //================================================
 
-    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix3.root");
-    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix3.root");
+    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix4.root");
+    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix4.root");
 
     TGraphErrors *gEPOS_KstardNdy_UrQMDOff = GetGraph(fEPOS_New, "g_dNdy_opt0");
     TGraphErrors *gEPOS_KstardNdy_UrQMDOn = GetGraph(fEPOS_New, "g_dNdy_opt1");
@@ -320,6 +329,26 @@ void ParticleRatio_simple()
         }
         counter++;
     }
+
+    //================================================
+    // ============Thermal model========================
+    //================================================
+    TFile *fThermal = OpenFile("/home/sawan/softwares/Thermal-FIST/src/examples/Sawan/thermal_results_SCE_new2.root");
+    TGraphErrors *gRatioKstarPhi_Thermal = GetGraph(fThermal, "ratioKstarPhi");
+    TGraphErrors *gRatioKstarKa_Thermal = GetGraph(fThermal, "ratioKstarKaon");
+    TGraphErrors *gRatioKstarPi_Thermal = GetGraph(fThermal, "ratioKstarPion");
+    TGraphErrors *gRatioKstarK0s_Thermal = GetGraph(fThermal, "ratioKstarK0s");
+    TGraphErrors *gRatioPhiKa_Thermal = GetGraph(fThermal, "ratioPhiKaon");
+    TGraphErrors *gRatioPhiPi_Thermal = GetGraph(fThermal, "ratioPhiPion");
+    TGraphErrors *gRatioPhiK0s_Thermal = GetGraph(fThermal, "ratioPhiK0s");
+    TGraphErrors *gRatioPhiXi_Thermal = GetGraph(fThermal, "ratioPhiXi");
+
+    //Scale the graphs for averaging
+    ScaleGraph(gRatioKstarPhi_Thermal, 0.5);
+    ScaleGraph(gRatioKstarK0s_Thermal, 0.5);
+    ScaleGraph(gRatioPhiKa_Thermal, 2.0);
+    ScaleGraph(gRatioPhiPi_Thermal, 2.0);
+    ScaleGraph(gRatioPhiXi_Thermal, 1.0);
 
     ////======================================================
     //    ================Plots=====================
@@ -482,7 +511,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cdNdyPhi->SaveAs("Plots/MeanYield_Phi.pdf");
+        cdNdyPhi->SaveAs("Plots/MeanYield_Phi.png");
     }
 
     //===================================================
@@ -815,6 +844,11 @@ void ParticleRatio_simple()
     gKstarKaRatio_UrQMDOnSmooth->SetLineWidth(3);
     gKstarKaRatio_UrQMDOnSmooth->Draw("LX same");
 
+    gRatioKstarKa_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarKa_Thermal->SetLineStyle(10);
+    gRatioKstarKa_Thermal->SetLineWidth(3);
+    // gRatioKstarKa_Thermal->Draw("LX same");
+
     ////Calculation of suppression significance between HM and LM for K*0/Kaon ratio
     int totalPointsKstarKaonRatio = gRatioKstarKaon[0]->GetN();
     double xLM, xHM, yHM, yLM, yHMError, yLMError, yHMStatError, yLMStatError, yLMUncorr, yHMUncorr;
@@ -856,6 +890,7 @@ void ParticleRatio_simple()
         legendRatio2->AddEntry(gRatioKstarKaModel, modelLabel[model], "l");
         counter++;
     }
+    // legendRatio2->AddEntry(gRatioKstarKa_Thermal, "Thermal-FIST", "l");
 
     legendRatio->Draw();
     // legendRatio2->Draw();
@@ -935,12 +970,17 @@ void ParticleRatio_simple()
     gKstarPhiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gKstarPhiRatio_EPOSNew_UrQMDOn->Draw("LX same");
 
+    gRatioKstarPhi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarPhi_Thermal->SetLineStyle(10);
+    gRatioKstarPhi_Thermal->SetLineWidth(3);
+    // gRatioKstarPhi_Thermal->Draw("LX same");
+
     TLegend *legendRatioKstarPhi = new TLegend(0.52, 0.73, 0.9, 0.94);
     SetLegendStyle(legendRatioKstarPhi);
     legendRatioKstarPhi->SetTextSize(0.03);
     legendRatioKstarPhi->AddEntry(gKstarPhiRatio_EPOSNew_UrQMDOff, "EPOS4", "l");
     legendRatioKstarPhi->AddEntry(gKstarPhiRatio_EPOSNew_UrQMDOn, "EPOS4 + UrQMD", "l");
-
+    // legendRatioKstarPhi->AddEntry(gRatioKstarPhi_Thermal, "Thermal-FIST", "l");
     counter = 0;
     for (auto model : modelsToPlot)
     {
@@ -1033,6 +1073,11 @@ void ParticleRatio_simple()
     gPhiKaRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
     gPhiKaRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gPhiKaRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiKa_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiKa_Thermal->SetLineStyle(10);
+    gRatioPhiKa_Thermal->SetLineWidth(3);
+    gRatioPhiKa_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1127,6 +1172,11 @@ void ParticleRatio_simple()
     gKstarPiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
     gKstarPiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gKstarPiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioKstarPi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarPi_Thermal->SetLineStyle(10);
+    gRatioKstarPi_Thermal->SetLineWidth(3);
+    gRatioKstarPi_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1229,6 +1279,11 @@ void ParticleRatio_simple()
     gPhiPiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gPhiPiRatio_EPOSNew_UrQMDOn->Draw("LX same");
 
+    gRatioPhiPi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiPi_Thermal->SetLineStyle(10);
+    gRatioPhiPi_Thermal->SetLineWidth(3);
+    gRatioPhiPi_Thermal->Draw("LX same");
+
     counter = 0;
     for (auto model : modelsToPlot)
     {
@@ -1257,8 +1312,8 @@ void ParticleRatio_simple()
     gRatioPhiXi[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
     gRatioPhiXi[0]->GetYaxis()->SetTitle("#Phi / #Xi");
     SetGraphErrorStyle(gRatioPhiXi[0]);
-    gRatioPhiXi[0]->GetYaxis()->SetRangeUser(1.5, 2.6);
-    // gRatioPhiXi[0]->GetYaxis()->SetRangeUser(0.5, 5.6);
+    // gRatioPhiXi[0]->GetYaxis()->SetRangeUser(1.5, 2.6);
+    gRatioPhiXi[0]->GetYaxis()->SetRangeUser(1.1, 4.3);
     gRatioPhiXi[0]->GetXaxis()->SetLimits(1.8, 23.5);
     gRatioPhiXi[0]->SetMarkerColor(kRed);
     gRatioPhiXi[0]->SetLineColor(kRed);
@@ -1292,6 +1347,22 @@ void ParticleRatio_simple()
     gPhiXiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
     gPhiXiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gPhiXiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiXi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiXi_Thermal->SetLineStyle(10);
+    gRatioPhiXi_Thermal->SetLineWidth(3);
+    gRatioPhiXi_Thermal->Draw("LX same");
+
+     counter = 0;
+    for (auto model : modelsToPlot)
+    {
+        TGraphErrors *gRatioPhiXiModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kXi], true);
+        ScaleGraph(gRatioPhiXiModel, 1.0); // To average the Xi yield
+        setStyle(gRatioPhiXiModel, colorsPythia[counter], lineStylesPythia[counter]);
+        gRatioPhiXiModel->SetLineWidth(3);
+        gRatioPhiXiModel->Draw("l same");
+        counter++;
+    }
 
     TLegend *legendRatioPhiXi = new TLegend(0.65, 0.75, 0.88, 0.9);
     SetLegendStyle(legendRatioPhiXi);
@@ -1388,6 +1459,11 @@ void ParticleRatio_simple()
     gKstarK0sRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gKstarK0sRatio_EPOSNew_UrQMDOn->Draw("LX same");
 
+    gRatioKstarK0s_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarK0s_Thermal->SetLineStyle(10);
+    gRatioKstarK0s_Thermal->SetLineWidth(3);
+    // gRatioKstarK0s_Thermal->Draw("LX same");
+
     counter = 0;
     for (auto model : modelsToPlot)
     {
@@ -1467,6 +1543,11 @@ void ParticleRatio_simple()
     gPhiK0sRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
     gPhiK0sRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
     gPhiK0sRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiK0s_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiK0s_Thermal->SetLineStyle(10);
+    gRatioPhiK0s_Thermal->SetLineWidth(3);
+    gRatioPhiK0s_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)

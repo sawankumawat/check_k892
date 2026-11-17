@@ -471,8 +471,8 @@ void SpectraRatio_pTDiffKstarPhi()
 
     // Now open the spectra file in EPOS
     // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
-    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
-    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_stat8.root");
+    // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_oct2026_fixed.root");
+    TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_light_Bongfix3.root");
 
     TH1F *hEPOS_UrQMDOFF_KstarHM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent9");
     TH1F *hEPOS_UrQMDOFF_KstarLM = (TH1F *)fEPOS_spectra->Get("Kstar_Mult_Spectra_OFF/hKstar_Pt_OFF_Cent0");
@@ -485,16 +485,19 @@ void SpectraRatio_pTDiffKstarPhi()
     TH1F *hEPOS_UrQMDON_PhiLM = (TH1F *)fEPOS_spectra->Get("Phi_Mult_Spectra_ON_reg_res/hPhi_Pt_ON_reg_res_Cent0");
 
     // Correct for branching ratio of phi for UrQMD ON case only
-    double phiBR = 0.489; // PDG 2022
+    double phiBR = 0.415; // PDG 2022
     hEPOS_UrQMDON_PhiHM->Scale(1.0 / phiBR);
     hEPOS_UrQMDON_PhiLM->Scale(1.0 / phiBR);
+
+    hEPOS_UrQMDON_KstarHM->Scale(1.0 / 0.667); // Correct for branching ratio of K* -> K pi
+    hEPOS_UrQMDON_KstarLM->Scale(1.0 / 0.667); // Correct for branching ratio of K* -> K pi
 
     // ============================================================
     // EPOS K* / K0s ratio using pT-integrated bins
     // ============================================================
 
     // double mergedBins[] = {0.0, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0}; // Note: since the graph is used for draw, it will draw upto bin center. so if last bin is 8-10, then it will draw upto 9 only.
-    double mergedBins[] = {0.3, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 5.0,  10.0};
+    double mergedBins[] = {0.3, 0.4, 0.8, 1.2, 1.6, 2.0, 3.0, 4.0, 6.0};
 
     const int nMergedBins = sizeof(mergedBins) / sizeof(double) - 1;
 
@@ -526,27 +529,27 @@ void SpectraRatio_pTDiffKstarPhi()
         double xHigh = mergedBins[i + 1];
 
         double kstarHM, kstarErrHM;
-        double k0sHM, k0sErrHM;
+        double phiHM, phiErrHM;
 
         double kstarLM, kstarErrLM;
-        double k0sLM, k0sErrLM;
+        double phiLM, phiErrLM;
 
         // HM
         getIntegral(hEPOS_UrQMDOFF_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
-        getIntegral(hEPOS_UrQMDOFF_PhiHM, xLow, xHigh, k0sHM, k0sErrHM);
+        getIntegral(hEPOS_UrQMDOFF_PhiHM, xLow, xHigh, phiHM, phiErrHM);
         // LM
         getIntegral(hEPOS_UrQMDOFF_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
-        getIntegral(hEPOS_UrQMDOFF_PhiLM, xLow, xHigh, k0sLM, k0sErrLM);
+        getIntegral(hEPOS_UrQMDOFF_PhiLM, xLow, xHigh, phiLM, phiErrLM);
         // --------------------------------------------------------
         // HM ratio
         // --------------------------------------------------------
-        if (kstarHM > 0 && k0sHM > 0)
+        if (kstarHM > 0 && phiHM > 0)
         {
-            double ratioHM = 0.5 * kstarHM / k0sHM;
+            double ratioHM = 0.5 * kstarHM / phiHM;
             double relKstarHM = kstarErrHM / kstarHM;
-            double relK0sHM = k0sErrHM / k0sHM;
+            double relphiHM = phiErrHM / phiHM;
 
-            double ratioErrHM = ratioHM * sqrt(relKstarHM * relKstarHM + relK0sHM * relK0sHM) / 2.0;
+            double ratioErrHM = ratioHM * sqrt(relKstarHM * relKstarHM + relphiHM * relphiHM) / 2.0;
 
             hEPOS_UrQMDOFF_KstarK0sRatioHM->SetBinContent(i + 1, ratioHM);
             hEPOS_UrQMDOFF_KstarK0sRatioHM->SetBinError(i + 1, ratioErrHM);
@@ -555,21 +558,21 @@ void SpectraRatio_pTDiffKstarPhi()
         // --------------------------------------------------------
         // LM ratio
         // --------------------------------------------------------
-        if (kstarLM > 0 && k0sLM > 0)
+        if (kstarLM > 0 && phiLM > 0)
         {
-            double ratioLM = 0.5 * kstarLM / k0sLM;
+            double ratioLM = 0.5 * kstarLM / phiLM;
 
             double relKstarLM = kstarErrLM / kstarLM;
-            double relK0sLM = k0sErrLM / k0sLM;
+            double relphiLM = phiErrLM / phiLM;
 
-            double ratioErrLM = ratioLM * sqrt(relKstarLM * relKstarLM + relK0sLM * relK0sLM) / 2.0;
+            double ratioErrLM = ratioLM * sqrt(relKstarLM * relKstarLM + relphiLM * relphiLM) / 2.0;
             hEPOS_UrQMDOFF_KstarK0sRatioLM->SetBinContent(i + 1, ratioLM);
             hEPOS_UrQMDOFF_KstarK0sRatioLM->SetBinError(i + 1, ratioErrLM);
         }
     }
 
-    hEPOS_UrQMDOFF_KstarK0sRatioHM->Smooth(2);
-    hEPOS_UrQMDOFF_KstarK0sRatioLM->Smooth(2);
+    // hEPOS_UrQMDOFF_KstarK0sRatioHM->Smooth(2);
+    // hEPOS_UrQMDOFF_KstarK0sRatioLM->Smooth(2);
 
     // Build a line + band that extend to the outer bin edges
     auto makeCurve = [](TH1 *h, Color_t col, Style_t lstyle, TGraph *&gLine, TGraphErrors *&gBand)
@@ -630,8 +633,8 @@ void SpectraRatio_pTDiffKstarPhi()
     // ------------------------------------------------------------
     // Create UrQMD ON ratio histograms
     // ------------------------------------------------------------
-    TH1F *hEPOS_UrQMDON_KstarK0sRatioHM = new TH1F("hEPOS_UrQMDON_KstarK0sRatioHM", ";#it{p}_{T} (GeV/#it{c});K^{*0}/K^{0}_{S}", nMergedBins, mergedBins);
-    TH1F *hEPOS_UrQMDON_KstarK0sRatioLM = new TH1F("hEPOS_UrQMDON_KstarK0sRatioLM", ";#it{p}_{T} (GeV/#it{c});K^{*0}/K^{0}_{S}", nMergedBins, mergedBins);
+    TH1F *hEPOS_UrQMDON_KstarPhiRatioHM = new TH1F("hEPOS_UrQMDON_KstarPhiRatioHM", ";#it{p}_{T} (GeV/#it{c});K^{*0}/K^{0}_{S}", nMergedBins, mergedBins);
+    TH1F *hEPOS_UrQMDON_KstarPhiRatioLM = new TH1F("hEPOS_UrQMDON_KstarPhiRatioLM", ";#it{p}_{T} (GeV/#it{c});K^{*0}/K^{0}_{S}", nMergedBins, mergedBins);
 
     // ------------------------------------------------------------
     // Calculate integrated ratios
@@ -642,63 +645,63 @@ void SpectraRatio_pTDiffKstarPhi()
         double xHigh = mergedBins[i + 1];
 
         double kstarHM, kstarErrHM;
-        double k0sHM, k0sErrHM;
+        double phiHM, phiErrHM;
 
         double kstarLM, kstarErrLM;
-        double k0sLM, k0sErrLM;
+        double phiLM, phiErrLM;
 
         // --------------------------------------------------------
         // HM
         // --------------------------------------------------------
         getIntegral(hEPOS_UrQMDON_KstarHM, xLow, xHigh, kstarHM, kstarErrHM);
-        getIntegral(hEPOS_UrQMDON_PhiHM, xLow, xHigh, k0sHM, k0sErrHM);
+        getIntegral(hEPOS_UrQMDON_PhiHM, xLow, xHigh, phiHM, phiErrHM);
 
         // --------------------------------------------------------
         // LM
         // --------------------------------------------------------
         getIntegral(hEPOS_UrQMDON_KstarLM, xLow, xHigh, kstarLM, kstarErrLM);
-        getIntegral(hEPOS_UrQMDON_PhiLM, xLow, xHigh, k0sLM, k0sErrLM);
+        getIntegral(hEPOS_UrQMDON_PhiLM, xLow, xHigh, phiLM, phiErrLM);
 
         // ========================================================
         // HM ratio
         // ========================================================
-        if (kstarHM > 0 && k0sHM > 0)
+        if (kstarHM > 0 && phiHM > 0)
         {
-            double ratioHM = 0.5 * kstarHM / k0sHM;
-            double relKstarHM = 0.5 * kstarErrHM / kstarHM;
+            double ratioHM = 0.5 * kstarHM / phiHM;
+            double relKstarHM = kstarErrHM / kstarHM;
 
-            double relK0sHM = k0sErrHM / k0sHM;
+            double relphiHM = phiErrHM / phiHM;
 
-            double ratioErrHM = ratioHM * sqrt(relKstarHM * relKstarHM + relK0sHM * relK0sHM) / 2.0;
+            double ratioErrHM = ratioHM * sqrt(relKstarHM * relKstarHM + relphiHM * relphiHM);
 
-            hEPOS_UrQMDON_KstarK0sRatioHM->SetBinContent(i + 1, ratioHM);
-            hEPOS_UrQMDON_KstarK0sRatioHM->SetBinError(i + 1, ratioErrHM); // Scale down the error for visualization
+            hEPOS_UrQMDON_KstarPhiRatioHM->SetBinContent(i + 1, ratioHM);
+            hEPOS_UrQMDON_KstarPhiRatioHM->SetBinError(i + 1, ratioErrHM);
         }
 
         // ========================================================
         // LM ratio
         // ========================================================
-        if (kstarLM > 0 && k0sLM > 0)
+        if (kstarLM > 0 && phiLM > 0)
         {
-            double ratioLM = 0.5 * kstarLM / k0sLM;
-            double relKstarLM = 0.5 * kstarErrLM / kstarLM;
+            double ratioLM = 0.5 * kstarLM / phiLM;
+            double relKstarLM = kstarErrLM / kstarLM;
 
-            double relK0sLM = k0sErrLM / k0sLM;
+            double relphiLM = phiErrLM / phiLM;
 
-            double ratioErrLM = ratioLM * sqrt(relKstarLM * relKstarLM + relK0sLM * relK0sLM) / 2.0;
+            double ratioErrLM = ratioLM * sqrt(relKstarLM * relKstarLM + relphiLM * relphiLM);
 
-            hEPOS_UrQMDON_KstarK0sRatioLM->SetBinContent(i + 1, ratioLM);
-            hEPOS_UrQMDON_KstarK0sRatioLM->SetBinError(i + 1, ratioErrLM);
+            hEPOS_UrQMDON_KstarPhiRatioLM->SetBinContent(i + 1, ratioLM);
+            hEPOS_UrQMDON_KstarPhiRatioLM->SetBinError(i + 1, ratioErrLM);
         }
     }
 
-    hEPOS_UrQMDON_KstarK0sRatioHM->Smooth(2);
-    hEPOS_UrQMDON_KstarK0sRatioLM->Smooth(2);
+    // hEPOS_UrQMDON_KstarPhiRatioHM->Smooth(2);
+    // hEPOS_UrQMDON_KstarPhiRatioLM->Smooth(2);
 
     TGraph *gHM_UrQMDON, *gLM_UrQMDON;
     TGraphErrors *bHM_UrQMDON, *bLM_UrQMDON;
-    makeCurve(hEPOS_UrQMDON_KstarK0sRatioHM, kRed + 1, 1, gHM_UrQMDON, bHM_UrQMDON);
-    makeCurve(hEPOS_UrQMDON_KstarK0sRatioLM, kBlue + 1, 1, gLM_UrQMDON, bLM_UrQMDON);
+    makeCurve(hEPOS_UrQMDON_KstarPhiRatioHM, kRed + 1, 1, gHM_UrQMDON, bHM_UrQMDON);
+    makeCurve(hEPOS_UrQMDON_KstarPhiRatioLM, kBlue + 1, 1, gLM_UrQMDON, bLM_UrQMDON);
     if (plotEPOS)
     {
         bHM_UrQMDON->Draw("3 same");
@@ -760,8 +763,8 @@ void SpectraRatio_pTDiffKstarPhi()
 
     TH1F *hRatio_HM_LM = (TH1F *)hEPOS_UrQMDOFF_KstarK0sRatioHM->Clone("hRatio_HM_LM");
     hRatio_HM_LM->Divide(hEPOS_UrQMDOFF_KstarK0sRatioLM);
-    TH1F *hRatio_HM_LM_ON = (TH1F *)hEPOS_UrQMDON_KstarK0sRatioHM->Clone("hRatio_HM_LM_ON");
-    hRatio_HM_LM_ON->Divide(hEPOS_UrQMDON_KstarK0sRatioLM);
+    TH1F *hRatio_HM_LM_ON = (TH1F *)hEPOS_UrQMDON_KstarPhiRatioHM->Clone("hRatio_HM_LM_ON");
+    hRatio_HM_LM_ON->Divide(hEPOS_UrQMDON_KstarPhiRatioLM);
 
     TGraph *gRatio_HM_LM_On, *gRatio_HM_LM_Off;
     TGraphErrors *bRatio_HM_LM_On, *bRatio_HM_LM_Off;
@@ -782,7 +785,7 @@ void SpectraRatio_pTDiffKstarPhi()
     line->SetLineWidth(2);
     line->Draw();
 
-    // cRatio->SaveAs("Plots/pTDiff_Ratios/KstarPhiRatio.png");
+    cRatio->SaveAs("Plots/pTDiff_Ratios/KstarPhiRatio.png");
 
     // // ---------------------------------------------------------
     // // Calculate significance with respect to unity

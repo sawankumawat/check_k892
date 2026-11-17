@@ -53,13 +53,14 @@ void ParticleRatio_simple()
     TFile *fRho = OpenFile("Rho_Run3_Results/Sawan/ResultsRho.root");
     TFile *fKshortRun3 = OpenFile("K0s_Run3_Results/Sawan/ResultsK0s.root");
     TFile *fPhiRun3 = OpenFile("PhiResults/Sawan/ResultsPhi.root");
+    TFile *fXiRun3 = OpenFile("XiOmegaResults/Sawan/ResultsXi.root");
 
     // ALICE Run2 results
     TFile *fpp13TeV = OpenFile("ConversionCodes/pp13TeV_KstarPhi.root");
     TFile *fpp7TeV = OpenFile("ConversionCodes/pp7TeVALICE.root");
 
     TGraphErrors *gMPtKstar[3], *gMYieldKstar[3], *gMPtPion[3], *gMPtProton[3], *gMPtKaon[3], *gMPtKstarRun2[3], *gMPtPhiRun2[3], *gMPtChKstarRun2[3], *gMPtKshortRun2[3], *gMPtLambdaRun2[3], *gMPtXiRun2[3], *gMPtOmegaRun2[3], *gMPtXiStarRun2[3], *gMPtSigmaRun2[3], *gMPtLambda1520[3], *gMPtRho[3], *gMPtPhiRun3[3];
-    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3], *gMYieldPhiRun3[3];
+    TGraphErrors *gMYieldPion[3], *gMYieldProton[3], *gMYieldKaon[3], *gMYieldKstarRun2[3], *gMYieldPhiRun2[3], *gMYieldChKstarRun2[3], *gMYieldKshortRun2[3], *gMYieldLambdaRun2[3], *gMYieldXiRun2[3], *gMYieldOmegaRun2[3], *gMYieldXiStarRun2[3], *gMYieldSigmaRun2[3], *gMYieldLambda1520[3], *gMYieldRho[3], *gKstar_MeanpT_13TeV[3], *gKstar_Yield_13TeV[3], *gMYieldPhiRun3[3], *gMYieldXiRun3[3];
 
     TGraphErrors *gMPtKshortRun3[3], *gMYieldKshortRun3[3];
 
@@ -127,6 +128,8 @@ void ParticleRatio_simple()
 
         gMPtKshortRun3[i] = GetGraph(fKshortRun3, Form("gMeanpTRun3%s", suffix.c_str()));
         gMYieldKshortRun3[i] = GetGraph(fKshortRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
+
+        gMYieldXiRun3[i] = GetGraph(fXiRun3, Form("gMeanYieldRun3%s", suffix.c_str()));
     }
 
     TGraphErrors *gKstarKshortRatio_13TeV[2], *gPhiKshortRatio_13TeV[2], *gPhiPiRatio_13TeV[2], *gKstarKaRatio_13TeV[2], *gKstarPiRatio_13TeV[2], *gPhiKaRatio_13TeV[2], *gPhiPrRatio_13TeV[2], *gPhiLambdaRatio_13TeV[2];
@@ -171,6 +174,8 @@ void ParticleRatio_simple()
         kXi1530,
         kKshort,
         kKstarPM,
+        kXi,
+        kXiMinus,
         kNParticles
     };
 
@@ -191,7 +196,7 @@ void ParticleRatio_simple()
         "Pythia Ropes",
         "Pythia Shoving"};
 
-    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResults2.root", "read");
+    TFile *ModelsHyperloop = new TFile("ModelRootFiles/ModelResultsXi.root", "read");
     if (ModelsHyperloop->IsZombie())
     {
         cout << "Error: Hyperloop model file not found" << endl;
@@ -199,7 +204,7 @@ void ParticleRatio_simple()
     }
 
     string hyperloopModels[kNModels] = {"Pythia_Monash", "Pythia_Ropes", "Pythia_Shoving"};
-    string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM"};
+    string particles[kNParticles] = {"Kstar", "Phi", "Pion", "Kaon", "Proton", "PionMinus", "KaonMinus", "AntiProton", "Xi1530", "Kshort", "KstarPM", "XiMinus", "XiPlus"};
     int colorsPythia[] = {kCyan + 1, kYellow + 1, kMagenta, kRed + 1, kGreen + 2, kBlue + 1};
     int lineStylesPythia[] = {1, 1, 1, 2, 2, 2};
 
@@ -265,6 +270,13 @@ void ParticleRatio_simple()
             gMYield[iModel][kAntiProton]->GetPoint(i, x, yAntiProton);
             double yProtonTotal = yProton + yAntiProton;
             gMYield[iModel][kProton]->SetPoint(i, x, yProtonTotal);
+
+            // Xi
+            double yXi, yXiMinus;
+            gMYield[iModel][kXi]->GetPoint(i, x, yXi);
+            gMYield[iModel][kXiMinus]->GetPoint(i, x, yXiMinus);
+            double yXiTotal = yXi + yXiMinus;
+            gMYield[iModel][kXi]->SetPoint(i, x, yXiTotal);
         }
     }
 
@@ -272,8 +284,8 @@ void ParticleRatio_simple()
     //==============EPOS Model========================
     //================================================
 
-    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix2.root");
-    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix2.root");
+    TFile *fEPOS_New = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix4.root");
+    TFile *fEPOS_New2 = OpenFile("/home/sawan/Storage/EPOS4_Resonance/FinalEPOSResults_BongFix4.root");
 
     TGraphErrors *gEPOS_KstardNdy_UrQMDOff = GetGraph(fEPOS_New, "g_dNdy_opt0");
     TGraphErrors *gEPOS_KstardNdy_UrQMDOn = GetGraph(fEPOS_New, "g_dNdy_opt1");
@@ -317,6 +329,26 @@ void ParticleRatio_simple()
         }
         counter++;
     }
+
+    //================================================
+    // ============Thermal model========================
+    //================================================
+    TFile *fThermal = OpenFile("/home/sawan/softwares/Thermal-FIST/src/examples/Sawan/thermal_results_SCE_new2.root");
+    TGraphErrors *gRatioKstarPhi_Thermal = GetGraph(fThermal, "ratioKstarPhi");
+    TGraphErrors *gRatioKstarKa_Thermal = GetGraph(fThermal, "ratioKstarKaon");
+    TGraphErrors *gRatioKstarPi_Thermal = GetGraph(fThermal, "ratioKstarPion");
+    TGraphErrors *gRatioKstarK0s_Thermal = GetGraph(fThermal, "ratioKstarK0s");
+    TGraphErrors *gRatioPhiKa_Thermal = GetGraph(fThermal, "ratioPhiKaon");
+    TGraphErrors *gRatioPhiPi_Thermal = GetGraph(fThermal, "ratioPhiPion");
+    TGraphErrors *gRatioPhiK0s_Thermal = GetGraph(fThermal, "ratioPhiK0s");
+    TGraphErrors *gRatioPhiXi_Thermal = GetGraph(fThermal, "ratioPhiXi");
+
+    //Scale the graphs for averaging
+    ScaleGraph(gRatioKstarPhi_Thermal, 0.5);
+    ScaleGraph(gRatioKstarK0s_Thermal, 0.5);
+    ScaleGraph(gRatioPhiKa_Thermal, 2.0);
+    ScaleGraph(gRatioPhiPi_Thermal, 2.0);
+    ScaleGraph(gRatioPhiXi_Thermal, 1.0);
 
     ////======================================================
     //    ================Plots=====================
@@ -415,7 +447,7 @@ void ParticleRatio_simple()
     latex.DrawLatex(0.47, 0.2, "uncorr. sys. (shaded box)");
     if (isSavePlots)
     {
-        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.png");
+        cdNdyKstar->SaveAs("Plots/MeanYield_Kstar.pdf");
     }
 
     //===================================================
@@ -479,7 +511,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cdNdyPhi->SaveAs("Plots/MeanYield_Phi.png");
+        cdNdyPhi->SaveAs("Plots/MeanYield_Phi.pdf");
     }
 
     //===================================================
@@ -553,7 +585,7 @@ void ParticleRatio_simple()
     latex.DrawLatex(0.47, 0.2, "uncorr. sys. (shaded box)");
     if (isSavePlots)
     {
-        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.png");
+        cMeanPtKstar->SaveAs("Plots/MeanPt_Kstar.pdf");
     }
 
     //===================================================
@@ -617,7 +649,7 @@ void ParticleRatio_simple()
     latex.SetTextSize(0.03);
     latex.SetTextFont(22);
     latex.DrawLatex(0.8, 0.90, "#Phi (1020)");
-    cMeanPtPhi->SaveAs("Plots/MeanPt_Phi.png");
+    cMeanPtPhi->SaveAs("Plots/MeanPt_Phi.pdf");
 
     //====================================================
     //   ================Kstar/K Ratio ===================
@@ -625,14 +657,16 @@ void ParticleRatio_simple()
 
     TGraphErrors *gdNdy_Kstar_On = GetGraph(fEPOS_New2, "g_dNdy_opt1");
     TGraphErrors *gdNdy_Kstar_Off = GetGraph(fEPOS_New2, "g_dNdy_opt0");
+    TGraphErrors *gdNdy_Phi_On = GetGraph(fEPOS_New2, "g_phi_dNdy_opt1");
+    TGraphErrors *gdNdy_Phi_Off = GetGraph(fEPOS_New2, "g_phi_dNdy_opt0");
     TGraphErrors *gdNdy_K0s_On = GetGraph(fEPOS_New2, "g_stable_dNdy_opt1_K0s");
     TGraphErrors *gdNdy_K0s_Off = GetGraph(fEPOS_New2, "g_stable_dNdy_opt0_K0s");
     TGraphErrors *gdNdy_Kaon_On = GetGraph(fEPOS_New2, "g_stable_dNdy_opt1_kaon");
     TGraphErrors *gdNdy_Kaon_Off = GetGraph(fEPOS_New2, "g_stable_dNdy_opt0_kaon");
     TGraphErrors *gdNdy_Pion_On = GetGraph(fEPOS_New2, "g_stable_dNdy_opt1_pi");
     TGraphErrors *gdNdy_Pion_Off = GetGraph(fEPOS_New2, "g_stable_dNdy_opt0_pi");
-    TGraphErrors *gdNdy_Phi_On = GetGraph(fEPOS_New2, "g_phi_dNdy_opt1");
-    TGraphErrors *gdNdy_Phi_Off = GetGraph(fEPOS_New2, "g_phi_dNdy_opt0");
+    TGraphErrors *gdNdy_Xi_On = GetGraph(fEPOS_New2, "g_stable_dNdy_opt1_Xi");
+    TGraphErrors *gdNdy_Xi_Off = GetGraph(fEPOS_New2, "g_stable_dNdy_opt0_Xi");
 
     TGraphErrors *gKstarKaRatio_EPOSNew_UrQMDOff = new TGraphErrors();
     TGraphErrors *gKstarKaRatio_EPOSNew_UrQMDOn = new TGraphErrors();
@@ -647,6 +681,8 @@ void ParticleRatio_simple()
     TGraphErrors *gPhiPiRatio_EPOSNew_UrQMDOn = new TGraphErrors();
     TGraphErrors *gPhiK0sRatio_EPOSNew_UrQMDOff = new TGraphErrors();
     TGraphErrors *gPhiK0sRatio_EPOSNew_UrQMDOn = new TGraphErrors();
+    TGraphErrors *gPhiXiRatio_EPOSNew_UrQMDOff = new TGraphErrors();
+    TGraphErrors *gPhiXiRatio_EPOSNew_UrQMDOn = new TGraphErrors();
 
     TGraphErrors *gKstarPhiRatio_EPOSNew_UrQMDOff = new TGraphErrors();
     TGraphErrors *gKstarPhiRatio_EPOSNew_UrQMDOn = new TGraphErrors();
@@ -659,11 +695,11 @@ void ParticleRatio_simple()
 
         gdNdy_Phi_Off->GetPoint(i, xK0s, yPhiOff);
         gdNdy_Phi_On->GetPoint(i, xK0s, yPhiOn);
-        cout << "xPhi: " << xK0s << ", yPhiOff: " << yPhiOff << ", yPhiOn: " << yPhiOn << endl;
+        // cout << "xPhi: " << xK0s << ", yPhiOff: " << yPhiOff << ", yPhiOn: " << yPhiOn << endl;
 
         gdNdy_Kstar_Off->GetPoint(i, xK0s, yKstarOff);
         gdNdy_Kstar_On->GetPoint(i, xK0s, yKstarOn);
-        cout << "xKstar: " << xK0s << ", yKstarOff: " << yKstarOff << ", yKstarOn: " << yKstarOn << endl;
+        // cout << "xKstar: " << xK0s << ", yKstarOff: " << yKstarOff << ", yKstarOn: " << yKstarOn << endl;
 
         gdNdy_K0s_Off->GetPoint(i, xK0s, yK0s);
         gdNdy_Kaon_Off->GetPoint(i, xK0s, yKaon);
@@ -684,11 +720,21 @@ void ParticleRatio_simple()
         gKstarPhiRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yKstarOn / yPhiOn);
     }
 
+    // // Low to high multiplicity suppression in EPOS UrQMD Off and On
+    // double EPOSHM_Off, EPOSLM_Off, EPOSHM_On, EPOSLM_On, xLM2, xHM2;
+    // gKstarK0sRatio_EPOSNew_UrQMDOff->GetPoint(0, xLM2, EPOSLM_Off);
+    // gKstarK0sRatio_EPOSNew_UrQMDOff->GetPoint(gKstarK0sRatio_EPOSNew_UrQMDOff->GetN() - 1, xHM2, EPOSHM_Off);
+    // gKstarK0sRatio_EPOSNew_UrQMDOn->GetPoint(0, xLM2, EPOSLM_On);
+    // gKstarK0sRatio_EPOSNew_UrQMDOn->GetPoint(gKstarK0sRatio_EPOSNew_UrQMDOn->GetN() - 1, xHM2, EPOSHM_On);
+    // cout << "EPOS UrQMD Off K*0/K0s ratio suppression: " << EPOSHM_Off / EPOSLM_Off << endl;
+    // cout << "EPOS UrQMD On K*0/K0s ratio suppression: " << EPOSHM_On / EPOSLM_On << endl;
+
     int graphPointsEPOSNewPhi = gdNdy_Phi_On->GetN();
     for (int i = 0; i < graphPointsEPOSNewPhi; i++)
     {
         double xK0s, yK0s, yKaon, yPion, yPhiOff, yPhiOn;
-        double yK0sON, yKaonON, yPionON;
+        double yK0sON, yKaonON, yPionON, yXiOff, yXiOn;
+
         gdNdy_Phi_Off->GetPoint(i, xK0s, yPhiOff);
         gdNdy_Phi_On->GetPoint(i, xK0s, yPhiOn);
 
@@ -699,6 +745,8 @@ void ParticleRatio_simple()
         gdNdy_K0s_On->GetPoint(i, xK0s, yK0sON);
         gdNdy_Kaon_On->GetPoint(i, xK0s, yKaonON);
         gdNdy_Pion_On->GetPoint(i, xK0s, yPionON);
+        gdNdy_Xi_Off->GetPoint(i, xK0s, yXiOff);
+        gdNdy_Xi_On->GetPoint(i, xK0s, yXiOn);
 
         gPhiKaRatio_EPOSNew_UrQMDOff->SetPoint(i, xK0s, yPhiOff / yKaon);
         gPhiKaRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yPhiOn / yKaon);
@@ -706,6 +754,8 @@ void ParticleRatio_simple()
         gPhiPiRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yPhiOn / yPion);
         gPhiK0sRatio_EPOSNew_UrQMDOff->SetPoint(i, xK0s, yPhiOff / yK0s);
         gPhiK0sRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yPhiOn / yK0s);
+        gPhiXiRatio_EPOSNew_UrQMDOff->SetPoint(i, xK0s, yPhiOff / yXiOff);
+        gPhiXiRatio_EPOSNew_UrQMDOn->SetPoint(i, xK0s, yPhiOn / yXiOff);
     }
 
     TGraphErrors *gKstarKaRatio_UrQMDOffSmooth = SmoothGraph(gKstarKaRatio_EPOSNew_UrQMDOff);
@@ -721,33 +771,44 @@ void ParticleRatio_simple()
     TGraphErrors *gPhiPiRatio_UrQMDOnSmooth = SmoothGraph(gPhiPiRatio_EPOSNew_UrQMDOn);
     TGraphErrors *gPhiK0sRatio_UrQMDOffSmooth = SmoothGraph(gPhiK0sRatio_EPOSNew_UrQMDOff);
     TGraphErrors *gPhiK0sRatio_UrQMDOnSmooth = SmoothGraph(gPhiK0sRatio_EPOSNew_UrQMDOn);
+    TGraphErrors *gPhiXiRatio_UrQMDOffSmooth = SmoothGraph(gPhiXiRatio_EPOSNew_UrQMDOff);
+    TGraphErrors *gPhiXiRatio_UrQMDOnSmooth = SmoothGraph(gPhiXiRatio_EPOSNew_UrQMDOn);
 
     TGraphErrors *gKstarPhiRatio_UrQMDOffSmooth = SmoothGraph(gKstarPhiRatio_EPOSNew_UrQMDOff);
     TGraphErrors *gKstarPhiRatio_UrQMDOnSmooth = SmoothGraph(gKstarPhiRatio_EPOSNew_UrQMDOn);
 
+    // Low to high multiplicity suppression in EPOS UrQMD Off and On
+    double EPOSHM_Off, EPOSLM_Off, EPOSHM_On, EPOSLM_On, xLM2, xHM2;
+    gKstarK0sRatio_UrQMDOffSmooth->GetPoint(0, xLM2, EPOSLM_Off);
+    gKstarK0sRatio_UrQMDOffSmooth->GetPoint(gKstarK0sRatio_UrQMDOffSmooth->GetN() - 1, xHM2, EPOSHM_Off);
+    gKstarK0sRatio_UrQMDOnSmooth->GetPoint(0, xLM2, EPOSLM_On);
+    gKstarK0sRatio_UrQMDOnSmooth->GetPoint(gKstarK0sRatio_UrQMDOnSmooth->GetN() - 1, xHM2, EPOSHM_On);
+    cout << "EPOS UrQMD Off K*0/K0s ratio suppression: " << EPOSHM_Off / EPOSLM_Off << endl;
+    cout << "EPOS UrQMD On K*0/K0s ratio suppression: " << EPOSHM_On / EPOSLM_On << endl;
+
     TCanvas *cRatioKstarKaon = new TCanvas("cRatioKstarKaon", "cRatioKstarKaon", 720, 720);
     SetCanvasStyle(cRatioKstarKaon, 0.15, 0.03, 0.03, 0.15);
 
-    for (int i3 = 0; i3 < TotalPointsRun3; i3++)
-    {
-        double xkstar, ykstar, ysyskstar, yuncorrkstar;
-        double xkaon, ykaon, ysyskaon, yuncorrkaon;
-        gMYieldKstar[0]->GetPoint(i3, xkstar, ykstar);
-        ysyskstar = gMYieldKstar[1]->GetErrorY(i3);
-        yuncorrkstar = gMYieldKstar[2]->GetErrorY(i3);
+    // for (int i3 = 0; i3 < TotalPointsRun3; i3++)
+    // {
+    //     double xkstar, ykstar, ysyskstar, yuncorrkstar;
+    //     double xkaon, ykaon, ysyskaon, yuncorrkaon;
+    //     gMYieldKstar[0]->GetPoint(i3, xkstar, ykstar);
+    //     ysyskstar = gMYieldKstar[1]->GetErrorY(i3);
+    //     yuncorrkstar = gMYieldKstar[2]->GetErrorY(i3);
 
-        gMYieldKaon[0]->GetPoint(i3, xkaon, ykaon);
-        ysyskaon = gMYieldKaon[1]->GetErrorY(i3);
-        yuncorrkaon = gMYieldKaon[2]->GetErrorY(i3);
+    //     gMYieldKaon[0]->GetPoint(i3, xkaon, ykaon);
+    //     ysyskaon = gMYieldKaon[1]->GetErrorY(i3);
+    //     yuncorrkaon = gMYieldKaon[2]->GetErrorY(i3);
 
-        cout << "Point " << i3 << ": K*0 yield = " << ykstar << " +/- " << ysyskstar << " (sys) +/- " << yuncorrkstar << " (uncorr)" << endl;
-        cout << "Point " << i3 << ": Kaon yield = " << ykaon << " +/- " << ysyskaon << " (sys) +/- " << yuncorrkaon << " (uncorr)" << endl;
-        double ratio = ykstar / ykaon;
-        double ratioErrorsys = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(ysyskaon / ykaon, 2));
-        double ratioErroruncorr = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(yuncorrkaon / ykaon, 2));
-        cout << "Point " << i3 << ": K*0/Kaon ratio = " << ratio << " +/- " << ratioErrorsys << " (sys) +/- " << ratioErroruncorr << " (uncorr)" << endl;
-        cout << endl;
-    }
+    //     cout << "Point " << i3 << ": K*0 yield = " << ykstar << " +/- " << ysyskstar << " (sys) +/- " << yuncorrkstar << " (uncorr)" << endl;
+    //     cout << "Point " << i3 << ": Kaon yield = " << ykaon << " +/- " << ysyskaon << " (sys) +/- " << yuncorrkaon << " (uncorr)" << endl;
+    //     double ratio = ykstar / ykaon;
+    //     double ratioErrorsys = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(ysyskaon / ykaon, 2));
+    //     double ratioErroruncorr = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(yuncorrkaon / ykaon, 2));
+    //     cout << "Point " << i3 << ": K*0/Kaon ratio = " << ratio << " +/- " << ratioErrorsys << " (sys) +/- " << ratioErroruncorr << " (uncorr)" << endl;
+    //     cout << endl;
+    // }
 
     TGraphErrors **gRatioKstarKaon = MakeRatioUncorr(gMYieldKstar, gMYieldKaon, 1.0, 3);
     gRatioKstarKaon[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
@@ -782,6 +843,11 @@ void ParticleRatio_simple()
     gKstarKaRatio_UrQMDOnSmooth->SetLineStyle(9);
     gKstarKaRatio_UrQMDOnSmooth->SetLineWidth(3);
     gKstarKaRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gRatioKstarKa_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarKa_Thermal->SetLineStyle(10);
+    gRatioKstarKa_Thermal->SetLineWidth(3);
+    gRatioKstarKa_Thermal->Draw("LX same");
 
     ////Calculation of suppression significance between HM and LM for K*0/Kaon ratio
     int totalPointsKstarKaonRatio = gRatioKstarKaon[0]->GetN();
@@ -824,6 +890,7 @@ void ParticleRatio_simple()
         legendRatio2->AddEntry(gRatioKstarKaModel, modelLabel[model], "l");
         counter++;
     }
+    legendRatio2->AddEntry(gRatioKstarKa_Thermal, "Thermal-FIST", "l");
 
     legendRatio->Draw();
     // legendRatio2->Draw();
@@ -832,7 +899,7 @@ void ParticleRatio_simple()
     latex.DrawLatex(0.31, 0.80, "|y| < 0.5");
     if (isSavePlots)
     {
-        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.png");
+        cRatioKstarKaon->SaveAs("Plots/Ratio_KstarKaon_Run3.pdf");
     }
 
     //====================================================
@@ -841,6 +908,7 @@ void ParticleRatio_simple()
     TCanvas *cRatioKstarPhi = new TCanvas("cRatioKstarPhi", "cRatioKstarPhi", 720, 720);
     SetCanvasStyle(cRatioKstarPhi, 0.15, 0.03, 0.03, 0.15);
     TGraphErrors **gRatioKstarPhi = MakeRatioUncorr(gMYieldKstar, gMYieldPhiRun3, 1.0, 3);
+    // TGraphErrors **gRatioKstarPhiRun2 = MakeRatioUncorr(gMYieldKstarRun2, gMYieldPhiRun2, 1.0, 3);
     gRatioKstarPhi[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
     gRatioKstarPhi[0]->GetYaxis()->SetTitle("dN / dy ratio");
     SetGraphErrorStyle(gRatioKstarPhi[0]);
@@ -856,6 +924,15 @@ void ParticleRatio_simple()
     gRatioKstarPhi[2]->SetFillStyle(1001);
     gRatioKstarPhi[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioKstarPhi[2]->Draw("E2 same");
+    // gRatioKstarPhiRun2[0]->SetMarkerStyle(21);
+    // gRatioKstarPhiRun2[0]->SetMarkerColor(kBlue);
+    // gRatioKstarPhiRun2[0]->SetLineColor(kBlue);
+    // gRatioKstarPhiRun2[0]->SetLineWidth(3);
+    // gRatioKstarPhiRun2[0]->Draw("PE same");
+    // gRatioKstarPhiRun2[1]->SetLineColor(kBlue);
+    // gRatioKstarPhiRun2[1]->SetFillStyle(0);
+    // gRatioKstarPhiRun2[1]->SetLineWidth(3);
+    // gRatioKstarPhiRun2[1]->Draw("5 same");
 
     // calculate the significance of the difference between HM and LM for K*0/Phi ratio
     int totalPointsKstarPhiRatio = gRatioKstarPhi[0]->GetN();
@@ -875,21 +952,35 @@ void ParticleRatio_simple()
     double significance_KstarPhi_uncorrStat = fabs(yHM_KstarPhi - yLM_KstarPhi) / sqrt(pow(yHMStatError_KstarPhi, 2) + pow(yLMStatError_KstarPhi, 2) + pow(yHMUncorr_KstarPhi, 2) + pow(yLMUncorr_KstarPhi, 2));
     cout << "Significance of K*0/Phi ratio difference (uncorrelated, statistical): " << significance_KstarPhi_uncorrStat << endl;
 
-    gKstarPhiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gKstarPhiRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gKstarPhiRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gKstarPhiRatio_UrQMDOffSmooth->Draw("LX same");
-    gKstarPhiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gKstarPhiRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gKstarPhiRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gKstarPhiRatio_UrQMDOnSmooth->Draw("LX same");
+    // gKstarPhiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gKstarPhiRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gKstarPhiRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gKstarPhiRatio_UrQMDOffSmooth->Draw("LX same");
+    // gKstarPhiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gKstarPhiRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gKstarPhiRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gKstarPhiRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gKstarPhiRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gKstarPhiRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gKstarPhiRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gKstarPhiRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gKstarPhiRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gKstarPhiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gKstarPhiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gKstarPhiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioKstarPhi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarPhi_Thermal->SetLineStyle(10);
+    gRatioKstarPhi_Thermal->SetLineWidth(3);
+    gRatioKstarPhi_Thermal->Draw("LX same");
 
     TLegend *legendRatioKstarPhi = new TLegend(0.52, 0.73, 0.9, 0.94);
     SetLegendStyle(legendRatioKstarPhi);
     legendRatioKstarPhi->SetTextSize(0.03);
-    legendRatioKstarPhi->AddEntry(gKstarPhiRatio_UrQMDOffSmooth, "EPOS4", "l");
-    legendRatioKstarPhi->AddEntry(gKstarPhiRatio_UrQMDOnSmooth, "EPOS4 + UrQMD", "l");
-
+    legendRatioKstarPhi->AddEntry(gKstarPhiRatio_EPOSNew_UrQMDOff, "EPOS4", "l");
+    legendRatioKstarPhi->AddEntry(gKstarPhiRatio_EPOSNew_UrQMDOn, "EPOS4 + UrQMD", "l");
+    legendRatioKstarPhi->AddEntry(gRatioKstarPhi_Thermal, "Thermal-FIST", "l");
     counter = 0;
     for (auto model : modelsToPlot)
     {
@@ -912,7 +1003,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.png");
+        cRatioKstarPhi->SaveAs("Plots/Ratio_KstarPhi_Run3.pdf");
     }
 
     //====================================================
@@ -938,6 +1029,25 @@ void ParticleRatio_simple()
     gRatioPhiK[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioPhiK[2]->Draw("E2 same");
 
+    //Significance of Phi/K ratio difference between HM and LM
+    int totalPointsPhiKaonRatio = gRatioPhiK[0]->GetN();
+    double xLM_PhiKa, xHM_PhiKa, yHM_PhiKa, yLM_PhiKa, yHMError_PhiKa, yLMError_PhiKa, yHMStatError_PhiKa, yLMStatError_PhiKa, yLMUncorr_PhiKa, yHMUncorr_PhiKa;
+    gRatioPhiK[1]->GetPoint(totalPointsPhiKaonRatio - 1, xLM_PhiKa, yLM_PhiKa);
+    gRatioPhiK[1]->GetPoint(0, xHM_PhiKa, yHM_PhiKa);
+    yLMError_PhiKa = gRatioPhiK[1]->GetErrorY(totalPointsPhiKaonRatio - 1);
+    yHMError_PhiKa = gRatioPhiK[1]->GetErrorY(0);
+    yLMStatError_PhiKa = gRatioPhiK[0]->GetErrorY(totalPointsPhiKaonRatio - 1);
+    yHMStatError_PhiKa = gRatioPhiK[0]->GetErrorY(0);
+    yLMUncorr_PhiKa = gRatioPhiK[2]->GetErrorY(totalPointsPhiKaonRatio - 1);
+    yHMUncorr_PhiKa = gRatioPhiK[2]->GetErrorY(0);
+    double significance_PhiKa = fabs(yHM_PhiKa - yLM_PhiKa) / sqrt(pow(yHMError_PhiKa, 2) + pow(yLMError_PhiKa, 2));
+    cout << "Significance of Phi/K ratio difference: " << significance_PhiKa << endl;
+    double significance_PhiKa_uncorr = fabs(yHM_PhiKa - yLM_PhiKa) / sqrt(pow(yHMUncorr_PhiKa, 2) + pow(yLMUncorr_PhiKa, 2));
+    cout << "Significance of Phi/K ratio difference (uncorrelated): " << significance_PhiKa_uncorr << endl;
+    double significance_PhiKa_uncorrStat = fabs(yHM_PhiKa - yLM_PhiKa) / sqrt(pow(yHMStatError_PhiKa, 2) + pow(yLMStatError_PhiKa, 2) + pow(yHMUncorr_PhiKa, 2) + pow(yLMUncorr_PhiKa, 2));
+    cout << "Significance of Phi/K ratio difference (uncorrelated, statistical): " << significance_PhiKa_uncorrStat << endl;
+    cout << "Phi/K ratio between HM and LM: " << yHM_PhiKa / yLM_PhiKa << endl;
+
     // gPhiKaRatio_13TeV[0]->SetMarkerStyle(21);
     // gPhiKaRatio_13TeV[0]->SetMarkerColor(kBlue);
     // gPhiKaRatio_13TeV[0]->SetLineColor(kBlue);
@@ -946,14 +1056,28 @@ void ParticleRatio_simple()
     // gPhiKaRatio_13TeV[1]->SetFillStyle(0);
     // gPhiKaRatio_13TeV[1]->Draw("5 same");
 
-    gPhiKaRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gPhiKaRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gPhiKaRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gPhiKaRatio_UrQMDOffSmooth->Draw("LX same");
-    gPhiKaRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gPhiKaRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gPhiKaRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gPhiKaRatio_UrQMDOnSmooth->Draw("LX same");
+    // gPhiKaRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gPhiKaRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gPhiKaRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gPhiKaRatio_UrQMDOffSmooth->Draw("LX same");
+    // gPhiKaRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gPhiKaRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gPhiKaRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gPhiKaRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gPhiKaRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gPhiKaRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gPhiKaRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gPhiKaRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gPhiKaRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gPhiKaRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gPhiKaRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gPhiKaRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiKa_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiKa_Thermal->SetLineStyle(10);
+    gRatioPhiKa_Thermal->SetLineWidth(3);
+    gRatioPhiKa_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -976,7 +1100,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cRatioPhiK->SaveAs("Plots/Ratio_PhiKaon_Run3.png");
+        cRatioPhiK->SaveAs("Plots/Ratio_PhiKaon_Run3.pdf");
     }
 
     //==================================================
@@ -1004,6 +1128,25 @@ void ParticleRatio_simple()
     gRatioKstarPion[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioKstarPion[2]->Draw("E2 same");
 
+    //significance of K*0/Pion ratio difference between HM and LM
+    int totalPointsKstarPionRatio = gRatioKstarPion[0]->GetN();
+    double xLM_KstarPi, xHM_KstarPi, yHM_KstarPi, yLM_KstarPi, yHMError_KstarPi, yLMError_KstarPi, yHMStatError_KstarPi, yLMStatError_KstarPi, yLMUncorr_KstarPi, yHMUncorr_KstarPi;
+    gRatioKstarPion[1]->GetPoint(totalPointsKstarPionRatio - 1, xLM_KstarPi, yLM_KstarPi);
+    gRatioKstarPion[1]->GetPoint(0, xHM_KstarPi, yHM_KstarPi);
+    yLMError_KstarPi = gRatioKstarPion[1]->GetErrorY(totalPointsKstarPionRatio - 1);
+    yHMError_KstarPi = gRatioKstarPion[1]->GetErrorY(0);
+    yLMStatError_KstarPi = gRatioKstarPion[0]->GetErrorY(totalPointsKstarPionRatio - 1);
+    yHMStatError_KstarPi = gRatioKstarPion[0]->GetErrorY(0);
+    yLMUncorr_KstarPi = gRatioKstarPion[2]->GetErrorY(totalPointsKstarPionRatio - 1);
+    yHMUncorr_KstarPi = gRatioKstarPion[2]->GetErrorY(0);
+    double significance_KstarPi = fabs(yHM_KstarPi - yLM_KstarPi) / sqrt(pow(yHMError_KstarPi, 2) + pow(yLMError_KstarPi, 2));
+    cout << "Significance of K*0/Pion ratio difference: " << significance_KstarPi << endl;
+    double significance_KstarPi_uncorr = fabs(yHM_KstarPi - yLM_KstarPi) / sqrt(pow(yHMUncorr_KstarPi, 2) + pow(yLMUncorr_KstarPi, 2));
+    cout << "Significance of K*0/Pion ratio difference (uncorrelated): " << significance_KstarPi_uncorr << endl;
+    double significance_KstarPi_uncorrStat = fabs(yHM_KstarPi - yLM_KstarPi) / sqrt(pow(yHMStatError_KstarPi, 2) + pow(yLMStatError_KstarPi, 2) + pow(yHMUncorr_KstarPi, 2) + pow(yLMUncorr_KstarPi, 2));
+    cout << "Significance of K*0/Pion ratio difference (uncorrelated, statistical): " << significance_KstarPi_uncorrStat << endl;
+    cout << "K*0/Pion ratio between HM and LM: " << yHM_KstarPi / yLM_KstarPi << endl;  
+
     // gKstarPiRatio_13TeV[0]->SetMarkerStyle(21);
     // gKstarPiRatio_13TeV[0]->SetMarkerColor(kBlue);
     // gKstarPiRatio_13TeV[0]->SetLineColor(kBlue);
@@ -1012,14 +1155,28 @@ void ParticleRatio_simple()
     // gKstarPiRatio_13TeV[1]->SetFillStyle(0);
     // gKstarPiRatio_13TeV[1]->Draw("5 same");
 
-    gKstarPiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gKstarPiRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gKstarPiRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gKstarPiRatio_UrQMDOffSmooth->Draw("LX same");
-    gKstarPiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gKstarPiRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gKstarPiRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gKstarPiRatio_UrQMDOnSmooth->Draw("LX same");
+    // gKstarPiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gKstarPiRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gKstarPiRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gKstarPiRatio_UrQMDOffSmooth->Draw("LX same");
+    // gKstarPiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gKstarPiRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gKstarPiRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gKstarPiRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gKstarPiRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gKstarPiRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gKstarPiRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gKstarPiRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gKstarPiRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gKstarPiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gKstarPiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gKstarPiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioKstarPi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarPi_Thermal->SetLineStyle(10);
+    gRatioKstarPi_Thermal->SetLineWidth(3);
+    gRatioKstarPi_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1048,7 +1205,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.png");
+        cRatioKstarPion->SaveAs("Plots/Ratio_KstarPion_Run3.pdf");
     }
 
     //==================================================
@@ -1075,6 +1232,25 @@ void ParticleRatio_simple()
     gRatioPhiPion[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioPhiPion[2]->Draw("E2 same");
 
+    //Calculate the significance of the difference between HM and LM for Phi/Pion ratio
+    double xLM_PhiPion, xHM_PhiPion, yHM_PhiPion, yLM_PhiPion, yHMError_PhiPion, yLMError_PhiPion, yHMStatError_PhiPion, yLMStatError_PhiPion, yLMUncorr_PhiPion, yHMUncorr_PhiPion;
+    gRatioPhiPion[1]->GetPoint(totalPointsKstarPhiRatio - 1, xLM_PhiPion, yLM_PhiPion);
+    gRatioPhiPion[1]->GetPoint(0, xHM_PhiPion, yHM_PhiPion);
+    yLMError_PhiPion = gRatioPhiPion[1]->GetErrorY(totalPointsKstarPhiRatio - 1);
+    yHMError_PhiPion = gRatioPhiPion[1]->GetErrorY(0);
+    yLMStatError_PhiPion = gRatioPhiPion[0]->GetErrorY(totalPointsKstarPhiRatio - 1);
+    yHMStatError_PhiPion = gRatioPhiPion[0]->GetErrorY(0);
+    yLMUncorr_PhiPion = gRatioPhiPion[2]->GetErrorY(totalPointsKstarPhiRatio - 1);
+    yHMUncorr_PhiPion = gRatioPhiPion[2]->GetErrorY(0);
+    double significance_PhiPion = fabs(yHM_PhiPion - yLM_PhiPion) / sqrt(pow(yHMError_PhiPion, 2) + pow(yLMError_PhiPion, 2));
+    cout << "Significance of Phi/Pion ratio difference: " << significance_PhiPion << endl;
+    double significance_PhiPion_uncorr = fabs(yHM_PhiPion - yLM_PhiPion) / sqrt(pow(yHMUncorr_PhiPion, 2) + pow(yLMUncorr_PhiPion, 2));
+    cout << "Significance of Phi/Pion ratio difference (uncorrelated): " << significance_PhiPion_uncorr << endl;
+    double significance_PhiPion_uncorrStat = fabs(yHM_PhiPion - yLM_PhiPion) / sqrt(pow(yHMStatError_PhiPion, 2) + pow(yLMStatError_PhiPion, 2) + pow(yHMUncorr_PhiPion, 2) + pow(yLMUncorr_PhiPion, 2));
+    cout << "Significance of Phi/Pion ratio difference (uncorrelated, statistical): " << significance_PhiPion_uncorrStat << endl;
+    cout << "Phi/Pion ratio between HM and LM: " << yHM_PhiPion / yLM_PhiPion << endl;
+
+
     // ScaleGraph(gPhiPiRatio_13TeV[0], 2.0); // To average the pion yield
     // ScaleGraph(gPhiPiRatio_13TeV[1], 2.0);
     // gPhiPiRatio_13TeV[0]->SetMarkerStyle(21);
@@ -1085,14 +1261,28 @@ void ParticleRatio_simple()
     // gPhiPiRatio_13TeV[1]->SetFillStyle(0);
     // gPhiPiRatio_13TeV[1]->Draw("5 same");
 
-    gPhiPiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gPhiPiRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gPhiPiRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gPhiPiRatio_UrQMDOffSmooth->Draw("LX same");
-    gPhiPiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gPhiPiRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gPhiPiRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gPhiPiRatio_UrQMDOnSmooth->Draw("LX same");
+    // gPhiPiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gPhiPiRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gPhiPiRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gPhiPiRatio_UrQMDOffSmooth->Draw("LX same");
+    // gPhiPiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gPhiPiRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gPhiPiRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gPhiPiRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gPhiPiRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gPhiPiRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gPhiPiRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gPhiPiRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gPhiPiRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gPhiPiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gPhiPiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gPhiPiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiPi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiPi_Thermal->SetLineStyle(10);
+    gRatioPhiPi_Thermal->SetLineWidth(3);
+    gRatioPhiPi_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1111,7 +1301,84 @@ void ParticleRatio_simple()
     latex.SetTextSize(0.04);
     latex.DrawLatex(0.82, 0.85, "#Phi/#pi");
 
-    cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.png");
+    cRatioPhiPion->SaveAs("Plots/Ratio_PhiPion_Run3.pdf");
+
+    //==================================================
+    // ===================Phi / Xi Ratio =============
+    //==================================================
+    TCanvas *cRatioPhiXi = new TCanvas("cRatioPhiXi", "cRatioPhiXi", 720, 720);
+    SetCanvasStyle(cRatioPhiXi, 0.15, 0.03, 0.06, 0.15);
+    TGraphErrors **gRatioPhiXi = MakeRatioUncorr(gMYieldPhiRun3, gMYieldXiRun3, 1.0, 3);
+    gRatioPhiXi[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
+    gRatioPhiXi[0]->GetYaxis()->SetTitle("#Phi / #Xi");
+    SetGraphErrorStyle(gRatioPhiXi[0]);
+    // gRatioPhiXi[0]->GetYaxis()->SetRangeUser(1.5, 2.6);
+    gRatioPhiXi[0]->GetYaxis()->SetRangeUser(1.1, 4.3);
+    gRatioPhiXi[0]->GetXaxis()->SetLimits(1.8, 23.5);
+    gRatioPhiXi[0]->SetMarkerColor(kRed);
+    gRatioPhiXi[0]->SetLineColor(kRed);
+    gRatioPhiXi[0]->GetYaxis()->SetNdivisions(505);
+    gRatioPhiXi[0]->Draw("APE");
+    gRatioPhiXi[1]->SetFillStyle(0);
+    gRatioPhiXi[1]->SetLineColor(kRed);
+    gRatioPhiXi[1]->Draw("5 same");
+    gRatioPhiXi[2]->SetFillStyle(1001);
+    gRatioPhiXi[2]->SetFillColorAlpha(kRed, 0.35);
+    gRatioPhiXi[2]->Draw("E2 same");
+
+    // ScaleGraph(gPhiXiRatio_UrQMDOffSmooth, 0.5); // To average the Xi yield
+    // ScaleGraph(gPhiXiRatio_UrQMDOnSmooth, 0.5);
+    // gPhiXiRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gPhiXiRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gPhiXiRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gPhiXiRatio_UrQMDOffSmooth->Draw("LX same");
+    // gPhiXiRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gPhiXiRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gPhiXiRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gPhiXiRatio_UrQMDOnSmooth->Draw("LX same");
+
+    ScaleGraph(gPhiXiRatio_EPOSNew_UrQMDOff, 0.5); // To average the Xi yield
+    ScaleGraph(gPhiXiRatio_EPOSNew_UrQMDOn, 0.5);
+    gPhiXiRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gPhiXiRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gPhiXiRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gPhiXiRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gPhiXiRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gPhiXiRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gPhiXiRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gPhiXiRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiXi_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiXi_Thermal->SetLineStyle(10);
+    gRatioPhiXi_Thermal->SetLineWidth(3);
+    gRatioPhiXi_Thermal->Draw("LX same");
+
+     counter = 0;
+    for (auto model : modelsToPlot)
+    {
+        TGraphErrors *gRatioPhiXiModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kXi], true);
+        ScaleGraph(gRatioPhiXiModel, 1.0); // To average the Xi yield
+        setStyle(gRatioPhiXiModel, colorsPythia[counter], lineStylesPythia[counter]);
+        gRatioPhiXiModel->SetLineWidth(3);
+        gRatioPhiXiModel->Draw("l same");
+        counter++;
+    }
+
+    TLegend *legendRatioPhiXi = new TLegend(0.65, 0.75, 0.88, 0.9);
+    SetLegendStyle(legendRatioPhiXi);
+    legendRatioPhiXi->SetTextSize(0.035);
+    legendRatioPhiXi->AddEntry(gRatioPhiXi[0], "#Phi / #Xi", "p");
+    legendRatioPhiXi->AddEntry(gPhiXiRatio_EPOSNew_UrQMDOff, "EPOS4", "l");
+    legendRatioPhiXi->AddEntry(gPhiXiRatio_EPOSNew_UrQMDOn, "EPOS4 + UrQMD", "l");
+    legendRatioPhiXi->Draw();
+
+    latex.SetTextFont(42);
+    latex.SetTextSize(0.04);
+    latex.DrawLatex(0.28, 0.88, "ALICE");
+    latex.DrawLatex(0.28, 0.83, "pp, #sqrt{s} = 13.6 TeV");
+    latex.DrawLatex(0.28, 0.78, "|y| < 0.5");
+
+    cRatioPhiXi->SaveAs("Plots/Ratio_PhiXi_Run3.pdf");
 
     //======================================================
     //================Kstar/Kshort Ratio====================
@@ -1136,27 +1403,27 @@ void ParticleRatio_simple()
     gRatioKstarKshort[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioKstarKshort[2]->Draw("E2 same");
 
-    cout << "\n Information for K*0 and Kshort yields and their errors " << endl;
-    for (int i3 = 0; i3 < TotalPointsRun3; i3++)
-    {
-        double xkstar, ykstar, ysyskstar, yuncorrkstar;
-        double xkaon, ykaon, ysyskaon, yuncorrkaon;
-        gMYieldKstar[0]->GetPoint(i3, xkstar, ykstar);
-        ysyskstar = gMYieldKstar[1]->GetErrorY(i3);
-        yuncorrkstar = gMYieldKstar[2]->GetErrorY(i3);
+    // cout << "\n Information for K*0 and Kshort yields and their errors " << endl;
+    // for (int i3 = 0; i3 < TotalPointsRun3; i3++)
+    // {
+    //     double xkstar, ykstar, ysyskstar, yuncorrkstar;
+    //     double xkaon, ykaon, ysyskaon, yuncorrkaon;
+    //     gMYieldKstar[0]->GetPoint(i3, xkstar, ykstar);
+    //     ysyskstar = gMYieldKstar[1]->GetErrorY(i3);
+    //     yuncorrkstar = gMYieldKstar[2]->GetErrorY(i3);
 
-        gMYieldKshortRun3[0]->GetPoint(i3, xkaon, ykaon);
-        ysyskaon = gMYieldKshortRun3[1]->GetErrorY(i3);
-        yuncorrkaon = gMYieldKshortRun3[2]->GetErrorY(i3);
+    //     gMYieldKshortRun3[0]->GetPoint(i3, xkaon, ykaon);
+    //     ysyskaon = gMYieldKshortRun3[1]->GetErrorY(i3);
+    //     yuncorrkaon = gMYieldKshortRun3[2]->GetErrorY(i3);
 
-        cout << "Point " << i3 << ": K*0 yield = " << ykstar << " +/- " << ysyskstar << " (sys) +/- " << yuncorrkstar << " (uncorr)" << endl;
-        cout << "Point " << i3 << ": Kshort yield = " << ykaon << " +/- " << ysyskaon << " (sys) +/- " << yuncorrkaon << " (uncorr)" << endl;
-        double ratio = ykstar / ykaon;
-        double ratioErrorsys = ratio * sqrt(pow(ysyskstar / ykstar, 2) + pow(ysyskaon / ykaon, 2));
-        double ratioErroruncorr = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(yuncorrkaon / ykaon, 2));
-        cout << "Point " << i3 << ": K*0/Kshort ratio = " << ratio << " +/- " << ratioErrorsys << " (sys) +/- " << ratioErroruncorr << " (uncorr)" << endl;
-        cout << endl;
-    }
+    //     cout << "Point " << i3 << ": K*0 yield = " << ykstar << " +/- " << ysyskstar << " (sys) +/- " << yuncorrkstar << " (uncorr)" << endl;
+    //     cout << "Point " << i3 << ": Kshort yield = " << ykaon << " +/- " << ysyskaon << " (sys) +/- " << yuncorrkaon << " (uncorr)" << endl;
+    //     double ratio = ykstar / ykaon;
+    //     double ratioErrorsys = ratio * sqrt(pow(ysyskstar / ykstar, 2) + pow(ysyskaon / ykaon, 2));
+    //     double ratioErroruncorr = ratio * sqrt(pow(yuncorrkstar / ykstar, 2) + pow(yuncorrkaon / ykaon, 2));
+    //     cout << "Point " << i3 << ": K*0/Kshort ratio = " << ratio << " +/- " << ratioErrorsys << " (sys) +/- " << ratioErroruncorr << " (uncorr)" << endl;
+    //     cout << endl;
+    // }
 
     ////Calculation of suppression significance between HM and LM for K*0/Kshort ratio
     int totalPointsKstarKshortRatio = gRatioKstarKshort[0]->GetN();
@@ -1174,14 +1441,28 @@ void ParticleRatio_simple()
     cout << "K*0/Kshort ratio difference between HM and LM: " << sigmaDiffHM_LM_KstarKshort << " sigma" << endl;
     cout << "K*0/Kshort ratio difference between HM and LM (uncorrelated): " << sigmaDiffHM_LM_uncorr_KstarKshort << " sigma" << endl;
 
-    gKstarK0sRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gKstarK0sRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gKstarK0sRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gKstarK0sRatio_UrQMDOffSmooth->Draw("LX same");
-    gKstarK0sRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gKstarK0sRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gKstarK0sRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gKstarK0sRatio_UrQMDOnSmooth->Draw("LX same");
+    // gKstarK0sRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gKstarK0sRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gKstarK0sRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gKstarK0sRatio_UrQMDOffSmooth->Draw("LX same");
+    // gKstarK0sRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gKstarK0sRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gKstarK0sRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gKstarK0sRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gKstarK0sRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gKstarK0sRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gKstarK0sRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gKstarK0sRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gKstarK0sRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gKstarK0sRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gKstarK0sRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gKstarK0sRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioKstarK0s_Thermal->SetLineColor(kMagenta + 2);
+    gRatioKstarK0s_Thermal->SetLineStyle(10);
+    gRatioKstarK0s_Thermal->SetLineWidth(3);
+    gRatioKstarK0s_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1202,7 +1483,7 @@ void ParticleRatio_simple()
 
     if (isSavePlots)
     {
-        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.png");
+        cRatioKstarKshort->SaveAs("Plots/Ratio_KstarKshort_Run3.pdf");
     }
 
     //=====================================================================
@@ -1228,14 +1509,45 @@ void ParticleRatio_simple()
     gRatioPhiK0s[2]->SetFillColorAlpha(kRed, 0.35);
     gRatioPhiK0s[2]->Draw("E2 same");
 
-    gPhiK0sRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
-    gPhiK0sRatio_UrQMDOffSmooth->SetLineStyle(2);
-    gPhiK0sRatio_UrQMDOffSmooth->SetLineWidth(3);
-    gPhiK0sRatio_UrQMDOffSmooth->Draw("LX same");
-    gPhiK0sRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
-    gPhiK0sRatio_UrQMDOnSmooth->SetLineStyle(9);
-    gPhiK0sRatio_UrQMDOnSmooth->SetLineWidth(3);
-    gPhiK0sRatio_UrQMDOnSmooth->Draw("LX same");
+    //significance calculation for Phi/K0s ratio between HM and LM
+    int totalPointsPhiK0sRatio = gRatioPhiK0s[0]->GetN();
+    double xLM_PhiK0s, xHM_PhiK0s, yHM_PhiK0s, yLM_PhiK0s, yHMError_PhiK0s, yLMError_PhiK0s, yHMStatError_PhiK0s, yLMStatError_PhiK0s, yLMUncorr_PhiK0s, yHMUncorr_PhiK0s;
+    gRatioPhiK0s[1]->GetPoint(totalPointsPhiK0sRatio - 1, xLM_PhiK0s, yLM_PhiK0s);
+    gRatioPhiK0s[1]->GetPoint(0, xHM_PhiK0s, yHM_PhiK0s);
+    yLMError_PhiK0s = gRatioPhiK0s[1]->GetErrorY(totalPointsPhiK0sRatio - 1);
+    yHMError_PhiK0s = gRatioPhiK0s[1]->GetErrorY(0);
+    yLMStatError_PhiK0s = gRatioPhiK0s[0]->GetErrorY(totalPointsPhiK0sRatio - 1);
+    yHMStatError_PhiK0s = gRatioPhiK0s[0]->GetErrorY(0);
+    yLMUncorr_PhiK0s = gRatioPhiK0s[2]->GetErrorY(totalPointsPhiK0sRatio - 1);
+    yHMUncorr_PhiK0s = gRatioPhiK0s[2]->GetErrorY(0);
+    double sigmaDiffHM_LM_PhiK0s = abs(yHM_PhiK0s - yLM_PhiK0s) / sqrt(pow(yHMError_PhiK0s, 2) + pow(yLMError_PhiK0s, 2) + pow(yHMStatError_PhiK0s, 2) + pow(yLMStatError_PhiK0s, 2));
+    double sigmaDiffHM_LM_uncorr_PhiK0s = abs(yHM_PhiK0s - yLM_PhiK0s) / sqrt(pow(yHMUncorr_PhiK0s, 2) + pow(yLMUncorr_PhiK0s, 2));
+    cout << "Phi/K0s ratio difference between HM and LM: " << sigmaDiffHM_LM_PhiK0s << " sigma" << endl;
+    cout << "Phi/K0s ratio difference between HM and LM (uncorrelated): " << sigmaDiffHM_LM_uncorr_PhiK0s << " sigma" << endl;
+    cout << "Phi/K0s ratio between HM and LM: " << yHM_PhiK0s / yLM_PhiK0s << endl;
+
+    // gPhiK0sRatio_UrQMDOffSmooth->SetLineColor(kGreen + 2);
+    // gPhiK0sRatio_UrQMDOffSmooth->SetLineStyle(2);
+    // gPhiK0sRatio_UrQMDOffSmooth->SetLineWidth(3);
+    // gPhiK0sRatio_UrQMDOffSmooth->Draw("LX same");
+    // gPhiK0sRatio_UrQMDOnSmooth->SetLineColor(kBlue - 6);
+    // gPhiK0sRatio_UrQMDOnSmooth->SetLineStyle(9);
+    // gPhiK0sRatio_UrQMDOnSmooth->SetLineWidth(3);
+    // gPhiK0sRatio_UrQMDOnSmooth->Draw("LX same");
+
+    gPhiK0sRatio_EPOSNew_UrQMDOff->SetLineColor(kGreen + 2);
+    gPhiK0sRatio_EPOSNew_UrQMDOff->SetLineStyle(2);
+    gPhiK0sRatio_EPOSNew_UrQMDOff->SetLineWidth(3);
+    gPhiK0sRatio_EPOSNew_UrQMDOff->Draw("LX same");
+    gPhiK0sRatio_EPOSNew_UrQMDOn->SetLineColor(kBlue - 6);
+    gPhiK0sRatio_EPOSNew_UrQMDOn->SetLineStyle(9);
+    gPhiK0sRatio_EPOSNew_UrQMDOn->SetLineWidth(3);
+    gPhiK0sRatio_EPOSNew_UrQMDOn->Draw("LX same");
+
+    gRatioPhiK0s_Thermal->SetLineColor(kMagenta + 2);
+    gRatioPhiK0s_Thermal->SetLineStyle(10);
+    gRatioPhiK0s_Thermal->SetLineWidth(3);
+    gRatioPhiK0s_Thermal->Draw("LX same");
 
     counter = 0;
     for (auto model : modelsToPlot)
@@ -1254,234 +1566,9 @@ void ParticleRatio_simple()
     legendRatio5->AddEntry(gRatioPhiK0s[0], "#Phi / K^{0}_{S}", "p");
     legendRatio5->Draw();
     legendRatio2->Draw();
-    cRatioPhiK0s->SaveAs("Plots/Ratio_PhiK0s_Run3.png");
+    cRatioPhiK0s->SaveAs("Plots/Ratio_PhiK0s_Run3.pdf");
 
-    //======================================================================
-    // ==========Double YieldRatio (Mult/LM): Kstar/K,Kstar/Pi ============
-    //======================================================================
-    TCanvas *cYieldLMRatio = new TCanvas("cYieldLMRatio", "cYieldLMRatio", 720, 720);
-    SetCanvasStyle(cYieldLMRatio, 0.15, 0.03, 0.03, 0.15);
 
-    TGraphErrors **gYieldKstarKaLMRatio = DivideByMult(gRatioKstarKaon, -1, 0.5, 3);
-    TGraphErrors **gYieldKstarPiLMRatio = DivideByMult(gRatioKstarPion, -1, 0.5, 3);
-
-    gYieldKstarKaLMRatio[0]->GetXaxis()->SetTickLength(0.02);
-    gYieldKstarKaLMRatio[0]->GetYaxis()->SetTickLength(0.02);
-    gYieldKstarKaLMRatio[0]->SetMaximum(1.33);
-    gYieldKstarKaLMRatio[0]->SetMinimum(0.75);
-    gYieldKstarKaLMRatio[0]->SetMarkerColor(kRed);
-    gYieldKstarKaLMRatio[0]->SetLineColor(kRed);
-    gYieldKstarKaLMRatio[0]->SetMarkerStyle(20);
-    gYieldKstarKaLMRatio[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
-    gYieldKstarKaLMRatio[0]->GetYaxis()->SetTitle("Y / Y_{LM}");
-    gYieldKstarKaLMRatio[0]->SetFillStyle(0);
-    gYieldKstarKaLMRatio[1]->SetFillStyle(0);
-    gYieldKstarKaLMRatio[0]->Draw("APE");
-    gYieldKstarKaLMRatio[1]->SetLineColor(kRed);
-    gYieldKstarKaLMRatio[1]->Draw("5 same");
-
-    gYieldKstarPiLMRatio[0]->SetMarkerColor(kGreen + 2);
-    gYieldKstarPiLMRatio[0]->SetLineColor(kGreen + 2);
-    gYieldKstarPiLMRatio[0]->SetMarkerStyle(21);
-    gYieldKstarPiLMRatio[0]->SetFillStyle(0);
-    gYieldKstarPiLMRatio[1]->SetFillStyle(0);
-    gYieldKstarPiLMRatio[0]->Draw("PE same");
-    gYieldKstarPiLMRatio[1]->SetLineColor(kGreen + 2);
-    gYieldKstarPiLMRatio[1]->SetFillStyle(0);
-    gYieldKstarPiLMRatio[1]->Draw("5 same");
-
-    TGraphErrors *gEPOSNew_KstarKaLMRatio_UrQMDOff = DivideByMultModel(gKstarKaRatio_UrQMDOffSmooth, 2.5);
-    TGraphErrors *gEPOSNew_KstarKaLMRatio_UrQMDOn = DivideByMultModel(gKstarKaRatio_UrQMDOnSmooth, 2.5);
-    TGraphErrors *gEPOSNew_KstarPiLMRatio_UrQMDOff = DivideByMultModel(gKstarPiRatio_UrQMDOffSmooth, 2.5);
-    TGraphErrors *gEPOSNew_KstarPiLMRatio_UrQMDOn = DivideByMultModel(gKstarPiRatio_UrQMDOnSmooth, 2.5);
-
-    gEPOSNew_KstarKaLMRatio_UrQMDOff->SetLineColor(kGreen - 2);
-    gEPOSNew_KstarKaLMRatio_UrQMDOff->SetLineStyle(9);
-    gEPOSNew_KstarKaLMRatio_UrQMDOff->SetLineWidth(3);
-    gEPOSNew_KstarKaLMRatio_UrQMDOn->SetLineColor(kBlue - 6);
-    gEPOSNew_KstarKaLMRatio_UrQMDOn->SetLineStyle(2);
-    gEPOSNew_KstarKaLMRatio_UrQMDOn->SetLineWidth(3);
-    gEPOSNew_KstarPiLMRatio_UrQMDOff->SetLineColor(kMagenta + 1);
-    gEPOSNew_KstarPiLMRatio_UrQMDOff->SetLineStyle(9);
-    gEPOSNew_KstarPiLMRatio_UrQMDOff->SetLineWidth(3);
-    gEPOSNew_KstarPiLMRatio_UrQMDOn->SetLineColor(kRed + 2);
-    gEPOSNew_KstarPiLMRatio_UrQMDOn->SetLineStyle(2);
-    gEPOSNew_KstarPiLMRatio_UrQMDOn->SetLineWidth(3);
-
-    gEPOSNew_KstarKaLMRatio_UrQMDOff->Draw("LX same");
-    gEPOSNew_KstarKaLMRatio_UrQMDOn->Draw("LX same");
-    gEPOSNew_KstarPiLMRatio_UrQMDOff->Draw("LX same");
-    gEPOSNew_KstarPiLMRatio_UrQMDOn->Draw("LX same");
-
-    TLegend *legendYieldLMRatio = new TLegend(0.2, 0.89, 0.95, 0.98);
-    SetLegendStyle(legendYieldLMRatio);
-    legendYieldLMRatio->SetTextSize(0.035);
-    legendYieldLMRatio->SetNColumns(2);
-    legendYieldLMRatio->AddEntry(gYieldKstarPiLMRatio[0], "K*^{0} / #pi", "P");
-    legendYieldLMRatio->AddEntry(gYieldKstarKaLMRatio[0], "K*^{0} / K", "P");
-
-    TLegend *legendYieldLMRatio2 = new TLegend(0.2, 0.78, 0.95, 0.92);
-    SetLegendStyle(legendYieldLMRatio2);
-    legendYieldLMRatio2->SetTextSize(0.028);
-    legendYieldLMRatio2->SetNColumns(2);
-
-    legendYieldLMRatio2->AddEntry(gEPOSNew_KstarPiLMRatio_UrQMDOff, "EPOS4", "l");
-    legendYieldLMRatio2->AddEntry(gEPOSNew_KstarKaLMRatio_UrQMDOff, "EPOS4", "l");
-    legendYieldLMRatio2->AddEntry(gEPOSNew_KstarPiLMRatio_UrQMDOn, "EPOS4 + UrQMD", "l");
-    legendYieldLMRatio2->AddEntry(gEPOSNew_KstarKaLMRatio_UrQMDOn, "EPOS4 + UrQMD", "l");
-
-    // counter = -1;
-    // for (auto model : modelsToPlot)
-    // {
-    //     counter++;
-
-    //     if (counter < 2) // plot only ropes
-    //         continue;
-
-    //     TGraphErrors *gYieldKstarKaPythiaModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kKaon], true);
-    //     ScaleGraph(gYieldKstarKaPythiaModel, 2.0); // because Kstar yield was already average during dN/dy plotting, but kaon was remaining
-    //     setStyle(gYieldKstarKaPythiaModel, colorsPythia[counter], lineStylesPythia[counter]);
-
-    //     TGraphErrors *gYieldKstarKaLMRatioPythia = (TGraphErrors *)gYieldKstarKaPythiaModel->Clone(Form("gYieldKstarKaLMRatioPythia_%d", counter));
-    //     gYieldKstarKaLMRatioPythia = DivideByMultModel(gYieldKstarKaPythiaModel, 3.69);
-    //     gYieldKstarKaLMRatioPythia->SetLineWidth(3);
-    //     gYieldKstarKaLMRatioPythia->SetLineColor(colorsPythia[counter] + 1);
-    //     gYieldKstarKaLMRatioPythia->SetLineStyle(1);
-    //     gYieldKstarKaLMRatioPythia->Draw("l same");
-
-    //     TGraphErrors *gYieldKstarPiPythiaModel = MakeRatio(gMYield[model][kKstar], gMYield[model][kPion], true);
-    //     ScaleGraph(gYieldKstarPiPythiaModel, 2.0); // because Kstar yield was already average during dN/dy plotting, but pion was remaining
-    //     setStyle(gYieldKstarPiPythiaModel, colorsPythia[counter], lineStylesPythia[counter]);
-
-    //     TGraphErrors *gYieldKstarPiLMRatioPythia = (TGraphErrors *)gYieldKstarPiPythiaModel->Clone(Form("gYieldKstarPiLMRatioPythia_%d", counter));
-    //     gYieldKstarPiLMRatioPythia = DivideByMultModel(gYieldKstarPiPythiaModel, 3.69);
-    //     gYieldKstarPiLMRatioPythia->SetLineWidth(3);
-    //     gYieldKstarPiLMRatioPythia->SetLineColor(colorsPythia[counter] + 1);
-    //     gYieldKstarPiLMRatioPythia->SetLineStyle(7);
-    //     gYieldKstarPiLMRatioPythia->Draw("l same");
-
-    //     legendYieldLMRatio2->AddEntry(gYieldKstarKaLMRatioPythia, Form("%s ", modelLabelLocal[counter]), "l");
-    //     legendYieldLMRatio2->AddEntry(gYieldKstarPiLMRatioPythia, Form("%s ", modelLabelLocal[counter]), "l");
-    // }
-
-    legendYieldLMRatio2->Draw();
-    legendYieldLMRatio->Draw();
-
-    if (isSavePlots)
-    {
-        cYieldLMRatio->SaveAs("Plots/Yield_LMRatio_KstarKaPi_Run3.png");
-    }
-
-    //======================================================================
-    // ==========Double YieldRatio (Mult/LM): Phi/K, Phi/Pi ==========
-    //======================================================================
-    TCanvas *cYieldLMRatioPhi = new TCanvas("cYieldLMRatioPhi", "cYieldLMRatioPhi", 720, 720);
-    SetCanvasStyle(cYieldLMRatioPhi, 0.15, 0.03, 0.03, 0.15);
-
-    TGraphErrors **gYieldPhiKaLMRatio = DivideByMult(gRatioPhiK, -1, 0.5, 3);
-    TGraphErrors **gYieldPhiPiLMRatio = DivideByMult(gRatioPhiPion, -1, 0.5, 3);
-
-    gYieldPhiKaLMRatio[0]->GetXaxis()->SetTickLength(0.02);
-    gYieldPhiKaLMRatio[0]->GetYaxis()->SetTickLength(0.02);
-    gYieldPhiKaLMRatio[0]->SetMaximum(1.60);
-    gYieldPhiKaLMRatio[0]->SetMinimum(0.95);
-    gYieldPhiKaLMRatio[0]->SetMarkerColor(kRed);
-    gYieldPhiKaLMRatio[0]->SetLineColor(kRed);
-    gYieldPhiKaLMRatio[0]->SetMarkerStyle(20);
-    gYieldPhiKaLMRatio[0]->GetXaxis()->SetTitle("#LT dN_{ch}/d#eta #GT_{|#eta|<0.5} ");
-    gYieldPhiKaLMRatio[0]->GetYaxis()->SetTitle("Y / Y_{LM}");
-    gYieldPhiKaLMRatio[0]->SetFillStyle(0);
-    gYieldPhiKaLMRatio[1]->SetFillStyle(0);
-    gYieldPhiKaLMRatio[0]->Draw("APE");
-    gYieldPhiKaLMRatio[1]->SetLineColor(kRed);
-    gYieldPhiKaLMRatio[1]->Draw("5 same");
-
-    gYieldPhiPiLMRatio[0]->SetMarkerColor(kGreen + 2);
-    gYieldPhiPiLMRatio[0]->SetLineColor(kGreen + 2);
-    gYieldPhiPiLMRatio[0]->SetMarkerStyle(21);
-    gYieldPhiPiLMRatio[0]->SetFillStyle(0);
-    gYieldPhiPiLMRatio[1]->SetFillStyle(0);
-    gYieldPhiPiLMRatio[0]->Draw("PE same");
-    gYieldPhiPiLMRatio[1]->SetLineColor(kGreen + 2);
-    gYieldPhiPiLMRatio[1]->SetFillStyle(0);
-    gYieldPhiPiLMRatio[1]->Draw("5 same");
-
-    TGraphErrors *gEPOS_PhiKaLMRatio_UrQMDOff = DivideByMultModel(gPhiKaRatio_UrQMDOffSmooth, 2.5);
-    TGraphErrors *gEPOS_PhiKaLMRatio_UrQMDOn = DivideByMultModel(gPhiKaRatio_UrQMDOnSmooth, 2.5);
-    TGraphErrors *gEPOS_PhiPiLMRatio_UrQMDOff = DivideByMultModel(gPhiPiRatio_UrQMDOffSmooth, 2.5);
-    TGraphErrors *gEPOS_PhiPiLMRatio_UrQMDOn = DivideByMultModel(gPhiPiRatio_UrQMDOnSmooth, 2.5);
-
-    gEPOS_PhiKaLMRatio_UrQMDOff->SetLineColor(kGreen - 2);
-    gEPOS_PhiKaLMRatio_UrQMDOff->SetLineStyle(9);
-    gEPOS_PhiKaLMRatio_UrQMDOff->SetLineWidth(3);
-    gEPOS_PhiKaLMRatio_UrQMDOn->SetLineColor(kBlue - 6);
-    gEPOS_PhiKaLMRatio_UrQMDOn->SetLineStyle(2);
-    gEPOS_PhiKaLMRatio_UrQMDOn->SetLineWidth(3);
-    gEPOS_PhiPiLMRatio_UrQMDOff->SetLineColor(kMagenta + 1);
-    gEPOS_PhiPiLMRatio_UrQMDOff->SetLineStyle(9);
-    gEPOS_PhiPiLMRatio_UrQMDOff->SetLineWidth(3);
-    gEPOS_PhiPiLMRatio_UrQMDOn->SetLineColor(kRed + 2);
-    gEPOS_PhiPiLMRatio_UrQMDOn->SetLineStyle(2);
-    gEPOS_PhiPiLMRatio_UrQMDOn->SetLineWidth(3);
-    gEPOS_PhiKaLMRatio_UrQMDOff->Draw("LX same");
-    gEPOS_PhiKaLMRatio_UrQMDOn->Draw("LX same");
-    gEPOS_PhiPiLMRatio_UrQMDOff->Draw("LX same");
-    gEPOS_PhiPiLMRatio_UrQMDOn->Draw("LX same");
-
-    TLegend *legendYieldLMRatioPhi = new TLegend(0.2, 0.78, 0.95, 0.95);
-    SetLegendStyle(legendYieldLMRatioPhi);
-    legendYieldLMRatioPhi->SetTextSize(0.028);
-    legendYieldLMRatioPhi->SetNColumns(2);
-    legendYieldLMRatioPhi->AddEntry(gYieldPhiPiLMRatio[0], "#phi / #pi", "P");
-    legendYieldLMRatioPhi->AddEntry(gYieldPhiKaLMRatio[0], "#phi / K", "P");
-    legendYieldLMRatioPhi->AddEntry(gEPOS_PhiKaLMRatio_UrQMDOff, "#phi / K (UrQMD Off)", "L");
-    legendYieldLMRatioPhi->AddEntry(gEPOS_PhiPiLMRatio_UrQMDOff, "#phi / #pi (UrQMD Off)", "L");
-    legendYieldLMRatioPhi->AddEntry(gEPOS_PhiKaLMRatio_UrQMDOn, "#phi / K (UrQMD On)", "L");
-    legendYieldLMRatioPhi->AddEntry(gEPOS_PhiPiLMRatio_UrQMDOn, "#phi / #pi (UrQMD On)", "L");
-
-    // counter = -1;
-    // for (auto model : modelsToPlot)
-    // {
-    //     counter++;
-
-    //     if (counter < 2) // Plot only ropes
-    //         continue;
-
-    //     TGraphErrors *gYieldPhiKaPythiaModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kKaon], true);
-    //     ScaleGraph(gYieldPhiKaPythiaModel, 2.0); // because Phi yield was already average during dN/dy plotting, but kaon was remaining
-    //     setStyle(gYieldPhiKaPythiaModel, colorsPythia[counter], lineStylesPythia[counter]);
-
-    //     TGraphErrors *gYieldPhiKaLMRatioPythia = (TGraphErrors *)gYieldPhiKaPythiaModel->Clone(Form("gYieldPhiKaLMRatioPythia_%d", counter));
-    //     gYieldPhiKaLMRatioPythia = DivideByMultModel(gYieldPhiKaPythiaModel, 3.69);
-    //     gYieldPhiKaLMRatioPythia->SetLineWidth(3);
-    //     gYieldPhiKaLMRatioPythia->SetLineColor(colorsPythia[counter] + 1);
-    //     gYieldPhiKaLMRatioPythia->SetLineStyle(1);
-    //     gYieldPhiKaLMRatioPythia->Draw("l same");
-
-    //     TGraphErrors *gYieldPhiPiPythiaModel = MakeRatio(gMYield[model][kPhi], gMYield[model][kPion], true);
-    //     ScaleGraph(gYieldPhiPiPythiaModel, 2.0); // because Phi yield was already average during dN/dy plotting, but pion was remaining
-    //     setStyle(gYieldPhiPiPythiaModel, colorsPythia[counter], lineStylesPythia[counter]);
-
-    //     TGraphErrors *gYieldPhiPiLMRatioPythia = (TGraphErrors *)gYieldPhiPiPythiaModel->Clone(Form("gYieldPhiPiLMRatioPythia_%d", counter));
-    //     gYieldPhiPiLMRatioPythia = DivideByMultModel(gYieldPhiPiPythiaModel, 3.69);
-    //     gYieldPhiPiLMRatioPythia->SetLineWidth(3);
-    //     gYieldPhiPiLMRatioPythia->SetLineColor(colorsPythia[counter] + 1);
-    //     gYieldPhiPiLMRatioPythia->SetLineStyle(7);
-    //     gYieldPhiPiLMRatioPythia->Draw("l same");
-
-    //     legendYieldLMRatioPhi->AddEntry(gYieldPhiKaLMRatioPythia, Form("%s ", modelLabelLocal[counter]), "l");
-    //     legendYieldLMRatioPhi->AddEntry(gYieldPhiPiLMRatioPythia, Form("%s ", modelLabelLocal[counter]), "l");
-    // }
-
-    legendYieldLMRatioPhi->Draw("same");
-
-    TLine *lineDoubleRatioPhi = new TLine(gYieldPhiKaLMRatio[0]->GetXaxis()->GetXmin(), 1.0, gYieldPhiKaLMRatio[0]->GetXaxis()->GetXmax(), 1.0);
-    lineDoubleRatioPhi->SetLineStyle(2);
-    lineDoubleRatioPhi->SetLineWidth(2);
-    if (isSavePlots)
-    {
-        cYieldLMRatioPhi->SaveAs("Plots/Yield_LMRatio_PhiKaPi_Run3.png");
-    }
 }
 
 TGraphErrors *MakeRatio(const TGraphErrors *numerator, const TGraphErrors *denominator, bool isModel = false, float CorrFactorDen = 1)

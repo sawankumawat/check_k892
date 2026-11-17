@@ -27,13 +27,13 @@ void kstar_sparse()
     // string kbkg = "pol2";
     // string kbkg = "pol3WoChebyshev";
 
-    string outputtype = "pdf";     // pdf, eps
+    string outputtype = "png";     // pdf, eps
     bool showFit = true;           // show fit on the plots
     const bool save_bkg_plots = 1; // save background plots
     const float txtsize = 0.045;   // text size in the plots
     bool makeallpTplots = true;    // make all pT plots
     bool calcInvMass = true;
-    const bool multipanel_plots = 1;
+    const bool multipanel_plots = 0;
     const bool save_plots = 1;
     bool isINEL = true;
     bool widthFixed = true; // width fixed to PDG value
@@ -311,6 +311,7 @@ void kstar_sparse()
                 float prevWidth = widthpdg;
 
                 for (Int_t ip = pt_start; ip < pt_end; ip++) // start pt bin loop
+                // for (Int_t ip = 26; ip < 27; ip++) // start pt bin loop
                 {
                     rebin_value = kRebin[ip][imult]; // rebinning value for the multiplicity bin
                                                      // rebin_value = 2; // for medium dataset (temporarily set to 4)

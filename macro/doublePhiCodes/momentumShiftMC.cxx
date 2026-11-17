@@ -3,7 +3,7 @@
 
 double pTBins[] = {0.0, 0.5, 0.8, 1.2, 1.6, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 15.0, 20.0};
 
-void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TString particle = "Phi", TString whichShift = "Mass", TString xAxis = "#it{p}_{T} (GeV/#it{c})");
+void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TString particle = "Phi", TString whichShift = "Mass", TString xAxis = "#it{p}_{T} (GeV/#it{c})", double maxPlotRange = 15.0);
 
 void momentumShiftMC()
 {
@@ -156,19 +156,21 @@ void momentumShiftMC()
     hRecMassVspT25ac->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     hRecMassVspT25ac->GetYaxis()->SetTitle("Reconstructed Mass (MeV/#it{c}^{2})");
     hRecMassVspT25ac->SetMaximum(hRecMassVspT25ac->GetMaximum() * 1.0015); // Add some space above the highest bin
-    hRecMassVspT25ac->SetMinimum(hRecMassVspT25ac->GetMinimum() * 0.999); // Add some space below the lowest bin
-    hRecMassVspT25ac->GetYaxis()->SetMaxDigits(3); // Set maximum digits on Y-axis to 3
-    hRecMassVspT25ac->GetYaxis()->SetTitleOffset(2.1); // Adjust Y-axis title offset
+    hRecMassVspT25ac->SetMinimum(hRecMassVspT25ac->GetMinimum() * 0.999);  // Add some space below the lowest bin
+    hRecMassVspT25ac->GetYaxis()->SetMaxDigits(3);                         // Set maximum digits on Y-axis to 3
+    hRecMassVspT25ac->GetYaxis()->SetTitleOffset(2.1);                     // Adjust Y-axis title offset
     hRecMassVspT25ac->Draw("pe");
     hRecMassVspT25ai->Draw("pe same");
     hRecMassVspT26->Draw("pe same");
-    legendRecMass->Draw();
 
     TLine *lineGen = new TLine(0, 1019.6, 20, 1019.6);
     lineGen->SetLineColor(kBlack);
     lineGen->SetLineStyle(2);
     lineGen->SetLineWidth(2);
     lineGen->Draw("same");
+
+    legendRecMass->AddEntry(lineGen, "Gen. Mass #it{M}_{#phi} = 1019.6 MeV/#it{c}^{2}", "l");
+    legendRecMass->Draw();
     cRecMassVspT->SaveAs("MomentumShift/ReconstructedMassVsPt.png");
 
     // Phi mass shift: pT on X-axis
@@ -176,94 +178,94 @@ void momentumShiftMC()
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_pt_massShiftPhi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_pt_massShiftPhi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_pt_massShiftPhi"),
-        true, "Phi", "Mass", "#it{p}_{T} (GeV/#it{c})");
+        true, "Phi", "Mass", "#it{p}_{T} (GeV/#it{c})", 15.0);
 
     // Phi pT shift
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpt_vs_pt_Phi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpt_vs_pt_Phi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpt_vs_pt_Phi"),
-        false, "Phi", "p_{T}", "p_{T} (GeV/#it{c})");
+        false, "Phi", "p_{T}", "p_{T} (GeV/#it{c})", 10.0);
 
     // Phi px shift
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpx_vs_px_Phi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpx_vs_px_Phi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpx_vs_px_Phi"),
-        false, "Phi", "p_{x}", "p_{x} (GeV/#it{c})");
+        false, "Phi", "p_{x}", "p_{x} (GeV/#it{c})", 10.0);
 
     // Phi py shift
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpy_vs_py_Phi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpy_vs_py_Phi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpy_vs_py_Phi"),
-        false, "Phi", "p_{y}", "p_{y} (GeV/#it{c})");
+        false, "Phi", "p_{y}", "p_{y} (GeV/#it{c})", 10.0);
 
     // Phi pz shift
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpz_vs_pz_Phi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpz_vs_pz_Phi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpz_vs_pz_Phi"),
-        false, "Phi", "p_{z}", "p_{z} (GeV/#it{c})");
+        false, "Phi", "p_{z}", "p_{z} (GeV/#it{c})", 10.0);
 
     // Kaon pT shift (All kaons)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpt_vs_pt_AllKaons"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpt_vs_pt_AllKaons"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpt_vs_pt_AllKaons"),
-        false, "Kaon", "p_{T}", "p_{T} (GeV/#it{c})");
+        false, "Kaon", "p_{T}", "p_{T} (GeV/#it{c})", 10.0);
 
     // Kaon px shift (All kaons)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpx_vs_px_AllKaons"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpx_vs_px_AllKaons"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpx_vs_px_AllKaons"),
-        false, "Kaon", "p_{x}", "p_{x} (GeV/#it{c})");
+        false, "Kaon", "p_{x}", "p_{x} (GeV/#it{c})", 10.0);
 
     // Kaon py shift (All kaons)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpy_vs_py_AllKaons"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpy_vs_py_AllKaons"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpy_vs_py_AllKaons"),
-        false, "Kaon", "p_{y}", "p_{y} (GeV/#it{c})");
+        false, "Kaon", "p_{y}", "p_{y} (GeV/#it{c})", 10.0);
 
     // Kaon pz shift (All kaons)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpz_vs_pz_AllKaons"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpz_vs_pz_AllKaons"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpz_vs_pz_AllKaons"),
-        false, "Kaon", "p_{z}", "p_{z} (GeV/#it{c})");
+        false, "Kaon", "p_{z}", "p_{z} (GeV/#it{c})", 10.0);
 
     // kaon pT shift (Kaons from Phi)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpt_vs_pt_KaonFromPhi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpt_vs_pt_KaonFromPhi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpt_vs_pt_KaonFromPhi"),
-        false, "Kaon (#phi daughters)", "p_{T}", "p_{T} (GeV/#it{c})");
+        false, "Kaon (#phi daughters)", "p_{T}", "p_{T} (GeV/#it{c})", 10.0);
 
     // kaon px shift (Kaons from Phi)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpx_vs_px_KaonFromPhi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpx_vs_px_KaonFromPhi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpx_vs_px_KaonFromPhi"),
-        false, "Kaon (#phi daughters)", "p_{x}", "p_{x} (GeV/#it{c})");
+        false, "Kaon (#phi daughters)", "p_{x}", "p_{x} (GeV/#it{c})", 10.0);
 
     // kaon py shift (Kaons from Phi)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpy_vs_py_KaonFromPhi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpy_vs_py_KaonFromPhi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpy_vs_py_KaonFromPhi"),
-        false, "Kaon (#phi daughters)", "p_{y}", "p_{y} (GeV/#it{c})");
+        false, "Kaon (#phi daughters)", "p_{y}", "p_{y} (GeV/#it{c})", 10.0);
 
     // kaon pz shift (Kaons from Phi)
     PlotMassShift(
         (TH2 *)file25ac->Get("kstarqa/hShift/h2D_dpz_vs_pz_KaonFromPhi"),
         (TH2 *)file25ai->Get("kstarqa/hShift/h2D_dpz_vs_pz_KaonFromPhi"),
         (TH2 *)file26->Get("kstarqa/hShift/h2D_dpz_vs_pz_KaonFromPhi"),
-        false, "Kaon (#phi daughters)", "p_{z}", "p_{z} (GeV/#it{c})");
+        false, "Kaon (#phi daughters)", "p_{z}", "p_{z} (GeV/#it{c})", 10.0);
 }
 
-void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TString particle = "Phi", TString whichShift = "Mass", TString xLabel = "#it{p}_{T} (GeV/#it{c})")
+void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TString particle = "Phi", TString whichShift = "Mass", TString xLabel = "#it{p}_{T} (GeV/#it{c})", double maxPlotRange = 15.0)
 {
     if (!h25ac || !h25ai || !h26 || h25ac == nullptr || h25ai == nullptr || h26 == nullptr)
     {
@@ -324,8 +326,8 @@ void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TS
             hShift[j]->SetDirectory(nullptr);
 
             // Calculate mean and statistical error before normalization
-            double mean = hShift[j]->GetMean();
-            double meanError = hShift[j]->GetMeanError();
+            double mean = hShift[j]->GetMean() * 1000;           // Convert to MeV/c^2
+            double meanError = hShift[j]->GetMeanError() * 1000; // Convert to MeV/c^2
 
             hMean[j]->SetBinContent(i + 1, mean);
             hMean[j]->SetBinError(i + 1, meanError);
@@ -347,7 +349,7 @@ void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TS
         for (int j = 0; j < 3; j++)
         {
             if (hShift[j])
-                maxY = std::max(maxY, hShift[j]->GetMaximum());
+                maxY = std::max(maxY, hShift[j]->GetMaximum()); // for plotting all three histograms on the same canvas
         }
 
         bool firstDraw = true;
@@ -378,19 +380,25 @@ void PlotMassShift(TH2 *h25ac, TH2 *h25ai, TH2 *h26, bool momentumOnX = true, TS
     SetCanvasStyle(cMean, 0.16, 0.06, 0.06, 0.13);
 
     hMean[2]->GetXaxis()->SetTitle(xLabel);
-    hMean[2]->GetYaxis()->SetTitle(Form("Mean %s shift (GeV/#it{c}^{2})", whichShift.Data()));
-    hMean[2]->GetXaxis()->SetRangeUser(0, 15);
+    hMean[2]->GetYaxis()->SetTitle(Form("Mean %s shift (MeV/#it{c}^{2})", whichShift.Data()));
+    hMean[2]->GetXaxis()->SetRangeUser(0, maxPlotRange);
 
+    double maxMeanY = 0;
+    for (int j = 0; j < 3; j++)
+        maxMeanY = std::max(maxMeanY, hMean[j]->GetMaximum());
+
+    // hMean[2]->SetMaximum(maxMeanY * 0.6);
+    hMean[2]->SetMaximum(hMean[2]->GetMaximum() * 1.9); // Set maximum based on the last histogram's maximum
     hMean[2]->Draw("pe");
     hMean[0]->Draw("pe same");
     hMean[1]->Draw("pe same");
 
-    TLegend *legend = new TLegend(0.3, 0.7, 0.88, 0.88);
+    TLegend *legend = new TLegend(0.55, 0.7, 0.92, 0.88);
     legend->SetBorderSize(0);
     legend->SetFillStyle(0);
     legend->SetTextFont(42);
     legend->SetTextSize(0.022);
-    legend->SetHeader(Form("%s %s shift (Generated - Reconstructed)", particle.Data(), whichShift.Data()));
+    legend->SetHeader(Form("%s %s shift (Gen - Rec)", particle.Data(), whichShift.Data()));
 
     for (int j = 0; j < 3; j++)
         legend->AddEntry(hMean[j], labels[j], "lep");

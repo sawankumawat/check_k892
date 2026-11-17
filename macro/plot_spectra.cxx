@@ -397,11 +397,79 @@ void plot_spectra()
             ctemp->Close();
             ctemp->Delete();
 
+            // ---------------------------------------------------------------
+            // Minimum-bias (0-100%) point: extract dN/dy and <pT> from the
+            // already loaded minimum-bias spectrum hmultClone[0].
+            // The measured <dNch/deta> for MB is supplied separately.
+            // ---------------------------------------------------------------
+            double yieldMB = 0.0, yieldMB_errStat = 0.0, yieldMB_errSys = 0.0;
+            double meanpTMB = 0.0, meanpTMB_errStat = 0.0, meanpTMB_errSys = 0.0;
+            {
+                TH1F *h1MB = (TH1F *)hmultClone[0]->Clone("h1_MB");
+                TH1F *h2MB = (TH1F *)hmultClone[0]->Clone("h2_MB");
+
+                for (int ibin = 1; ibin <= h2MB->GetNbinsX(); ibin++)
+                {
+                    double systemerr = (systematicsExist && hTotalSysSmoothed[0]) ? (hTotalSysSmoothed[0]->GetBinContent(ibin) * h2MB->GetBinContent(ibin)) : (0.1 * h2MB->GetBinContent(ibin));
+                    h2MB->SetBinError(ibin, systemerr);
+                }
+
+                Double_t minMB = 0.0;
+                Double_t maxMB = fitRangeMax;
+                Double_t lowPrecisionMB = 0.01;
+                Double_t highPrecisionMB = 0.5;
+                Option_t *optMB = "RI+";
+                TString logfilenameMB = pathLevyFits + "/log_mean_MB.root";
+                Double_t minfitMB = 0.0;
+                Double_t maxfitMB = fitRangeMax;
+
+                TF1 *fitFcnMB = new TF1("fitfunc_MB", FuncLavy, 0.0, fitRangeMax, 4);
+                fitFcnMB->SetParameter(0, 5.0);
+                fitFcnMB->SetParameter(1, 0.5);
+                fitFcnMB->FixParameter(2, 0.895);
+                fitFcnMB->SetParameter(3, 0.3);
+                fitFcnMB->SetParNames("n", "dn/dy", "mass", "T");
+                fitFcnMB->SetLineColor(kMagenta + 2);
+                fitFcnMB->SetLineStyle(2);
+
+                TH1 *houtMB = YieldMean(h1MB, h2MB, fitFcnMB, minMB, maxMB, lowPrecisionMB, highPrecisionMB, optMB, logfilenameMB, minfitMB, maxfitMB);
+                if (!houtMB)
+                {
+                    cout << "Minimum-bias YieldMean fit failed." << endl;
+                    return;
+                }
+                houtMB->SetDirectory(nullptr);
+
+                yieldMB = houtMB->GetBinContent(1);
+                yieldMB_errStat = houtMB->GetBinContent(2);
+                yieldMB_errSys = houtMB->GetBinContent(3);
+                meanpTMB = houtMB->GetBinContent(5);
+                meanpTMB_errStat = houtMB->GetBinContent(6);
+                meanpTMB_errSys = houtMB->GetBinContent(7);
+
+                cout << "Minimum-bias (0-100%)" << endl;
+                cout << "<dNch/deta>: 7.087 +/- 0.18" << endl;
+                cout << "dN/dy: " << yieldMB << " +/- " << yieldMB_errStat << " (stat) +/- " << yieldMB_errSys << " (sys)" << endl;
+                cout << "<pT>: " << meanpTMB << " +/- " << meanpTMB_errStat << " (stat) +/- " << meanpTMB_errSys << " (sys)" << endl;
+
+                delete houtMB;
+                delete h1MB;
+                delete h2MB;
+                delete fitFcnMB;
+            }
+
+            const double dnch_detaMB = 7.087;
+            const double dnch_detaMB_err = 0.18;
+            TGraphErrors *gMeanYieldMB = new TGraphErrors(1, &dnch_detaMB, &yieldMB, &dnch_detaMB_err, &yieldMB_errStat);
+            TGraphAsymmErrors *gMeanYieldMB_sys = new TGraphAsymmErrors(1, &dnch_detaMB, &yieldMB, &dnch_detaMB_err, &dnch_detaMB_err, &yieldMB_errSys, &yieldMB_errSys);
+            TGraphErrors *gMeanpTMB = new TGraphErrors(1, &dnch_detaMB, &meanpTMB, &dnch_detaMB_err, &meanpTMB_errStat);
+            TGraphAsymmErrors *gMeanpTMB_sys = new TGraphAsymmErrors(1, &dnch_detaMB, &meanpTMB, &dnch_detaMB_err, &dnch_detaMB_err, &meanpTMB_errSys, &meanpTMB_errSys);
+
             // double dnch_detaRun2[] = {26.18, 20.16, 16.4, 13.14, 10.3, 8.24, 6.62, 4.77, 2.76};
             // double dnch_detaRun3[] = {21.78, 18.48, 15.76, 13.89, 12.50, 10.86, 9.09, 7.63, 5.87, 3.69};
             // double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06}; // (paper link: https://alice-publications.web.cern.ch/system/files/draft/10934/2025-03-03-dndeta_pp136_draft_250303.pdf)
 
-            double dnch_detaRun3[] = {21.642, 18.069, 15.483, 13.673, 12.317, 10.707, 8.964, 7.496, 5.699, 3.296}; // updated uncertainties (matching correction)
+            double dnch_detaRun3[] = {21.201, 18.052, 15.462, 13.657, 12.301, 10.688, 8.946, 7.481, 5.689, 3.290}; // updated uncertainties (matching correction)
             double dnch_detaRun3_err[] = {0.38, 0.25, 0.22, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.06};             // using same as previous one
 
             double dndyRun3_UncorrSys[] = {0.0171542, 0.0123024, 0.00913457, 0.00922026, 0.00625093, 0.00683177, 0.00451025, 0.00377954, 0.00191806, 0.00171489};
@@ -528,9 +596,22 @@ void plot_spectra()
             gMeanYieldRun3_sysUncorr->SetFillColorAlpha(kBlue, 0.3);
             gMeanYieldRun3_sysUncorr->Draw("E2 same");
 
+            SetGraphErrorStyle(gMeanYieldMB);
+            gMeanYieldMB->SetMarkerStyle(33);
+            gMeanYieldMB->SetMarkerSize(1.5);
+            gMeanYieldMB->SetMarkerColor(kMagenta + 2);
+            gMeanYieldMB->SetLineColor(kMagenta + 2);
+            gMeanYieldMB->Draw("P E1 same");
+            gMeanYieldMB_sys->SetFillStyle(0);
+            gMeanYieldMB_sys->SetLineWidth(2);
+            gMeanYieldMB_sys->SetLineColor(kMagenta + 2);
+            gMeanYieldMB_sys->Draw("5 same");
+
             gMeanYieldRun3_sys->Write("gMeanYieldRun3_sys");
             gMeanYieldRun3->Write("gMeanYieldRun3_stat");
             gMeanYieldRun3_sysUncorr->Write("gMeanYieldRun3_sysuncorr");
+            gMeanYieldMB->Write("gMeanYieldMB_stat");
+            gMeanYieldMB_sys->Write("gMeanYieldMB_sys");
 
             gMeanYieldRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanYieldRun2_5020MeV->SetMarkerColor(kGreen + 2);
@@ -553,6 +634,7 @@ void plot_spectra()
             // legMeanYield->AddEntry(gMeanYieldRun2_5020MeV, "Run 2 (5.02 TeV)", "p");
             // legMeanYield->SetHeader("pp collisions");
             legMeanYield->AddEntry(gMeanYieldRun3, "Run 3 (13.6 TeV)", "p");
+            legMeanYield->AddEntry(gMeanYieldMB, "Run 3 MB (0-100%)", "p");
             legMeanYield->AddEntry(gMeanYieldRun2_stat, "Run 2 (13 TeV)", "p");
             legMeanYield->Draw();
 
@@ -599,9 +681,22 @@ void plot_spectra()
             gMeanpTRun3_sysUncorr->SetLineColor(kBlue);
             gMeanpTRun3_sysUncorr->Draw("E2 same");
 
+            SetGraphErrorStyle(gMeanpTMB);
+            gMeanpTMB->SetMarkerStyle(33);
+            gMeanpTMB->SetMarkerSize(1.5);
+            gMeanpTMB->SetMarkerColor(kMagenta + 2);
+            gMeanpTMB->SetLineColor(kMagenta + 2);
+            gMeanpTMB->Draw("P E1 same");
+            gMeanpTMB_sys->SetFillStyle(0);
+            gMeanpTMB_sys->SetLineWidth(2);
+            gMeanpTMB_sys->SetLineColor(kMagenta + 2);
+            gMeanpTMB_sys->Draw("5 same");
+
             gMeanpTRun3_sys->Write("gMeanpTRun3_sys");
             gMeanpTRun3->Write("gMeanpTRun3_stat");
             gMeanpTRun3_sysUncorr->Write("gMeanpTRun3_sysuncorr");
+            gMeanpTMB->Write("gMeanpTMB_stat");
+            gMeanpTMB_sys->Write("gMeanpTMB_sys");
 
             gMeanpTRun2_5020MeV->SetLineColor(kGreen + 2);
             gMeanpTRun2_5020MeV->SetMarkerColor(kGreen + 2);

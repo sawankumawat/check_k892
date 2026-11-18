@@ -5,7 +5,7 @@
 void Efficiency()
 {
     gStyle->SetOptStat(0);
-    TFile *file = new TFile("/home/sawan/Storage/check_k892/mc/PhiPhi/796450.root", "READ");
+    TFile *file = new TFile("/home/sawan/Storage/check_k892/mc/PhiPhi/805651.root", "READ");
     if (file->IsZombie())
     {
         std::cerr << "Error: Could not open the file." << std::endl;

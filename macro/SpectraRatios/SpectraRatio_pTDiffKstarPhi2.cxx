@@ -436,10 +436,12 @@ void SpectraRatio_pTDiffKstarPhi2()
     hKstarK0sRatioHM_stat->GetYaxis()->SetLabelSize(0.04 / pad1Size);
     hKstarK0sRatioHM_stat->GetXaxis()->SetLabelSize(0.04 / pad1Size);
     // hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(-2.8, 9.25);
-    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(0.8, 5.25);
+    // hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(0.8, 5.25);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetRangeUser(1.52, 3.85);
     hKstarK0sRatioHM_stat->GetXaxis()->SetRangeUser(0.5, 6.0);
     hKstarK0sRatioHM_stat->SetMarkerColor(kRed + 1);
     hKstarK0sRatioHM_stat->SetLineColor(kRed + 1);
+    hKstarK0sRatioHM_stat->GetYaxis()->SetNdivisions(505);
     hKstarK0sRatioHM_stat->Draw("pe");
     SetHistoQA(hKstarK0sRatioHM_sys);
     hKstarK0sRatioHM_sys->SetFillStyle(0);
@@ -450,7 +452,7 @@ void SpectraRatio_pTDiffKstarPhi2()
     hKstarK0sRatioHM_Uncorr->SetMarkerStyle(20);
     hKstarK0sRatioHM_Uncorr->SetMarkerColor(kRed + 1);
     hKstarK0sRatioHM_Uncorr->SetFillColorAlpha(kRed + 1, 0.35);
-    // hKstarK0sRatioHM_Uncorr->Draw("e2 same");
+    hKstarK0sRatioHM_Uncorr->Draw("e2 same");
 
     SetHistoQA(hKstarK0sRatioLM_stat);
     SetHistoQA(hKstarK0sRatioLM_sys);
@@ -467,7 +469,7 @@ void SpectraRatio_pTDiffKstarPhi2()
     hKstarK0sRatioLM_Uncorr->SetMarkerStyle(21);
     hKstarK0sRatioLM_Uncorr->SetMarkerColor(kBlue + 1);
     hKstarK0sRatioLM_Uncorr->SetFillColorAlpha(kBlue + 1, 0.35);
-    // hKstarK0sRatioLM_Uncorr->Draw("e2 same");
+    hKstarK0sRatioLM_Uncorr->Draw("e2 same");
 
     // Now open the spectra file in EPOS
     // TFile *fEPOS_spectra = OpenFile("/home/sawan/Storage/EPOS4_Resonance/yield_outfile_latest2.root");
@@ -629,7 +631,8 @@ void SpectraRatio_pTDiffKstarPhi2()
         gLM_UrQMDON->Draw("L same");
     }
 
-    TLegend *legendRatio = new TLegend(0.5, 0.02, 0.80, 0.22);
+    // TLegend *legendRatio = new TLegend(0.5, 0.02, 0.80, 0.22);
+    TLegend *legendRatio = new TLegend(0.5, 0.09, 0.80, 0.19);
     legendRatio->SetBorderSize(0);
     legendRatio->SetFillStyle(0);
     legendRatio->SetTextFont(42);
@@ -646,9 +649,9 @@ void SpectraRatio_pTDiffKstarPhi2()
     legendRatio->Draw();
 
     lat.SetTextSize(0.05);
-    lat.DrawLatex(0.22, 0.89, "ALICE");
-    lat.DrawLatex(0.22, 0.83, "|y| < 0.5");
-    lat.DrawLatex(0.22, 0.76, "pp #sqrt{#it{s}} = 13.6 TeV");
+    lat.DrawLatex(0.66, 0.89, "ALICE");
+    lat.DrawLatex(0.66, 0.83, "|y| < 0.5");
+    lat.DrawLatex(0.66, 0.76, "pp #sqrt{#it{s}} = 13.6 TeV");
 
     cRatio->cd(2);
     TH1F *hDoubleRatioStat = (TH1F *)hKstarK0sRatioHM_stat->Clone("hDoubleRatioStat");
@@ -739,13 +742,12 @@ void SpectraRatio_pTDiffKstarPhi2()
     hSignificance->GetYaxis()->SetTitle("n#sigma");
     hSignificance->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
 
-    hSignificance->GetXaxis()->SetRangeUser(0.0, 6.0);
     hSignificance->GetYaxis()->SetTitleSize(0.04 / pad3Size);
     hSignificance->GetYaxis()->SetLabelSize(0.035 / pad3Size);
     hSignificance->GetXaxis()->SetTitleSize(0.04 / pad3Size);
     hSignificance->GetXaxis()->SetLabelSize(0.035 / pad3Size);
 
-    hSignificance->GetXaxis()->SetRangeUser(0.0, 6.0);
+    hSignificance->GetXaxis()->SetRangeUser(0.5, 6.0);
     hSignificance->GetYaxis()->SetTitleOffset(1.60 * pad3Size);
     hSignificance->GetYaxis()->SetNdivisions(505);
 
@@ -760,7 +762,7 @@ void SpectraRatio_pTDiffKstarPhi2()
         cout << "Bin " << i << ", pT = " << hSignificance->GetXaxis()->GetBinCenter(i) << ", Significance = " << hSignificance->GetBinContent(i) << endl;
     }
 
-    cRatio->SaveAs("Plots/pTDiff_Ratios/KstarPhiRatio.png");
+    cRatio->SaveAs("Plots/pTDiff_Ratios/KstarPhiRatio.pdf");
 }
 
 void canvas_style(TCanvas *c, double &pad1Size, double &pad2Size, double &pad3Size)
